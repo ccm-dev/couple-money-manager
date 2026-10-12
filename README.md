@@ -1,1 +1,0 @@
-# gabrielkoho-del.github.io
