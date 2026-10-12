@@ -431,7 +431,7 @@ h2 svg.icn{width:1.18em;height:1.18em;vertical-align:-0.22em}
       <div class="f-row"><label>Appearance</label><div class="segmini" id="modeSeg" style="margin-bottom:0"></div></div>
       <div class="f-row" style="margin-bottom:0"><label>Currency symbol</label><input class="fin" id="curSymbol" placeholder="RM, $, € …" onchange="DB.meta.currency=this.value.trim();touch();openSheetRefresh()"></div>
     </div>
-    <div class="card"><div class="help"><b>Money Manager Mobile</b> v1.19 — single-file app, works offline, no hosting required. Income / Expense / <b>Transfer</b> transactions, custom <b>account types</b> with <b>asset / liability</b> kinds, credit-card <b>statement cycle</b> — a <b>liability-only</b> setting (per-account override or per-type default) — with a <b>billing-period breakdown</b> (tap a period to see its transactions + closing balance), <b>recurring transactions</b> (daily / weekly / monthly / yearly, every N periods — auto-added up to today), balance = start + income − expenses + transfer in − transfer out, transactions listed <b>latest date first</b> with a <b>category filter</b> on the Transactions page, <b>cumulative balance</b> at every level of the account drill (month end → day end → after each transaction), collapsible <b>account summary</b> (people → account types → accounts), <b>footer navigation stays visible on every screen</b>, split expenses — <b>payer fronts all</b> (the full amount leaves the payer's account; every other person's share is credited to a receivable asset account like “HKO owes WHY” under the payer — settle it with a Transfer from that account) — and <b>deleting a split bill removes every related transaction it created</b> (with undo), account &amp; person drill-down (also combined), tap-to-edit in every drill, <b>batch select · edit · delete</b> with undo, full-screen <b>report screens</b>, per-person CSV, display themes. Compatible with the desktop dashboard format (Date, Income/Expense, Category, Subcategory, Account, Person, Note, Amount, Split, To Account). <b>Excel upload template</b>: download a ready-made XLSX with the exact columns, sample rows and a How-to-fill sheet for data migration. <b>Multi-file import</b>: pick several JSON / CSV / XLSX files at once — they are <b>merged into your existing data</b> (nothing is overwritten, identical transactions are skipped), and <svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11V9a4 4 0 0 1 4-4h11"/><path d="m15 2 3 3-3 3"/><path d="M21 13v2a4 4 0 0 1-4 4H6"/><path d="m9 22-3-3 3-3"/></svg> <b>Replace all with a file</b> restores from a snapshot when you want a clean start. <b>Clear data</b> lets you choose exactly which lists to wipe — or wipe everything. <b>Auto-backup</b>: every change is snapshotted on-device (latest 20, restore any point from Backup history) and one tap downloads a <b>single JSON backup file</b> that can be dropped into Google Drive / OneDrive and re-imported any time. <b>v1.16</b>: every delete — transactions, accounts, people, categories, sub-categories, account types, recurring series, clear-data — shows an <b>Undo</b> toast right after; all pictorial icons are replaced with a consistent <b>line-icon set</b>; and every list &amp; dropdown is sorted <b>alphabetically</b> (icons before the wording are ignored). <b>v1.17</b>: the Add/Edit form no longer asks “Paid by” — the <b>Owner of the selected account</b> is shown instead and stamped on the transaction (transfers carry the From-account owner). A <b>transfer between two different owners</b> offers an <b>Amount owed</b> tick box: on top of the two transfer legs it books a third entry into a jointly-owned debt ledger like “HKO owes WHY” (+ when the receiver borrows, − when they pay it back), so everything one side owes the other lives in one shared account — settle it with a Transfer out of that ledger. <b>v1.18</b>: a tighter Add/Edit form — <b>Repeat</b> now sits beside <b>Date</b>, and the <b>Owner</b> display sits beside the <b>Account</b> field (beside <b>From account</b> on transfers); jointly-owned groups like “HKO &amp; WHY” show a <b>couple icon</b> instead of a dash. <b>v1.19</b>: the <b>Each-pays-own</b> split mode is removed — splitting is always <b>payer fronts all</b>; and joint owner groups like “Husband &amp; Me” now show the <b>net</b> debt between the two people (ledgers of 50 and 100 read <b>RM 50 net</b> with who-owes-who, not the gross 150).</div></div>
+    <div class="card"><div class="help"><b>Money Manager Mobile</b> v1.20 — single-file app, works offline, no hosting required. Income / Expense / <b>Transfer</b> transactions, custom <b>account types</b> with <b>asset / liability</b> kinds, credit-card <b>statement cycle</b> — a <b>liability-only</b> setting (per-account override or per-type default) — with a <b>billing-period breakdown</b> (tap a period to see its transactions + closing balance), <b>recurring transactions</b> (daily / weekly / monthly / yearly, every N periods — auto-added up to today), balance = start + income − expenses + transfer in − transfer out, transactions listed <b>latest date first</b> with a <b>category filter</b> on the Transactions page, <b>cumulative balance</b> at every level of the account drill (month end → day end → after each transaction), collapsible <b>account summary</b> (people → account types → accounts), <b>footer navigation stays visible on every screen</b>, split expenses — <b>payer fronts all</b> (the full amount leaves the payer's account; every other person's share is credited to a receivable asset account like “HKO owes WHY” under the payer — settle it with a Transfer from that account) — and <b>deleting a split bill removes every related transaction it created</b> (with undo), account &amp; person drill-down (also combined), tap-to-edit in every drill, <b>batch select · edit · delete</b> with undo, full-screen <b>report screens</b>, per-person CSV, display themes. Compatible with the desktop dashboard format (Date, Income/Expense, Category, Subcategory, Account, Person, Note, Amount, Split, To Account). <b>Excel upload template</b>: download a ready-made XLSX with the exact columns, sample rows and a How-to-fill sheet for data migration. <b>Multi-file import</b>: pick several JSON / CSV / XLSX files at once — they are <b>merged into your existing data</b> (nothing is overwritten, identical transactions are skipped), and <svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11V9a4 4 0 0 1 4-4h11"/><path d="m15 2 3 3-3 3"/><path d="M21 13v2a4 4 0 0 1-4 4H6"/><path d="m9 22-3-3 3-3"/></svg> <b>Replace all with a file</b> restores from a snapshot when you want a clean start. <b>Clear data</b> lets you choose exactly which lists to wipe — or wipe everything. <b>Auto-backup</b>: every change is snapshotted on-device (latest 20, restore any point from Backup history) and one tap downloads a <b>single JSON backup file</b> that can be dropped into Google Drive / OneDrive and re-imported any time. <b>v1.16</b>: every delete — transactions, accounts, people, categories, sub-categories, account types, recurring series, clear-data — shows an <b>Undo</b> toast right after; all pictorial icons are replaced with a consistent <b>line-icon set</b>; and every list &amp; dropdown is sorted <b>alphabetically</b> (icons before the wording are ignored). <b>v1.17</b>: the Add/Edit form no longer asks “Paid by” — the <b>Owner of the selected account</b> is shown instead and stamped on the transaction (transfers carry the From-account owner). A <b>transfer between two different owners</b> offers an <b>Amount owed</b> tick box: on top of the two transfer legs it books a third entry into a jointly-owned debt ledger like “HKO owes WHY” (+ when the receiver borrows, − when they pay it back), so everything one side owes the other lives in one shared account — settle it with a Transfer out of that ledger. <b>v1.18</b>: a tighter Add/Edit form — <b>Repeat</b> now sits beside <b>Date</b>, and the <b>Owner</b> display sits beside the <b>Account</b> field (beside <b>From account</b> on transfers); jointly-owned groups like “HKO &amp; WHY” show a <b>couple icon</b> instead of a dash. <b>v1.19</b>: the <b>Each-pays-own</b> split mode is removed — splitting is always <b>payer fronts all</b>; and joint owner groups like “Husband &amp; Me” now show the <b>net</b> debt between the two people (ledgers of 50 and 100 read <b>RM 50 net</b> with who-owes-who, not the gross 150). <b>v1.20</b>: transfers show a separate <b>owner box for each side</b> — <b>From owner</b> beside From account, <b>To owner</b> beside To account — and you can <b>swipe left / right anywhere</b> on the page to jump between Overview, Transactions, Accounts and Settings.</div></div>
   </section>
 </main>
 
@@ -517,9 +517,12 @@ h2 svg.icn{width:1.18em;height:1.18em;vertical-align:-0.22em}
   </div>
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
     <div class="f-row"><label id="fAccLabel">Account</label><select class="fin" id="fAccount" onchange="updateOwnerUI()"></select></div>
-    <div class="f-row" id="fOwnerRow"><label>Owner</label><div class="fin" id="fOwner" style="display:flex;align-items:center;gap:5px;flex-wrap:wrap;color:var(--muted);cursor:default;font-size:13.5px">—</div></div>
+    <div class="f-row" id="fOwnerRow"><label id="fOwnerLbl">Owner</label><div class="fin" id="fOwner" style="display:flex;align-items:center;gap:5px;flex-wrap:wrap;color:var(--muted);cursor:default;font-size:13.5px">—</div></div>
   </div>
-  <div class="f-row" id="fToRow" hidden><label>To account</label><select class="fin" id="fTo" onchange="updateOwnerUI()"></select></div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+    <div class="f-row" id="fToRow" hidden><label>To account</label><select class="fin" id="fTo" onchange="updateOwnerUI()"></select></div>
+    <div class="f-row" id="fOwnerToRow" hidden><label>To owner</label><div class="fin" id="fOwnerTo" style="display:flex;align-items:center;gap:5px;flex-wrap:wrap;color:var(--muted);cursor:default;font-size:13.5px">—</div></div>
+  </div>
   <div class="f-row" id="fOwedRow" hidden style="background:var(--bg);border-radius:10px;padding:9px 10px"><label style="display:flex;align-items:center;gap:8px;text-transform:none;font-weight:600;cursor:pointer"><input type="checkbox" id="fOwed" style="width:17px;height:17px;accent-color:var(--accent)"><span>Amount owed <span style="font-weight:400;color:var(--muted)">— track the debt between the two owners</span></span></label><div class="help small" id="fOwedHint" style="margin-top:5px"></div></div>
   <div class="f-row" id="fSplitBox"><label><svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c0-3.6 2.9-6.5 6.5-6.5s6.5 2.9 6.5 6.5"/><path d="M16 4.6a3.5 3.5 0 0 1 0 6.8"/><path d="M18.5 13.9c1.8.9 3 2.8 3 5.1"/></svg> Split between people <span style="text-transform:none;font-weight:600">(each share is saved as its own transaction)</span></label><div id="fSplitRows"></div><div class="small" id="fSplitHint" style="margin-top:2px;color:var(--muted)"></div></div>
   <div class="f-row" id="fCatBox">
@@ -2585,9 +2588,12 @@ function updateOwnerUI(){
   var trf=F.type==='Transfer';
   var from=$('fAccount')?$('fAccount').value:'',to=(trf&&$('fTo'))?$('fTo').value:'';
   var fo=ownerOf(from),toO=to?ownerOf(to):'';
+  /* v1.20: transfers show a separate owner box beside EACH account — From owner + To owner */
   var box=$('fOwner');
-  if(trf&&fo&&toO&&fo!==toO)box.innerHTML=ownerIco(fo)+' '+esc(fo)+' <span style="opacity:.55">→</span> '+ownerIco(toO)+' '+esc(toO);
-  else box.innerHTML=fo?(ownerIco(fo)+' '+esc(fo)):'<span style="opacity:.55">— no owner</span>';
+  box.innerHTML=fo?(ownerIco(fo)+' '+esc(fo)):'<span style="opacity:.55">— no owner</span>';
+  var lb=$('fOwnerLbl');if(lb)lb.textContent=trf?'From owner':'Owner';
+  var box2=$('fOwnerTo');
+  if(box2)box2.innerHTML=trf?(toO?(ownerIco(toO)+' '+esc(toO)):'<span style="opacity:.55">— no owner</span>'):'';
   var show=!!(trf&&fo&&toO&&fo!==toO&&!isRecvAcc(from)&&!isRecvAcc(to));
   $('fOwedRow').hidden=!show;
   if(!show){$('fOwedHint').innerHTML='';return;}
@@ -2617,6 +2623,7 @@ function setFormType(t){
   $('fCatBox').hidden=trf;
   $('fSubRow').hidden=trf;
   $('fToRow').hidden=!trf;
+  $('fOwnerToRow').hidden=!trf; /* v1.20: the To-owner box lives beside To account */
   $('fAccLabel').textContent=trf?'From account':'Account';
   $('fNoteRow').style.gridColumn=trf?'span 2':'';
   if(trf){
@@ -2973,6 +2980,35 @@ function gotoView(v){
   if(v==='accounts')renderAccounts();
   if(v==='settings')renderSettings();
 }
+/* ===== v1.20: swipe left / right between the four footer tabs ===== */
+var TAB_ORDER=['overview','txns','accounts','settings'],SWIPE=null;
+function swipeTabBlocked(){
+  return $('ovl').classList.contains('on')||$('mgrOvl').classList.contains('on')||
+    $('cmodal').classList.contains('on')||$('clrmodal').classList.contains('on')||
+    DRILL.open||REPORT.open;
+}
+document.addEventListener('touchstart',function(e){
+  SWIPE=null;
+  if(e.touches.length!==1||swipeTabBlocked())return;
+  var t=e.target;
+  /* never hijack touches that start on controls or horizontally-scrollable strips */
+  if(t.closest&&t.closest('select,input,textarea,button,a,nav,.sheet,.cmodal,.chips,.bal-strip,.chart-scroll,.toast'))return;
+  SWIPE={x:e.touches[0].clientX,y:e.touches[0].clientY};
+},{passive:true});
+document.addEventListener('touchmove',function(e){
+  /* the gesture turned into a vertical scroll — cancel it */
+  if(SWIPE&&e.touches.length===1&&Math.abs(e.touches[0].clientY-SWIPE.y)>Math.abs(e.touches[0].clientX-SWIPE.x)+8)SWIPE.dead=true;
+},{passive:true});
+document.addEventListener('touchend',function(e){
+  if(!SWIPE){return;}
+  var dead=SWIPE.dead,dx=e.changedTouches[0].clientX-SWIPE.x,dy=e.changedTouches[0].clientY-SWIPE.y;
+  SWIPE=null;
+  if(dead||Math.abs(dx)<70||Math.abs(dx)<Math.abs(dy)*1.7)return;
+  var cur=document.querySelector('.nbtn.on');
+  if(!cur)return;
+  var nxt=TAB_ORDER[TAB_ORDER.indexOf(cur.dataset.v)+(dx<0?1:-1)];
+  if(nxt)gotoView(nxt); /* swipe left → next tab, swipe right → previous tab */
+},{passive:true});
 function handleAct(el){
   var a=el.dataset.act;
   switch(a){
