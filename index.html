@@ -129,7 +129,6 @@ main{padding:calc(68px + env(safe-area-inset-top)) 12px calc(100px + env(safe-ar
 .split-row{display:grid;grid-template-columns:1.4fr 1fr 40px;gap:7px;margin-bottom:7px}
 .split-row .fin{padding:9px 10px;font-size:13.5px;width:100%}
 .split-row .ibtn{text-align:center;padding:9px 0}
-.split-row .acc-sel{grid-column:1/-1;margin-top:-2px}
 .bal-chip:active{background:var(--line)}
 /* forms */
 .f-row{margin-bottom:12px}
@@ -432,7 +431,7 @@ h2 svg.icn{width:1.18em;height:1.18em;vertical-align:-0.22em}
       <div class="f-row"><label>Appearance</label><div class="segmini" id="modeSeg" style="margin-bottom:0"></div></div>
       <div class="f-row" style="margin-bottom:0"><label>Currency symbol</label><input class="fin" id="curSymbol" placeholder="RM, $, € …" onchange="DB.meta.currency=this.value.trim();touch();openSheetRefresh()"></div>
     </div>
-    <div class="card"><div class="help"><b>Money Manager Mobile</b> v1.17 — single-file app, works offline, no hosting required. Income / Expense / <b>Transfer</b> transactions, custom <b>account types</b> with <b>asset / liability</b> kinds, credit-card <b>statement cycle</b> — a <b>liability-only</b> setting (per-account override or per-type default) — with a <b>billing-period breakdown</b> (tap a period to see its transactions + closing balance), <b>recurring transactions</b> (daily / weekly / monthly / yearly, every N periods — auto-added up to today), balance = start + income − expenses + transfer in − transfer out, transactions listed <b>latest date first</b> with a <b>category filter</b> on the Transactions page, <b>cumulative balance</b> at every level of the account drill (month end → day end → after each transaction), collapsible <b>account summary</b> (people → account types → accounts), <b>footer navigation stays visible on every screen</b>, split expenses two ways — <b>payer fronts all</b> (the full amount leaves the payer's account; every other person's share is credited to a receivable asset account like “HKO owes WHY” under the payer — settle it with a Transfer from that account) or <b>each pays own</b> (multi-payer legs) — and <b>deleting a split bill removes every related transaction it created</b> (with undo), account &amp; person drill-down (also combined), tap-to-edit in every drill, <b>batch select · edit · delete</b> with undo, full-screen <b>report screens</b>, per-person CSV, display themes. Compatible with the desktop dashboard format (Date, Income/Expense, Category, Subcategory, Account, Person, Note, Amount, Split, To Account). <b>Excel upload template</b>: download a ready-made XLSX with the exact columns, sample rows and a How-to-fill sheet for data migration. <b>Multi-file import</b>: pick several JSON / CSV / XLSX files at once — they are <b>merged into your existing data</b> (nothing is overwritten, identical transactions are skipped), and <svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11V9a4 4 0 0 1 4-4h11"/><path d="m15 2 3 3-3 3"/><path d="M21 13v2a4 4 0 0 1-4 4H6"/><path d="m9 22-3-3 3-3"/></svg> <b>Replace all with a file</b> restores from a snapshot when you want a clean start. <b>Clear data</b> lets you choose exactly which lists to wipe — or wipe everything. <b>Auto-backup</b>: every change is snapshotted on-device (latest 20, restore any point from Backup history) and one tap downloads a <b>single JSON backup file</b> that can be dropped into Google Drive / OneDrive and re-imported any time. <b>v1.16</b>: every delete — transactions, accounts, people, categories, sub-categories, account types, recurring series, clear-data — shows an <b>Undo</b> toast right after; all pictorial icons are replaced with a consistent <b>line-icon set</b>; and every list &amp; dropdown is sorted <b>alphabetically</b> (icons before the wording are ignored). <b>v1.17</b>: the Add/Edit form no longer asks “Paid by” — the <b>Owner of the selected account</b> is shown instead and stamped on the transaction (transfers carry the From-account owner). A <b>transfer between two different owners</b> offers an <b>Amount owed</b> tick box: on top of the two transfer legs it books a third entry into a jointly-owned debt ledger like “HKO owes WHY” (+ when the receiver borrows, − when they pay it back), so everything one side owes the other lives in one shared account — settle it with a Transfer out of that ledger.</div></div>
+    <div class="card"><div class="help"><b>Money Manager Mobile</b> v1.19 — single-file app, works offline, no hosting required. Income / Expense / <b>Transfer</b> transactions, custom <b>account types</b> with <b>asset / liability</b> kinds, credit-card <b>statement cycle</b> — a <b>liability-only</b> setting (per-account override or per-type default) — with a <b>billing-period breakdown</b> (tap a period to see its transactions + closing balance), <b>recurring transactions</b> (daily / weekly / monthly / yearly, every N periods — auto-added up to today), balance = start + income − expenses + transfer in − transfer out, transactions listed <b>latest date first</b> with a <b>category filter</b> on the Transactions page, <b>cumulative balance</b> at every level of the account drill (month end → day end → after each transaction), collapsible <b>account summary</b> (people → account types → accounts), <b>footer navigation stays visible on every screen</b>, split expenses — <b>payer fronts all</b> (the full amount leaves the payer's account; every other person's share is credited to a receivable asset account like “HKO owes WHY” under the payer — settle it with a Transfer from that account) — and <b>deleting a split bill removes every related transaction it created</b> (with undo), account &amp; person drill-down (also combined), tap-to-edit in every drill, <b>batch select · edit · delete</b> with undo, full-screen <b>report screens</b>, per-person CSV, display themes. Compatible with the desktop dashboard format (Date, Income/Expense, Category, Subcategory, Account, Person, Note, Amount, Split, To Account). <b>Excel upload template</b>: download a ready-made XLSX with the exact columns, sample rows and a How-to-fill sheet for data migration. <b>Multi-file import</b>: pick several JSON / CSV / XLSX files at once — they are <b>merged into your existing data</b> (nothing is overwritten, identical transactions are skipped), and <svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11V9a4 4 0 0 1 4-4h11"/><path d="m15 2 3 3-3 3"/><path d="M21 13v2a4 4 0 0 1-4 4H6"/><path d="m9 22-3-3 3-3"/></svg> <b>Replace all with a file</b> restores from a snapshot when you want a clean start. <b>Clear data</b> lets you choose exactly which lists to wipe — or wipe everything. <b>Auto-backup</b>: every change is snapshotted on-device (latest 20, restore any point from Backup history) and one tap downloads a <b>single JSON backup file</b> that can be dropped into Google Drive / OneDrive and re-imported any time. <b>v1.16</b>: every delete — transactions, accounts, people, categories, sub-categories, account types, recurring series, clear-data — shows an <b>Undo</b> toast right after; all pictorial icons are replaced with a consistent <b>line-icon set</b>; and every list &amp; dropdown is sorted <b>alphabetically</b> (icons before the wording are ignored). <b>v1.17</b>: the Add/Edit form no longer asks “Paid by” — the <b>Owner of the selected account</b> is shown instead and stamped on the transaction (transfers carry the From-account owner). A <b>transfer between two different owners</b> offers an <b>Amount owed</b> tick box: on top of the two transfer legs it books a third entry into a jointly-owned debt ledger like “HKO owes WHY” (+ when the receiver borrows, − when they pay it back), so everything one side owes the other lives in one shared account — settle it with a Transfer out of that ledger. <b>v1.18</b>: a tighter Add/Edit form — <b>Repeat</b> now sits beside <b>Date</b>, and the <b>Owner</b> display sits beside the <b>Account</b> field (beside <b>From account</b> on transfers); jointly-owned groups like “HKO &amp; WHY” show a <b>couple icon</b> instead of a dash. <b>v1.19</b>: the <b>Each-pays-own</b> split mode is removed — splitting is always <b>payer fronts all</b>; and joint owner groups like “Husband &amp; Me” now show the <b>net</b> debt between the two people (ledgers of 50 and 100 read <b>RM 50 net</b> with who-owes-who, not the gross 150).</div></div>
   </section>
 </main>
 
@@ -514,9 +513,12 @@ h2 svg.icn{width:1.18em;height:1.18em;vertical-align:-0.22em}
   </div>
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
     <div class="f-row" id="fDateRow"><label>Date</label><input type="date" class="fin" id="fDate"></div>
-    <div class="f-row" id="fOwnerRow"><label>Owner</label><div class="fin" id="fOwner" style="display:flex;align-items:center;gap:6px;color:var(--muted);cursor:default">—</div></div>
+    <div class="f-row" id="fRepRow"><label title="Auto-adds future transactions"><svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><path d="m17 2 4 4-4 4"/><path d="M3 11v-1a4 4 0 0 1 4-4h14"/><path d="m7 22-4-4 4-4"/><path d="M21 13v1a4 4 0 0 1-4 4H3"/></svg> Repeat</label><div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap"><select class="fin" id="fRep" style="flex:1;min-width:86px;padding-left:8px;padding-right:8px" onchange="repUI()"><option value="">No repeat</option><option value="day">Daily</option><option value="week">Weekly</option><option value="month">Monthly</option><option value="year">Yearly</option></select><input class="fin" id="fRepEvery" type="number" min="1" value="1" style="width:58px;flex:none" aria-label="repeat every N periods"><span class="small" id="fRepLbl" style="color:var(--muted);white-space:nowrap"></span></div></div>
   </div>
-  <div class="f-row"><label id="fAccLabel">Account</label><select class="fin" id="fAccount" onchange="updateOwnerUI()"></select></div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+    <div class="f-row"><label id="fAccLabel">Account</label><select class="fin" id="fAccount" onchange="updateOwnerUI()"></select></div>
+    <div class="f-row" id="fOwnerRow"><label>Owner</label><div class="fin" id="fOwner" style="display:flex;align-items:center;gap:5px;flex-wrap:wrap;color:var(--muted);cursor:default;font-size:13.5px">—</div></div>
+  </div>
   <div class="f-row" id="fToRow" hidden><label>To account</label><select class="fin" id="fTo" onchange="updateOwnerUI()"></select></div>
   <div class="f-row" id="fOwedRow" hidden style="background:var(--bg);border-radius:10px;padding:9px 10px"><label style="display:flex;align-items:center;gap:8px;text-transform:none;font-weight:600;cursor:pointer"><input type="checkbox" id="fOwed" style="width:17px;height:17px;accent-color:var(--accent)"><span>Amount owed <span style="font-weight:400;color:var(--muted)">— track the debt between the two owners</span></span></label><div class="help small" id="fOwedHint" style="margin-top:5px"></div></div>
   <div class="f-row" id="fSplitBox"><label><svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c0-3.6 2.9-6.5 6.5-6.5s6.5 2.9 6.5 6.5"/><path d="M16 4.6a3.5 3.5 0 0 1 0 6.8"/><path d="M18.5 13.9c1.8.9 3 2.8 3 5.1"/></svg> Split between people <span style="text-transform:none;font-weight:600">(each share is saved as its own transaction)</span></label><div id="fSplitRows"></div><div class="small" id="fSplitHint" style="margin-top:2px;color:var(--muted)"></div></div>
@@ -528,7 +530,6 @@ h2 svg.icn{width:1.18em;height:1.18em;vertical-align:-0.22em}
     <div class="f-row" id="fSubRow"><label>Subcategory</label><button class="fin pick" id="fSubBtn" data-act="fsubmenu" type="button"></button><input type="hidden" id="fSub"></div>
     <div class="f-row" id="fNoteRow"><label>Note</label><input class="fin" id="fNote" placeholder="optional"></div>
   </div>
-  <div class="f-row" id="fRepRow"><label><svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><path d="m17 2 4 4-4 4"/><path d="M3 11v-1a4 4 0 0 1 4-4h14"/><path d="m7 22-4-4 4-4"/><path d="M21 13v1a4 4 0 0 1-4 4H3"/></svg> Repeat <span style="text-transform:none;font-weight:600">(auto-adds future transactions)</span></label><div style="display:flex;gap:7px;align-items:center"><select class="fin" id="fRep" style="flex:1" onchange="repUI()"><option value="">No repeat</option><option value="day">Daily</option><option value="week">Weekly</option><option value="month">Monthly</option><option value="year">Yearly</option></select><input class="fin" id="fRepEvery" type="number" min="1" value="1" style="width:66px" aria-label="repeat every N periods"><span class="small" id="fRepLbl" style="color:var(--muted);white-space:nowrap"></span></div></div>
   <button class="btn" data-act="savetxn">Save transaction</button>
   <div style="height:8px"></div>
   <button class="btn red" id="btnDel" data-act="deltxn" hidden><svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg> Delete transaction</button>
@@ -2069,11 +2070,16 @@ function accSummaryHTML(rows){
   rows.forEach(function(r){
     var a=DB.accounts.find(function(x){return x.name===r.name;});
     var o=(a&&a.owner)?a.owner:'—';
-    if(!byP[o]){byP[o]={bal:0,n:0,types:{}};po.push(o);}
+    if(!byP[o]){byP[o]={bal:0,n:0,types:{},ledgers:0};po.push(o);}
     var ty=(a&&a.type)?a.type:'—';
     if(!byP[o].types[ty])byP[o].types[ty]=[];
-    byP[o].types[ty].push({r:r,a:a});
-    byP[o].bal+=r.bal;byP[o].n++;
+    var net=r.bal,isl=false; /* v1.19: a joint owner's debt ledgers net against each other */
+    if(o.indexOf(' & ')>=0&&/^.+ owes .+$/.test(r.name)){
+      isl=true;byP[o].ledgers++;
+      if(r.name.split(' owes ')[0]===o.split(' & ')[0])net=-r.bal; /* sign: + = second-named owes first-named */
+    }
+    byP[o].types[ty].push({r:r,a:a,net:net,isl:isl});
+    byP[o].bal+=net;byP[o].n++;
   });
   /* v1.16: people alphabetical (icon/owner labels ignored), “No owner” last */
   var order=po.filter(function(p){return p!=='—';}).sort(alphasort);
@@ -2091,22 +2097,28 @@ function accSummaryHTML(rows){
   }
   return order.map(function(p){
     var g=byP[p],pk='p:'+p,openP=!ASUM[pk];
-    var isOwner=p!=='—'&&String(p).indexOf(' & ')<0; /* v1.17: joint debt-ledger owners have no person drill */
+    var isJoint=p!=='—'&&String(p).indexOf(' & ')>=0; /* v1.18: joint owners show the couple icon */
+    var isOwner=p!=='—'&&!isJoint; /* v1.17: joint debt-ledger owners have no person drill */
     var nty=Object.keys(g.types).length;
+    var dirTxt='';
+    if(g.ledgers){ /* v1.19: show the net debt direction instead of the tap hint */
+      var gN=p.split(' & ');
+      dirTxt=g.bal>0.004?(gN[1]+' owes '+gN[0]+' '+money(g.bal)):g.bal<-0.004?(gN[0]+' owes '+gN[1]+' '+money(-g.bal)):'settled up';
+    }
     var ph='<button class="asum-row asum-l1" data-act="asum" data-k="'+esc(pk)+'">'
-      +'<span class="lb">'+(isOwner?ico('user')+' ':'— ')+esc(p==='—'?'No owner':p)+'<small>'+g.n+(g.n>1?' accounts':' account')+' · '+nty+(nty>1?' types':' type')+' · tap to '+(openP?'collapse':'expand')+'</small></span>'
-      +'<span class="asum-r"><span class="amt2 '+(g.bal<0?'neg':'')+'">'+money(g.bal)+'</span>'
+      +'<span class="lb">'+(p==='—'?'— ':ownerIco(p)+' ')+esc(p==='—'?'No owner':p)+'<small>'+g.n+(g.n>1?' accounts':' account')+' · '+nty+(nty>1?' types':' type')+' · '+(dirTxt||(openP?'tap to collapse':'tap to expand'))+'</small></span>'
+      +'<span class="asum-r"><span class="amt2 '+(!g.ledgers&&g.bal<0?'neg':'')+'">'+money(g.ledgers?Math.abs(g.bal):g.bal)+'</span>'
       +(isOwner?'<span class="asum-drill" data-act="persondrill" data-p="'+esc(p)+'" role="button" aria-label="drill into '+esc(p)+'’s transactions">'+ico('chart')+'</span>':'')
       +'<span class="asum-ch" aria-hidden="true">'+(openP?ico('chevdown'):ico('chevright'))+'</span></span></button>';
     if(!openP)return ph;
     var tys=Object.keys(g.types).sort(alphasort); /* v1.16: types alphabetical */
     return ph+tys.map(function(ty){
-      var tk=pk+'|t:'+ty,openT=!ASUM[tk],sub2=0;
-      g.types[ty].forEach(function(e){sub2+=e.r.bal;});
+      var tk=pk+'|t:'+ty,openT=!ASUM[tk],sub2=0,tl=false; /* v1.19: net the ledgers inside the type too */
+      g.types[ty].forEach(function(e){sub2+=e.net;if(e.isl)tl=true;});
       var isL=accTypeKind(ty)==='liability';
       var th='<button class="asum-row asum-l2" data-act="asum" data-k="'+esc(tk)+'">'
         +'<span class="lb">'+ico('folder')+' '+esc(ty)+(isL?'<span class="asum-liab">liability</span>':'')+'<small>'+g.types[ty].length+(g.types[ty].length>1?' accounts':' account')+' · tap to '+(openT?'collapse':'expand')+'</small></span>'
-        +'<span class="asum-r"><span class="amt2 '+(sub2<0?'neg':'')+'">'+money(sub2)+'</span><span class="asum-ch" aria-hidden="true">'+(openT?'▾':'▸')+'</span></span></button>';
+        +'<span class="asum-r"><span class="amt2 '+(!tl&&sub2<0?'neg':'')+'">'+money(tl?Math.abs(sub2):sub2)+'</span><span class="asum-ch" aria-hidden="true">'+(openT?'▾':'▸')+'</span></span></button>';
       if(!openT)return th;
       return th+'<div class="asum-l3">'+g.types[ty].slice().sort(function(x,y){return alphasort(x.r.name,y.r.name);}).map(accRow).join('')+'</div>';
     }).join('');
@@ -2266,7 +2278,7 @@ function renderMgr(){
       }
       var n=0;DB.txns.forEach(function(t){if(txnTouchesAcc(t,a.name))n++;});
       var cyTxt=(accTypeKind(a.type)==='liability'&&accCycleFor(a))?' · cycle '+accCycleFor(a):'';
-      return mgrRow(ico('card')+' '+esc(a.name),ico('tag')+' '+esc(a.type||'—')+' · '+((a.owner)?ico('user')+' '+esc(a.owner):'— no owner')+' · start '+money(a.start||0)+' · '+n+' txns'+cyTxt,'data-k="'+esc(a.name)+'"','data-k="'+esc(a.name)+'"');
+      return mgrRow(ico('card')+' '+esc(a.name),ico('tag')+' '+esc(a.type||'—')+' · '+((a.owner)?ownerIco(a.owner)+' '+esc(a.owner):'— no owner')+' · start '+money(a.start||0)+' · '+n+' txns'+cyTxt,'data-k="'+esc(a.name)+'"','data-k="'+esc(a.name)+'"');
     }).join('');
     var defTy=sortedAlpha(DB.accTypes)[0]||'';
     h+='<div style="border-top:1px solid var(--line);margin-top:10px;padding-top:10px"><input class="fin" id="mgrNewName" placeholder="Account name" style="margin-bottom:7px"><div style="display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:7px"><input class="fin" id="mgrNewStart" inputmode="decimal" placeholder="Starting balance"><select class="fin" id="mgrNewOwner">'+ownerOptions('')+'</select></div><select class="fin" id="mgrNewAType" style="margin-bottom:7px" onchange="var w=document.getElementById(\'cycNWrap\');if(w)w.style.display=((DB.accTypeMeta[this.value]||{}).kind===\'liability\')?\'\':\'none\'">'+sortedAlpha(DB.accTypes).map(function(ty){return '<option>'+esc(ty)+'</option>';}).join('')+'</select><div id="cycNWrap" style="display:'+(accTypeKind(defTy)==='liability'?'':'none')+';margin-bottom:7px"><input class="fin" id="mgrNewCyc" inputmode="numeric" placeholder="Billing cycle day 1–31 (liability only)"></div><button class="ibtn" data-act="mgradd" style="width:100%;color:var(--accent)">'+ico('plus')+' Add account</button></div>';
@@ -2548,7 +2560,6 @@ function accOptions(sel){
   if(sel&&names.indexOf(sel)<0)h='<option selected>'+esc(sel)+'</option>'+h;
   return h;
 }
-function ownedAccFor(p){var a=DB.accounts.find(function(x){return x.owner===p;});return a?a.name:'';}
 /* ===== v1.17: owner-driven transactions + cross-owner owed transfers =====
    The Paid-by picker is gone — a transaction's person is the OWNER of the selected account.
    A transfer between two DIFFERENT owners can be ticked “Amount owed”: on top of the two
@@ -2556,6 +2567,7 @@ function ownedAccFor(p){var a=DB.accounts.find(function(x){return x.owner===p;})
    <from-owner>” (shared by both people, so it can flip negative when the other side owes). */
 function ownerOf(n){var a=DB.accounts.find(function(x){return x.name===n;});return (a&&a.owner)?a.owner:'';}
 function jointPair(a,b){var x=[String(a||'').trim(),String(b||'').trim()].filter(Boolean);if(x.length<2)return '';return x.sort(alphasort).join(' & ');}
+function ownerIco(o){return ico(String(o||'').indexOf(' & ')>=0?'users':'user');} /* v1.18: joint owner → couple icon */
 /* find or create the pair ledger for a cross-owner owed transfer:
    “<toOwner> owes <fromOwner>” takes +amt (the receiver now owes the sender);
    when the opposite-orientation ledger already exists it takes −amt (a repayment) */
@@ -2574,8 +2586,8 @@ function updateOwnerUI(){
   var from=$('fAccount')?$('fAccount').value:'',to=(trf&&$('fTo'))?$('fTo').value:'';
   var fo=ownerOf(from),toO=to?ownerOf(to):'';
   var box=$('fOwner');
-  if(trf&&fo&&toO&&fo!==toO)box.innerHTML=ico('user')+' '+esc(fo)+' <span style="opacity:.55">→</span> '+ico('user')+' '+esc(toO);
-  else box.innerHTML=fo?(ico('user')+' '+esc(fo)):'<span style="opacity:.55">— no owner</span>';
+  if(trf&&fo&&toO&&fo!==toO)box.innerHTML=ownerIco(fo)+' '+esc(fo)+' <span style="opacity:.55">→</span> '+ownerIco(toO)+' '+esc(toO);
+  else box.innerHTML=fo?(ownerIco(fo)+' '+esc(fo)):'<span style="opacity:.55">— no owner</span>';
   var show=!!(trf&&fo&&toO&&fo!==toO&&!isRecvAcc(from)&&!isRecvAcc(to));
   $('fOwedRow').hidden=!show;
   if(!show){$('fOwedHint').innerHTML='';return;}
@@ -2647,7 +2659,6 @@ function openSheet(id){
   }else if(t&&t.to&&t.type!=='Transfer'){
     gn.hidden=false;gn.textContent='Receivable — this share is credited to “'+t.to+'” — settle it with a Transfer from that account.';
   }else gn.hidden=true;
-  SPLIT.mode=(t&&hasSplit(t))?'own':'front';
   SPLIT.rows=(t&&hasSplit(t))?t.split.map(function(s){return {p:s.p,v:s.v,a:''};}):[];
   renderSplitRows();
   $('ovl').classList.add('on');
@@ -2703,7 +2714,7 @@ function recurAnchorEdit(rid){
   closeMgr();openSheet(t.id);
 }
 /* ================= split editor (R2) ================= */
-var SPLIT={rows:[],mode:'front'};
+var SPLIT={rows:[]};
 function nextSplitPerson(){
   var used={};SPLIT.rows.forEach(function(r){used[r.p]=1;});
   var free=DB.people.filter(function(x){return !used[x];});
@@ -2716,21 +2727,12 @@ function renderSplitRows(){
     box.innerHTML='<button class="btn ghost" style="padding:10px;font-size:13px" data-act="splitadd">'+ico('users')+' Split between people</button>';
     updateSplitHint();return;
   }
-  box.innerHTML='<div class="segmini" style="margin-bottom:8px">'
-    +'<button type="button" data-act="splitmode" data-m="front"'+(SPLIT.mode!=='own'?' class="on"':'')+'>'+ico('card')+' Payer fronts all</button>'
-    +'<button type="button" data-act="splitmode" data-m="own"'+(SPLIT.mode==='own'?' class="on"':'')+'>'+ico('wallet')+' Each pays own</button></div>'
-    +SPLIT.rows.map(function(r,i){
+  box.innerHTML=SPLIT.rows.map(function(r,i){
     var opts=sortedAlpha(DB.people).map(function(p){return '<option'+(p===r.p?' selected':'')+'>'+esc(p)+'</option>';}).join('');
     if(r.p&&DB.people.indexOf(r.p)<0)opts='<option selected>'+esc(r.p)+'</option>'+opts;
     var row='<div class="split-row"><select class="fin" data-si="'+i+'" data-sf="p" onchange="splitEdit(this)">'+opts+'</select>'
       +'<input class="fin" inputmode="decimal" value="'+esc(r.v)+'" data-si="'+i+'" data-sf="v" oninput="splitEdit(this)" placeholder="0.00">'
       +'<button class="ibtn" data-act="splitdel" data-i="'+i+'" aria-label="remove">'+ico('x')+'</button>';
-    if(SPLIT.mode==='own'){
-      var accOpts=sortedAlpha(DB.accounts.map(function(a){return a.name;})).map(function(n){return '<option'+(n===r.a?' selected':'')+'>'+esc(n)+'</option>';}).join('');
-      if(r.a&&!DB.accounts.some(function(x){return x.name===r.a;}))accOpts='<option selected>'+esc(r.a)+'</option>'+accOpts;
-      if(!r.a&&DB.accounts.length)accOpts='<option value="">same as account above</option>'+accOpts;
-      row+='<select class="fin acc-sel" data-si="'+i+'" data-sf="a" onchange="splitEdit(this)" aria-label="paid from">'+accOpts+'</select>';
-    }
     return row+'</div>';
   }).join('')
   +(DB.people.length>SPLIT.rows.length?'<button class="ibtn" data-act="splitadd" style="width:100%;text-align:center;margin-bottom:6px">'+ico('plus')+' Add person</button>':'')
@@ -2740,11 +2742,10 @@ function renderSplitRows(){
 function splitEdit(el){
   var i=+el.dataset.si;
   if(!SPLIT.rows[i])return;
-  if(el.dataset.sf==='p'){SPLIT.rows[i].p=el.value;var oa=ownedAccFor(el.value);if(oa)SPLIT.rows[i].a=oa;renderSplitRows();}
-  else if(el.dataset.sf==='a'){SPLIT.rows[i].a=el.value;}
+  if(el.dataset.sf==='p'){SPLIT.rows[i].p=el.value;renderSplitRows();}
   else{SPLIT.rows[i].v=el.value;updateSplitHint();}
 }
-function splitAdd(){var p=nextSplitPerson();SPLIT.rows.push({p:p,v:'',a:ownedAccFor(p)||($('fAccount')?$('fAccount').value:'')});renderSplitRows();}
+function splitAdd(){var p=nextSplitPerson();SPLIT.rows.push({p:p,v:''});renderSplitRows();}
 function splitDel(i){SPLIT.rows.splice(i,1);renderSplitRows();}
 function splitEven(){
   var amt=parseAmt($('fAmount').value);
@@ -2756,13 +2757,12 @@ function splitEven(){
   renderSplitRows();
 }
 function splitRowsClean(){
-  var mainAcc=($('fAccount')&&$('fAccount').value)||'';
   var rows=[],seen={};
   SPLIT.rows.forEach(function(r){
-    var v=Math.round(parseAmt(r.v)*100)/100,p=(r.p||'').trim(),a=(SPLIT.mode==='own'?((r.a||'').trim()||mainAcc):mainAcc);
+    var v=Math.round(parseAmt(r.v)*100)/100,p=(r.p||'').trim();
     if(!(v>0)||!p)return;
-    if(seen[p]){rows=rows.map(function(x){if(x.p===p){x.v=Math.round((x.v+v)*100)/100;if(a&&!x.a)x.a=a;}return x;});}
-    else{seen[p]=1;rows.push({p:p,v:v,a:a});}
+    if(seen[p]){rows=rows.map(function(x){if(x.p===p)x.v=Math.round((x.v+v)*100)/100;return x;});}
+    else{seen[p]=1;rows.push({p:p,v:v});}
   });
   return rows;
 }
@@ -2775,13 +2775,12 @@ function updateSplitHint(){
   var left=Math.round((amt-sum)*100)/100;
   if(left>0.004){h.textContent='Unassigned: '+fmt(left)+' of '+fmt(amt)+' — will be paid by the account owner';h.style.color='var(--warn)';}
   else if(left<-0.004){h.textContent='Over by '+fmt(-left)+' — portions exceed the amount';h.style.color='var(--exp)';}
-  else if(SPLIT.mode!=='own'){
+  else{
     var payer=ownerOf(($('fAccount')&&$('fAccount').value)||'')||DB.people[0]||'Me';
     var dbt=SPLIT.rows.map(function(r){return (r.p||'').trim();}).filter(function(p){return p&&p!==payer;});
     h.innerHTML=ico('check')+' Portions add up to '+fmt(amt)+(dbt.length?(' · '+dbt.map(function(d){return esc(d)+' → '+ico('bank')+' “'+esc(d)+' owes '+esc(payer)+'”';}).join(', ')):'');
     h.style.color='var(--inc)';
   }
-  else{h.innerHTML=ico('check')+' Portions add up to '+fmt(amt);h.style.color='var(--inc)';}
 }
 function saveTxn(){
   var amt=parseAmt($('fAmount').value);
@@ -2822,7 +2821,7 @@ function saveTxn(){
     var ssum0=Math.round(srows.reduce(function(s,x){return s+x.v;},0)*100)/100;
     if(Math.round((amt-ssum0)*100)/100<-0.004){toast('Split portions exceed the amount by '+fmt(Math.round((ssum0-amt)*100)/100));return;}
   }
-  var multiLeg=srows.length>1||(SPLIT.mode!=='own'&&srows.some(function(r){return r.p&&r.p!==rec.person;}));
+  var multiLeg=srows.length>1||srows.some(function(r){return r.p&&r.p!==rec.person;});
   if(multiLeg){
     if($('fRep').value){applyRepeat(rec,t1,true);toast('Repeat skipped — split transactions cannot recur');}
   }else applyRepeat(rec,t1,false);
@@ -2830,37 +2829,26 @@ function saveTxn(){
   if(srows.length){
     var ssum=Math.round(srows.reduce(function(s,x){return s+x.v;},0)*100)/100;
     var left=Math.round((amt-ssum)*100)/100;
-    if(SPLIT.mode!=='own'){
-      /* v1.12: payer fronts the whole bill — the full amount leaves the payer's account;
-         every other person's share is credited to a receivable asset account “<name> owes <payer>” */
-      var payer=rec.person||DB.people[0]||'Me'; /* v1.17: payer = the account owner (first person as fallback) */
-      if(left>0.004)srows.push({p:payer,v:left,a:rec.account});
-      var debtors=srows.filter(function(r){return r.p&&r.p!==payer;});
-      if(!debtors.length){rec.person=payer;}
-      else{
-        var gidF=uid(),legsF=[];
-        var pShare=Math.round(srows.filter(function(r){return r.p===payer;}).reduce(function(s,r){return s+r.v;},0)*100)/100;
-        if(pShare>0.004)legsF.push({id:uid(),group:gidF,date:date,type:F.type,category:F.cat,subcategory:rec.subcategory,account:rec.account,person:payer,note:note,amount:pShare,split:null});
-        debtors.forEach(function(d){
-          var rn=ensureRecvAcc(d.p+' owes '+payer);
-          legsF.push({id:uid(),group:gidF,date:date,type:F.type,category:F.cat,subcategory:rec.subcategory,account:rec.account,to:rn,person:d.p,note:note,amount:d.v,split:null});
-        });
-        if(F.id)DB.txns=DB.txns.filter(function(x){return x.id!==F.id;});
-        DB.txns=DB.txns.concat(legsF);
-        closeSheet();touch();
-        toast((wasNew?'Added ✓ ':'Updated ✓ ')+legsF.length+' transactions · '+money(amt)+' · '+debtors.length+' receivable'+(debtors.length>1?'s':''));
-        F.id=null;return;
-      }
-    }else{
-      if(left>0.004)srows.push({p:rec.person,v:left,a:rec.account});
-      if(srows.length===1){rec.person=srows[0].p;}
-      else{
-        var gid=uid();
-        var legs=srows.map(function(r){return {id:uid(),group:gid,date:date,type:F.type,category:F.cat,subcategory:rec.subcategory,account:r.a||rec.account,person:r.p,note:note,amount:r.v,split:null};});
-        if(F.id)DB.txns=DB.txns.filter(function(x){return x.id!==F.id;});
-        DB.txns=DB.txns.concat(legs);
-        closeSheet();touch();toast((wasNew?'Added ✓ ':'Updated ✓ ')+legs.length+' transactions · '+money(amt));F.id=null;return;
-      }
+    /* v1.12: payer fronts the whole bill — the full amount leaves the payer's account;
+       every other person's share is credited to a receivable asset account "<name> owes <payer>"
+       (v1.19: the each-pays-own mode was removed — this is the only split path) */
+    var payer=rec.person||DB.people[0]||'Me'; /* v1.17: payer = the account owner (first person as fallback) */
+    if(left>0.004)srows.push({p:payer,v:left});
+    var debtors=srows.filter(function(r){return r.p&&r.p!==payer;});
+    if(!debtors.length){rec.person=payer;}
+    else{
+      var gidF=uid(),legsF=[];
+      var pShare=Math.round(srows.filter(function(r){return r.p===payer;}).reduce(function(s,r){return s+r.v;},0)*100)/100;
+      if(pShare>0.004)legsF.push({id:uid(),group:gidF,date:date,type:F.type,category:F.cat,subcategory:rec.subcategory,account:rec.account,person:payer,note:note,amount:pShare,split:null});
+      debtors.forEach(function(d){
+        var rn=ensureRecvAcc(d.p+' owes '+payer);
+        legsF.push({id:uid(),group:gidF,date:date,type:F.type,category:F.cat,subcategory:rec.subcategory,account:rec.account,to:rn,person:d.p,note:note,amount:d.v,split:null});
+      });
+      if(F.id)DB.txns=DB.txns.filter(function(x){return x.id!==F.id;});
+      DB.txns=DB.txns.concat(legsF);
+      closeSheet();touch();
+      toast((wasNew?'Added ✓ ':'Updated ✓ ')+legsF.length+' transactions · '+money(amt)+' · '+debtors.length+' receivable'+(debtors.length>1?'s':''));
+      F.id=null;return;
     }
   }
   if(F.id){
@@ -2997,7 +2985,7 @@ function handleAct(el){
     case 'splitadd':splitAdd();break;
     case 'splitdel':splitDel(+el.dataset.i);break;
     case 'spliteven':splitEven();break;
-    case 'splitmode':SPLIT.mode=el.dataset.m==='own'?'own':'front';renderSplitRows();break;
+    case 'splitadd':splitAdd();break;
     case 'savetxn':saveTxn();break;
     case 'deltxn':delTxn();break;
     case 'cyes':confirmResolve(true);break;
