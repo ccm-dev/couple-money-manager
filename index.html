@@ -452,12 +452,22 @@ h2 svg.icn{width:1.18em;height:1.18em;vertical-align:-0.22em}
       </details>
     </div>
     <div class="card">
+      <h2><svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><path d="M17.5 19H9a7 7 0 1 1 6.7-9h1.8a4.5 4.5 0 1 1 0 9Z"/></svg> Account &amp; cloud sync <span class="sub" id="fbSub"></span></h2>
+      <div id="fbBody"></div>
+      <details class="help" style="margin-top:12px">
+        <summary>Privacy — “Local only” stays the default; cloud sync is opt-in</summary>
+        <p style="margin:6px 0"><b>By default nothing leaves this device.</b> All data lives in this browser on this device. No account is needed and nothing is uploaded anywhere unless you ask for it.</p>
+        <p style="margin:6px 0"><b>If you enable sync</b> (sign in with Google above and turn Cloud sync on), your <b>email / user ID and financial data</b> are stored in <b>Google Cloud (Firebase, region asia-southeast1)</b>, <b>encrypted in transit</b> (TLS) <b>&amp; at rest</b>. Only your own Google account can read or write your copy — access to each copy is restricted to its signed-in owner.</p>
+        <p style="margin:6px 0"><b>Deletion path:</b> “Delete cloud data” removes the cloud copy from Firebase immediately (the deletion path declared in the Play Store data-safety form); “Clear data” wipes this device; “Sign out” returns the app to local-only. Standard, non-financial usage analytics (Firebase Analytics) count app opens — no transaction data is ever included in analytics.</p>
+      </details>
+    </div>
+    <div class="card">
       <h2><svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg> Display</h2>
       <div class="f-row"><label>Theme color</label><div class="chips" id="accentSw" style="gap:10px;padding:4px 0"></div></div>
       <div class="f-row"><label>Appearance</label><div class="segmini" id="modeSeg" style="margin-bottom:0"></div></div>
       <div class="f-row" style="margin-bottom:0"><label>Currency symbol</label><input class="fin" id="curSymbol" placeholder="RM, $, € …" onchange="DB.meta.currency=this.value.trim();touch();openSheetRefresh()"></div>
     </div>
-    <div class="card"><div class="help"><b>Money Manager Mobile</b> v1.30 — single-file app, works offline, no hosting required. Income / Expense / <b>Transfer</b> transactions, custom <b>account types</b> with <b>asset / liability</b> kinds, a <b>billing cycle</b> (statement day) set per account under <b>Settings → Accounts</b> for <b>credit-card</b> accounts — with a <b>billing-period breakdown</b> (tap a period to see its transactions + closing balance), <b>recurring transactions</b> (daily / weekly / monthly / yearly, every N periods — auto-added up to today), balance = start + income − expenses + transfer in − transfer out, transactions listed <b>latest date first</b> with a <b>category filter</b> on the Transactions page, <b>cumulative balance</b> at every level of the account drill (month end → day end → after each transaction), collapsible <b>account summary</b> (people → account types → accounts), <b>footer navigation stays visible on every screen</b>, split expenses — <b>payer fronts all</b> (the full amount leaves the payer's account; every other person's share is credited to a receivable asset account like “HKO owes WHY” under the payer — settle it with a Transfer from that account) — and <b>deleting a split bill removes every related transaction it created</b> (with undo), account &amp; person drill-down (also combined), tap-to-edit in every drill, <b>batch select · edit · delete</b> with undo, full-screen <b>report screens</b>, per-person CSV, display themes. Compatible with the desktop dashboard format (Date, Income/Expense, Category, Subcategory, Account, Person, Note, Amount, Split, To Account). <b>Excel upload template</b>: download a ready-made XLSX with the exact columns, sample rows and a How-to-fill sheet for data migration. <b>Multi-file import</b>: pick several JSON / CSV / XLSX files at once — they are <b>merged into your existing data</b> (nothing is overwritten, identical transactions are skipped), and <svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11V9a4 4 0 0 1 4-4h11"/><path d="m15 2 3 3-3 3"/><path d="M21 13v2a4 4 0 0 1-4 4H6"/><path d="m9 22-3-3 3-3"/></svg> <b>Replace all with a file</b> restores from a snapshot when you want a clean start. <b>Clear data</b> lets you choose exactly which lists to wipe — or wipe everything. <b>Auto-backup</b>: every change is snapshotted on-device (latest 20, restore any point from Backup history) and one tap downloads a <b>single JSON backup file</b> that can be dropped into Google Drive / OneDrive and re-imported any time. <b>v1.16</b>: every delete — transactions, accounts, people, categories, sub-categories, account types, recurring series, clear-data — shows an <b>Undo</b> toast right after; all pictorial icons are replaced with a consistent <b>line-icon set</b>; and every list &amp; dropdown is sorted <b>alphabetically</b> (icons before the wording are ignored). <b>v1.17</b>: the Add/Edit form no longer asks “Paid by” — the <b>Owner of the selected account</b> is shown instead and stamped on the transaction (transfers carry the From-account owner). A <b>transfer between two different owners</b> offers an <b>Amount owed</b> tick box: on top of the two transfer legs it books a third entry into a jointly-owned debt ledger like “HKO owes WHY” (+ when the receiver borrows, − when they pay it back), so everything one side owes the other lives in one shared account — settle it with a Transfer out of that ledger. <b>v1.18</b>: a tighter Add/Edit form — <b>Repeat</b> now sits beside <b>Date</b>, and the <b>Owner</b> display sits beside the <b>Account</b> field (beside <b>From account</b> on transfers); jointly-owned groups like “HKO &amp; WHY” show a <b>couple icon</b> instead of a dash. <b>v1.19</b>: the <b>Each-pays-own</b> split mode is removed — splitting is always <b>payer fronts all</b>; and joint owner groups like “Husband &amp; Me” now show the <b>net</b> debt between the two people (ledgers of 50 and 100 read <b>RM 50 net</b> with who-owes-who, not the gross 150). <b>v1.20</b>: transfers show a separate <b>owner box for each side</b> — <b>From owner</b> beside From account, <b>To owner</b> beside To account — and you can <b>swipe left / right anywhere</b> on the page to jump between Overview, Transactions, Accounts and Settings. <b>v1.21</b>: the <b>app icon is polished</b> — a richer gradient with a top sheen and soft depth, plus a matching favicon. <b>v1.22</b>: flicking between tabs is now <b>effortless</b> — a quick ~22px flick flips the page, even a curved or slightly-diagonal one; a slower drag needs ~44px, and only clearly-vertical scrolls are ignored. <b>v1.23</b>: the <b>currency symbol</b> shows on every transaction row and everywhere amounts appear; the <b>account-type &amp; account managers</b> got a cleaner, labelled UI with the <b>current balance</b> on every account row; <b>billing-cycle fields appear only for CC / balance-transfer types</b>; the manage lists are ordered <b>People → Account Types → Accounts → Categories → Sub-categories → Recurring</b>; the edit sheet gained a <b>Duplicate as new</b> button; and categories &amp; sub-categories can be <b>moved / merged</b>, not just renamed. <b>v1.24</b>: expense amounts accept a <b>negative sign</b> — type −50 or tap the new <b>±</b> button beside the amount: a negative expense is a <b>reduction in expenses</b> (shown green “+” with an “expense reduction” tag), never re-classed as income, and every total, chart and category updates correctly. The credit-card cycle card now computes <b>Balance for new cycle = current balance − balance at the last statement</b> — the previous cycle stays frozen and only new spending builds up — with an “Outstanding now” total row. <b>v1.25</b>: getting around is easier — the phone’s <b>Back button / back gesture</b> (and <b>Esc</b> on desktop) now walks back through your open screens — confirm popups, the add/edit sheet, managers, drill-down levels, reports — instead of leaving the app; you can also <b>swipe from the left edge</b> to go back on drill &amp; report pages; and the <b>Undo toast</b> is rebuilt — a solid Undo pill with a <b>countdown bar</b> showing exactly how long you have left to undo. <b>v1.26</b>: flicking hits <b>max sensitivity</b> — a snap as small as ~8px flips the tab (12px within a beat, 24px for a slower drag), so the lightest thumb flick now turns the page; and every switch <b>glides</b> — the incoming screen slides in from the direction you came from, whether you flick, swipe or tap the footer tabs. <b>v1.27</b>: the <b>billing cycle (statement day) input now lives only under Settings → Accounts</b> — set it on each credit-card account when you add or edit it (the field pre-fills with the current statement day), and the account-type editor no longer asks for it; any type default you set before is kept as a fallback and is preserved when you rename or edit a type. <b>v1.28</b>: the Transactions screen is <b>decluttered</b> — the five filter dropdowns tuck away behind a single <b>Filters</b> button (a badge shows how many are active), the summary is a calm “N transactions · Net RM x”, rows read the <b>note first</b> on one tidy line, and transfers drop the ⇄ symbol; and every date now shows its <b>weekday</b> — day groups read “Tue, 13 Oct 2026”, and drill days, recurring “next” dates and the as-at stamps all carry Mon/Tue/Wed too. <b>v1.29</b>: the Transactions screen goes <b>calm and short</b> — every icon is gone from the list (plain-text rows; the amount’s sign and colour still tell income from expense), and only the <b>latest 10 transactions</b> load at first with a <b>Show more</b> button underneath (<b>Show less</b> tucks them back; filters, search and Select still see everything); and the <b>billing-cycle</b> field under Settings → Accounts now appears for <b>credit-card</b> types only. <b>v1.30</b>: the account drill is <b>lighter</b> — tapping an <b>asset</b> account now opens straight on its months (the Balance breakdown card is kept for <b>credit-card / liability</b> accounts only), with the account balance shown in the months-card subtitle; and picking a month inside an account shows <b>just the transactions</b> in the same calm format as the Transactions page — weekday day groups with the day net and the end-of-day balance in brackets, note-first rows, transfers as “from → to” — with no stats chips, category or daily breakdown anymore.</div></div>
+    <div class="card"><div class="help"><b>Money Manager Mobile</b> v1.31 — single-file app, works offline, no hosting required. Income / Expense / <b>Transfer</b> transactions, custom <b>account types</b> with <b>asset / liability</b> kinds, a <b>billing cycle</b> (statement day) set per account under <b>Settings → Accounts</b> for <b>credit-card</b> accounts — with a <b>billing-period breakdown</b> (tap a period to see its transactions + closing balance), <b>recurring transactions</b> (daily / weekly / monthly / yearly, every N periods — auto-added up to today), balance = start + income − expenses + transfer in − transfer out, transactions listed <b>latest date first</b> with a <b>category filter</b> on the Transactions page, <b>cumulative balance</b> at every level of the account drill (month end → day end → after each transaction), collapsible <b>account summary</b> (people → account types → accounts), <b>footer navigation stays visible on every screen</b>, split expenses — <b>payer fronts all</b> (the full amount leaves the payer's account; every other person's share is credited to a receivable asset account like “HKO owes WHY” under the payer — settle it with a Transfer from that account) — and <b>deleting a split bill removes every related transaction it created</b> (with undo), account &amp; person drill-down (also combined), tap-to-edit in every drill, <b>batch select · edit · delete</b> with undo, full-screen <b>report screens</b>, per-person CSV, display themes. Compatible with the desktop dashboard format (Date, Income/Expense, Category, Subcategory, Account, Person, Note, Amount, Split, To Account). <b>Excel upload template</b>: download a ready-made XLSX with the exact columns, sample rows and a How-to-fill sheet for data migration. <b>Multi-file import</b>: pick several JSON / CSV / XLSX files at once — they are <b>merged into your existing data</b> (nothing is overwritten, identical transactions are skipped), and <svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11V9a4 4 0 0 1 4-4h11"/><path d="m15 2 3 3-3 3"/><path d="M21 13v2a4 4 0 0 1-4 4H6"/><path d="m9 22-3-3 3-3"/></svg> <b>Replace all with a file</b> restores from a snapshot when you want a clean start. <b>Clear data</b> lets you choose exactly which lists to wipe — or wipe everything. <b>Auto-backup</b>: every change is snapshotted on-device (latest 20, restore any point from Backup history) and one tap downloads a <b>single JSON backup file</b> that can be dropped into Google Drive / OneDrive and re-imported any time. <b>v1.16</b>: every delete — transactions, accounts, people, categories, sub-categories, account types, recurring series, clear-data — shows an <b>Undo</b> toast right after; all pictorial icons are replaced with a consistent <b>line-icon set</b>; and every list &amp; dropdown is sorted <b>alphabetically</b> (icons before the wording are ignored). <b>v1.17</b>: the Add/Edit form no longer asks “Paid by” — the <b>Owner of the selected account</b> is shown instead and stamped on the transaction (transfers carry the From-account owner). A <b>transfer between two different owners</b> offers an <b>Amount owed</b> tick box: on top of the two transfer legs it books a third entry into a jointly-owned debt ledger like “HKO owes WHY” (+ when the receiver borrows, − when they pay it back), so everything one side owes the other lives in one shared account — settle it with a Transfer out of that ledger. <b>v1.18</b>: a tighter Add/Edit form — <b>Repeat</b> now sits beside <b>Date</b>, and the <b>Owner</b> display sits beside the <b>Account</b> field (beside <b>From account</b> on transfers); jointly-owned groups like “HKO &amp; WHY” show a <b>couple icon</b> instead of a dash. <b>v1.19</b>: the <b>Each-pays-own</b> split mode is removed — splitting is always <b>payer fronts all</b>; and joint owner groups like “Husband &amp; Me” now show the <b>net</b> debt between the two people (ledgers of 50 and 100 read <b>RM 50 net</b> with who-owes-who, not the gross 150). <b>v1.20</b>: transfers show a separate <b>owner box for each side</b> — <b>From owner</b> beside From account, <b>To owner</b> beside To account — and you can <b>swipe left / right anywhere</b> on the page to jump between Overview, Transactions, Accounts and Settings. <b>v1.21</b>: the <b>app icon is polished</b> — a richer gradient with a top sheen and soft depth, plus a matching favicon. <b>v1.22</b>: flicking between tabs is now <b>effortless</b> — a quick ~22px flick flips the page, even a curved or slightly-diagonal one; a slower drag needs ~44px, and only clearly-vertical scrolls are ignored. <b>v1.23</b>: the <b>currency symbol</b> shows on every transaction row and everywhere amounts appear; the <b>account-type &amp; account managers</b> got a cleaner, labelled UI with the <b>current balance</b> on every account row; <b>billing-cycle fields appear only for CC / balance-transfer types</b>; the manage lists are ordered <b>People → Account Types → Accounts → Categories → Sub-categories → Recurring</b>; the edit sheet gained a <b>Duplicate as new</b> button; and categories &amp; sub-categories can be <b>moved / merged</b>, not just renamed. <b>v1.24</b>: expense amounts accept a <b>negative sign</b> — type −50 or tap the new <b>±</b> button beside the amount: a negative expense is a <b>reduction in expenses</b> (shown green “+” with an “expense reduction” tag), never re-classed as income, and every total, chart and category updates correctly. The credit-card cycle card now computes <b>Balance for new cycle = current balance − balance at the last statement</b> — the previous cycle stays frozen and only new spending builds up — with an “Outstanding now” total row. <b>v1.25</b>: getting around is easier — the phone’s <b>Back button / back gesture</b> (and <b>Esc</b> on desktop) now walks back through your open screens — confirm popups, the add/edit sheet, managers, drill-down levels, reports — instead of leaving the app; you can also <b>swipe from the left edge</b> to go back on drill &amp; report pages; and the <b>Undo toast</b> is rebuilt — a solid Undo pill with a <b>countdown bar</b> showing exactly how long you have left to undo. <b>v1.26</b>: flicking hits <b>max sensitivity</b> — a snap as small as ~8px flips the tab (12px within a beat, 24px for a slower drag), so the lightest thumb flick now turns the page; and every switch <b>glides</b> — the incoming screen slides in from the direction you came from, whether you flick, swipe or tap the footer tabs. <b>v1.27</b>: the <b>billing cycle (statement day) input now lives only under Settings → Accounts</b> — set it on each credit-card account when you add or edit it (the field pre-fills with the current statement day), and the account-type editor no longer asks for it; any type default you set before is kept as a fallback and is preserved when you rename or edit a type. <b>v1.28</b>: the Transactions screen is <b>decluttered</b> — the five filter dropdowns tuck away behind a single <b>Filters</b> button (a badge shows how many are active), the summary is a calm “N transactions · Net RM x”, rows read the <b>note first</b> on one tidy line, and transfers drop the ⇄ symbol; and every date now shows its <b>weekday</b> — day groups read “Tue, 13 Oct 2026”, and drill days, recurring “next” dates and the as-at stamps all carry Mon/Tue/Wed too. <b>v1.29</b>: the Transactions screen goes <b>calm and short</b> — every icon is gone from the list (plain-text rows; the amount’s sign and colour still tell income from expense), and only the <b>latest 10 transactions</b> load at first with a <b>Show more</b> button underneath (<b>Show less</b> tucks them back; filters, search and Select still see everything); and the <b>billing-cycle</b> field under Settings → Accounts now appears for <b>credit-card</b> types only. <b>v1.30</b>: the account drill is <b>lighter</b> — tapping an <b>asset</b> account now opens straight on its months (the Balance breakdown card is kept for <b>credit-card / liability</b> accounts only), with the account balance shown in the months-card subtitle; and picking a month inside an account shows <b>just the transactions</b> in the same calm format as the Transactions page — weekday day groups with the day net and the end-of-day balance in brackets, note-first rows, transfers as “from → to” — with no stats chips, category or daily breakdown anymore. <b>v1.31</b>: <b>opt-in Google cloud sync arrives</b> — under <b>Settings → Account &amp; cloud sync</b>, sign in with Google and flip <b>Cloud sync</b> on: every change then also saves a copy to Firebase (Firestore) under your account, with <b>Sync now</b>, <b>Restore from cloud</b> (pull the copy onto a new device) and <b>Delete cloud data</b> — the deletion path required by the Play Store data-safety form. The app is still <b>local only by default</b>: nothing leaves the device until you sign in and turn sync on, and the privacy note now spells out what the cloud copy means — your email / user ID and financial data stored in Google Cloud (Firebase, region asia-southeast1), encrypted in transit &amp; at rest. iPhones in installed-app (standalone) mode, where popups are sometimes blocked, switch automatically to the redirect sign-in.</div></div>
   </section>
 </main>
 
@@ -800,7 +810,7 @@ function loadDB(){
 function save(){try{localStorage.setItem(LS_KEY,JSON.stringify(DB));}catch(e){toast('Storage full — export a backup!');}}
 var renderH=null;
 function scheduleRender(){clearTimeout(renderH);renderH=setTimeout(renderAll,30);}
-function touch(){DB.meta.changedAt=Date.now();var nAdded=materializeRecur();save();backupSoon();cloudPushSoon();scheduleRender();if(nAdded)toast(nAdded+' recurring transaction'+(nAdded>1?'s':'')+' added ✓');}
+function touch(){DB.meta.changedAt=Date.now();var nAdded=materializeRecur();save();backupSoon();cloudPushSoon();fbPushSoon();scheduleRender();if(nAdded)toast(nAdded+' recurring transaction'+(nAdded>1?'s':'')+' added ✓');}
 
 /* ================= IndexedDB (cloud file handle) ================= */
 function idbOpen(){return new Promise(function(res,rej){var r=indexedDB.open('mm-cloud',1);r.onupgradeneeded=function(){r.result.createObjectStore('kv');};r.onsuccess=function(){res(r.result);};r.onerror=function(){rej(r.error);};});}
@@ -813,6 +823,7 @@ var Cloud={handle:null,perm:'unknown',pushH:null};
 var FS_OK=(typeof window!=='undefined')&&('showSaveFilePicker' in window);
 function syncUI(state,text){var c=$('syncChip');c.classList.remove('ok','warn');if(state==='ok')c.classList.add('ok');if(state==='warn')c.classList.add('warn');$('syncText').textContent=text;}
 function syncStatus(){
+  if(FB.user&&DB.meta.cloudSyncOn){syncUI('ok','Cloud sync on');return;} /* v1.31 */
   if(Cloud.handle){
     if(Cloud.perm==='granted')syncUI('ok','Auto-sync on');
     else syncUI('warn','Tap to reconnect');
@@ -879,6 +890,155 @@ function cloudPull(){
       });
     }
   }).catch(function(e){console.warn('pull',e);});
+}
+
+/* ===== v1.31: Firebase — opt-in Google cloud sync (analytics + auth + Firestore) =====
+   Local only stays the default: nothing here runs until the user signs in and turns sync on.
+   The SDK is loaded lazily via dynamic import (offline-safe — a failed load never breaks the app). */
+var FIREBASE_CONFIG={apiKey:"AIzaSyA66ZCGv2TEEo7ON6ewQuuM6JaHjRBHqqM",authDomain:"money-manager-f91c3.firebaseapp.com",projectId:"money-manager-f91c3",storageBucket:"money-manager-f91c3.firebasestorage.app",messagingSenderId:"609634460790",appId:"1:609634460790:web:2d0edc57e777b3758eab57",measurementId:"G-ENM9VFE8YE"};
+var FBJS='13.0.0';
+var FB={app:null,auth:null,db:null,mod:null,user:null,ready:false,p:null,_ph:0};
+function fbLooksBrowser(){try{return typeof window!=='undefined'&&!!window.navigator&&/Mozilla/.test(String(window.navigator.userAgent||''));}catch(e){return false;}}
+function dynImport(u){try{return import(u);}catch(e){return Promise.reject(e);}}
+/* the Firebase snippet — initializeApp + getAnalytics, kicked off at boot, fully guarded */
+function fbInitAnalytics(){
+  if(!fbLooksBrowser()||FB.app)return;
+  dynImport('https://www.gstatic.com/firebasejs/'+FBJS+'/firebase-app.js').then(function(appM){
+    FB.app=appM.initializeApp(FIREBASE_CONFIG);
+    return dynImport('https://www.gstatic.com/firebasejs/'+FBJS+'/firebase-analytics.js').then(function(anM){
+      try{anM.getAnalytics(FB.app);}catch(e){console.warn('analytics',e&&e.message);}
+    });
+  }).catch(function(e){console.warn('firebase-init skipped:',e&&e.message);});
+}
+/* auth + firestore load on first use; FB.mod is an indirection layer so flows stay testable */
+function fbLoad(){
+  if(FB.ready)return Promise.resolve(FB);
+  if(FB.p)return FB.p;
+  if(!fbLooksBrowser())return Promise.reject(new Error('Sign-in needs a browser with internet'));
+  FB.p=dynImport('https://www.gstatic.com/firebasejs/'+FBJS+'/firebase-app.js').then(function(appM){
+    if(!FB.app)FB.app=appM.initializeApp(FIREBASE_CONFIG);
+    return Promise.all([dynImport('https://www.gstatic.com/firebasejs/'+FBJS+'/firebase-auth.js'),dynImport('https://www.gstatic.com/firebasejs/'+FBJS+'/firebase-firestore.js')]).then(function(rs){
+      var A=rs[0],Fs=rs[1];
+      FB.mod={doc:Fs.doc,setDoc:Fs.setDoc,getDoc:Fs.getDoc,deleteDoc:Fs.deleteDoc,signOut:A.signOut,signInWithPopup:A.signInWithPopup,signInWithRedirect:A.signInWithRedirect,onAuthStateChanged:A.onAuthStateChanged};
+      FB.auth=A.getAuth(FB.app);FB.db=Fs.getFirestore(FB.app);
+      FB.ready=true;
+      /* iOS installed-app quirk: complete a redirect sign-in left in flight */
+      FB.mod.getRedirectResult(FB.auth).catch(function(e){console.warn('redirect-result',e&&e.message);});
+      FB.mod.onAuthStateChanged(FB.auth,function(u){fbSetUser(u?{email:u.email||'',uid:u.uid}:null);});
+      var cu=FB.auth&&FB.auth.currentUser;fbSetUser(cu?{email:cu.email||'',uid:cu.uid}:null);
+      return FB;
+    });
+  });
+  FB.p.catch(function(e){FB.p=null;console.warn('firebase-load',e&&e.message);});
+  return FB.p;
+}
+function fbIOSStandalone(){
+  try{
+    var ua=String(navigator.userAgent||'');
+    var ios=/iPad|iPhone|iPod/.test(ua)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+    var sa=(navigator.standalone===true)||(window.matchMedia&&matchMedia('(display-mode: standalone)').matches);
+    return !!(ios&&sa);
+  }catch(e){return false;}
+}
+function fbSetUser(u){
+  var was=FB.user?FB.user.email:'';
+  FB.user=u;
+  DB.meta.cloudEmail=u?u.email:'';
+  DB.meta.cloudUid=u?u.uid:'';
+  if(!u)DB.meta.cloudSyncOn=false; /* signed out → back to local only */
+  save();renderCloudAcc();
+  var now=u?u.email:'';
+  if(now!==was)toast(now?('Signed in as '+now):'Signed out — local only');
+}
+function fbSignIn(){
+  if(!fbLooksBrowser()){toast('Sign-in needs a browser with internet');return;}
+  toast('Opening Google sign-in…');
+  fbLoad().then(function(){
+    /* iOS standalone PWAs sometimes block popups → go straight to redirect */
+    if(fbIOSStandalone()){FB.mod.signInWithRedirect(FB.auth,FB.provider);return;}
+    return FB.mod.signInWithPopup(FB.auth,FB.provider).catch(function(e){
+      var c=(e&&e.code)||'';
+      if(c==='auth/popup-blocked'||c==='auth/operation-not-supported-in-this-environment'||c==='auth/cancelled-popup-request'){FB.mod.signInWithRedirect(FB.auth,FB.provider);return;}
+      throw e;
+    });
+  }).catch(function(e){toast('Sign-in failed — '+((e&&e.code)||e&&e.message||'try again'));});
+}
+function fbSignOut(){
+  if(!FB.user){toast('Not signed in');return;}
+  fbLoad().then(function(){return FB.mod.signOut(FB.auth);}).catch(function(e){console.warn('fb-signout',e);fbSetUser(null);});
+}
+function fbToggle(){
+  if(!FB.user){toast('Sign in with Google first');return;}
+  DB.meta.cloudSyncOn=!DB.meta.cloudSyncOn;
+  save();renderCloudAcc();
+  if(DB.meta.cloudSyncOn){toast('Cloud sync on — uploading…');fbSyncNow();}
+  else toast('Cloud sync off — local only');
+}
+function fbSyncNow(){
+  if(!FB.user){toast('Sign in with Google first');return Promise.resolve();}
+  if(!DB.meta.cloudSyncOn){toast('Turn on cloud sync first');return Promise.resolve();}
+  return fbLoad().then(function(){
+    var ref=FB.mod.doc(FB.db,'users',FB.user.uid);
+    return FB.mod.setDoc(ref,{email:FB.user.email,app:'money-manager',data:JSON.stringify(DB),updatedAt:new Date().toISOString()});
+  }).then(function(){DB.meta.cloudPushedAt=Date.now();save();renderCloudAcc();toast('Synced to cloud ✓');})
+  .catch(function(e){console.warn('fb-sync',e);toast('Sync failed — '+((e&&e.code)||e&&e.message||'check connection'));});
+}
+function fbPushSoon(){
+  if(!FB.user||!DB.meta.cloudSyncOn||!FB.ready)return;
+  clearTimeout(FB._ph);FB._ph=setTimeout(function(){fbSyncNow();},1500);
+}
+function fbRestore(){
+  if(!FB.user){toast('Sign in with Google first');return;}
+  fbLoad().then(function(){
+    var ref=FB.mod.doc(FB.db,'users',FB.user.uid);
+    return FB.mod.getDoc(ref).then(function(snap){
+      var d=(snap&&typeof snap.data==='function')?snap.data():null;
+      if(!d||!d.data){toast('No cloud data found for this account');return;}
+      var when=d.updatedAt?String(d.updatedAt).slice(0,10):'an earlier date';
+      askConfirm('Load the cloud copy (saved '+when+')? Local changes that were never synced will be replaced.','Load cloud data',function(){
+        adoptJSON(d.data).then(function(){DB.meta.cloudPushedAt=Date.now();save();renderCloudAcc();toast('Cloud data restored ✓');})
+        .catch(function(e){toast('Restore failed — '+(e&&e.message||'bad data'));});
+      });
+    });
+  }).catch(function(e){console.warn('fb-restore',e);toast('Restore failed — '+((e&&e.code)||e&&e.message||'check connection'));});
+}
+function fbDeleteCloud(){
+  if(!FB.user){toast('Sign in with Google first');return;}
+  fbLoad().then(function(){
+    askConfirm('Delete the cloud copy from Firebase? Your data on this device stays, and cloud sync turns off until you sync again.','Delete cloud data',function(){
+      var ref=FB.mod.doc(FB.db,'users',FB.user.uid);
+      FB.mod.deleteDoc(ref).then(function(){
+        DB.meta.cloudPushedAt=0;DB.meta.cloudSyncOn=false;save();renderCloudAcc();
+        toast('Cloud data deleted — local only');
+      }).catch(function(e){toast('Delete failed — '+((e&&e.code)||e&&e.message||'try again'));});
+    });
+  }).catch(function(e){console.warn('fb-del',e);toast('Delete failed — '+((e&&e.code)||e&&e.message||'check connection'));});
+}
+function fbSyncLabel(){
+  if(!DB.meta.cloudPushedAt)return'';
+  var d=new Date(DB.meta.cloudPushedAt);function p(x){return(x<10?'0':'')+x;}
+  return ' · last sync '+d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate())+' '+p(d.getHours())+':'+p(d.getMinutes());
+}
+function renderCloudAcc(){
+  var b=$('fbBody');if(!b)return;
+  var u=FB.user,on=!!DB.meta.cloudSyncOn,sub=$('fbSub');
+  if(sub)sub.textContent=u?(on?'sync on':'signed in · sync off'):'local only';
+  if(!u){
+    b.innerHTML='<div class="help small" style="margin-bottom:8px">Signed out — <b>local only</b> (default). Your data stays on this device; a cloud copy is <b>opt-in</b> and needs the Google sign-in below.</div>'+
+      '<button class="btn" data-act="fbsignin">'+ico('cloud')+' Sign in with Google (opt-in cloud sync)</button>';
+    return;
+  }
+  b.innerHTML='<div class="help small" style="margin-bottom:8px">Signed in as <b>'+esc(u.email||u.uid)+'</b>'+fbSyncLabel()+'</div>'+
+    '<button class="btn'+(on?'':' ghost')+'" data-act="fbtoggle">'+(on?'Cloud sync is ON — tap to turn off':'Cloud sync is OFF — tap to turn on')+'</button>'+
+    '<div style="display:grid;gap:8px;margin-top:8px">'+
+      '<div style="display:flex;gap:8px">'+
+        '<button class="btn ghost" style="flex:1" data-act="fbsync">Sync now</button>'+
+        '<button class="btn ghost" style="flex:1" data-act="fbrestore">Restore from cloud</button>'+
+      '</div>'+
+      '<button class="btn red" data-act="fbdelcloud">Delete cloud data…</button>'+
+      '<button class="btn ghost" data-act="fbsignout">Sign out — back to local only</button>'+
+    '</div>';
+  syncStatus(); /* keep the header chip in step with the Firebase state */
 }
 
 /* ===== v1.14: auto-backup — every change is snapshotted (IndexedDB), restorable & downloadable ===== */
@@ -2286,6 +2446,7 @@ function renderSettings(){
   $('btnOpenCloud').hidden=!Cloud.handle;
   $('btnLink').innerHTML=Cloud.handle?(Cloud.perm==='granted'?ico('cloud')+' Auto-sync ON — tap to manage':ico('cloud')+' Reconnect cloud file'):ico('cloud')+' Link cloud file (auto-sync)';
   syncStatus();
+  renderCloudAcc();
 }
 /* ============ list manager modal (v1.3: pop-out for people/categories/subs/accounts) ============ */
 var MGR={kind:'',edit:null};
@@ -3338,6 +3499,12 @@ function handleAct(el){
     case 'cloud':cloudAction();break;
     case 'cloudlink':cloudLink();break;
     case 'cloudopen':cloudOpen();break;
+    case 'fbsignin':fbSignIn();break; /* v1.31: Firebase account & cloud sync */
+    case 'fbsignout':fbSignOut();break;
+    case 'fbtoggle':fbToggle();break;
+    case 'fbsync':fbSyncNow();break;
+    case 'fbrestore':fbRestore();break;
+    case 'fbdelcloud':fbDeleteCloud();break;
     case 'bklist':openMgr('backups');break;
     case 'bkdown':backupDownload(-1);break;
     case 'bkdl':backupDownload(parseInt(el.dataset.i,10)||0);break;
@@ -3384,6 +3551,7 @@ function boot(){
   renderAll();
   gotoView('overview');
   cloudInit();
+  fbInitAnalytics();
   backupLoad().then(function(){renderSettings();});
   document.addEventListener('visibilitychange',function(){if(document.hidden)backupFlush();});
   window.addEventListener('pagehide',backupFlush);
