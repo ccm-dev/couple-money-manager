@@ -193,7 +193,7 @@ main{padding:calc(68px + env(safe-area-inset-top)) 12px calc(100px + env(safe-ar
 .cbox .crow{display:flex;gap:10px}
 .crow .btn{flex:1;padding:11px;font-size:14px;border-radius:11px}
 /* toast */
-.toast{position:fixed;left:50%;bottom:calc(96px + env(safe-area-inset-bottom));transform:translateX(-50%) translateY(20px);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:999px;font-size:13px;font-weight:700;opacity:0;transition:.25s;z-index:80;pointer-events:none;max-width:86%;text-align:center;display:flex;align-items:center}
+.toast{position:fixed;left:50%;bottom:calc(96px + env(safe-area-inset-bottom));transform:translateX(-50%) translateY(20px);background:var(--ink);color:var(--bg);padding:12px 18px 16px;border-radius:16px;font-size:13px;font-weight:700;opacity:0;transition:.25s;z-index:80;pointer-events:none;max-width:86%;text-align:center;display:flex;align-items:center;box-shadow:0 6px 24px rgba(0,0,0,.28)}
 .toast.on{opacity:1;transform:translateX(-50%)}
 /* misc */
 .empty{text-align:center;padding:30px 16px;color:var(--muted)}
@@ -274,9 +274,13 @@ button.fin.pick::after{content:'▾';color:var(--muted);font-weight:800;font-siz
 #txSelBar .sp{flex:1}
 /* toast with action button (v1.5) */
 .toast.act{pointer-events:auto}
-#toastUndo{display:none;margin-left:12px;background:rgba(255,255,255,.18);color:inherit;border:0;border-radius:999px;padding:5px 14px;font-size:12.5px;font-weight:800;font-family:inherit}
-.toast.act #toastUndo{display:inline-block}
-#toastUndo:active{opacity:.7}
+/* v1.25: prominent Undo pill + a countdown bar showing the time left to undo */
+#toastUndo{display:none;margin-left:14px;background:var(--accent);color:#fff;border:0;border-radius:999px;padding:8px 16px;min-height:33px;font-size:12.5px;font-weight:800;font-family:inherit;align-items:center;gap:6px;box-shadow:0 2px 10px rgba(0,0,0,.3);flex:none}
+.toast.act #toastUndo{display:inline-flex}
+#toastUndo:active{transform:scale(.93);opacity:.85}
+#toastBar{position:absolute;left:12px;right:12px;bottom:6px;height:3px;border-radius:2px;overflow:hidden;opacity:0;transition:opacity .2s}
+.toast.act #toastBar{opacity:1}
+#toastBar i{display:block;height:100%;background:var(--accent);border-radius:2px;transform-origin:left center}
 /* v1.16: consistent stroke icons — every pictorial emoji replaced by a crisp monochrome svg */
 svg.icn{width:1.05em;height:1.05em;vertical-align:-0.16em;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex:none}
 h2 svg.icn{width:1.18em;height:1.18em;vertical-align:-0.22em}
@@ -443,7 +447,7 @@ h2 svg.icn{width:1.18em;height:1.18em;vertical-align:-0.22em}
       <div class="f-row"><label>Appearance</label><div class="segmini" id="modeSeg" style="margin-bottom:0"></div></div>
       <div class="f-row" style="margin-bottom:0"><label>Currency symbol</label><input class="fin" id="curSymbol" placeholder="RM, $, € …" onchange="DB.meta.currency=this.value.trim();touch();openSheetRefresh()"></div>
     </div>
-    <div class="card"><div class="help"><b>Money Manager Mobile</b> v1.24 — single-file app, works offline, no hosting required. Income / Expense / <b>Transfer</b> transactions, custom <b>account types</b> with <b>asset / liability</b> kinds, a <b>billing cycle</b> (statement day) that appears only for <b>CC / balance-transfer</b> types — with a <b>billing-period breakdown</b> (tap a period to see its transactions + closing balance), <b>recurring transactions</b> (daily / weekly / monthly / yearly, every N periods — auto-added up to today), balance = start + income − expenses + transfer in − transfer out, transactions listed <b>latest date first</b> with a <b>category filter</b> on the Transactions page, <b>cumulative balance</b> at every level of the account drill (month end → day end → after each transaction), collapsible <b>account summary</b> (people → account types → accounts), <b>footer navigation stays visible on every screen</b>, split expenses — <b>payer fronts all</b> (the full amount leaves the payer's account; every other person's share is credited to a receivable asset account like “HKO owes WHY” under the payer — settle it with a Transfer from that account) — and <b>deleting a split bill removes every related transaction it created</b> (with undo), account &amp; person drill-down (also combined), tap-to-edit in every drill, <b>batch select · edit · delete</b> with undo, full-screen <b>report screens</b>, per-person CSV, display themes. Compatible with the desktop dashboard format (Date, Income/Expense, Category, Subcategory, Account, Person, Note, Amount, Split, To Account). <b>Excel upload template</b>: download a ready-made XLSX with the exact columns, sample rows and a How-to-fill sheet for data migration. <b>Multi-file import</b>: pick several JSON / CSV / XLSX files at once — they are <b>merged into your existing data</b> (nothing is overwritten, identical transactions are skipped), and <svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11V9a4 4 0 0 1 4-4h11"/><path d="m15 2 3 3-3 3"/><path d="M21 13v2a4 4 0 0 1-4 4H6"/><path d="m9 22-3-3 3-3"/></svg> <b>Replace all with a file</b> restores from a snapshot when you want a clean start. <b>Clear data</b> lets you choose exactly which lists to wipe — or wipe everything. <b>Auto-backup</b>: every change is snapshotted on-device (latest 20, restore any point from Backup history) and one tap downloads a <b>single JSON backup file</b> that can be dropped into Google Drive / OneDrive and re-imported any time. <b>v1.16</b>: every delete — transactions, accounts, people, categories, sub-categories, account types, recurring series, clear-data — shows an <b>Undo</b> toast right after; all pictorial icons are replaced with a consistent <b>line-icon set</b>; and every list &amp; dropdown is sorted <b>alphabetically</b> (icons before the wording are ignored). <b>v1.17</b>: the Add/Edit form no longer asks “Paid by” — the <b>Owner of the selected account</b> is shown instead and stamped on the transaction (transfers carry the From-account owner). A <b>transfer between two different owners</b> offers an <b>Amount owed</b> tick box: on top of the two transfer legs it books a third entry into a jointly-owned debt ledger like “HKO owes WHY” (+ when the receiver borrows, − when they pay it back), so everything one side owes the other lives in one shared account — settle it with a Transfer out of that ledger. <b>v1.18</b>: a tighter Add/Edit form — <b>Repeat</b> now sits beside <b>Date</b>, and the <b>Owner</b> display sits beside the <b>Account</b> field (beside <b>From account</b> on transfers); jointly-owned groups like “HKO &amp; WHY” show a <b>couple icon</b> instead of a dash. <b>v1.19</b>: the <b>Each-pays-own</b> split mode is removed — splitting is always <b>payer fronts all</b>; and joint owner groups like “Husband &amp; Me” now show the <b>net</b> debt between the two people (ledgers of 50 and 100 read <b>RM 50 net</b> with who-owes-who, not the gross 150). <b>v1.20</b>: transfers show a separate <b>owner box for each side</b> — <b>From owner</b> beside From account, <b>To owner</b> beside To account — and you can <b>swipe left / right anywhere</b> on the page to jump between Overview, Transactions, Accounts and Settings. <b>v1.21</b>: the <b>app icon is polished</b> — a richer gradient with a top sheen and soft depth, plus a matching favicon. <b>v1.22</b>: flicking between tabs is now <b>effortless</b> — a quick ~22px flick flips the page, even a curved or slightly-diagonal one; a slower drag needs ~44px, and only clearly-vertical scrolls are ignored. <b>v1.23</b>: the <b>currency symbol</b> shows on every transaction row and everywhere amounts appear; the <b>account-type &amp; account managers</b> got a cleaner, labelled UI with the <b>current balance</b> on every account row; <b>billing-cycle fields appear only for CC / balance-transfer types</b>; the manage lists are ordered <b>People → Account Types → Accounts → Categories → Sub-categories → Recurring</b>; the edit sheet gained a <b>Duplicate as new</b> button; and categories &amp; sub-categories can be <b>moved / merged</b>, not just renamed. <b>v1.24</b>: expense amounts accept a <b>negative sign</b> — type −50 or tap the new <b>±</b> button beside the amount: a negative expense is a <b>reduction in expenses</b> (shown green “+” with an “expense reduction” tag), never re-classed as income, and every total, chart and category updates correctly. The credit-card cycle card now computes <b>Balance for new cycle = current balance − balance at the last statement</b> — the previous cycle stays frozen and only new spending builds up — with an “Outstanding now” total row.</div></div>
+    <div class="card"><div class="help"><b>Money Manager Mobile</b> v1.25 — single-file app, works offline, no hosting required. Income / Expense / <b>Transfer</b> transactions, custom <b>account types</b> with <b>asset / liability</b> kinds, a <b>billing cycle</b> (statement day) that appears only for <b>CC / balance-transfer</b> types — with a <b>billing-period breakdown</b> (tap a period to see its transactions + closing balance), <b>recurring transactions</b> (daily / weekly / monthly / yearly, every N periods — auto-added up to today), balance = start + income − expenses + transfer in − transfer out, transactions listed <b>latest date first</b> with a <b>category filter</b> on the Transactions page, <b>cumulative balance</b> at every level of the account drill (month end → day end → after each transaction), collapsible <b>account summary</b> (people → account types → accounts), <b>footer navigation stays visible on every screen</b>, split expenses — <b>payer fronts all</b> (the full amount leaves the payer's account; every other person's share is credited to a receivable asset account like “HKO owes WHY” under the payer — settle it with a Transfer from that account) — and <b>deleting a split bill removes every related transaction it created</b> (with undo), account &amp; person drill-down (also combined), tap-to-edit in every drill, <b>batch select · edit · delete</b> with undo, full-screen <b>report screens</b>, per-person CSV, display themes. Compatible with the desktop dashboard format (Date, Income/Expense, Category, Subcategory, Account, Person, Note, Amount, Split, To Account). <b>Excel upload template</b>: download a ready-made XLSX with the exact columns, sample rows and a How-to-fill sheet for data migration. <b>Multi-file import</b>: pick several JSON / CSV / XLSX files at once — they are <b>merged into your existing data</b> (nothing is overwritten, identical transactions are skipped), and <svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11V9a4 4 0 0 1 4-4h11"/><path d="m15 2 3 3-3 3"/><path d="M21 13v2a4 4 0 0 1-4 4H6"/><path d="m9 22-3-3 3-3"/></svg> <b>Replace all with a file</b> restores from a snapshot when you want a clean start. <b>Clear data</b> lets you choose exactly which lists to wipe — or wipe everything. <b>Auto-backup</b>: every change is snapshotted on-device (latest 20, restore any point from Backup history) and one tap downloads a <b>single JSON backup file</b> that can be dropped into Google Drive / OneDrive and re-imported any time. <b>v1.16</b>: every delete — transactions, accounts, people, categories, sub-categories, account types, recurring series, clear-data — shows an <b>Undo</b> toast right after; all pictorial icons are replaced with a consistent <b>line-icon set</b>; and every list &amp; dropdown is sorted <b>alphabetically</b> (icons before the wording are ignored). <b>v1.17</b>: the Add/Edit form no longer asks “Paid by” — the <b>Owner of the selected account</b> is shown instead and stamped on the transaction (transfers carry the From-account owner). A <b>transfer between two different owners</b> offers an <b>Amount owed</b> tick box: on top of the two transfer legs it books a third entry into a jointly-owned debt ledger like “HKO owes WHY” (+ when the receiver borrows, − when they pay it back), so everything one side owes the other lives in one shared account — settle it with a Transfer out of that ledger. <b>v1.18</b>: a tighter Add/Edit form — <b>Repeat</b> now sits beside <b>Date</b>, and the <b>Owner</b> display sits beside the <b>Account</b> field (beside <b>From account</b> on transfers); jointly-owned groups like “HKO &amp; WHY” show a <b>couple icon</b> instead of a dash. <b>v1.19</b>: the <b>Each-pays-own</b> split mode is removed — splitting is always <b>payer fronts all</b>; and joint owner groups like “Husband &amp; Me” now show the <b>net</b> debt between the two people (ledgers of 50 and 100 read <b>RM 50 net</b> with who-owes-who, not the gross 150). <b>v1.20</b>: transfers show a separate <b>owner box for each side</b> — <b>From owner</b> beside From account, <b>To owner</b> beside To account — and you can <b>swipe left / right anywhere</b> on the page to jump between Overview, Transactions, Accounts and Settings. <b>v1.21</b>: the <b>app icon is polished</b> — a richer gradient with a top sheen and soft depth, plus a matching favicon. <b>v1.22</b>: flicking between tabs is now <b>effortless</b> — a quick ~22px flick flips the page, even a curved or slightly-diagonal one; a slower drag needs ~44px, and only clearly-vertical scrolls are ignored. <b>v1.23</b>: the <b>currency symbol</b> shows on every transaction row and everywhere amounts appear; the <b>account-type &amp; account managers</b> got a cleaner, labelled UI with the <b>current balance</b> on every account row; <b>billing-cycle fields appear only for CC / balance-transfer types</b>; the manage lists are ordered <b>People → Account Types → Accounts → Categories → Sub-categories → Recurring</b>; the edit sheet gained a <b>Duplicate as new</b> button; and categories &amp; sub-categories can be <b>moved / merged</b>, not just renamed. <b>v1.24</b>: expense amounts accept a <b>negative sign</b> — type −50 or tap the new <b>±</b> button beside the amount: a negative expense is a <b>reduction in expenses</b> (shown green “+” with an “expense reduction” tag), never re-classed as income, and every total, chart and category updates correctly. The credit-card cycle card now computes <b>Balance for new cycle = current balance − balance at the last statement</b> — the previous cycle stays frozen and only new spending builds up — with an “Outstanding now” total row. <b>v1.25</b>: getting around is easier — the phone’s <b>Back button / back gesture</b> (and <b>Esc</b> on desktop) now walks back through your open screens — confirm popups, the add/edit sheet, managers, drill-down levels, reports — instead of leaving the app; you can also <b>swipe from the left edge</b> to go back on drill &amp; report pages; and the <b>Undo toast</b> is rebuilt — a solid Undo pill with a <b>countdown bar</b> showing exactly how long you have left to undo.</div></div>
   </section>
 </main>
 
@@ -583,7 +587,7 @@ h2 svg.icn{width:1.18em;height:1.18em;vertical-align:-0.22em}
   <div id="mgrBody"></div>
 </div>
 
-<div class="toast" id="toast"><span id="toastMsg"></span><button id="toastUndo" data-act="undo"><svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 14 4 9l5-5"/><path d="M4 9h10a6 6 0 0 1 6 6v5"/></svg> Undo</button></div>
+<div class="toast" id="toast"><span id="toastMsg"></span><button id="toastUndo" data-act="undo"><svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 14 4 9l5-5"/><path d="M4 9h10a6 6 0 0 1 6 6v5"/></svg> Undo</button><span id="toastBar" aria-hidden="true"><i></i></span></div>
 
 <script>
 "use strict";
@@ -679,9 +683,11 @@ function cfmt(n){
 function dLabel(d){var p=d.split('-');return (+p[2])+' '+MONTHS[(+p[1])-1];}
 function dLabelY(d){var p=d.split('-');return p[2]+' '+MONTHS[(+p[1])-1]+' '+p[0];}
 var UNDO=null;
+/* v1.25: countdown bar in the action toast — shrinks linearly over the undo window */
+function toastBarRun(ms){var b=$('toastBar');if(!b)return;var i=b.firstElementChild;if(!i)return;i.style.transition='none';i.style.transform='scaleX(1)';void i.offsetWidth;i.style.transition='transform '+ms+'ms linear';i.style.transform='scaleX(0)';}
 function toast(msg){var t=$('toast');$('toastMsg').textContent=msg;t.classList.remove('act');UNDO=null;t.classList.add('on');clearTimeout(toast._h);toast._h=setTimeout(function(){t.classList.remove('on');},2400);}
-/* action toast — msg + Undo button; cb runs only if user taps Undo before it fades (5.2s) */
-function toastAct(msg,cb){var t=$('toast');$('toastMsg').textContent=msg;UNDO=cb;t.classList.add('act');t.classList.add('on');clearTimeout(toast._h);toast._h=setTimeout(function(){t.classList.remove('on');UNDO=null;},5200);}
+/* action toast — msg + Undo button; cb runs only if user taps Undo before the countdown bar empties (5.2s) */
+function toastAct(msg,cb){var t=$('toast');$('toastMsg').textContent=msg;UNDO=cb;t.classList.add('act');t.classList.add('on');clearTimeout(toast._h);toastBarRun(5200);toast._h=setTimeout(function(){t.classList.remove('on');UNDO=null;},5200);}
 function undoNow(){
   if(!UNDO)return;
   var cb=UNDO;UNDO=null;
@@ -712,8 +718,8 @@ function undoRestoreLists(s){
   toast('Restored ✓');
 }
 var confirmCb=null;
-function askConfirm(msg,okLabel,cb){$('confirmMsg').textContent=msg;$('confirmOk').textContent=okLabel||'OK';confirmCb=cb;$('cmodal').classList.add('on');}
-function confirmResolve(v){$('cmodal').classList.remove('on');var cb=confirmCb;confirmCb=null;if(v&&cb)cb();}
+function askConfirm(msg,okLabel,cb){$('confirmMsg').textContent=msg;$('confirmOk').textContent=okLabel||'OK';confirmCb=cb;$('cmodal').classList.add('on');navSync();}
+function confirmResolve(v){$('cmodal').classList.remove('on');var cb=confirmCb;confirmCb=null;if(v&&cb)cb();navSync();}
 
 /* ================= state & storage ================= */
 var DEF_CATS={Expense:['Food & Dining','Groceries','Transport','Bills & Utilities','Shopping','Health','Entertainment','Education','Rent & Housing','Travel','Personal Care','Others'],Income:['Salary','Bonus','Business','Investment','Gift','Others']};
@@ -1756,8 +1762,8 @@ function topTxnRows(scope){
 
 /* ================= drill-down ================= */
 var DRILL={open:false,level:'month',month:'',cat:'',mode:'Expense',expDay:null,acc:'',person:'',cyc:''};
-function showPage(){$('pageDrill').classList.add('on');document.body.style.overflow='hidden';}
-function hidePage(){$('pageDrill').classList.remove('on');document.body.style.overflow='';}
+function showPage(){$('pageDrill').classList.add('on');document.body.style.overflow='hidden';navSync();}
+function hidePage(){$('pageDrill').classList.remove('on');document.body.style.overflow='';navSync();}
 /* ================= fullscreen report screens (v1.5) ================= */
 var REPORT={open:false,kind:''};
 var REP_TITLES={breakdown:ico('receipt')+' Spending breakdown',monthly:ico('chart')+' Monthly cash flow',top:ico('trophy')+' Top 10 spending',year:ico('calendar')+' By year',person:ico('users')+' By person'};
@@ -1768,8 +1774,9 @@ function openReport(k){
   $('pageReport').classList.add('on');
   document.body.style.overflow='hidden';
   window.scrollTo(0,0);
+  navSync();
 }
-function closeReport(){REPORT.open=false;$('pageReport').classList.remove('on');document.body.style.overflow='';}
+function closeReport(){REPORT.open=false;$('pageReport').classList.remove('on');document.body.style.overflow='';navSync();}
 function renderReport(){
   if(!REPORT.open)return;
   var cards=document.querySelectorAll('#reportBody .rep'),i;
@@ -1797,6 +1804,7 @@ function drillBack(){
   else if(DRILL.level==='month'&&DRILL.person){DRILL.level='pmonth';DRILL.month='';DRILL.cat='';renderDrill();}
   else if(DRILL.level==='month'&&DRILL.acc){DRILL.level='accmonth';DRILL.month='';DRILL.cat='';renderDrill();}
   else{DRILL.open=false;DRILL.acc='';DRILL.person='';hidePage();}
+  navSync();
 }
 function whoStr(t){
   var g=t.group?' '+ico('users'):'';
@@ -2214,8 +2222,8 @@ function renderSettings(){
 var MGR={kind:'',edit:null};
 var MGR_TITLE={people:ico('users')+' People',cats:ico('tag')+' Categories',subs:ico('list')+' Sub-categories',accs:ico('card')+' Accounts',acctype:ico('folder')+' Account Types',recur:ico('repeat')+' Recurring transactions',backups:ico('clock')+' Backup history',pickcat:ico('tag')+' Choose category',picksub:ico('list')+' Choose sub-category',batchedit:ico('pencil')+' Batch edit'};
 function subList(c){if(!DB.subcats||typeof DB.subcats!=='object')DB.subcats={};if(!DB.subcats[c])DB.subcats[c]=[];return DB.subcats[c];}
-function openMgr(kind){MGR.kind=kind;MGR.edit=null;$('mgrTitle').innerHTML=MGR_TITLE[kind]||'Manage';renderMgr();$('mgrOvl').classList.add('on');$('mgrSheet').classList.add('on');}
-function closeMgr(){$('mgrOvl').classList.remove('on');$('mgrSheet').classList.remove('on');}
+function openMgr(kind){MGR.kind=kind;MGR.edit=null;$('mgrTitle').innerHTML=MGR_TITLE[kind]||'Manage';renderMgr();$('mgrOvl').classList.add('on');$('mgrSheet').classList.add('on');navSync();}
+function closeMgr(){$('mgrOvl').classList.remove('on');$('mgrSheet').classList.remove('on');navSync();}
 function mgrRow(lb,sub,editAttrs,delAttrs,amt){
   return '<div class="mgr-row"><span class="lb">'+lb+'<small>'+sub+'</small></span>'
     +(amt?'<span class="mamt">'+amt+'</span>':'')
@@ -2599,6 +2607,7 @@ function clearDataOpen(){
   }).join('')
     +'<div class="help small" style="margin-top:2px">Wiping Transactions keeps people, accounts and categories. Wiping Account types resets affected accounts to the first type. Recurring series re-add their due transactions on next launch unless wiped too.</div>';
   $('clrmodal').classList.add('on');
+  navSync();
 }
 function clearLists(sel){
   var snap=snapLists(['txns','recur','people','accounts','accTypes','accTypeMeta','categories','subcats']);
@@ -2623,6 +2632,7 @@ function clearApply(wipeAll){
   var n=Object.keys(sel).length;
   if(!n){toast('Tick at least one list first — or use Wipe everything');return;}
   $('clrmodal').classList.remove('on');
+  navSync();
   if(wipeAll)return clearAll(sel);
   var names=CLR_LISTS.filter(function(L){return sel[L.k];}).map(function(L){return L.label;}).join(', ');
   askConfirm('Clear '+n+' list'+(n>1?'s':'')+' on this device ('+names+')? A safety snapshot is kept in Backup history.','Clear '+n,function(){
@@ -2756,6 +2766,7 @@ function openSheet(id){
   renderSplitRows();
   $('ovl').classList.add('on');
   $('sheet').classList.add('on');
+  navSync();
 }
 function openSheetRefresh(){if($('sheet').classList.contains('on'))$('fCur').textContent=cur();}
 function dupTxn(){ /* v1.23: edit a copy — Save adds it as a NEW transaction */
@@ -2768,7 +2779,7 @@ function dupTxn(){ /* v1.23: edit a copy — Save adds it as a NEW transaction *
   $('btnDup').hidden=true;
   toast('Editing a copy — tap Save to add it');
 }
-function closeSheet(){$('ovl').classList.remove('on');$('sheet').classList.remove('on');}
+function closeSheet(){$('ovl').classList.remove('on');$('sheet').classList.remove('on');navSync();}
 /* ===== recurring transactions (v1.9) ===== */
 function repUI(){
   var f=$('fRep')?$('fRep').value:'',n=parseInt($('fRepEvery')?$('fRepEvery').value:'1',10);
@@ -3084,7 +3095,52 @@ function gotoView(v){
   if(v==='txns')renderTxns();
   if(v==='accounts')renderAccounts();
   if(v==='settings')renderSettings();
+  navSync();
 }
+/* ===== v1.25: Back button / back gesture / Esc close the topmost open screen =====
+   Layers bottom-up: tabs → report page → drill page → add/edit sheet (z61) → manager
+   sheet (z73) → confirm & clear modals (z78). Every open/close funnel calls navSync(),
+   which keeps ONE spare history entry armed while any layer is open: the phone Back
+   button (popstate), the browser Back, or Esc then closes the topmost layer instead of
+   leaving the app. */
+var NAV={armed:false,echo:false};
+function anyLayerOpen(){
+  return $('cmodal').classList.contains('on')||$('clrmodal').classList.contains('on')||
+    $('ovl').classList.contains('on')||$('mgrOvl').classList.contains('on')||
+    DRILL.open||REPORT.open;
+}
+function navClose(){ /* close ONE topmost layer; whatever is under it stays for the next Back */
+  if($('cmodal').classList.contains('on')){confirmResolve(false);return;}
+  if($('clrmodal').classList.contains('on')){$('clrmodal').classList.remove('on');navSync();return;}
+  if($('mgrOvl').classList.contains('on')){closeMgr();return;}
+  if($('ovl').classList.contains('on')){closeSheet();return;}
+  if(DRILL.open){drillBack();return;}
+  if(REPORT.open)closeReport();
+}
+function navArm(){ /* arm a spare history entry so Back is intercepted while layers are open */
+  if(NAV.armed)return;
+  if(NAV._t){clearTimeout(NAV._t);NAV._t=null;NAV.armed=true;return;} /* a layer re-opened before the queued disarm-back ran — the spare entry was never popped, reuse it */
+  try{history.pushState({mmnav:1},'');NAV.armed=true;}catch(e){}
+}
+function navSync(){
+  if(anyLayerOpen()){navArm();return;}
+  if(!NAV.armed)return;
+  NAV.armed=false;
+  /* defer the spare-entry pop by a tick: flows that close one layer and open another in the
+     same task (clear-data → confirm, wizard steps) must not pop the entry the next layer arms */
+  NAV._t=setTimeout(function(){
+    NAV._t=null;NAV.echo=true; /* our own history.back() — popstate must ignore it */
+    try{history.back();}catch(e){NAV.echo=false;}
+  },0);
+}
+window.addEventListener('popstate',function(){
+  if(NAV.echo){NAV.echo=false;return;} /* echo of our own history.back() after a UI close */
+  if(NAV.armed){NAV.armed=false;navClose();}
+});
+document.addEventListener('keydown',function(e){
+  if(e.key!=='Escape'||!anyLayerOpen())return;
+  e.preventDefault();navClose();
+});
 /* ===== v1.20+v1.22: swipe / flick left-right between the four footer tabs ===== */
 var TAB_ORDER=['overview','txns','accounts','settings'],SWIPE=null;
 function swipeTabBlocked(){
@@ -3123,6 +3179,26 @@ document.addEventListener('touchend',function(e){
   if(nxt)gotoView(nxt); /* swipe left → next tab, swipe right → previous tab */
 },{passive:true});
 document.addEventListener('touchcancel',function(){SWIPE=null;},{passive:true});
+/* ===== v1.25: swipe from the LEFT EDGE = go back on drill / report pages ===== */
+var EDGEBACK=null;
+document.addEventListener('touchstart',function(e){
+  EDGEBACK=null;
+  if(e.touches.length!==1||!(DRILL.open||REPORT.open))return;
+  var x=e.touches[0].clientX;
+  if(x>72)return; /* the gesture must start in the left edge strip */
+  var t=e.target;
+  if(t.closest&&t.closest('button,a,select,input,textarea,.mini,.chips,.chart-scroll,.bal-strip,.crumb'))return;
+  EDGEBACK={x:x,y:e.touches[0].clientY};
+},{passive:true});
+document.addEventListener('touchend',function(e){
+  if(!EDGEBACK)return;
+  var st=EDGEBACK;EDGEBACK=null;
+  if(e.changedTouches.length!==1)return;
+  var dx=e.changedTouches[0].clientX-st.x,dy=e.changedTouches[0].clientY-st.y;
+  if(dx<56||dx<Math.abs(dy)*1.5)return; /* a firm rightward swipe, not a scroll */
+  if(DRILL.open)drillBack();else if(REPORT.open)closeReport();
+},{passive:true});
+document.addEventListener('touchcancel',function(){EDGEBACK=null;},{passive:true});
 function handleAct(el){
   var a=el.dataset.act;
   switch(a){
@@ -3193,7 +3269,7 @@ function handleAct(el){
     case 'clear':clearDataOpen();break;
     case 'clrsel':clearApply(false);break;
     case 'clrall':clearApply(true);break;
-    case 'clrclose':$('clrmodal').classList.remove('on');break;
+    case 'clrclose':$('clrmodal').classList.remove('on');navSync();break;
     case 'padd':addPerson(($('personName')||{}).value);break;
     case 'delp':delPerson(el.dataset.n);break;
     case 'cadd':addCategory(($('catNewName')||{}).value,$('catNewType')?$('catNewType').value:'Expense');break;
