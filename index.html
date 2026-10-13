@@ -120,7 +120,6 @@ main{padding:calc(68px + env(safe-area-inset-top)) 12px calc(100px + env(safe-ar
 .txn{display:flex;align-items:center;gap:10px;padding:10px 2px;border-bottom:1px solid var(--line);width:100%}
 .txn:last-child{border-bottom:0}
 .txn:active{background:var(--bg)}
-.txn .ic{width:36px;height:36px;border-radius:11px;flex:none;display:flex;align-items:center;justify-content:center;font-size:15px;background:var(--bg)}
 .txn .mid{flex:1;min-width:0}
 .txn .mid b{display:block;font-size:13.5px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .txn .mid small{color:var(--muted);font-size:11px;display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -297,7 +296,6 @@ h2 svg.icn{width:1.18em;height:1.18em;vertical-align:-0.22em}
 .trow .lb svg.icn,.asum-row .lb svg.icn{vertical-align:-0.17em}
 .mini .ed svg.icn{width:12px;height:12px;vertical-align:-2px}
 .asum-ch svg.icn,.asum-drill svg.icn{width:12px;height:12px;vertical-align:-2px}
-.txn .ic svg.icn{width:17px;height:17px;vertical-align:0}
 .empty .big svg.icn{width:42px;height:42px;vertical-align:0}
 .lg-dot{display:inline-block;width:10px;height:10px;border-radius:3px;vertical-align:-1px}
 </style>
@@ -358,7 +356,7 @@ h2 svg.icn{width:1.18em;height:1.18em;vertical-align:-0.22em}
     <div class="card">
       <div style="display:flex;gap:8px;align-items:center">
         <input class="fin" id="txSearch" placeholder="Search note / category…" style="flex:1;min-width:0;margin:0" oninput="TXF.q=this.value;renderTxns()">
-        <button class="ibtn" id="txFilterBtn" data-act="txfilter" style="flex:none;margin:0"><svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><path d="M22 3H2l8 9.46V19l4 2v-9.54Z"/></svg> Filters<span class="fbadge" id="txFilterN" hidden></span></button>
+        <button class="ibtn" id="txFilterBtn" data-act="txfilter" style="flex:none;margin:0">Filters<span class="fbadge" id="txFilterN" hidden></span></button> <!-- v1.29: text-only -->
       </div>
       <div class="fgrid" id="txFGrid" hidden style="margin-top:8px">
         <select class="fin" id="txMonth" onchange="TXF.month=this.value;renderTxns()"></select>
@@ -371,18 +369,18 @@ h2 svg.icn{width:1.18em;height:1.18em;vertical-align:-0.22em}
       </div>
       <div style="display:flex;align-items:center;gap:10px;margin-top:10px">
         <div class="small muted" id="txSummary" style="flex:1;min-width:0"></div>
-        <button class="ibtn" id="txSelToggle" data-act="selmode" style="flex:none"><svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg> Select</button>
+        <button class="ibtn" id="txSelToggle" data-act="selmode" style="flex:none">Select</button> <!-- v1.29: text-only -->
       </div>
-      <button class="ibtn" id="txPersonDrill" data-act="pdrill" hidden style="margin-top:10px"><svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><line x1="6" y1="20" x2="6" y2="14"/><line x1="12" y1="20" x2="12" y2="9"/><line x1="18" y1="20" x2="18" y2="4"/><path d="M3 20h18"/></svg> Drill into this person</button>
+      <button class="ibtn" id="txPersonDrill" data-act="pdrill" hidden style="margin-top:10px">Drill into this person</button> <!-- v1.29: text-only -->
     </div>
-    <div class="card"><div id="txList"></div></div>
+    <div class="card"><div id="txList"></div><div id="txMoreWrap" hidden style="text-align:center;padding-top:8px"><button class="ibtn" id="txMoreBtn" data-act="txmore" style="margin:0">Show more</button></div></div> <!-- v1.29: show the latest 10 first -->
     <div id="txSelBar" hidden>
       <b id="txSelCount" style="white-space:nowrap">0 selected</b>
       <span class="sp"></span>
       <button class="ibtn" data-act="selall" style="flex:none">All</button>
       <button class="ibtn" data-act="selclear" style="flex:none">Clear</button>
-      <button class="ibtn" data-act="batchedit" style="flex:none;color:var(--accent);font-weight:800"><svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg> Edit</button>
-      <button class="ibtn" data-act="batchdel" style="flex:none;color:var(--exp);font-weight:800" aria-label="delete selected"><svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg></button>
+      <button class="ibtn" data-act="batchedit" style="flex:none;color:var(--accent);font-weight:800">Edit</button> <!-- v1.29: text-only -->
+      <button class="ibtn" data-act="batchdel" style="flex:none;color:var(--exp);font-weight:800">Delete</button> <!-- v1.29: text-only -->
     </div>
   </section>
 
@@ -459,7 +457,7 @@ h2 svg.icn{width:1.18em;height:1.18em;vertical-align:-0.22em}
       <div class="f-row"><label>Appearance</label><div class="segmini" id="modeSeg" style="margin-bottom:0"></div></div>
       <div class="f-row" style="margin-bottom:0"><label>Currency symbol</label><input class="fin" id="curSymbol" placeholder="RM, $, € …" onchange="DB.meta.currency=this.value.trim();touch();openSheetRefresh()"></div>
     </div>
-    <div class="card"><div class="help"><b>Money Manager Mobile</b> v1.28 — single-file app, works offline, no hosting required. Income / Expense / <b>Transfer</b> transactions, custom <b>account types</b> with <b>asset / liability</b> kinds, a <b>billing cycle</b> (statement day) set per account under <b>Settings → Accounts</b> for <b>CC / balance-transfer</b> accounts — with a <b>billing-period breakdown</b> (tap a period to see its transactions + closing balance), <b>recurring transactions</b> (daily / weekly / monthly / yearly, every N periods — auto-added up to today), balance = start + income − expenses + transfer in − transfer out, transactions listed <b>latest date first</b> with a <b>category filter</b> on the Transactions page, <b>cumulative balance</b> at every level of the account drill (month end → day end → after each transaction), collapsible <b>account summary</b> (people → account types → accounts), <b>footer navigation stays visible on every screen</b>, split expenses — <b>payer fronts all</b> (the full amount leaves the payer's account; every other person's share is credited to a receivable asset account like “HKO owes WHY” under the payer — settle it with a Transfer from that account) — and <b>deleting a split bill removes every related transaction it created</b> (with undo), account &amp; person drill-down (also combined), tap-to-edit in every drill, <b>batch select · edit · delete</b> with undo, full-screen <b>report screens</b>, per-person CSV, display themes. Compatible with the desktop dashboard format (Date, Income/Expense, Category, Subcategory, Account, Person, Note, Amount, Split, To Account). <b>Excel upload template</b>: download a ready-made XLSX with the exact columns, sample rows and a How-to-fill sheet for data migration. <b>Multi-file import</b>: pick several JSON / CSV / XLSX files at once — they are <b>merged into your existing data</b> (nothing is overwritten, identical transactions are skipped), and <svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11V9a4 4 0 0 1 4-4h11"/><path d="m15 2 3 3-3 3"/><path d="M21 13v2a4 4 0 0 1-4 4H6"/><path d="m9 22-3-3 3-3"/></svg> <b>Replace all with a file</b> restores from a snapshot when you want a clean start. <b>Clear data</b> lets you choose exactly which lists to wipe — or wipe everything. <b>Auto-backup</b>: every change is snapshotted on-device (latest 20, restore any point from Backup history) and one tap downloads a <b>single JSON backup file</b> that can be dropped into Google Drive / OneDrive and re-imported any time. <b>v1.16</b>: every delete — transactions, accounts, people, categories, sub-categories, account types, recurring series, clear-data — shows an <b>Undo</b> toast right after; all pictorial icons are replaced with a consistent <b>line-icon set</b>; and every list &amp; dropdown is sorted <b>alphabetically</b> (icons before the wording are ignored). <b>v1.17</b>: the Add/Edit form no longer asks “Paid by” — the <b>Owner of the selected account</b> is shown instead and stamped on the transaction (transfers carry the From-account owner). A <b>transfer between two different owners</b> offers an <b>Amount owed</b> tick box: on top of the two transfer legs it books a third entry into a jointly-owned debt ledger like “HKO owes WHY” (+ when the receiver borrows, − when they pay it back), so everything one side owes the other lives in one shared account — settle it with a Transfer out of that ledger. <b>v1.18</b>: a tighter Add/Edit form — <b>Repeat</b> now sits beside <b>Date</b>, and the <b>Owner</b> display sits beside the <b>Account</b> field (beside <b>From account</b> on transfers); jointly-owned groups like “HKO &amp; WHY” show a <b>couple icon</b> instead of a dash. <b>v1.19</b>: the <b>Each-pays-own</b> split mode is removed — splitting is always <b>payer fronts all</b>; and joint owner groups like “Husband &amp; Me” now show the <b>net</b> debt between the two people (ledgers of 50 and 100 read <b>RM 50 net</b> with who-owes-who, not the gross 150). <b>v1.20</b>: transfers show a separate <b>owner box for each side</b> — <b>From owner</b> beside From account, <b>To owner</b> beside To account — and you can <b>swipe left / right anywhere</b> on the page to jump between Overview, Transactions, Accounts and Settings. <b>v1.21</b>: the <b>app icon is polished</b> — a richer gradient with a top sheen and soft depth, plus a matching favicon. <b>v1.22</b>: flicking between tabs is now <b>effortless</b> — a quick ~22px flick flips the page, even a curved or slightly-diagonal one; a slower drag needs ~44px, and only clearly-vertical scrolls are ignored. <b>v1.23</b>: the <b>currency symbol</b> shows on every transaction row and everywhere amounts appear; the <b>account-type &amp; account managers</b> got a cleaner, labelled UI with the <b>current balance</b> on every account row; <b>billing-cycle fields appear only for CC / balance-transfer types</b>; the manage lists are ordered <b>People → Account Types → Accounts → Categories → Sub-categories → Recurring</b>; the edit sheet gained a <b>Duplicate as new</b> button; and categories &amp; sub-categories can be <b>moved / merged</b>, not just renamed. <b>v1.24</b>: expense amounts accept a <b>negative sign</b> — type −50 or tap the new <b>±</b> button beside the amount: a negative expense is a <b>reduction in expenses</b> (shown green “+” with an “expense reduction” tag), never re-classed as income, and every total, chart and category updates correctly. The credit-card cycle card now computes <b>Balance for new cycle = current balance − balance at the last statement</b> — the previous cycle stays frozen and only new spending builds up — with an “Outstanding now” total row. <b>v1.25</b>: getting around is easier — the phone’s <b>Back button / back gesture</b> (and <b>Esc</b> on desktop) now walks back through your open screens — confirm popups, the add/edit sheet, managers, drill-down levels, reports — instead of leaving the app; you can also <b>swipe from the left edge</b> to go back on drill &amp; report pages; and the <b>Undo toast</b> is rebuilt — a solid Undo pill with a <b>countdown bar</b> showing exactly how long you have left to undo. <b>v1.26</b>: flicking hits <b>max sensitivity</b> — a snap as small as ~8px flips the tab (12px within a beat, 24px for a slower drag), so the lightest thumb flick now turns the page; and every switch <b>glides</b> — the incoming screen slides in from the direction you came from, whether you flick, swipe or tap the footer tabs. <b>v1.27</b>: the <b>billing cycle (statement day) input now lives only under Settings → Accounts</b> — set it on each credit-card account when you add or edit it (the field pre-fills with the current statement day), and the account-type editor no longer asks for it; any type default you set before is kept as a fallback and is preserved when you rename or edit a type. <b>v1.28</b>: the Transactions screen is <b>decluttered</b> — the five filter dropdowns tuck away behind a single <b>Filters</b> button (a badge shows how many are active), the summary is a calm “N transactions · Net RM x”, rows read the <b>note first</b> on one tidy line, and transfers drop the ⇄ symbol; and every date now shows its <b>weekday</b> — day groups read “Tue, 13 Oct 2026”, and drill days, recurring “next” dates and the as-at stamps all carry Mon/Tue/Wed too.</div></div>
+    <div class="card"><div class="help"><b>Money Manager Mobile</b> v1.29 — single-file app, works offline, no hosting required. Income / Expense / <b>Transfer</b> transactions, custom <b>account types</b> with <b>asset / liability</b> kinds, a <b>billing cycle</b> (statement day) set per account under <b>Settings → Accounts</b> for <b>credit-card</b> accounts — with a <b>billing-period breakdown</b> (tap a period to see its transactions + closing balance), <b>recurring transactions</b> (daily / weekly / monthly / yearly, every N periods — auto-added up to today), balance = start + income − expenses + transfer in − transfer out, transactions listed <b>latest date first</b> with a <b>category filter</b> on the Transactions page, <b>cumulative balance</b> at every level of the account drill (month end → day end → after each transaction), collapsible <b>account summary</b> (people → account types → accounts), <b>footer navigation stays visible on every screen</b>, split expenses — <b>payer fronts all</b> (the full amount leaves the payer's account; every other person's share is credited to a receivable asset account like “HKO owes WHY” under the payer — settle it with a Transfer from that account) — and <b>deleting a split bill removes every related transaction it created</b> (with undo), account &amp; person drill-down (also combined), tap-to-edit in every drill, <b>batch select · edit · delete</b> with undo, full-screen <b>report screens</b>, per-person CSV, display themes. Compatible with the desktop dashboard format (Date, Income/Expense, Category, Subcategory, Account, Person, Note, Amount, Split, To Account). <b>Excel upload template</b>: download a ready-made XLSX with the exact columns, sample rows and a How-to-fill sheet for data migration. <b>Multi-file import</b>: pick several JSON / CSV / XLSX files at once — they are <b>merged into your existing data</b> (nothing is overwritten, identical transactions are skipped), and <svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11V9a4 4 0 0 1 4-4h11"/><path d="m15 2 3 3-3 3"/><path d="M21 13v2a4 4 0 0 1-4 4H6"/><path d="m9 22-3-3 3-3"/></svg> <b>Replace all with a file</b> restores from a snapshot when you want a clean start. <b>Clear data</b> lets you choose exactly which lists to wipe — or wipe everything. <b>Auto-backup</b>: every change is snapshotted on-device (latest 20, restore any point from Backup history) and one tap downloads a <b>single JSON backup file</b> that can be dropped into Google Drive / OneDrive and re-imported any time. <b>v1.16</b>: every delete — transactions, accounts, people, categories, sub-categories, account types, recurring series, clear-data — shows an <b>Undo</b> toast right after; all pictorial icons are replaced with a consistent <b>line-icon set</b>; and every list &amp; dropdown is sorted <b>alphabetically</b> (icons before the wording are ignored). <b>v1.17</b>: the Add/Edit form no longer asks “Paid by” — the <b>Owner of the selected account</b> is shown instead and stamped on the transaction (transfers carry the From-account owner). A <b>transfer between two different owners</b> offers an <b>Amount owed</b> tick box: on top of the two transfer legs it books a third entry into a jointly-owned debt ledger like “HKO owes WHY” (+ when the receiver borrows, − when they pay it back), so everything one side owes the other lives in one shared account — settle it with a Transfer out of that ledger. <b>v1.18</b>: a tighter Add/Edit form — <b>Repeat</b> now sits beside <b>Date</b>, and the <b>Owner</b> display sits beside the <b>Account</b> field (beside <b>From account</b> on transfers); jointly-owned groups like “HKO &amp; WHY” show a <b>couple icon</b> instead of a dash. <b>v1.19</b>: the <b>Each-pays-own</b> split mode is removed — splitting is always <b>payer fronts all</b>; and joint owner groups like “Husband &amp; Me” now show the <b>net</b> debt between the two people (ledgers of 50 and 100 read <b>RM 50 net</b> with who-owes-who, not the gross 150). <b>v1.20</b>: transfers show a separate <b>owner box for each side</b> — <b>From owner</b> beside From account, <b>To owner</b> beside To account — and you can <b>swipe left / right anywhere</b> on the page to jump between Overview, Transactions, Accounts and Settings. <b>v1.21</b>: the <b>app icon is polished</b> — a richer gradient with a top sheen and soft depth, plus a matching favicon. <b>v1.22</b>: flicking between tabs is now <b>effortless</b> — a quick ~22px flick flips the page, even a curved or slightly-diagonal one; a slower drag needs ~44px, and only clearly-vertical scrolls are ignored. <b>v1.23</b>: the <b>currency symbol</b> shows on every transaction row and everywhere amounts appear; the <b>account-type &amp; account managers</b> got a cleaner, labelled UI with the <b>current balance</b> on every account row; <b>billing-cycle fields appear only for CC / balance-transfer types</b>; the manage lists are ordered <b>People → Account Types → Accounts → Categories → Sub-categories → Recurring</b>; the edit sheet gained a <b>Duplicate as new</b> button; and categories &amp; sub-categories can be <b>moved / merged</b>, not just renamed. <b>v1.24</b>: expense amounts accept a <b>negative sign</b> — type −50 or tap the new <b>±</b> button beside the amount: a negative expense is a <b>reduction in expenses</b> (shown green “+” with an “expense reduction” tag), never re-classed as income, and every total, chart and category updates correctly. The credit-card cycle card now computes <b>Balance for new cycle = current balance − balance at the last statement</b> — the previous cycle stays frozen and only new spending builds up — with an “Outstanding now” total row. <b>v1.25</b>: getting around is easier — the phone’s <b>Back button / back gesture</b> (and <b>Esc</b> on desktop) now walks back through your open screens — confirm popups, the add/edit sheet, managers, drill-down levels, reports — instead of leaving the app; you can also <b>swipe from the left edge</b> to go back on drill &amp; report pages; and the <b>Undo toast</b> is rebuilt — a solid Undo pill with a <b>countdown bar</b> showing exactly how long you have left to undo. <b>v1.26</b>: flicking hits <b>max sensitivity</b> — a snap as small as ~8px flips the tab (12px within a beat, 24px for a slower drag), so the lightest thumb flick now turns the page; and every switch <b>glides</b> — the incoming screen slides in from the direction you came from, whether you flick, swipe or tap the footer tabs. <b>v1.27</b>: the <b>billing cycle (statement day) input now lives only under Settings → Accounts</b> — set it on each credit-card account when you add or edit it (the field pre-fills with the current statement day), and the account-type editor no longer asks for it; any type default you set before is kept as a fallback and is preserved when you rename or edit a type. <b>v1.28</b>: the Transactions screen is <b>decluttered</b> — the five filter dropdowns tuck away behind a single <b>Filters</b> button (a badge shows how many are active), the summary is a calm “N transactions · Net RM x”, rows read the <b>note first</b> on one tidy line, and transfers drop the ⇄ symbol; and every date now shows its <b>weekday</b> — day groups read “Tue, 13 Oct 2026”, and drill days, recurring “next” dates and the as-at stamps all carry Mon/Tue/Wed too. <b>v1.29</b>: the Transactions screen goes <b>calm and short</b> — every icon is gone from the list (plain-text rows; the amount’s sign and colour still tell income from expense), and only the <b>latest 10 transactions</b> load at first with a <b>Show more</b> button underneath (<b>Show less</b> tucks them back; filters, search and Select still see everything); and the <b>billing-cycle</b> field under Settings → Accounts now appears for <b>credit-card</b> types only.</div></div>
   </section>
 </main>
 
@@ -654,7 +652,7 @@ var ICONS={
   bag:'<path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/>',
   trend:'<path d="m22 7-8.5 8.5-5-5L2 17"/><path d="M16 7h6v6"/>',
   refresh:'<path d="M21 12a9 9 0 1 1-2.6-6.4"/><path d="M21 3v6h-6"/>',
-  filter:'<path d="M22 3H2l8 9.46V19l4 2v-9.54Z"/>', /* v1.28: funnel for the Filters toggle */
+  filter:'<path d="M22 3H2l8 9.46V19l4 2v-9.54Z"/>', /* v1.28 funnel — entry kept for compatibility; the Filters button is text-only since v1.29 */
   pointer:'<path d="m4 4 7 17 2.5-7.5L21 11Z"/>',
   list:'<line x1="9" y1="6" x2="21" y2="6"/><line x1="9" y1="12" x2="21" y2="12"/><line x1="9" y1="18" x2="21" y2="18"/><circle cx="4" cy="6" r="1"/><circle cx="4" cy="12" r="1"/><circle cx="4" cy="18" r="1"/>'
 };
@@ -1104,7 +1102,7 @@ function ensureRecvAcc(name){
 }
 /* ===== asset vs liability account types + credit-card statement cycle (v1.7) ===== */
 function accTypeKind(ty){var m=DB.accTypeMeta&&DB.accTypeMeta[ty];return (m&&m.kind==='liability')?'liability':'asset';}
-function typeHasCycle(ty){ty=String(ty||'');return /balance\s*transfer/i.test(ty)||/(^|[^a-z])cc([^a-z]|$)/i.test(ty);} /* v1.23: billing-cycle fields only for CC / balance-transfer types */
+function typeHasCycle(ty){ty=String(ty||'');return /(^|[^a-z])cc([^a-z]|$)/i.test(ty)||/credit\s*card/i.test(ty);} /* v1.29: billing-cycle field only for credit-card types ("cc" or "credit card" in the name) */
 function accTypeCycle(ty){var m=DB.accTypeMeta&&DB.accTypeMeta[ty];var d=m?parseInt(m.cycle,10):0;return (d>=1&&d<=31)?d:0;}
 function pad2(n){return (n<10?'0':'')+n;}
 function todayISO(){var d=new Date();return d.getFullYear()+'-'+pad2(d.getMonth()+1)+'-'+pad2(d.getDate());}
@@ -2012,7 +2010,8 @@ function renderDrill(){
   $('drillBody').innerHTML=html;
 }
 /* ================= transactions view ================= */
-var TXF={month:'all',person:'all',account:'all',type:'all',cat:'all',q:'',open:false}; /* v1.28: open = the filter dropdowns are expanded */
+var TX_SHOW=10; /* v1.29: with no filters/search/selection the list shows only the latest 10 transactions */
+var TXF={month:'all',person:'all',account:'all',type:'all',cat:'all',q:'',open:false,limit:TX_SHOW}; /* v1.28: open = the filter dropdowns are expanded; limit = how many rows the unfiltered view reveals */
 var BSEL={on:false,ids:[]};
 function setSel(id,val,fb){
   var s=$(id);
@@ -2071,7 +2070,7 @@ function renderTxns(){
   var shareMode=TXF.person!=='all';
   var pd=$('txPersonDrill');
   pd.hidden=!shareMode;
-  if(shareMode)pd.innerHTML=ico('chart')+' Drill into '+esc(TXF.person)+'\u2019s transactions';
+  if(shareMode)pd.innerHTML='Drill into '+esc(TXF.person)+'\u2019s transactions'; /* v1.29: text-only */
   function vOf(t){return shareMode?shareOf(t,TXF.person):t.amount;}
   var inc=0,exp=0,trf=0;
   l.forEach(function(t){
@@ -2081,29 +2080,42 @@ function renderTxns(){
   $('txSummary').textContent=l.length+' transactions · Net '+money(inc-exp); /* v1.28: slim summary — totals live on Overview, day headers give the rhythm */
   var selMode=BSEL.on;
   $('txList').classList.toggle('selmode',selMode);
-  $('txSelToggle').innerHTML=selMode?(ico('x')+' Exit selection ('+BSEL.ids.length+')'):(ico('check')+' Select');
+  $('txSelToggle').innerHTML=selMode?('Exit selection ('+BSEL.ids.length+')'):'Select'; /* v1.29: text-only */
   $('txSelBar').hidden=!selMode;
   if(selMode)$('txSelCount').textContent=BSEL.ids.length+' selected';
   var g={};
   l.forEach(function(t){(g[t.date]=g[t.date]||[]).push(t);});
   var days=Object.keys(g).sort().reverse();
-  $('txList').innerHTML=days.length?days.map(function(d){
+  /* v1.29: with everything unfiltered the list shows only the latest TX_SHOW transactions —
+     a "Show more" button underneath reveals 20 more ("Show less" tucks them back);
+     filters, search and Select mode always see every match */
+  var capOn=!selMode&&!TXF.q&&TXF.month==='all'&&TXF.person==='all'&&TXF.account==='all'&&TXF.type==='all'&&TXF.cat==='all';
+  var lim=capOn?(TXF.limit||TX_SHOW):1e9;
+  var taken=0,daysShow=[];
+  days.forEach(function(d){if(taken<lim){var n=Math.min(g[d].length,lim-taken);daysShow.push([d,n]);taken+=n;}});
+  var hidden=l.length-taken;
+  var mw=$('txMoreWrap'),mb=$('txMoreBtn');
+  if(mw&&mb){
+    if(capOn&&l.length>TX_SHOW){mw.hidden=false;if(hidden>0){mb.dataset.act='txmore';mb.textContent='Show more ('+hidden+' more)';}else{mb.dataset.act='txless';mb.textContent='Show less';}}
+    else mw.hidden=true;
+  }
+  $('txList').innerHTML=daysShow.length?daysShow.map(function(ds){
+    var d=ds[0],nCut=ds[1];
     var din=0,dexp=0;
     g[d].forEach(function(t){if(t.type==='Transfer')return;var v=vOf(t);if(t.type==='Income')din+=v;else dexp+=v;});
-    /* v1.10: within a day the most recently entered transaction comes first */
-    var rows=g[d].slice().reverse().map(function(t){
+    /* v1.10: within a day the most recently entered transaction comes first; v1.29 caps the rows per day */
+    var rows=g[d].slice(-nCut).reverse().map(function(t){
       var v=vOf(t);
       var isTrf=t.type==='Transfer';
       var redn=!isTrf&&t.type==='Expense'&&v<0; /* v1.24: negative expense = reduction in expenses */
-      var ic=isTrf?ico('refresh'):(t.type==='Income'?ico('trend'):ico('bag'));
-      var sub=isTrf?(esc(t.account)+' → '+esc(t.to||'?')+(t.owedAcc?' · '+ico('bank')+' '+esc(t.owedAcc):'')+(t.note?' · '+esc(t.note):'')):((t.note?esc(t.note)+' · ':'')+(whoStr(t)+' · '+esc(t.account))+(t.to?' · '+ico('bank')+' '+esc(t.to):'')+(redn?' · <span style="color:var(--inc)">expense reduction</span>':'')); /* v1.28: note reads first */
+      var sub=isTrf?(esc(t.account)+' → '+esc(t.to||'?')+(t.owedAcc?' · '+esc(t.owedAcc):'')+(t.note?' · '+esc(t.note):'')):((t.note?esc(t.note)+' · ':'')+(whoStr(t)+' · '+esc(t.account))+(t.to?' · '+esc(t.to):'')+(redn?' · <span style="color:var(--inc)">expense reduction</span>':'')); /* v1.28: note reads first; v1.29: icons removed */
       var cls=isTrf?'':((t.type==='Income'||redn)?'pos':'neg');
-      var pre=isTrf?'':((t.type==='Income'||redn)?'+':'-'); /* v1.28: no ⇄ on transfer amounts — the icon already says it */
+      var pre=isTrf?'':((t.type==='Income'||redn)?'+':'-'); /* the amount sign tells the type */
       var av=redn?-v:v;
-      return '<button class="txn'+(selMode&&BSEL.ids.indexOf(t.id)>=0?' sel':'')+'" data-act="txn" data-id="'+t.id+'">'+(selMode?'<span class="ck">✓</span>':'')+'<span class="ic">'+ic+'</span><span class="mid"><b>'+esc(isTrf?'Transfer':t.category)+(t.subcategory?' · '+esc(t.subcategory):'')+'</b><small>'+sub+'</small></span><span class="amt '+cls+'">'+pre+(cur()?'<small class="cur2">'+esc(cur())+'</small> ':'')+fmt(av)+(shareMode&&!isTrf&&v!==t.amount?' <small style="font-weight:600;opacity:.65">/ '+fmt(t.amount)+'</small>':'')+'</span></button>';
+      return '<button class="txn'+(selMode&&BSEL.ids.indexOf(t.id)>=0?' sel':'')+'" data-act="txn" data-id="'+t.id+'">'+(selMode?'<span class="ck">✓</span>':'')+'<span class="mid"><b>'+esc(isTrf?'Transfer':t.category)+(t.subcategory?' · '+esc(t.subcategory):'')+'</b><small>'+sub+'</small></span><span class="amt '+cls+'">'+pre+(cur()?'<small class="cur2">'+esc(cur())+'</small> ':'')+fmt(av)+(shareMode&&!isTrf&&v!==t.amount?' <small style="font-weight:600;opacity:.65">/ '+fmt(t.amount)+'</small>':'')+'</span></button>';
     }).join('');
     return '<div class="day-h"><span>'+dLabelYW(d)+'</span><span>net '+(din-dexp<0?'-':'+')+(cur()?cur()+' ':'')+fmt(Math.abs(din-dexp))+'</span></div>'+rows;
-  }).join(''):'<div class="empty"><div class="big">'+ico('receipt')+'</div><b>No transactions</b><p>Adjust the filters above, or tap ＋ to add one.</p></div>';
+  }).join(''):'<div class="empty"><b>No transactions</b><p>Adjust the filters above, or tap ＋ to add one.</p></div>'; /* v1.29: icon-free */
 }
 
 /* ================= accounts view (v1.10 hierarchical summary) ================= */
@@ -2214,7 +2226,7 @@ function accSave(n){
   });
   a.name=nn;a.start=st;a.owner=ow;if(ty)a.type=ty;
   if(a.recv||/^.+ owes .+$/.test(nn)){var jp2=String(nn).split(' owes ');if(jp2.length===2)a.owner=jointPair(jp2[0],jp2[1]);} /* v1.17: ledgers stay jointly owned */
-  /* v1.23: billing cycle only applies to CC / balance-transfer types */
+  /* v1.29: billing cycle only applies to credit-card types */
   var cyc=0;
   if(typeHasCycle(a.type)){var c=parseInt(($('mgrECycA')?$('mgrECycA').value:''),10);if(c>=1&&c<=31)cyc=c;}
   a.cycle=cyc;
@@ -2332,12 +2344,12 @@ function renderMgr(){
           +'<input class="fin" id="mgrEName" value="'+esc(ty)+'" placeholder="Type name" style="margin-bottom:7px">'
           +'<div class="mgr-lb">Kind</div>'
           +'<select class="fin" id="mgrEKind" style="margin-bottom:7px"><option value="asset"'+(kd==='asset'?' selected':'')+'>Asset (+ balance) — cash, wallet, savings</option><option value="liability"'+(kd==='liability'?' selected':'')+'>Liability (− balance) — credit card, loan</option></select>'
-          +'<div class="help small" style="margin-bottom:7px">Billing-cycle (statement day) settings live on each <b>account</b> — set them in <b>Settings → Accounts</b> when the account\'s type is CC / balance-transfer.</div>'
+          +'<div class="help small" style="margin-bottom:7px">Billing-cycle (statement day) settings live on each <b>account</b> — set them in <b>Settings → Accounts</b> when the account\'s type is a <b>credit card</b>.</div>'
           +'<div style="display:flex;gap:7px"><button class="ibtn" data-act="mgrsave" data-k="'+esc(ty)+'" style="flex:1;color:var(--inc)">Save</button><button class="ibtn" data-act="mgrcancel" style="flex:1">Cancel</button></div></div>';
       }
       return mgrRow(ico('folder')+' '+esc(ty),n+(n===1?' account':' accounts')+' · '+(kd==='liability'?'liability':'asset')+(n?' · rename updates them':''),'data-k="'+esc(ty)+'"','data-k="'+esc(ty)+'"');
     }).join(''):'<div class="help" style="padding:8px 2px">No account types yet.</div>';
-    h+='<div class="mgr-add"><div class="mgr-lb">Add a new type</div><input class="fin" id="mgrNew" placeholder="Type name, e.g. Credit Card" style="margin-bottom:7px"><div class="mgr-lb">Kind</div><select class="fin" id="mgrNewKind" style="margin-bottom:7px"><option value="asset">Asset (+ balance) — cash, wallet, savings</option><option value="liability">Liability (− balance) — credit card, loan, CC balance transfer</option></select><button class="ibtn" data-act="mgradd" style="width:100%;color:var(--accent);font-weight:800">Add type</button><div class="help small" style="margin-top:6px">Assets hold money you have; liabilities are what you owe. A name like a credit card defaults to liability. Billing-cycle (statement day) settings are per account — set them in <b>Settings → Accounts</b> for CC / balance-transfer accounts. Used types cannot be deleted; renaming updates every account.</div></div>';
+    h+='<div class="mgr-add"><div class="mgr-lb">Add a new type</div><input class="fin" id="mgrNew" placeholder="Type name, e.g. Credit Card" style="margin-bottom:7px"><div class="mgr-lb">Kind</div><select class="fin" id="mgrNewKind" style="margin-bottom:7px"><option value="asset">Asset (+ balance) — cash, wallet, savings</option><option value="liability">Liability (− balance) — credit card, loan, CC balance transfer</option></select><button class="ibtn" data-act="mgradd" style="width:100%;color:var(--accent);font-weight:800">Add type</button><div class="help small" style="margin-top:6px">Assets hold money you have; liabilities are what you owe. A name like a credit card defaults to liability. Billing-cycle (statement day) settings are per account — set them in <b>Settings → Accounts</b> for credit-card accounts. Used types cannot be deleted; renaming updates every account.</div></div>';
   }else if(MGR.kind==='accs'){
     var BALM={};balances().rows.forEach(function(r){BALM[r.name]=r.bal;}); /* v1.23: current balance per account row */
     h+=DB.accounts.slice().sort(function(x,y){return alphasort(x.name,y.name);}).map(function(a){
@@ -2350,7 +2362,7 @@ function renderMgr(){
           +'<div class="mgr-lb">Type</div><select class="fin" id="mgrEType" style="margin-bottom:7px" onchange="var w=document.getElementById(\'cycAWrap\');if(w)w.style.display=typeHasCycle(this.value)?\'\':\'none\'">'+sortedAlpha(DB.accTypes).map(function(ty){return '<option'+(ty===a.type?' selected':'')+'>'+esc(ty)+'</option>';}).join('')+'</select>'
           +'<div class="mgr-lb">Owner</div><select class="fin" id="mgrEOwner" style="margin-bottom:7px">'+ownerOptions(a.owner)+'</select>'
           +'<div id="cycAWrap" style="display:'+(typeHasCycle(a.type)?'':'none')+';margin-bottom:7px"><div class="mgr-lb">Billing cycle day (statement day)</div><input class="fin" id="mgrECycA" inputmode="numeric" value="'+(a.cycle||accTypeCycle(a.type)||'')+'" placeholder="1–31"></div>'
-          +'<div class="help small" style="margin-bottom:7px">The statement day (1–31) splits this account\'s balance into statement vs new cycle — shown for <b>CC / balance-transfer</b> accounts.</div>'
+          +'<div class="help small" style="margin-bottom:7px">The statement day (1–31) splits this account\'s balance into statement vs new cycle — shown for <b>credit-card</b> accounts.</div>'
           +'<div style="display:flex;gap:7px"><button class="ibtn" data-act="mgrsave" data-k="'+esc(a.name)+'" style="flex:1;color:var(--inc)">Save</button>'
           +'<button class="ibtn" data-act="mgrcancel" style="flex:1">Cancel</button></div></div>';
       }
@@ -2435,7 +2447,7 @@ function addAccountMgr(){
   if(!n){toast('Enter an account name');return;}
   if(DB.accounts.some(function(a){return a.name.toLowerCase()===n.toLowerCase();})){toast('Account already exists');return;}
   var ty=$('mgrNewAType')?($('mgrNewAType').value||DB.accTypes[0]):DB.accTypes[0];
-  /* v1.23: billing cycle only applies to CC / balance-transfer types */
+  /* v1.29: billing cycle only applies to credit-card types */
   var cyc=0;
   if(typeHasCycle(ty)){var c=parseInt(($('mgrNewCyc')||{}).value,10);if(c>=1&&c<=31)cyc=c;}
   DB.accounts.push({name:n,start:parseAmt(($('mgrNewStart')||{}).value),owner:$('mgrNewOwner')?($('mgrNewOwner').value||''):'',type:ty,cycle:cyc});
@@ -3313,6 +3325,8 @@ function handleAct(el){
     case 'undo':undoNow();break;
     case 'selmode':BSEL.on=!BSEL.on;if(!BSEL.on)BSEL.ids=[];renderTxns();break;
     case 'txfilter':TXF.open=!TXF.open;renderTxns();break;
+    case 'txmore':TXF.limit=(TXF.limit||TX_SHOW)+20;renderTxns();break; /* v1.29 */
+    case 'txless':TXF.limit=TX_SHOW;renderTxns();break; /* v1.29 */
     case 'selall':BSEL.ids=txFiltered().map(function(t){return t.id;});renderTxns();break;
     case 'selclear':BSEL.ids=[];renderTxns();break;
     case 'batchedit':if(!BSEL.ids.length){toast('Tick at least one transaction first');break;}openMgr('batchedit');break;
