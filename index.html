@@ -139,9 +139,12 @@ main{padding:calc(68px + env(safe-area-inset-top)) 12px calc(100px + env(safe-ar
 .f-row label{display:block;font-size:10.5px;font-weight:800;color:var(--muted);margin-bottom:5px;text-transform:uppercase;letter-spacing:.5px}
 .fin{width:100%;border:1.5px solid var(--line);border-radius:12px;padding:11px 12px;font-size:15px;background:var(--bg);outline:none}
 .fin:focus{border-color:var(--accent)}
-.amt-in{font-size:27px;font-weight:800;text-align:center;padding-left:46px!important}
+.amt-in{font-size:27px;font-weight:800;text-align:center;padding-left:46px!important;padding-right:62px!important}
 .amt-wrap{position:relative}
 .amt-wrap .cur{position:absolute;left:16px;top:50%;transform:translateY(-50%);font-weight:800;color:var(--muted);font-size:16px}
+/* v1.24: ± sign flip — a negative expense is a reduction in expenses */
+.sgn{position:absolute;right:7px;top:50%;transform:translateY(-50%);height:36px;min-width:54px;padding:0 8px;border:1.5px solid var(--line);border-radius:10px;background:var(--bg);color:var(--muted);font-weight:800;font-size:14.5px;cursor:pointer}
+.sgn:active{color:var(--accent);border-color:var(--accent)}
 .seg{display:flex;background:var(--bg);border-radius:12px;padding:4px;gap:4px}
 .seg button{flex:1;padding:9px;font-weight:800;font-size:13.5px;border-radius:9px;color:var(--muted);text-align:center}
 .seg button.on-exp{background:var(--exp-soft);color:var(--exp)}
@@ -214,6 +217,11 @@ button.fin.pick::after{content:'▾';color:var(--muted);font-weight:800;font-siz
 .mgr-row .lb small{display:block;font-weight:500;color:var(--muted);font-size:11px;white-space:normal}
 .mgr-sec{font-size:11px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin:12px 2px 4px}
 .mgr-sec:first-child{margin-top:2px}
+/* v1.23: tidier manager forms — small caps labels, add-block, right-aligned amounts */
+.mgr-lb{font-size:10.5px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;margin:2px 2px 5px}
+.mgr-add{border-top:1px solid var(--line);margin-top:12px;padding-top:10px}
+.mamt{font-size:13px;font-weight:800;white-space:nowrap}
+.amt .cur2{font-size:9px;font-weight:700;opacity:.55;letter-spacing:.3px}
 /* accounts type subtotal headers (v1.6) */
 .tyhead{display:flex;align-items:baseline;justify-content:space-between;gap:8px;margin:14px 2px 2px;padding-bottom:5px;border-bottom:1px dashed var(--line)}
 .tyhead:first-child{margin-top:2px}
@@ -383,12 +391,12 @@ h2 svg.icn{width:1.18em;height:1.18em;vertical-align:-0.22em}
       <h2><svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 4h6a4 4 0 0 1 4 4v13a3 3 0 0 0-3-3H2Z"/><path d="M22 4h-6a4 4 0 0 0-4 4v13a3 3 0 0 1 3-3h7Z"/></svg> Manage Lists</h2>
       <div class="help small" style="margin-bottom:8px">People, account types, accounts, categories, sub-categories and recurring series open in pop-up managers — add, rename or delete from there.</div>
       <div class="rows">
+        <button class="trow" data-act="mgr" data-k="people"><span class="lb"><svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c0-3.6 2.9-6.5 6.5-6.5s6.5 2.9 6.5 6.5"/><path d="M16 4.6a3.5 3.5 0 0 1 0 6.8"/><path d="M18.5 13.9c1.8.9 3 2.8 3 5.1"/></svg> People<small id="cntPeople"></small></span><span class="amt2 muted">›</span></button>
         <button class="trow" data-act="mgr" data-k="acctype"><span class="lb"><svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.7-.9l-.8-1.2A2 2 0 0 0 7.9 4H4a2 2 0 0 0-2 2v12c0 1.1.9 2 2 2Z"/></svg> Account Types<small id="cntAccTypes"></small></span><span class="amt2 muted">›</span></button>
         <button class="trow" data-act="mgr" data-k="accs"><span class="lb"><svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="5" width="20" height="14" rx="2.5"/><line x1="2" y1="10" x2="22" y2="10"/><line x1="6" y1="15" x2="10" y2="15"/></svg> Accounts<small id="cntAccs"></small></span><span class="amt2 muted">›</span></button>
         <button class="trow" data-act="mgr" data-k="cats"><span class="lb"><svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.6 13.4 12 4.8V2H4.8A2.8 2.8 0 0 0 2 4.8V12l8.6 8.6a2 2 0 0 0 2.8 0l7.2-7.2a2 2 0 0 0 0-2.8Z"/><circle cx="7.5" cy="7.5" r="1.2"/></svg> Categories<small id="cntCats"></small></span><span class="amt2 muted">›</span></button>
-        <button class="trow" data-act="mgr" data-k="people"><span class="lb"><svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c0-3.6 2.9-6.5 6.5-6.5s6.5 2.9 6.5 6.5"/><path d="M16 4.6a3.5 3.5 0 0 1 0 6.8"/><path d="M18.5 13.9c1.8.9 3 2.8 3 5.1"/></svg> People<small id="cntPeople"></small></span><span class="amt2 muted">›</span></button>
-        <button class="trow" data-act="mgr" data-k="recur"><span class="lb"><svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><path d="m17 2 4 4-4 4"/><path d="M3 11v-1a4 4 0 0 1 4-4h14"/><path d="m7 22-4-4 4-4"/><path d="M21 13v1a4 4 0 0 1-4 4H3"/></svg> Recurring<small id="cntRecur"></small></span><span class="amt2 muted">›</span></button>
         <button class="trow" data-act="mgr" data-k="subs"><span class="lb"><svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><line x1="9" y1="6" x2="21" y2="6"/><line x1="9" y1="12" x2="21" y2="12"/><line x1="9" y1="18" x2="21" y2="18"/><circle cx="4" cy="6" r="1"/><circle cx="4" cy="12" r="1"/><circle cx="4" cy="18" r="1"/></svg> Sub-categories<small id="cntSubs"></small></span><span class="amt2 muted">›</span></button>
+        <button class="trow" data-act="mgr" data-k="recur"><span class="lb"><svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><path d="m17 2 4 4-4 4"/><path d="M3 11v-1a4 4 0 0 1 4-4h14"/><path d="m7 22-4-4 4-4"/><path d="M21 13v1a4 4 0 0 1-4 4H3"/></svg> Recurring<small id="cntRecur"></small></span><span class="amt2 muted">›</span></button>
       </div>
     </div>
     <div class="card">
@@ -435,7 +443,7 @@ h2 svg.icn{width:1.18em;height:1.18em;vertical-align:-0.22em}
       <div class="f-row"><label>Appearance</label><div class="segmini" id="modeSeg" style="margin-bottom:0"></div></div>
       <div class="f-row" style="margin-bottom:0"><label>Currency symbol</label><input class="fin" id="curSymbol" placeholder="RM, $, € …" onchange="DB.meta.currency=this.value.trim();touch();openSheetRefresh()"></div>
     </div>
-    <div class="card"><div class="help"><b>Money Manager Mobile</b> v1.22 — single-file app, works offline, no hosting required. Income / Expense / <b>Transfer</b> transactions, custom <b>account types</b> with <b>asset / liability</b> kinds, credit-card <b>statement cycle</b> — a <b>liability-only</b> setting (per-account override or per-type default) — with a <b>billing-period breakdown</b> (tap a period to see its transactions + closing balance), <b>recurring transactions</b> (daily / weekly / monthly / yearly, every N periods — auto-added up to today), balance = start + income − expenses + transfer in − transfer out, transactions listed <b>latest date first</b> with a <b>category filter</b> on the Transactions page, <b>cumulative balance</b> at every level of the account drill (month end → day end → after each transaction), collapsible <b>account summary</b> (people → account types → accounts), <b>footer navigation stays visible on every screen</b>, split expenses — <b>payer fronts all</b> (the full amount leaves the payer's account; every other person's share is credited to a receivable asset account like “HKO owes WHY” under the payer — settle it with a Transfer from that account) — and <b>deleting a split bill removes every related transaction it created</b> (with undo), account &amp; person drill-down (also combined), tap-to-edit in every drill, <b>batch select · edit · delete</b> with undo, full-screen <b>report screens</b>, per-person CSV, display themes. Compatible with the desktop dashboard format (Date, Income/Expense, Category, Subcategory, Account, Person, Note, Amount, Split, To Account). <b>Excel upload template</b>: download a ready-made XLSX with the exact columns, sample rows and a How-to-fill sheet for data migration. <b>Multi-file import</b>: pick several JSON / CSV / XLSX files at once — they are <b>merged into your existing data</b> (nothing is overwritten, identical transactions are skipped), and <svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11V9a4 4 0 0 1 4-4h11"/><path d="m15 2 3 3-3 3"/><path d="M21 13v2a4 4 0 0 1-4 4H6"/><path d="m9 22-3-3 3-3"/></svg> <b>Replace all with a file</b> restores from a snapshot when you want a clean start. <b>Clear data</b> lets you choose exactly which lists to wipe — or wipe everything. <b>Auto-backup</b>: every change is snapshotted on-device (latest 20, restore any point from Backup history) and one tap downloads a <b>single JSON backup file</b> that can be dropped into Google Drive / OneDrive and re-imported any time. <b>v1.16</b>: every delete — transactions, accounts, people, categories, sub-categories, account types, recurring series, clear-data — shows an <b>Undo</b> toast right after; all pictorial icons are replaced with a consistent <b>line-icon set</b>; and every list &amp; dropdown is sorted <b>alphabetically</b> (icons before the wording are ignored). <b>v1.17</b>: the Add/Edit form no longer asks “Paid by” — the <b>Owner of the selected account</b> is shown instead and stamped on the transaction (transfers carry the From-account owner). A <b>transfer between two different owners</b> offers an <b>Amount owed</b> tick box: on top of the two transfer legs it books a third entry into a jointly-owned debt ledger like “HKO owes WHY” (+ when the receiver borrows, − when they pay it back), so everything one side owes the other lives in one shared account — settle it with a Transfer out of that ledger. <b>v1.18</b>: a tighter Add/Edit form — <b>Repeat</b> now sits beside <b>Date</b>, and the <b>Owner</b> display sits beside the <b>Account</b> field (beside <b>From account</b> on transfers); jointly-owned groups like “HKO &amp; WHY” show a <b>couple icon</b> instead of a dash. <b>v1.19</b>: the <b>Each-pays-own</b> split mode is removed — splitting is always <b>payer fronts all</b>; and joint owner groups like “Husband &amp; Me” now show the <b>net</b> debt between the two people (ledgers of 50 and 100 read <b>RM 50 net</b> with who-owes-who, not the gross 150). <b>v1.20</b>: transfers show a separate <b>owner box for each side</b> — <b>From owner</b> beside From account, <b>To owner</b> beside To account — and you can <b>swipe left / right anywhere</b> on the page to jump between Overview, Transactions, Accounts and Settings. <b>v1.21</b>: the <b>app icon is polished</b> — a richer gradient with a top sheen and soft depth, plus a matching favicon. <b>v1.22</b>: flicking between tabs is now <b>effortless</b> — a quick ~22px flick flips the page, even a curved or slightly-diagonal one; a slower drag needs ~44px, and only clearly-vertical scrolls are ignored.</div></div>
+    <div class="card"><div class="help"><b>Money Manager Mobile</b> v1.24 — single-file app, works offline, no hosting required. Income / Expense / <b>Transfer</b> transactions, custom <b>account types</b> with <b>asset / liability</b> kinds, a <b>billing cycle</b> (statement day) that appears only for <b>CC / balance-transfer</b> types — with a <b>billing-period breakdown</b> (tap a period to see its transactions + closing balance), <b>recurring transactions</b> (daily / weekly / monthly / yearly, every N periods — auto-added up to today), balance = start + income − expenses + transfer in − transfer out, transactions listed <b>latest date first</b> with a <b>category filter</b> on the Transactions page, <b>cumulative balance</b> at every level of the account drill (month end → day end → after each transaction), collapsible <b>account summary</b> (people → account types → accounts), <b>footer navigation stays visible on every screen</b>, split expenses — <b>payer fronts all</b> (the full amount leaves the payer's account; every other person's share is credited to a receivable asset account like “HKO owes WHY” under the payer — settle it with a Transfer from that account) — and <b>deleting a split bill removes every related transaction it created</b> (with undo), account &amp; person drill-down (also combined), tap-to-edit in every drill, <b>batch select · edit · delete</b> with undo, full-screen <b>report screens</b>, per-person CSV, display themes. Compatible with the desktop dashboard format (Date, Income/Expense, Category, Subcategory, Account, Person, Note, Amount, Split, To Account). <b>Excel upload template</b>: download a ready-made XLSX with the exact columns, sample rows and a How-to-fill sheet for data migration. <b>Multi-file import</b>: pick several JSON / CSV / XLSX files at once — they are <b>merged into your existing data</b> (nothing is overwritten, identical transactions are skipped), and <svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11V9a4 4 0 0 1 4-4h11"/><path d="m15 2 3 3-3 3"/><path d="M21 13v2a4 4 0 0 1-4 4H6"/><path d="m9 22-3-3 3-3"/></svg> <b>Replace all with a file</b> restores from a snapshot when you want a clean start. <b>Clear data</b> lets you choose exactly which lists to wipe — or wipe everything. <b>Auto-backup</b>: every change is snapshotted on-device (latest 20, restore any point from Backup history) and one tap downloads a <b>single JSON backup file</b> that can be dropped into Google Drive / OneDrive and re-imported any time. <b>v1.16</b>: every delete — transactions, accounts, people, categories, sub-categories, account types, recurring series, clear-data — shows an <b>Undo</b> toast right after; all pictorial icons are replaced with a consistent <b>line-icon set</b>; and every list &amp; dropdown is sorted <b>alphabetically</b> (icons before the wording are ignored). <b>v1.17</b>: the Add/Edit form no longer asks “Paid by” — the <b>Owner of the selected account</b> is shown instead and stamped on the transaction (transfers carry the From-account owner). A <b>transfer between two different owners</b> offers an <b>Amount owed</b> tick box: on top of the two transfer legs it books a third entry into a jointly-owned debt ledger like “HKO owes WHY” (+ when the receiver borrows, − when they pay it back), so everything one side owes the other lives in one shared account — settle it with a Transfer out of that ledger. <b>v1.18</b>: a tighter Add/Edit form — <b>Repeat</b> now sits beside <b>Date</b>, and the <b>Owner</b> display sits beside the <b>Account</b> field (beside <b>From account</b> on transfers); jointly-owned groups like “HKO &amp; WHY” show a <b>couple icon</b> instead of a dash. <b>v1.19</b>: the <b>Each-pays-own</b> split mode is removed — splitting is always <b>payer fronts all</b>; and joint owner groups like “Husband &amp; Me” now show the <b>net</b> debt between the two people (ledgers of 50 and 100 read <b>RM 50 net</b> with who-owes-who, not the gross 150). <b>v1.20</b>: transfers show a separate <b>owner box for each side</b> — <b>From owner</b> beside From account, <b>To owner</b> beside To account — and you can <b>swipe left / right anywhere</b> on the page to jump between Overview, Transactions, Accounts and Settings. <b>v1.21</b>: the <b>app icon is polished</b> — a richer gradient with a top sheen and soft depth, plus a matching favicon. <b>v1.22</b>: flicking between tabs is now <b>effortless</b> — a quick ~22px flick flips the page, even a curved or slightly-diagonal one; a slower drag needs ~44px, and only clearly-vertical scrolls are ignored. <b>v1.23</b>: the <b>currency symbol</b> shows on every transaction row and everywhere amounts appear; the <b>account-type &amp; account managers</b> got a cleaner, labelled UI with the <b>current balance</b> on every account row; <b>billing-cycle fields appear only for CC / balance-transfer types</b>; the manage lists are ordered <b>People → Account Types → Accounts → Categories → Sub-categories → Recurring</b>; the edit sheet gained a <b>Duplicate as new</b> button; and categories &amp; sub-categories can be <b>moved / merged</b>, not just renamed. <b>v1.24</b>: expense amounts accept a <b>negative sign</b> — type −50 or tap the new <b>±</b> button beside the amount: a negative expense is a <b>reduction in expenses</b> (shown green “+” with an “expense reduction” tag), never re-classed as income, and every total, chart and category updates correctly. The credit-card cycle card now computes <b>Balance for new cycle = current balance − balance at the last statement</b> — the previous cycle stays frozen and only new spending builds up — with an “Outstanding now” total row.</div></div>
   </section>
 </main>
 
@@ -513,7 +521,7 @@ h2 svg.icn{width:1.18em;height:1.18em;vertical-align:-0.22em}
   </div>
   <div class="f-row">
     <label>Amount</label>
-    <div class="amt-wrap"><span class="cur" id="fCur"></span><input class="fin amt-in" id="fAmount" inputmode="decimal" placeholder="0.00" oninput="updateSplitHint();updateOwnerUI()"></div>
+    <div class="amt-wrap"><span class="cur" id="fCur"></span><input class="fin amt-in" id="fAmount" inputmode="decimal" placeholder="0.00" oninput="updateSplitHint();updateOwnerUI()"><button type="button" class="sgn" id="fSign" data-act="fsign" title="Flip sign — a negative expense is a reduction in expenses" aria-label="Flip amount sign">±</button></div>
   </div>
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
     <div class="f-row" id="fDateRow"><label>Date</label><input type="date" class="fin" id="fDate"></div>
@@ -539,6 +547,8 @@ h2 svg.icn{width:1.18em;height:1.18em;vertical-align:-0.22em}
   </div>
   <button class="btn" data-act="savetxn">Save transaction</button>
   <div style="height:8px"></div>
+  <button class="btn ghost" id="btnDup" data-act="duptxn" hidden><svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> Duplicate as new</button>
+  <div style="height:2px"></div>
   <button class="btn red" id="btnDel" data-act="deltxn" hidden><svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg> Delete transaction</button>
 </div>
 
@@ -960,7 +970,7 @@ function normalizeType(t){
   if(t.indexOf('ex')===0||t.indexOf('支出')>=0)return 'Expense';
   return '';
 }
-function mkTxn(o){var r={id:uid(),date:o.date,type:o.type,category:o.type==='Transfer'?'':(o.category||'Others'),subcategory:o.sub||'',account:o.account||'',to:(o.type==='Transfer'||o.to)?(o.to||''):'',person:o.person||'',note:o.note||'',amount:Math.abs(parseAmt(o.amount)),split:Array.isArray(o.split)?o.split:parseSplitStr(o.split)};var owA=String(o.owedAcc||'').trim(),owM=Math.round(parseFloat(o.owedAmt)*100)/100;if(owA&&isFinite(owM)&&owM){r.owedAcc=owA;r.owedAmt=owM;}return r;}
+function mkTxn(o){var r={id:uid(),date:o.date,type:o.type,category:o.type==='Transfer'?'':(o.category||'Others'),subcategory:o.sub||'',account:o.account||'',to:(o.type==='Transfer'||o.to)?(o.to||''):'',person:o.person||'',note:o.note||'',amount:(o.type==='Expense')?Math.round(parseAmt(o.amount)*100)/100:Math.abs(parseAmt(o.amount)),split:Array.isArray(o.split)?o.split:parseSplitStr(o.split)} /* v1.24: Expense keeps its sign — negative = reduction in expenses */;var owA=String(o.owedAcc||'').trim(),owM=Math.round(parseFloat(o.owedAmt)*100)/100;if(owA&&isFinite(owM)&&owM){r.owedAcc=owA;r.owedAmt=owM;}return r;}
 function parseSplitStr(s){
   s=String(s==null?'':s).trim();if(!s)return null;
   var out=[];
@@ -1070,6 +1080,7 @@ function ensureRecvAcc(name){
 }
 /* ===== asset vs liability account types + credit-card statement cycle (v1.7) ===== */
 function accTypeKind(ty){var m=DB.accTypeMeta&&DB.accTypeMeta[ty];return (m&&m.kind==='liability')?'liability':'asset';}
+function typeHasCycle(ty){ty=String(ty||'');return /balance\s*transfer/i.test(ty)||/(^|[^a-z])cc([^a-z]|$)/i.test(ty);} /* v1.23: billing-cycle fields only for CC / balance-transfer types */
 function accTypeCycle(ty){var m=DB.accTypeMeta&&DB.accTypeMeta[ty];var d=m?parseInt(m.cycle,10):0;return (d>=1&&d<=31)?d:0;}
 function pad2(n){return (n<10?'0':'')+n;}
 function todayISO(){var d=new Date();return d.getFullYear()+'-'+pad2(d.getMonth()+1)+'-'+pad2(d.getDate());}
@@ -1450,7 +1461,7 @@ function buildTemplateWB(){
     ['Account','The wallet / bank / card the money moves in or out of — created automatically if new'],
     ['Person','Who paid or earned it — created automatically if new (for transfers: the owner of the From account)'],
     ['Note','Optional description'],
-    ['Amount','A positive number, e.g. 123.45 (for a Transfer it is the amount moved)'],
+    ['Amount','A positive number, e.g. 123.45 (for a Transfer it is the amount moved). Expense amounts may be negative — type -50 or tap ±: a negative expense is a reduction in expenses, not income.'],
     ['Split','Optional split bill: Person:amount|Person:amount, e.g. WHY:60|HKO:40 — the app turns it into separate legs'],
     ['To Account','Transfer rows only — the account that receives the money'],
     ['Owed Account','Optional, Transfer rows only — the joint debt ledger used when two different owners lend money across accounts (e.g. “HKO owes WHY”). In the app this is the Amount-owed tick box'],
@@ -1624,7 +1635,7 @@ function scopeLabel(){
 function svgStacked(months){
   var W=Math.max(months.length*56+10,300),H=212,L=6,R=6,topPad=24,botPad=24;
   var mx=0;
-  months.forEach(function(m){mx=Math.max(mx,m.income+m.expense);});
+  months.forEach(function(m){mx=Math.max(mx,Math.max(0,m.income)+Math.max(0,m.expense));}); /* v1.24: clamp — a net-negative expense month is a reduction */
   if(mx<=0)mx=100;
   function y(v){return topPad+(H-topPad-botPad)*(1-v/mx);}
   var g='',i;
@@ -1635,11 +1646,11 @@ function svgStacked(months){
   months.forEach(function(m,i2){
     var step=(W-L-R)/months.length;
     var cx=L+(i2+0.5)*step;
-    var x=cx-bw/2,tot=m.income+m.expense;
+    var x=cx-bw/2,inc=Math.max(0,m.income),exp=Math.max(0,m.expense),tot=inc+exp; /* v1.24 clamp */
     if(tot>0){
-      var yE=y(m.expense),hE=H-botPad-yE;
+      var yE=y(exp),hE=H-botPad-yE;
       var yI=y(tot),hI=yE-yI;
-      var hasInc=m.income>0,hasExp=m.expense>0;
+      var hasInc=inc>0,hasExp=exp>0;
       var topY=hasInc?yI:yE,topH=hasInc?hI:hE;
       var r=Math.min(5,bw/2,topH);
       if(r<1)r=0;
@@ -1658,9 +1669,11 @@ function svgStacked(months){
   return '<svg viewBox="0 0 '+W+' '+H+'" style="width:100%;height:auto">'+g+bars+'</svg>';
 }
 function svgDonut(items){
-  if(!items.length)return '<svg viewBox="0 0 42 42"><circle cx="21" cy="21" r="15.915" fill="none" stroke="var(--line)" stroke-width="5.5"/></svg>';
+  var ring='<svg viewBox="0 0 42 42"><circle cx="21" cy="21" r="15.915" fill="none" stroke="var(--line)" stroke-width="5.5"/></svg>';
+  items=(items||[]).filter(function(it){return it.value>0;}); /* v1.24: expense reductions can net a category negative — skip it in the donut */
+  if(!items.length)return ring;
   var total=0;items.forEach(function(it){total+=it.value;});
-  if(total<=0)return '<svg viewBox="0 0 42 42"><circle cx="21" cy="21" r="15.915" fill="none" stroke="var(--line)" stroke-width="5.5"/></svg>';
+  if(total<=0)return ring;
   var off=25,segs='';
   items.forEach(function(it,i){
     var p=it.value/total*100;
@@ -1712,7 +1725,7 @@ function renderOverview(){
   var tot=items.reduce(function(s,i){return s+i.value;},0);
   $('catSub').textContent=scopeLabel()+' · '+money(tot);
   $('catDonut').innerHTML=svgDonut(items)+'<div class="donut-c"><b>'+cfmt(tot)+'</b><span>spent</span></div>';
-  $('catLegend').innerHTML=items.length?items.slice(0,12).map(function(it,i){return trow({act:'ovcat',attrs:'data-c="'+esc(it.label)+'"',dot:PALETTE[i%PALETTE.length],lb:esc(it.label),sub:pctStr(it.value,tot),amt:'-'+money(it.value),cls:'neg'});}).join(''):'<div class="help" style="padding:8px 2px">No expenses in this period.</div>';
+  $('catLegend').innerHTML=items.length?items.slice(0,12).map(function(it,i){return trow({act:'ovcat',attrs:'data-c="'+esc(it.label)+'"',dot:PALETTE[i%PALETTE.length],lb:esc(it.label),sub:pctStr(it.value,tot),amt:(it.value<0?'+':'-')+money(Math.abs(it.value)),cls:it.value<0?'pos':'neg'});}).join(''):'<div class="help" style="padding:8px 2px">No expenses in this period.</div>';
   $('monthSub').textContent='Year '+OV.year+(OV.person!=='all'?' · '+OV.person:'');
   var mt=monthTotals(base);
   var mlist=[];
@@ -1726,10 +1739,10 @@ function renderOverview(){
   $('topTabTxn').classList.toggle('on',OV.top==='txn');
   $('topList').innerHTML=OV.top==='cat'?topCatRows(scope):topTxnRows(scope);
   var yr=yearRows();
-  $('yearList').innerHTML=yr.length?yr.map(function(r){return trow({act:'yrow',attrs:'data-y="'+r.year+'"',lb:r.year,sub:r.n+' txns',amt:'<span class="pos">+'+money(r.income)+'</span> <span class="neg">-'+money(r.expense)+'</span> = '+money(r.net)});}).join(''):'<div class="help" style="padding:8px 2px">No data yet.</div>';
+  $('yearList').innerHTML=yr.length?yr.map(function(r){return trow({act:'yrow',attrs:'data-y="'+r.year+'"',lb:r.year,sub:r.n+' txns',amt:'<span class="pos">+'+money(r.income)+'</span> <span class="'+(r.expense<0?'pos':'neg')+'">'+(r.expense<0?'+':'-')+money(Math.abs(r.expense))+'</span> = '+money(r.net)});}).join(''):'<div class="help" style="padding:8px 2px">No data yet.</div>';
   var pr=personRows();
   $('personSub').textContent=OV.person!=='all'?('viewing '+OV.person+' shares'):('year '+OV.year);
-  $('personList').innerHTML=pr.length?pr.map(function(r){var sel=OV.person===r.person;return trow({act:'persondrill',attrs:'data-p="'+esc(r.person)+'"',lb:(sel?'<b style="color:var(--accent)">● </b>':'')+ico('user')+' '+esc(r.person)+(r.split?' <span class="muted">'+ico('users')+'</span>':''),sub:'net '+money(r.net)+' · tap to drill',amt:'<span class="pos">+'+money(r.income)+'</span> <span class="neg">-'+money(r.expense)+'</span>'});}).join(''):'<div class="help" style="padding:8px 2px">No data yet.</div>';
+  $('personList').innerHTML=pr.length?pr.map(function(r){var sel=OV.person===r.person;return trow({act:'persondrill',attrs:'data-p="'+esc(r.person)+'"',lb:(sel?'<b style="color:var(--accent)">● </b>':'')+ico('user')+' '+esc(r.person)+(r.split?' <span class="muted">'+ico('users')+'</span>':''),sub:'net '+money(r.net)+' · tap to drill',amt:'<span class="pos">+'+money(r.income)+'</span> <span class="'+(r.expense<0?'pos':'neg')+'">'+(r.expense<0?'+':'-')+money(Math.abs(r.expense))+'</span>'});}).join(''):'<div class="help" style="padding:8px 2px">No data yet.</div>';
 }
 function topCatRows(scope){
   var items=catBreakdown(scope,'Expense').slice(0,10);
@@ -1738,7 +1751,7 @@ function topCatRows(scope){
 }
 function topTxnRows(scope){
   var tx=scope.filter(function(t){return t.type==='Expense';}).sort(function(a,b){return b.amount-a.amount;}).slice(0,10);
-  return tx.length?tx.map(function(t,i){return trow({act:'txn',attrs:'data-id="'+t.id+'"',rank:'#'+(i+1),lb:esc(t.category)+(t.note?' — '+esc(t.note):''),sub:dLabel(t.date)+' · '+whoStr(t)+' · '+esc(t.account),amt:'-'+money(t.amount),cls:'neg'});}).join(''):'<div class="help" style="padding:8px 2px">No purchases yet.</div>';
+  return tx.length?tx.map(function(t,i){return trow({act:'txn',attrs:'data-id="'+t.id+'"',rank:'#'+(i+1),lb:esc(t.category)+(t.note?' — '+esc(t.note):''),sub:dLabel(t.date)+' · '+whoStr(t)+' · '+esc(t.account),amt:(t.amount<0?'+':'-')+money(Math.abs(t.amount)),cls:t.amount<0?'pos':'neg'});}).join(''):'<div class="help" style="padding:8px 2px">No purchases yet.</div>';
 }
 
 /* ================= drill-down ================= */
@@ -1795,11 +1808,12 @@ function miniTxn(t,bal,flip){
   var lb=isTrf?'Transfer':esc(t.category);
   var via=isTrf?(esc(t.account)+' → '+esc(t.to||'?')+(t.owedAcc?' · '+ico('bank')+' '+esc(t.owedAcc):'')):(whoStr(t)+' · '+esc(t.account));
   /* v1.12: inside a receivable drill a split-share leg (to = the receivable) is a credit → show + */
-  var cls=isTrf?'':(flip?'pos':(t.type==='Income'?'pos':'neg'));
-  var pre=flip?'+':(t.type==='Income'?'+':(isTrf?'⇄ ':'-'));
+  var redn=!isTrf&&!flip&&t.type==='Expense'&&t.amount<0; /* v1.24: negative expense = reduction */
+  var cls=isTrf?'':(flip?'pos':((t.type==='Income'||redn)?'pos':'neg'));
+  var pre=flip?'+':((t.type==='Income'||redn)?'+':(isTrf?'⇄ ':'-'));
   /* v1.8/v1.9: optional running balance (account balance AFTER this txn) under the amount,
      in parentheses like the Money Manager reference app */
-  return '<button class="mini" data-act="txn" data-id="'+t.id+'" aria-label="edit transaction"><span class="l"><b>'+lb+'</b>'+(t.subcategory?' · '+esc(t.subcategory):'')+(t.note?' — '+esc(t.note):'')+' · '+via+'</span><span class="r"><span class="amt2 '+cls+'">'+pre+money(t.amount)+'</span>'+(bal!==undefined?'<span class="minibal">('+money(bal)+')</span>':'')+'</span><span class="ed">'+ico('pencil')+'</span></button>';
+  return '<button class="mini" data-act="txn" data-id="'+t.id+'" aria-label="edit transaction"><span class="l"><b>'+lb+'</b>'+(t.subcategory?' · '+esc(t.subcategory):'')+(t.note?' — '+esc(t.note):'')+' · '+via+'</span><span class="r"><span class="amt2 '+cls+'">'+pre+money(redn?-t.amount:t.amount)+'</span>'+(bal!==undefined?'<span class="minibal">('+money(bal)+')</span>':'')+'</span><span class="ed">'+ico('pencil')+'</span></button>';
 }
 function dayRows(list,mode){
   var db=dayBreakdown(list,mode);
@@ -1884,7 +1898,7 @@ function renderDrill(){
     var isR=!!(accMeta&&accMeta.recv);
     function fbl(sgn,lb,v){return '<div class="fline"><span>'+(sgn?'<b class="pos">＋</b> ':'<b class="neg">−</b> ')+lb+'</span><b class="'+(sgn?'pos':'neg')+'">'+money(v)+'</b></div>';}
     html+='<div class="card"><h2>'+ico('wallet')+' Balance breakdown <span class="sub">'+esc(DRILL.acc)+'</span></h2><div class="rows">'
-      +fbl(true,isR?'Owed added (splits)':'Income',bi)+(bx?fbl(false,'Expenses',bx):'')+(bio?fbl(true,isR?'Owed added (transfers)':'Transfer in',bio):'')+(boo?fbl(false,isR?'Repaid (settled)':'Transfer out',boo):'')
+      +fbl(true,isR?'Owed added (splits)':'Income',bi)+(bx?fbl(bx<0,bx<0?'Expense reductions':'Expenses',Math.abs(bx)):'')+(bio?fbl(true,isR?'Owed added (transfers)':'Transfer in',bio):'')+(boo?fbl(false,isR?'Repaid (settled)':'Transfer out',boo):'')
       +fbl(true,'Starting balance',accStart)
       +'<div class="fline eq"><span>= Balance</span><b class="'+(bbal<0?'neg':'')+'">'+money(bbal)+'</b></div>'
       +'</div></div>'+(isR?(function(){var dp=String(DRILL.acc).split(' owes ');return '<div class="help small" style="margin-top:8px">'+ico('bank')+' Debt ledger — “'+esc(DRILL.acc)+'” tracks what '+esc(dp[0]||'someone')+' owes '+esc(dp[1]||'you')+', shared by both owners. Split shares and cross-owner transfers ticked <b>Amount owed</b> show under “Owed added”; a <b>Transfer out</b> to a cash account — or an owed transfer back the other way — reduces the debt.</div>';})():'');
@@ -1894,10 +1908,13 @@ function renderDrill(){
         var ref=todayISO(),lt='';DB.txns.forEach(function(t){if(t.date>lt)lt=t.date;});if(lt>ref)ref=lt;
         var le=lastCycleEnd(cyc,ref);
         var stmt=accountBalAsOf(DRILL.acc,le),stmtOwed=stmt<0?-stmt:0;
+        /* v1.24: Balance for new cycle = total balance − balance for the previous cycle (the last statement) */
+        var newBal=Math.round((bbal-stmt)*100)/100,newOwed=newBal<0?-newBal:0;
         html+='<div class="card"><h2>'+ico('refresh')+' Credit card cycle <span class="sub">statement day '+cyc+'</span></h2><div class="rows">'
           +'<div class="fline eq"><span>Outstanding as at '+dLabelY(le)+' (cycle end)</span><b class="'+(stmtOwed?'neg':'')+'">'+money(stmtOwed)+'</b></div>'
-          +'<div class="fline eq"><span>Balance for new cycle</span><b class="'+(owed?'neg':'')+'">'+money(owed)+'</b></div>'
-          +'</div><div class="help small" style="margin-top:8px">The statement freezes what you owed on day '+cyc+' of each month. Spending after that date builds up in the new cycle. Change it per account in Settings → Accounts, or as the type default in Settings → Account Types.</div></div>';
+          +'<div class="fline eq"><span>Balance for new cycle</span><b class="'+(newOwed?'neg':'')+'">'+money(newOwed)+'</b></div>'
+          +'<div class="fline eq"><span>= Outstanding now (you owe)</span><b class="'+(owed?'neg':'')+'">'+money(owed)+'</b></div>'
+          +'</div><div class="help small" style="margin-top:8px">The statement freezes what you owed on day '+cyc+' of each month. Balance for new cycle = current balance − balance at the last statement ('+money(stmt)+'), so only spending after the statement builds up here — the previous cycle stays frozen until you pay it; a payment that covers part of the statement shows 0 in the new cycle. Change it per account in Settings → Accounts, or as the type default in Settings → Account Types.</div></div>';
         /* v1.11: per-period statement breakdown — every billing cycle with its txns + closing balance */
         html+=billingPeriodsCard(accMeta,cyc);
       }else{
@@ -1918,7 +1935,7 @@ function renderDrill(){
     /* v1.10: each month row carries the account's cumulative balance at month end */
     var moB=accRunningBals(DRILL.acc).mo;
     html+='<div class="card"><h2>'+ico('calendar')+' '+esc(DRILL.acc)+' · Months <span class="sub">tap a month to drill · (balance) = cumulative at month end</span></h2><div class="rows">';
-    html+=ks.length?ks.map(function(k){var net=mm[k].income-mm[k].expense+(trf[k]||0);var tr=trf[k]||0;var mb=(moB[k]!==undefined)?'<span class="daybal">('+money(moB[k])+')</span>':'';return trow({act:'month',attrs:'data-k="'+k+'"',lb:MONTHS[(+k.slice(5))-1]+' '+k.slice(0,4),sub:tn[k]+' txns · <span class="pos">+'+money(mm[k].income)+'</span> / <span class="neg">-'+money(mm[k].expense)+'</span>'+(tr?' · ⇄ '+(tr>0?'+':'-')+money(Math.abs(tr)):''),amt:(net<0?'-':'+')+money(Math.abs(net))+mb,cls:net<0?'neg':'pos'});}).join(''):'<div class="help" style="padding:8px 2px">No transactions for this account.</div>';
+    html+=ks.length?ks.map(function(k){var net=mm[k].income-mm[k].expense+(trf[k]||0);var tr=trf[k]||0;var mb=(moB[k]!==undefined)?'<span class="daybal">('+money(moB[k])+')</span>':'';return trow({act:'month',attrs:'data-k="'+k+'"',lb:MONTHS[(+k.slice(5))-1]+' '+k.slice(0,4),sub:tn[k]+' txns · <span class="pos">+'+money(mm[k].income)+'</span> / <span class="'+(mm[k].expense<0?'pos':'neg')+'">'+(mm[k].expense<0?'+':'-')+money(Math.abs(mm[k].expense))+'</span>'+(tr?' · ⇄ '+(tr>0?'+':'-')+money(Math.abs(tr)):''),amt:(net<0?'-':'+')+money(Math.abs(net))+mb,cls:net<0?'neg':'pos'});}).join(''):'<div class="help" style="padding:8px 2px">No transactions for this account.</div>';
     html+='</div></div>';
   }else if(DRILL.level==='pmonth'){
     var mm={},tn={},trf={};
@@ -1931,7 +1948,7 @@ function renderDrill(){
     });
     var ks=Object.keys(mm).sort().reverse();
     html+='<div class="card"><h2>'+ico('calendar')+' '+ico('user')+' '+esc(DRILL.person)+(DRILL.acc?' · '+ico('card')+' '+esc(DRILL.acc):'')+' · Months <span class="sub">tap a month to drill</span></h2><div class="rows">';
-    html+=ks.length?ks.map(function(k){var net=mm[k].income-mm[k].expense+(trf[k]||0);var tr=trf[k]||0;return trow({act:'month',attrs:'data-k="'+k+'"',lb:MONTHS[(+k.slice(5))-1]+' '+k.slice(0,4),sub:tn[k]+' txns · <span class="pos">+'+money(mm[k].income)+'</span> / <span class="neg">-'+money(mm[k].expense)+'</span>'+(tr?' · ⇄ '+(tr>0?'+':'-')+money(Math.abs(tr)):''),amt:(net<0?'-':'+')+money(Math.abs(net)),cls:net<0?'neg':'pos'});}).join(''):'<div class="help" style="padding:8px 2px">No transactions for this '+(DRILL.acc?'person in this account.':'person.')+'</div>';
+    html+=ks.length?ks.map(function(k){var net=mm[k].income-mm[k].expense+(trf[k]||0);var tr=trf[k]||0;return trow({act:'month',attrs:'data-k="'+k+'"',lb:MONTHS[(+k.slice(5))-1]+' '+k.slice(0,4),sub:tn[k]+' txns · <span class="pos">+'+money(mm[k].income)+'</span> / <span class="'+(mm[k].expense<0?'pos':'neg')+'">'+(mm[k].expense<0?'+':'-')+money(Math.abs(mm[k].expense))+'</span>'+(tr?' · ⇄ '+(tr>0?'+':'-')+money(Math.abs(tr)):''),amt:(net<0?'-':'+')+money(Math.abs(net)),cls:net<0?'neg':'pos'});}).join(''):'<div class="help" style="padding:8px 2px">No transactions for this '+(DRILL.acc?'person in this account.':'person.')+'</div>';
     html+='</div></div>';
     var accsUsed={};
     applyPerson(allTxns(),DRILL.person).forEach(function(t){accsUsed[t.account]=1;});
@@ -1947,7 +1964,7 @@ function renderDrill(){
     var items=catBreakdown(l,DRILL.mode);
     var tot=items.reduce(function(s,i){return s+i.value;},0);
     html+='<h2 style="margin-top:4px">'+ico('receipt')+' '+(DRILL.mode==='Expense'?'Expenses':'Income')+' by Category <span class="sub">'+scopeNote+money(tot)+'</span></h2><div class="rows">';
-    html+=items.length?items.map(function(it,i){return trow({act:'dcat',attrs:'data-c="'+esc(it.label)+'"',dot:PALETTE[i%PALETTE.length],lb:esc(it.label),sub:pctStr(it.value,tot),amt:(DRILL.mode==='Expense'?'-':'+')+money(it.value),cls:DRILL.mode==='Expense'?'neg':'pos'});}).join(''):'<div class="help" style="padding:8px 2px">No '+(DRILL.mode==='Expense'?'expenses':'income')+' this month.</div>';
+    html+=items.length?items.map(function(it,i){return trow({act:'dcat',attrs:'data-c="'+esc(it.label)+'"',dot:PALETTE[i%PALETTE.length],lb:esc(it.label),sub:pctStr(it.value,tot),amt:(DRILL.mode==='Expense'?(it.value<0?'+':'-'):'+')+money(Math.abs(it.value)),cls:DRILL.mode==='Expense'?(it.value<0?'pos':'neg'):'pos'});}).join(''):'<div class="help" style="padding:8px 2px">No '+(DRILL.mode==='Expense'?'expenses':'income')+' this month.</div>';
     html+='</div></div>';
     html+='<div class="card"><h2>'+ico('calendar')+' Daily Breakdown <span class="sub">'+(DRILL.acc?'tap a day to expand · balance shown after each txn':'tap a day to expand · tap a transaction to edit')+'</span></h2><div class="rows">'+dayRows(l,DRILL.mode)+'</div></div>';
   }else if(DRILL.level==='cat'){
@@ -1963,7 +1980,7 @@ function renderDrill(){
     var ks=Object.keys(mm).sort().reverse();
     var tt=base.reduce(function(s,t){return s+t.amount;},0);
     html+='<div class="card"><h2>'+ico('receipt')+' '+esc(DRILL.cat)+' · '+OV.year+' <span class="sub">'+money(tt)+'</span></h2><div class="rows">';
-    html+=ks.length?ks.map(function(k){return trow({act:'month',attrs:'data-k="'+k+'"',lb:MONTHS[(+k.slice(5))-1]+' '+k.slice(0,4),sub:'tap for daily detail',amt:'-'+money(mm[k]),cls:'neg'});}).join(''):'<div class="help" style="padding:8px 2px">No spending.</div>';
+    html+=ks.length?ks.map(function(k){return trow({act:'month',attrs:'data-k="'+k+'"',lb:MONTHS[(+k.slice(5))-1]+' '+k.slice(0,4),sub:'tap for daily detail',amt:(mm[k]<0?'+':'-')+money(Math.abs(mm[k])),cls:mm[k]<0?'pos':'neg'});}).join(''):'<div class="help" style="padding:8px 2px">No spending.</div>';
     html+='</div></div>';
   }
   $('drillBody').innerHTML=html;
@@ -2047,13 +2064,15 @@ function renderTxns(){
     var rows=g[d].slice().reverse().map(function(t){
       var v=vOf(t);
       var isTrf=t.type==='Transfer';
+      var redn=!isTrf&&t.type==='Expense'&&v<0; /* v1.24: negative expense = reduction in expenses */
       var ic=isTrf?ico('refresh'):(t.type==='Income'?ico('trend'):ico('bag'));
-      var sub=isTrf?(esc(t.account)+' → '+esc(t.to||'?')+(t.owedAcc?' · '+ico('bank')+' '+esc(t.owedAcc):'')+(t.note?' · '+esc(t.note):'')):(whoStr(t)+' · '+esc(t.account)+(t.note?' · '+esc(t.note):'')+(t.to?' · '+ico('bank')+' '+esc(t.to):''));
-      var cls=t.type==='Income'?'pos':(isTrf?'':'neg');
-      var pre=t.type==='Income'?'+':(isTrf?'⇄ ':'-');
-      return '<button class="txn'+(selMode&&BSEL.ids.indexOf(t.id)>=0?' sel':'')+'" data-act="txn" data-id="'+t.id+'">'+(selMode?'<span class="ck">✓</span>':'')+'<span class="ic">'+ic+'</span><span class="mid"><b>'+esc(isTrf?'Transfer':t.category)+(t.subcategory?' · '+esc(t.subcategory):'')+'</b><small>'+sub+'</small></span><span class="amt '+cls+'">'+pre+fmt(v)+(shareMode&&!isTrf&&v!==t.amount?' <small style="font-weight:600;opacity:.65">/ '+fmt(t.amount)+'</small>':'')+'</span></button>';
+      var sub=isTrf?(esc(t.account)+' → '+esc(t.to||'?')+(t.owedAcc?' · '+ico('bank')+' '+esc(t.owedAcc):'')+(t.note?' · '+esc(t.note):'')):(whoStr(t)+' · '+esc(t.account)+(t.note?' · '+esc(t.note):'')+(t.to?' · '+ico('bank')+' '+esc(t.to):'')+(redn?' · <span style="color:var(--inc)">expense reduction</span>':''));
+      var cls=isTrf?'':((t.type==='Income'||redn)?'pos':'neg');
+      var pre=isTrf?'⇄ ':((t.type==='Income'||redn)?'+':'-');
+      var av=redn?-v:v;
+      return '<button class="txn'+(selMode&&BSEL.ids.indexOf(t.id)>=0?' sel':'')+'" data-act="txn" data-id="'+t.id+'">'+(selMode?'<span class="ck">✓</span>':'')+'<span class="ic">'+ic+'</span><span class="mid"><b>'+esc(isTrf?'Transfer':t.category)+(t.subcategory?' · '+esc(t.subcategory):'')+'</b><small>'+sub+'</small></span><span class="amt '+cls+'">'+pre+(cur()?'<small class="cur2">'+esc(cur())+'</small> ':'')+fmt(av)+(shareMode&&!isTrf&&v!==t.amount?' <small style="font-weight:600;opacity:.65">/ '+fmt(t.amount)+'</small>':'')+'</span></button>';
     }).join('');
-    return '<div class="day-h"><span>'+dLabelY(d)+'</span><span>net '+(din-dexp<0?'-':'+')+fmt(Math.abs(din-dexp))+'</span></div>'+rows;
+    return '<div class="day-h"><span>'+dLabelY(d)+'</span><span>net '+(din-dexp<0?'-':'+')+(cur()?cur()+' ':'')+fmt(Math.abs(din-dexp))+'</span></div>'+rows;
   }).join(''):'<div class="empty"><div class="big">'+ico('receipt')+'</div><b>No transactions</b><p>Adjust the filters above, or tap ＋ to add one.</p></div>';
 }
 
@@ -2098,7 +2117,7 @@ function accSummaryHTML(rows){
     if(a&&accTypeKind(a.type)==='liability'&&accCycleFor(a)){
       var le=lastCycleEnd(accCycleFor(a),todayISO());
       var stmt=accountBalAsOf(r.name,le);
-      subTxt+=' · stmt RM '+fmt(stmt<0?-stmt:stmt)+' ('+(+le.slice(8))+' '+MONTHS[(+le.slice(5,7))-1]+')';
+      subTxt+=' · stmt '+(cur()?cur()+' ':'')+fmt(stmt<0?-stmt:stmt)+' ('+(+le.slice(8))+' '+MONTHS[(+le.slice(5,7))-1]+')';
     }
     return trow({act:'acc',attrs:'data-n="'+esc(r.name)+'"',lb:(a&&a.recv?ico('bank'):ico('card'))+' '+esc(r.name),sub:subTxt,amt:money(r.bal),cls:r.bal<0?'neg':''});
   }
@@ -2165,9 +2184,9 @@ function accSave(n){
   });
   a.name=nn;a.start=st;a.owner=ow;if(ty)a.type=ty;
   if(a.recv||/^.+ owes .+$/.test(nn)){var jp2=String(nn).split(' owes ');if(jp2.length===2)a.owner=jointPair(jp2[0],jp2[1]);} /* v1.17: ledgers stay jointly owned */
-  /* v1.15: billing cycle only applies to liability accounts */
+  /* v1.23: billing cycle only applies to CC / balance-transfer types */
   var cyc=0;
-  if(accTypeKind(a.type)==='liability'){var c=parseInt(($('mgrECycA')?$('mgrECycA').value:''),10);if(c>=1&&c<=31)cyc=c;}
+  if(typeHasCycle(a.type)){var c=parseInt(($('mgrECycA')?$('mgrECycA').value:''),10);if(c>=1&&c<=31)cyc=c;}
   a.cycle=cyc;
   if(MGR.edit===n)MGR.edit=null;
   if(DRILL.acc===n)DRILL.acc=nn;
@@ -2197,8 +2216,9 @@ var MGR_TITLE={people:ico('users')+' People',cats:ico('tag')+' Categories',subs:
 function subList(c){if(!DB.subcats||typeof DB.subcats!=='object')DB.subcats={};if(!DB.subcats[c])DB.subcats[c]=[];return DB.subcats[c];}
 function openMgr(kind){MGR.kind=kind;MGR.edit=null;$('mgrTitle').innerHTML=MGR_TITLE[kind]||'Manage';renderMgr();$('mgrOvl').classList.add('on');$('mgrSheet').classList.add('on');}
 function closeMgr(){$('mgrOvl').classList.remove('on');$('mgrSheet').classList.remove('on');}
-function mgrRow(lb,sub,editAttrs,delAttrs){
+function mgrRow(lb,sub,editAttrs,delAttrs,amt){
   return '<div class="mgr-row"><span class="lb">'+lb+'<small>'+sub+'</small></span>'
+    +(amt?'<span class="mamt">'+amt+'</span>':'')
     +'<button class="ibtn" data-act="mgredit" '+(editAttrs||'')+' aria-label="edit">'+ico('pencil')+'</button>'
     +'<button class="ibtn" data-act="mgrdel" '+(delAttrs||'')+' aria-label="delete" style="color:var(--exp)">'+ico('trash')+'</button></div>';
 }
@@ -2231,8 +2251,17 @@ function renderMgr(){
       h+='<div class="mgr-sec">'+(ty==='Expense'?'− Expense':'＋ Income')+'</div>';
       h+=sortedAlpha(DB.categories[ty]||[]).map(function(c){
         var ek=ty+':'+c;
-        if(MGR.edit===ek)return mgrEditRow(ei++,c,'data-i="'+(ei-1)+'" data-k="'+esc(ek)+'"');
         var n=0;DB.txns.forEach(function(t){if(t.type===ty&&t.category===c)n++;});
+        if(MGR.edit===ek){ /* v1.23: not just rename — move every transaction into another category */
+          var others=sortedAlpha((DB.categories[ty]||[]).filter(function(x){return x!==c;}));
+          return '<div style="border:1.5px solid var(--accent);border-radius:12px;padding:10px;margin:6px 0">'
+            +'<div class="mgr-lb">Rename</div>'
+            +'<input class="fin" id="mgrN'+ei+'" value="'+esc(c)+'" style="margin-bottom:7px">'
+            +'<div class="mgr-lb">Or move its '+n+' transaction'+(n===1?'':'s')+' into</div>'
+            +'<select class="fin" id="mgrMv'+ei+'" style="margin-bottom:2px"><option value="">— keep as its own category (rename only) —</option>'+others.map(function(x){return '<option>'+esc(x)+'</option>';}).join('')+'</select>'
+            +'<div class="help small" style="margin:4px 2px 7px">Picking a category moves all of this category\u2019s transactions (and its sub-categories) there, then removes it.</div>'
+            +'<div style="display:flex;gap:7px"><button class="ibtn" data-act="mgrsave" data-i="'+ei+'" data-k="'+esc(ek)+'" style="flex:1;color:var(--inc)">Save</button><button class="ibtn" data-act="mgrcancel" style="flex:1">Cancel</button></div></div>';
+        }
         return mgrRow(esc(c),n+' txns','data-k="'+esc(ek)+'"','data-k="'+esc(ek)+'"');
       }).join('');
     });
@@ -2245,8 +2274,18 @@ function renderMgr(){
       h+='<div class="mgr-sec">'+esc(c)+'</div>';
       h+=sortedAlpha(DB.subcats[c]).map(function(s){
         var k=c+'::'+s;
-        if(MGR.edit===k)return mgrEditRow(ei++,s,'data-i="'+(ei-1)+'" data-k="'+esc(k)+'"');
         var n=0;DB.txns.forEach(function(t){if(t.category===c&&t.subcategory===s)n++;});
+        if(MGR.edit===k){ /* v1.23: change the parent category of a sub-category */
+          var mvTos=[];[].concat(DB.categories.Expense||[],DB.categories.Income||[]).forEach(function(x){if(x!==c&&mvTos.indexOf(x)<0)mvTos.push(x);});
+          mvTos=sortedAlpha(mvTos);
+          return '<div style="border:1.5px solid var(--accent);border-radius:12px;padding:10px;margin:6px 0">'
+            +'<div class="mgr-lb">Rename</div>'
+            +'<input class="fin" id="mgrN'+ei+'" value="'+esc(s)+'" style="margin-bottom:7px">'
+            +'<div class="mgr-lb">Change category</div>'
+            +'<select class="fin" id="mgrMv'+ei+'" style="margin-bottom:2px"><option value="">— stay under '+esc(c)+' —</option>'+mvTos.map(function(x){return '<option>'+esc(x)+'</option>';}).join('')+'</select>'
+            +'<div class="help small" style="margin:4px 2px 7px">Picking another category moves this sub-category and its '+n+' transaction'+(n===1?'':'s')+' there.</div>'
+            +'<div style="display:flex;gap:7px"><button class="ibtn" data-act="mgrsave" data-i="'+ei+'" data-k="'+esc(k)+'" style="flex:1;color:var(--inc)">Save</button><button class="ibtn" data-act="mgrcancel" style="flex:1">Cancel</button></div></div>';
+        }
         return mgrRow(esc(s),esc(c)+' · '+n+' txns','data-k="'+esc(k)+'"','data-k="'+esc(k)+'"');
       }).join('');
     });
@@ -2257,38 +2296,42 @@ function renderMgr(){
     h+=DB.accTypes.length?sortedAlpha(DB.accTypes).map(function(ty){
       var n=0;DB.accounts.forEach(function(a){if(a.type===ty)n++;});
       var kd=accTypeKind(ty),cy=accTypeCycle(ty),m=DB.accTypeMeta[ty]||{};
-      if(MGR.edit===ty){
+      if(MGR.edit===ty){ /* v1.23: cleaner edit card — cycle fields only for CC / balance-transfer types */
         return '<div style="border:1.5px solid var(--accent);border-radius:12px;padding:10px;margin:6px 0">'
-          +'<input class="fin" id="mgrEName" value="'+esc(ty)+'" placeholder="Type name" style="margin-bottom:7px">'
-          +'<select class="fin" id="mgrEKind" style="margin-bottom:7px" onchange="var w=document.getElementById(\'cycTWrap\');if(w)w.style.display=this.value===\'liability\'?\'\':\'none\'"><option value="asset"'+(kd==='asset'?' selected':'')+'>Asset (+ balance)</option><option value="liability"'+(kd==='liability'?' selected':'')+'>Liability (− balance)</option></select>'
-          +'<div id="cycTWrap" style="display:'+(kd==='liability'?'':'none')+';margin-bottom:7px"><input class="fin" id="mgrECycle" inputmode="numeric" value="'+(m.cycle||'')+'" placeholder="Billing cycle day 1–31 (optional)"></div>'
-          +'<div class="help small" style="margin-bottom:7px">Billing cycle (statement day) is a <b>liability-only</b> setting — credit cards, loans. It is optional; assets never have one.</div>'
+          +'<div class="mgr-lb">Type name</div>'
+          +'<input class="fin" id="mgrEName" value="'+esc(ty)+'" placeholder="Type name" style="margin-bottom:7px" oninput="var w=document.getElementById(\'cycTWrap\');if(w)w.style.display=typeHasCycle(this.value)?\'\':\'none\'">'
+          +'<div class="mgr-lb">Kind</div>'
+          +'<select class="fin" id="mgrEKind" style="margin-bottom:7px"><option value="asset"'+(kd==='asset'?' selected':'')+'>Asset (+ balance) — cash, wallet, savings</option><option value="liability"'+(kd==='liability'?' selected':'')+'>Liability (− balance) — credit card, loan</option></select>'
+          +'<div id="cycTWrap" style="display:'+(typeHasCycle(ty)?'':'none')+';margin-bottom:7px"><div class="mgr-lb">Billing cycle day (statement day)</div><input class="fin" id="mgrECycle" inputmode="numeric" value="'+(m.cycle||'')+'" placeholder="1–31, optional"></div>'
+          +'<div class="help small" style="margin-bottom:7px">Billing-cycle fields appear only for <b>CC / balance-transfer</b> types — the name decides (e.g. “CC Balance Transfer”). Other types need no cycle.</div>'
           +'<div style="display:flex;gap:7px"><button class="ibtn" data-act="mgrsave" data-k="'+esc(ty)+'" style="flex:1;color:var(--inc)">Save</button><button class="ibtn" data-act="mgrcancel" style="flex:1">Cancel</button></div></div>';
       }
-      return mgrRow(ico('folder')+' '+esc(ty),n+(n===1?' account':' accounts')+' · '+(kd==='liability'?'liability'+(cy?' · billing cycle '+cy:''):'asset')+(n?' · rename updates them':''),'data-k="'+esc(ty)+'"','data-k="'+esc(ty)+'"');
+      return mgrRow(ico('folder')+' '+esc(ty),n+(n===1?' account':' accounts')+' · '+(kd==='liability'?'liability'+((cy&&typeHasCycle(ty))?' · billing cycle '+cy:''):'asset')+(n?' · rename updates them':''),'data-k="'+esc(ty)+'"','data-k="'+esc(ty)+'"');
     }).join(''):'<div class="help" style="padding:8px 2px">No account types yet.</div>';
-    h+='<div style="border-top:1px solid var(--line);margin-top:10px;padding-top:10px"><input class="fin" id="mgrNew" placeholder="New account type, e.g. Loan" style="margin-bottom:7px"><select class="fin" id="mgrNewKind" style="margin-bottom:7px"><option value="asset">Asset (+ balance)</option><option value="liability">Liability (− balance)</option></select><div style="display:flex;gap:7px"><button class="ibtn" data-act="mgradd" style="flex:1;color:var(--accent);font-weight:800">Add type</button></div><div class="help small" style="margin-top:6px">Assets hold money you have; liabilities are what you owe (credit cards, loans). Types named like a credit card default to liability. Used types cannot be deleted; renaming updates every account.</div></div>';
+    h+='<div class="mgr-add"><div class="mgr-lb">Add a new type</div><input class="fin" id="mgrNew" placeholder="Type name, e.g. Credit Card" style="margin-bottom:7px"><div class="mgr-lb">Kind</div><select class="fin" id="mgrNewKind" style="margin-bottom:7px"><option value="asset">Asset (+ balance) — cash, wallet, savings</option><option value="liability">Liability (− balance) — credit card, loan, CC balance transfer</option></select><button class="ibtn" data-act="mgradd" style="width:100%;color:var(--accent);font-weight:800">Add type</button><div class="help small" style="margin-top:6px">Assets hold money you have; liabilities are what you owe. A name like a credit card defaults to liability. Billing-cycle settings appear only for CC / balance-transfer types. Used types cannot be deleted; renaming updates every account.</div></div>';
   }else if(MGR.kind==='accs'){
+    var BALM={};balances().rows.forEach(function(r){BALM[r.name]=r.bal;}); /* v1.23: current balance per account row */
     h+=DB.accounts.slice().sort(function(x,y){return alphasort(x.name,y.name);}).map(function(a){
-      if(MGR.edit===a.name){
+      if(MGR.edit===a.name){ /* v1.23: labelled, tidier edit card */
         return '<div style="border:1.5px solid var(--accent);border-radius:12px;padding:10px;margin:6px 0">'
           +'<div style="display:grid;grid-template-columns:1.4fr 1fr;gap:7px;margin-bottom:7px">'
-          +'<input class="fin" id="mgrEName" value="'+esc(a.name)+'" placeholder="Name">'
-          +'<input class="fin" id="mgrEStart" inputmode="decimal" value="'+(a.start||0)+'" placeholder="Start">'
+          +'<div><div class="mgr-lb">Name</div><input class="fin" id="mgrEName" value="'+esc(a.name)+'" placeholder="Name"></div>'
+          +'<div><div class="mgr-lb">Start'+(cur()?' ('+esc(cur())+')':'')+'</div><input class="fin" id="mgrEStart" inputmode="decimal" value="'+(a.start||0)+'" placeholder="0"></div>'
           +'</div>'
-          +'<select class="fin" id="mgrEType" style="margin-bottom:7px" onchange="var w=document.getElementById(\'cycAWrap\');if(w)w.style.display=((DB.accTypeMeta[this.value]||{}).kind===\'liability\')?\'\':\'none\'">'+sortedAlpha(DB.accTypes).map(function(ty){return '<option'+(ty===a.type?' selected':'')+'>'+esc(ty)+'</option>';}).join('')+'</select>'
-          +'<select class="fin" id="mgrEOwner" style="margin-bottom:7px">'+ownerOptions(a.owner)+'</select>'
-          +'<div id="cycAWrap" style="display:'+(accTypeKind(a.type)==='liability'?'':'none')+';margin-bottom:7px"><input class="fin" id="mgrECycA" inputmode="numeric" value="'+(a.cycle||'')+'" placeholder="Billing cycle day 1–31 (optional)"></div>'
-          +'<div class="help small" style="margin-bottom:7px">Billing cycle (statement day) only appears for <b>liability</b> accounts and is optional — it overrides the type default. Assets have no billing cycle.</div>'
+          +'<div class="mgr-lb">Type</div><select class="fin" id="mgrEType" style="margin-bottom:7px" onchange="var w=document.getElementById(\'cycAWrap\');if(w)w.style.display=typeHasCycle(this.value)?\'\':\'none\'">'+sortedAlpha(DB.accTypes).map(function(ty){return '<option'+(ty===a.type?' selected':'')+'>'+esc(ty)+'</option>';}).join('')+'</select>'
+          +'<div class="mgr-lb">Owner</div><select class="fin" id="mgrEOwner" style="margin-bottom:7px">'+ownerOptions(a.owner)+'</select>'
+          +'<div id="cycAWrap" style="display:'+(typeHasCycle(a.type)?'':'none')+';margin-bottom:7px"><div class="mgr-lb">Billing cycle day</div><input class="fin" id="mgrECycA" inputmode="numeric" value="'+(a.cycle||'')+'" placeholder="1–31, optional (overrides the type default)"></div>'
+          +'<div class="help small" style="margin-bottom:7px">Billing-cycle fields appear only for <b>CC / balance-transfer</b> types and are optional — they override the type default.</div>'
           +'<div style="display:flex;gap:7px"><button class="ibtn" data-act="mgrsave" data-k="'+esc(a.name)+'" style="flex:1;color:var(--inc)">Save</button>'
           +'<button class="ibtn" data-act="mgrcancel" style="flex:1">Cancel</button></div></div>';
       }
       var n=0;DB.txns.forEach(function(t){if(txnTouchesAcc(t,a.name))n++;});
-      var cyTxt=(accTypeKind(a.type)==='liability'&&accCycleFor(a))?' · cycle '+accCycleFor(a):'';
-      return mgrRow(ico('card')+' '+esc(a.name),ico('tag')+' '+esc(a.type||'—')+' · '+((a.owner)?ownerIco(a.owner)+' '+esc(a.owner):'— no owner')+' · start '+money(a.start||0)+' · '+n+' txns'+cyTxt,'data-k="'+esc(a.name)+'"','data-k="'+esc(a.name)+'"');
+      var cyTxt=(typeHasCycle(a.type)&&accCycleFor(a))?' · cycle day '+accCycleFor(a):'';
+      var bal=BALM[a.name]||0;
+      return mgrRow(ico('card')+' '+esc(a.name),ico('tag')+' '+esc(a.type||'—')+' · '+((a.owner)?ownerIco(a.owner)+' '+esc(a.owner):'<i>no owner</i>')+' · '+n+' txn'+(n===1?'':'s')+cyTxt,'data-k="'+esc(a.name)+'"','data-k="'+esc(a.name)+'"','<span class="'+(bal<0?'neg':'')+'">'+money(bal)+'</span>');
     }).join('');
     var defTy=sortedAlpha(DB.accTypes)[0]||'';
-    h+='<div style="border-top:1px solid var(--line);margin-top:10px;padding-top:10px"><input class="fin" id="mgrNewName" placeholder="Account name" style="margin-bottom:7px"><div style="display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:7px"><input class="fin" id="mgrNewStart" inputmode="decimal" placeholder="Starting balance"><select class="fin" id="mgrNewOwner">'+ownerOptions('')+'</select></div><select class="fin" id="mgrNewAType" style="margin-bottom:7px" onchange="var w=document.getElementById(\'cycNWrap\');if(w)w.style.display=((DB.accTypeMeta[this.value]||{}).kind===\'liability\')?\'\':\'none\'">'+sortedAlpha(DB.accTypes).map(function(ty){return '<option>'+esc(ty)+'</option>';}).join('')+'</select><div id="cycNWrap" style="display:'+(accTypeKind(defTy)==='liability'?'':'none')+';margin-bottom:7px"><input class="fin" id="mgrNewCyc" inputmode="numeric" placeholder="Billing cycle day 1–31 (liability only)"></div><button class="ibtn" data-act="mgradd" style="width:100%;color:var(--accent)">'+ico('plus')+' Add account</button></div>';
+    h+='<div class="mgr-add"><div class="mgr-lb">Add a new account</div><input class="fin" id="mgrNewName" placeholder="Account name" style="margin-bottom:7px"><div style="display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:7px"><input class="fin" id="mgrNewStart" inputmode="decimal" placeholder="Start balance'+(cur()?' ('+esc(cur())+')':'')+'"><select class="fin" id="mgrNewOwner">'+ownerOptions('')+'</select></div><div class="mgr-lb">Type</div><select class="fin" id="mgrNewAType" style="margin-bottom:7px" onchange="var w=document.getElementById(\'cycNWrap\');if(w)w.style.display=typeHasCycle(this.value)?\'\':\'none\'">'+sortedAlpha(DB.accTypes).map(function(ty){return '<option>'+esc(ty)+'</option>';}).join('')+'</select><div id="cycNWrap" style="display:'+(typeHasCycle(defTy)?'':'none')+';margin-bottom:7px"><input class="fin" id="mgrNewCyc" inputmode="numeric" placeholder="Billing cycle day 1–31 (optional)"></div><button class="ibtn" data-act="mgradd" style="width:100%;color:var(--accent)">'+ico('plus')+' Add account</button></div>';
   }
   $('mgrBody').innerHTML=h;
 }
@@ -2352,8 +2395,8 @@ function mgrSave(el){
   var i=el.dataset.i,k=el.dataset.k||'',inp=$('mgrN'+i);
   var v=inp?inp.value:'';
   if(MGR.kind==='people')return renamePerson(k,v);
-  if(MGR.kind==='cats'){var ci=k.indexOf(':');return renameCategory(k.slice(0,ci),k.slice(ci+1),v);}
-  if(MGR.kind==='subs'){var p=k.split('::');return renameSub(p[0],p[1],v);}
+  if(MGR.kind==='cats'){var ci=k.indexOf(':'),mv=$('mgrMv'+i);if(mv&&mv.value)return mergeCategory(k.slice(0,ci),k.slice(ci+1),mv.value);return renameCategory(k.slice(0,ci),k.slice(ci+1),v);}
+  if(MGR.kind==='subs'){var p=k.split('::'),mv2=$('mgrMv'+i);if(mv2&&mv2.value)return moveSubCat(p[0],p[1],mv2.value);return renameSub(p[0],p[1],v);}
   if(MGR.kind==='accs')return accSave(k);
   if(MGR.kind==='acctype')return saveAccType(k);
 }
@@ -2363,9 +2406,9 @@ function addAccountMgr(){
   if(!n){toast('Enter an account name');return;}
   if(DB.accounts.some(function(a){return a.name.toLowerCase()===n.toLowerCase();})){toast('Account already exists');return;}
   var ty=$('mgrNewAType')?($('mgrNewAType').value||DB.accTypes[0]):DB.accTypes[0];
-  /* v1.15: billing cycle only applies to liability accounts */
+  /* v1.23: billing cycle only applies to CC / balance-transfer types */
   var cyc=0;
-  if(accTypeKind(ty)==='liability'){var c=parseInt(($('mgrNewCyc')||{}).value,10);if(c>=1&&c<=31)cyc=c;}
+  if(typeHasCycle(ty)){var c=parseInt(($('mgrNewCyc')||{}).value,10);if(c>=1&&c<=31)cyc=c;}
   DB.accounts.push({name:n,start:parseAmt(($('mgrNewStart')||{}).value),owner:$('mgrNewOwner')?($('mgrNewOwner').value||''):'',type:ty,cycle:cyc});
   touch();renderMgr();toast('Account “'+n+'” added');
 }
@@ -2383,12 +2426,12 @@ function addAccType(n,kind){
 function saveAccType(oldN){
   var newName=(($('mgrEName')||{}).value||oldN).trim();
   var kind=$('mgrEKind')?$('mgrEKind').value:'asset';
-  /* v1.15: cycle is a liability-only, OPTIONAL setting — assets always store 0 */
-  var cyc=(kind==='liability'&&$('mgrECycle'))?parseInt($('mgrECycle').value,10):0;
+  /* v1.23: cycle is a CC / balance-transfer-only, OPTIONAL setting — other types store 0 */
+  var cyc=typeHasCycle(newName)?parseInt(($('mgrECycle')||{}).value,10):0;
   if(!(cyc>=1&&cyc<=31))cyc=0;
   if(newName!==oldN){
     if(!newName){toast('Name required');return;}
-    if(DB.accTypes.indexOf(newN)>=0){toast('Name already used');return;}
+    if(DB.accTypes.indexOf(newName)>=0){toast('Name already used');return;}
     var m=DB.accTypeMeta[oldN];delete DB.accTypeMeta[oldN];if(m)DB.accTypeMeta[newName]=m;
     DB.accTypes[DB.accTypes.indexOf(oldN)]=newName;
     DB.accounts.forEach(function(a){if(a.type===oldN)a.type=newN;});
@@ -2504,6 +2547,43 @@ function delSub(c,s){
     touch();renderMgr();toastAct('Sub-category deleted — undo?',function(){undoRestoreLists(snap);});
   });
 }
+/* ===== v1.23: CHANGE categories, not just rename — merge a category into another / move a sub-category ===== */
+function mergeCategory(ty,from,to){
+  if(!to||to===from){toast('Pick a different category');return;}
+  var moved=0;DB.txns.forEach(function(t){if(t.type===ty&&t.category===from)moved++;});
+  var nSub=(DB.subcats&&DB.subcats[from]?DB.subcats[from].length:0);
+  askConfirm('Move '+moved+' transaction'+(moved===1?'':'s')+' of “'+from+'” into “'+to+'”'+(nSub?(' together with '+nSub+' sub-category'+(nSub===1?'':'s')):'')+'? “'+from+'” is removed after the move.','Move',function(){
+    var sT=DB.txns.map(function(t){return Object.assign({},t);});
+    var sC=JSON.parse(JSON.stringify(DB.categories));
+    var sS=JSON.parse(JSON.stringify(DB.subcats||{}));
+    DB.txns.forEach(function(t){if(t.type===ty&&t.category===from)t.category=to;});
+    if(DB.subcats&&DB.subcats[from]){
+      DB.subcats[to]=(DB.subcats[to]||[]).slice();
+      DB.subcats[from].forEach(function(s){if(DB.subcats[to].indexOf(s)<0)DB.subcats[to].push(s);});
+      delete DB.subcats[from];
+    }
+    DB.categories[ty]=DB.categories[ty].filter(function(x){return x!==from;});
+    if(F.cat===from)F.cat=to;
+    MGR.edit=null;touch();renderMgr();
+    toastAct('Moved '+moved+' transaction'+(moved===1?'':'s')+' into '+to+' — undo?',function(){
+      DB.txns=sT.map(function(t){return Object.assign({},t);});
+      DB.categories=JSON.parse(JSON.stringify(sC));
+      DB.subcats=JSON.parse(JSON.stringify(sS));
+      MGR.edit=null;touch();renderMgr();toast('Merge undone');
+    });
+  });
+}
+function moveSubCat(from,sub,to){
+  if(!to||to===from){toast('Pick a different category');return;}
+  if(subList(to).indexOf(sub)>=0){toast('“'+sub+'” already exists under '+to);return;}
+  var moved=0;DB.txns.forEach(function(t){if(t.category===from&&t.subcategory===sub){t.category=to;moved++;}});
+  var fl=subList(from);fl.splice(fl.indexOf(sub),1);
+  if(!fl.length)delete DB.subcats[from];
+  subList(to).push(sub);
+  if(F.cat===from&&F.sub===sub)F.cat=to;
+  MGR.edit=null;touch();renderMgr();
+  toast('“'+sub+'” moved to '+to+' · '+moved+' txn'+(moved===1?'':'s')+' updated ✓');
+}
 /* ===== v1.15: clear-data chooser — wipe everything or only the ticked manage lists ===== */
 var CLR_LISTS=[
   {k:'txns',ic:'receipt',label:'Transactions',n:function(){return DB.txns.length;}},
@@ -2606,7 +2686,7 @@ function updateOwnerUI(){
   var ex2=DB.accounts.some(function(a){return a.name===fo+' owes '+toO;});
   var nm=ex2?(fo+' owes '+toO):(toO+' owes '+fo);
   var sg=ex2?'−':'+';
-  $('fOwedHint').innerHTML='Entries on save: '+esc(from)+' <b class="neg">−'+fmt(amt)+'</b> · '+ico('bank')+' “'+esc(nm)+'” <b class="pos">'+sg+fmt(amt)+'</b> · '+esc(to)+' <b class="pos">+'+fmt(amt)+'</b>'+(ex2?' <span style="color:var(--muted)">(repays the debt)</span>':'');
+  $('fOwedHint').innerHTML='Entries on save: '+esc(from)+' <b class="neg">−'+money(amt)+'</b> · '+ico('bank')+' “'+esc(nm)+'” <b class="pos">'+sg+money(amt)+'</b> · '+esc(to)+' <b class="pos">+'+money(amt)+'</b>'+(ex2?' <span style="color:var(--muted)">(repays the debt)</span>':'');
 }
 function renderFormCats(sel){
   var cats=DB.categories[F.type]||[];
@@ -2628,6 +2708,7 @@ function setFormType(t){
   $('fSubRow').hidden=trf;
   $('fToRow').hidden=!trf;
   $('fOwnerToRow').hidden=!trf; /* v1.20: the To-owner box lives beside To account */
+  if($('fSign'))$('fSign').hidden=(t!=='Expense'); /* v1.24: ± sign flip only for expenses */
   $('fAccLabel').textContent=trf?'From account':'Account';
   $('fNoteRow').style.gridColumn=trf?'span 2':'';
   if(trf){
@@ -2644,6 +2725,7 @@ function openSheet(id){
   F.id=id||null;
   $('sheetTitle').textContent=t?'Edit transaction':'Add transaction';
   $('btnDel').hidden=!t;
+  $('btnDup').hidden=!t; /* v1.23 */
   $('fCur').textContent=cur();
   $('fAmount').value=t?t.amount:'';
   $('fDate').value=t?t.date:todayStr();
@@ -2676,6 +2758,16 @@ function openSheet(id){
   $('sheet').classList.add('on');
 }
 function openSheetRefresh(){if($('sheet').classList.contains('on'))$('fCur').textContent=cur();}
+function dupTxn(){ /* v1.23: edit a copy — Save adds it as a NEW transaction */
+  if(!F.id)return;
+  var id=F.id;
+  openSheet(id);
+  F.id=null;
+  $('sheetTitle').textContent='Duplicate transaction';
+  $('btnDel').hidden=true;
+  $('btnDup').hidden=true;
+  toast('Editing a copy — tap Save to add it');
+}
 function closeSheet(){$('ovl').classList.remove('on');$('sheet').classList.remove('on');}
 /* ===== recurring transactions (v1.9) ===== */
 function repUI(){
@@ -2784,18 +2876,27 @@ function updateSplitHint(){
   var amt=parseAmt($('fAmount').value),sum=0;
   SPLIT.rows.forEach(function(r){sum+=parseAmt(r.v);});
   var left=Math.round((amt-sum)*100)/100;
-  if(left>0.004){h.textContent='Unassigned: '+fmt(left)+' of '+fmt(amt)+' — will be paid by the account owner';h.style.color='var(--warn)';}
+  if(left>0.004){h.textContent='Unassigned: '+money(left)+' of '+money(amt)+' — will be paid by the account owner';h.style.color='var(--warn)';}
   else if(left<-0.004){h.textContent='Over by '+fmt(-left)+' — portions exceed the amount';h.style.color='var(--exp)';}
   else{
     var payer=ownerOf(($('fAccount')&&$('fAccount').value)||'')||DB.people[0]||'Me';
     var dbt=SPLIT.rows.map(function(r){return (r.p||'').trim();}).filter(function(p){return p&&p!==payer;});
-    h.innerHTML=ico('check')+' Portions add up to '+fmt(amt)+(dbt.length?(' · '+dbt.map(function(d){return esc(d)+' → '+ico('bank')+' “'+esc(d)+' owes '+esc(payer)+'”';}).join(', ')):'');
+    h.innerHTML=ico('check')+' Portions add up to '+money(amt)+(dbt.length?(' · '+dbt.map(function(d){return esc(d)+' → '+ico('bank')+' “'+esc(d)+' owes '+esc(payer)+'”';}).join(', ')):'');
     h.style.color='var(--inc)';
   }
 }
+/* v1.24: ± flips the amount sign — for Expense a negative amount is a REDUCTION in expenses, not income */
+function flipSign(){
+  var el=$('fAmount');if(!el)return;
+  if(F.type!=='Expense'){toast('Negative amounts apply to Expense — they reduce the expense');return;}
+  var v=parseAmt(el.value);
+  if(!v){toast('Type the amount first');return;}
+  el.value=String(Math.round(-v*100)/100);
+  updateSplitHint();updateOwnerUI();
+}
 function saveTxn(){
   var amt=parseAmt($('fAmount').value);
-  if(!(amt>0)){toast('Please enter an amount');return;}
+  if(F.type==='Expense'?!amt:!(amt>0)){toast('Please enter an amount');return;} /* v1.24: a negative expense = reduction in expenses */
   var date=$('fDate').value||todayStr();
   var note=$('fNote').value.trim();
   var wasNew=!F.id;
@@ -3031,11 +3132,13 @@ function handleAct(el){
     case 'replacefile':$('fileReplace').click();break;
     case 'closesheet':closeSheet();break;
     case 'ftype':setFormType(el.dataset.t);break;
+    case 'fsign':flipSign();break; /* v1.24 */
     case 'splitadd':splitAdd();break;
     case 'splitdel':splitDel(+el.dataset.i);break;
     case 'spliteven':splitEven();break;
     case 'splitadd':splitAdd();break;
     case 'savetxn':saveTxn();break;
+    case 'duptxn':dupTxn();break;
     case 'deltxn':delTxn();break;
     case 'cyes':confirmResolve(true);break;
     case 'cno':confirmResolve(false);break;
