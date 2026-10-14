@@ -420,12 +420,37 @@ button.hcell{cursor:pointer;font:inherit;color:inherit;text-align:left;width:100
 .day-h.bghd{display:grid;font-size:10.5px;text-transform:uppercase;letter-spacing:.4px}
 .day-h.bghd span{text-align:right;color:var(--muted)!important}.day-h.bghd span:first-child{text-align:left}
 button.fline{font:inherit;color:inherit;text-align:left}
+
+/* v1.48 */
+.aibtn{display:inline-flex;align-items:center;gap:5px;flex:none;font-size:12.5px;font-weight:800;color:var(--accent);background:var(--accent-soft);border-radius:999px;padding:7px 12px}
+#chmodal{z-index:79}
+#aiOvl{z-index:74}#aiSheet{z-index:75;height:88vh;max-height:88vh;display:flex;flex-direction:column;overflow:hidden}
+.ailog{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:8px;padding:4px 2px 8px}
+.aim{max-width:88%;padding:9px 12px;border-radius:14px;font-size:13.5px;line-height:1.55;overflow-wrap:anywhere}
+.aim.u{align-self:flex-end;background:var(--accent);color:#fff;border-bottom-right-radius:4px}
+.aim.a{align-self:flex-start;background:var(--bg);border-bottom-left-radius:4px}
+.aim.pend{opacity:.6;font-style:italic}
+.aim .src{display:block;font-size:10.5px;color:var(--muted);margin-top:5px;font-style:normal}
+.aim .neg{color:var(--exp)}.aim .pos{color:var(--inc)}
+.aiin{display:flex;gap:8px;padding-top:8px;border-top:1px solid var(--line)}.aiin .fin{padding:10px 12px;font-size:14.5px}
+.aicfg{background:var(--bg);border-radius:12px;padding:10px;margin-bottom:8px;max-height:52vh;overflow-y:auto}
+#calcPad{position:fixed;left:0;right:0;bottom:0;z-index:95;background:var(--card);box-shadow:0 -8px 28px rgba(0,0,0,.22);border-radius:18px 18px 0 0;padding:8px 12px calc(10px + env(safe-area-inset-bottom));max-width:560px;margin:0 auto;transform:translateY(110%);transition:transform .2s ease}
+#calcPad.on{transform:none}
+.cpv{display:flex;justify-content:space-between;align-items:baseline;gap:8px;padding:4px 4px 8px;font-size:12.5px;color:var(--muted);font-weight:700}
+.cpv b{font-size:19px;color:var(--ink)}
+.cpg{display:grid;grid-template-columns:repeat(4,1fr);gap:7px}
+.cpg button{height:46px;border-radius:12px;background:var(--bg);font-size:19px;font-weight:700;text-align:center;color:var(--ink)}
+.cpg button:active{transform:scale(.96)}
+.cpg .op{color:var(--accent);background:var(--accent-soft)}.cpg .fn{color:var(--muted)}
+.cpg .eq{background:var(--accent);color:#fff;font-size:16px}
+body.calc-on .sheet.on{padding-bottom:calc(330px + env(safe-area-inset-bottom))}
 </style>
 </head>
 <body>
 <header class="hdr">
   <div class="logo" style="display:flex;align-items:center;justify-content:center;color:#fff"><svg class="icn" style="width:22px;height:22px;vertical-align:0" viewBox="0 0 24 24"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4Z"/></svg></div>
   <h1>Money Manager</h1>
+  <button class="aibtn" data-act="aiopen" aria-label="Ask the money assistant"><svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l1.8 4.9L19 9.7l-4.9 1.8L12 16.4l-1.8-4.9L5.3 9.7l4.9-1.8Z"/><path d="M19 15l.8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8Z"/></svg> Ask</button>
   <button class="sync" id="syncChip" data-act="cloud"><span class="dot"></span><span id="syncText">Local only</span></button>
 </header>
 
@@ -572,7 +597,7 @@ button.fline{font:inherit;color:inherit;text-align:left}
       <div class="f-row"><label>Appearance</label><div class="segmini" id="modeSeg" style="margin-bottom:0"></div></div>
       <div class="f-row" style="margin-bottom:0"><label>Currency symbol</label><input class="fin" id="curSymbol" placeholder="RM, $, € …" onchange="DB.meta.currency=this.value.trim();touch();openSheetRefresh()"></div>
     </div>
-    <div class="card"><h2><svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><line x1="12" y1="10.5" x2="12" y2="16"/><line x1="12" y1="7.5" x2="12" y2="7.6"/></svg> About <span class="sub">v1.47</span></h2><div class="help"><b>Money Manager Mobile</b> is a single-file app that works offline. Your data lives on this device and cloud sync is opt-in.</div>
+    <div class="card"><h2><svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><line x1="12" y1="10.5" x2="12" y2="16"/><line x1="12" y1="7.5" x2="12" y2="7.6"/></svg> About <span class="sub">v1.48</span></h2><div class="help"><b>Money Manager Mobile</b> is a single-file app that works offline. Your data lives on this device and cloud sync is opt-in.</div>
       <details class="help" style="margin-top:10px"><summary>Help &amp; tips</summary><ol>
         <li><b>Add:</b> tap ＋, pick a category chip, then Save. Your last category is remembered.</li>
         <li><b>Edit:</b> tap a transaction. <b>Select several:</b> long-press one.</li>
@@ -583,6 +608,9 @@ button.fline{font:inherit;color:inherit;text-align:left}
         <li><b>Saving goals:</b> Settings → Saving goals. Link a goal to a savings account, or add money to it by hand.</li>
         <li><b>Reports:</b> every report has Week / Month / Year and Couple / individual options.</li>
         <li><b>Collaborate:</b> Settings → Collaborators → Invite. Choose which accounts they may manage, send the invite file, and import their changes file when they send it back.</li>
+        <li><b>Calculator:</b> amount fields open a keypad with + − × ÷. Type a sum like 45+12.50 and tap = or Done.</li>
+        <li><b>Split bills:</b> open any share, then choose <b>This share only</b> or <b>Whole bill</b> to edit. Delete asks whether to remove one share or the whole bill.</li>
+        <li><b>Money assistant:</b> tap <b>Ask</b> at the top. Answers come from your data on this device; you can optionally connect OpenAI or Gemini with your own key.</li>
         <li><b>Back:</b> the phone Back button or Esc closes the top screen.</li>
       </ol></details></div>
   </section>
@@ -661,6 +689,22 @@ button.fline{font:inherit;color:inherit;text-align:left}
   <div class="sheet-foot"><button class="btn" data-act="savetxn">Save transaction</button></div>
 </div>
 
+<!-- v1.48 choice modal -->
+<div class="cmodal" id="chmodal"><div class="cbox"><p id="chMsg"></p><div id="chBtns" style="display:grid;gap:8px"></div></div></div>
+<!-- v1.48 AI assistant -->
+<div class="ov" id="aiOvl" data-act="aiclose"></div>
+<div class="sheet" id="aiSheet">
+  <div class="grab"></div>
+  <div style="display:flex;align-items:center;gap:4px;margin-bottom:6px">
+    <div style="flex:1;min-width:0"><b style="font-size:16px;color:var(--accent)"><svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l1.8 4.9L19 9.7l-4.9 1.8L12 16.4l-1.8-4.9L5.3 9.7l4.9-1.8Z"/><path d="M19 15l.8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8Z"/></svg> Money assistant</b><div class="small muted" id="aiMode"></div></div>
+    <button class="hbtn" data-act="aiset" aria-label="assistant settings"><svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg></button>
+    <button class="hbtn" data-act="aiclose" aria-label="close"><svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+  </div>
+  <div id="aiCfg" class="aicfg" hidden></div>
+  <div id="aiLog" class="ailog"></div>
+  <div class="chips" id="aiSug" style="padding:6px 0"></div>
+  <div class="aiin"><input class="fin" id="aiQ" placeholder="Ask about your money…" autocomplete="off" onkeydown="if(event.key==='Enter'){event.preventDefault();aiSend();}"><button class="btn sm" data-act="aisend">Send</button></div>
+</div>
 <!-- confirm modal -->
 <div class="cmodal" id="cmodal"><div class="cbox">
   <p id="confirmMsg"></p>
@@ -690,6 +734,7 @@ button.fline{font:inherit;color:inherit;text-align:left}
   <div id="mgrBody"></div>
 </div>
 
+<div id="calcPad" aria-label="calculator"><div class="cpv"><span id="cpLbl">Amount</span><b id="cpRes"></b></div><div class="cpg"><button type="button" data-ck="7" tabindex="-1">7</button><button type="button" data-ck="8" tabindex="-1">8</button><button type="button" data-ck="9" tabindex="-1">9</button><button type="button" data-ck="/" class="op" tabindex="-1">÷</button><button type="button" data-ck="4" tabindex="-1">4</button><button type="button" data-ck="5" tabindex="-1">5</button><button type="button" data-ck="6" tabindex="-1">6</button><button type="button" data-ck="*" class="op" tabindex="-1">×</button><button type="button" data-ck="1" tabindex="-1">1</button><button type="button" data-ck="2" tabindex="-1">2</button><button type="button" data-ck="3" tabindex="-1">3</button><button type="button" data-ck="-" class="op" tabindex="-1">−</button><button type="button" data-ck="." tabindex="-1">.</button><button type="button" data-ck="0" tabindex="-1">0</button><button type="button" data-ck="bk" class="fn" tabindex="-1">⌫</button><button type="button" data-ck="+" class="op" tabindex="-1">+</button><button type="button" data-ck="C" class="fn" tabindex="-1">C</button><button type="button" data-ck="=" class="op" tabindex="-1">=</button><button type="button" data-ck="done" class="eq" tabindex="-1" style="grid-column:span 2">Done</button></div></div>
 <div class="toast" id="toast"><span id="toastMsg"></span><button id="toastUndo" data-act="undo"><svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 14 4 9l5-5"/><path d="M4 9h10a6 6 0 0 1 6 6v5"/></svg> Undo</button><span id="toastBar" aria-hidden="true"><i></i></span></div>
 
 <script>
@@ -4723,6 +4768,366 @@ var _hA47=handleAct;handleAct=function(el){
 setTimeout(remCheck,2500);
 setInterval(remCheck,3600000);
 document.addEventListener('visibilitychange',function(){if(!document.hidden)setTimeout(remCheck,800);});
+
+/* ===================== v1.48: who-owes-whom as at period end · AI assistant · calculator keypad · split-bill edit/delete choices ===================== */
+ICONS.spark='<path d="M12 3l1.8 4.9L19 9.7l-4.9 1.8L12 16.4l-1.8-4.9L5.3 9.7l4.9-1.8Z"/><path d="M19 15l.8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8Z"/>';
+ICONS.calc='<rect x="5" y="2" width="14" height="20" rx="2"/><line x1="8" y1="6" x2="16" y2="6"/><line x1="8" y1="11" x2="8" y2="11.01"/><line x1="12" y1="11" x2="12" y2="11.01"/><line x1="16" y1="11" x2="16" y2="11.01"/><line x1="8" y1="15" x2="8" y2="15.01"/><line x1="12" y1="15" x2="12" y2="15.01"/><line x1="16" y1="15" x2="16" y2="18"/><line x1="8" y1="18" x2="12" y2="18"/>';
+/* ---------- 1. who owes whom: balances as at the end of the chosen period ---------- */
+function ledgersAt(d){
+  return ledgers().map(function(l){
+    var b=Math.round(accountBalAsOf(l.name,d)*100)/100,pp=l.name.split(' owes ');
+    return {name:l.name,bal:b,debtor:b>=0?pp[0]:pp[1],creditor:b>=0?pp[1]:pp[0],amt:Math.abs(b)};
+  });
+}
+function oweTxt(name,b){var pp=name.split(' owes ');if(Math.abs(b)<0.005)return 'All settled';return (b>0?esc(pp[0])+' owes '+esc(pp[1]):esc(pp[1])+' owes '+esc(pp[0]))+' '+money(Math.abs(b));}
+function repSettle48(){
+  var r=perRange(),td=todayISO(),asd=r.e<td?r.e:td,isNow=asd===td,before=addDaysISO(r.s,-1);
+  var ls=ledgersAt(asd);
+  if(whoOK()!=='couple')ls=ls.filter(function(l){return l.name.split(' owes ').indexOf(PER.who)>=0;});
+  var hd='<h2>'+ico('scale')+' Who owes whom <span class="sub">as at '+dLabelYW(asd)+'</span></h2>';
+  if(!ls.length)return '<div class="card">'+hd+'<div class="help">No shared debts'+(PER.who==='couple'?'':' for '+esc(PER.who))+'. Split a bill between two people, or tick “Amount owed” on a transfer, and it will show up here.</div></div>';
+  return ls.map(function(l){
+    var o=Math.round(accountBalAsOf(l.name,before)*100)/100,add=0,red=0,n=0;
+    DB.txns.forEach(function(t){if(t.date<r.s||t.date>asd||!txnTouchesAcc(t,l.name))return;var v=accEffect(t,l.name);if(v>=0)add+=v;else red-=v;n++;});
+    var done=l.amt<0.005;
+    return '<div class="card">'+hd+'<div class="rows">'
+      +'<div class="fline"><span>At the start · '+dLabelY(before)+'</span><b>'+oweTxt(l.name,o)+'</b></div>'
+      +'<div class="fline"><span>Added in '+esc(r.label)+'<br><small class="muted">split shares, loans</small></span><b>+ '+money(add)+'</b></div>'
+      +'<div class="fline"><span>Reduced in '+esc(r.label)+'<br><small class="muted">repayments, refunds, income shares</small></span><b>− '+money(red)+'</b></div>'
+      +'<div class="fline eq"><span>As at '+dLabelY(asd)+(n?' <small class="muted">· '+n+' transaction'+(n===1?'':'s')+'</small>':'')+'</span><b class="'+(done?'pos':'neg')+'">'+oweTxt(l.name,l.bal)+'</b></div></div>'
+      +(isNow&&!done?'<button class="btn" style="margin-top:10px" data-act="settle" data-n="'+esc(l.name)+'">'+ico('check')+' Settle up '+money(l.amt)+'</button>':'')
+      +(!isNow?'<div class="help small" style="margin-top:8px">Today: '+oweTxt(l.name,Math.round(accountBalAsOf(l.name,td)*100)/100)+'</div>':'')+'</div>';
+  }).join('');
+}
+DYNF.settle=repSettle48;
+/* ---------- 3. calculator: every amount field accepts sums and opens a calculator keypad ---------- */
+function calcEval(s){
+  s=String(s==null?'':s).replace(/[,\s]/g,'').replace(/×/g,'*').replace(/÷/g,'/').replace(/[−–]/g,'-').replace(/[+\-*/]+$/,'');
+  if(!s||!/^[0-9.+\-*/()]+$/.test(s))return NaN;
+  var i=0;
+  function num(){var m=s.slice(i).match(/^\d*\.?\d+|^\d+\.?/);if(!m)throw 0;i+=m[0].length;return parseFloat(m[0]);}
+  function fac(){var c=s.charAt(i);if(c==='-'){i++;return -fac();}if(c==='+'){i++;return fac();}if(c==='('){i++;var v=expr();if(s.charAt(i)!==')')throw 0;i++;return v;}return num();}
+  function term(){var v=fac();while(s.charAt(i)==='*'||s.charAt(i)==='/'){var o=s.charAt(i++),w=fac();v=o==='*'?v*w:v/w;}return v;}
+  function expr(){var v=term();while(s.charAt(i)==='+'||s.charAt(i)==='-'){var o=s.charAt(i++),w=term();v=o==='+'?v+w:v-w;}return v;}
+  try{var r=expr();return i===s.length&&isFinite(r)?r:NaN;}catch(e){return NaN;}
+}
+function calcHasOp(s){s=String(s||'').replace(/[\s,]/g,'');return /[+*/×÷]/.test(s)||/[0-9.)]-/.test(s);}
+var _parseAmt48=parseAmt;
+parseAmt=function(v){
+  if(typeof v==='string'&&calcHasOp(v)){var s=v.replace(/[^0-9.+\-*/()×÷−]/g,'');var r=calcEval(s);if(isFinite(r))return Math.round(r*100)/100;}
+  return _parseAmt48(v);
+};
+var CALC={el:null,open:false,fresh:false};
+var CALC_SEL='#fAmount,#fSplitRows input[data-sf="v"],#mgrEStart,#mgrNewStart,.bgrow input.fin,#gaT,#geT,#gcAmt';
+function isCalcEl(el){return !!(el&&el.matches&&el.matches(CALC_SEL));}
+function calcMark(){var l=document.querySelectorAll(CALC_SEL),i;for(i=0;i<l.length;i++)if(l[i].getAttribute('inputmode')!=='none'){l[i].setAttribute('inputmode','none');l[i].setAttribute('autocomplete','off');}}
+function calcFire(el){try{el.dispatchEvent(new Event('input',{bubbles:true}));}catch(e){}}
+function calcPrev(){var el=CALC.el,b=$('cpRes');if(!el||!b)return;var v=el.value,r=calcEval(v);b.textContent=calcHasOp(v)?('= '+(isFinite(r)?fmt(r):'…')):(v?fmt(parseAmt(v)):'');}
+function calcLabel(el){if(el.id==='fAmount')return 'Amount';if(el.dataset.sf==='v')return 'Split share';var a=el.getAttribute('aria-label');if(a)return a.charAt(0).toUpperCase()+a.slice(1);if(el.id==='gcAmt')return 'Goal amount';if(/T$/.test(el.id))return 'Goal target';return 'Start balance';}
+function calcOpen(el){
+  CALC.el=el;CALC.open=true;CALC.fresh=true;
+  $('cpLbl').innerHTML=ico('calc')+' '+esc(calcLabel(el));
+  $('calcPad').classList.add('on');document.body.classList.add('calc-on');calcPrev();
+  setTimeout(function(){try{el.scrollIntoView({block:'center',behavior:'smooth'});}catch(e){}},80);
+  navSync();
+}
+function calcSettle(el){if(el&&calcHasOp(el.value)){var r=calcEval(el.value);if(isFinite(r)){el.value=String(Math.round(r*100)/100);calcFire(el);}}}
+function calcClose(ev){
+  var el=CALC.el;if(ev!==false)calcSettle(el);
+  CALC.el=null;CALC.open=false;$('calcPad').classList.remove('on');document.body.classList.remove('calc-on');
+  if(el&&document.activeElement===el)el.blur();
+  navSync();
+}
+function calcKey(k){
+  var el=CALC.el;if(!el)return;var v=el.value||'';
+  if(k==='done'){calcClose(true);return;}
+  if(k==='='){calcSettle(el);CALC.fresh=true;calcPrev();return;}
+  if(k==='C')v='';
+  else if(k==='bk')v=v.slice(0,-1);
+  else if('+-*/'.indexOf(k)>=0){if(v===''&&k!=='-')return;v=/[+\-*/]$/.test(v)?v.slice(0,-1)+k:v+k;}
+  else{if(CALC.fresh)v='';if(k==='.'){var seg=v.split(/[+\-*/]/).pop();if(seg.indexOf('.')>=0)return;if(seg==='')v+='0';}v+=k;}
+  CALC.fresh=false;el.value=v;calcFire(el);calcPrev();
+}
+document.addEventListener('focusin',function(e){if(isCalcEl(e.target)){if(CALC.el&&CALC.el!==e.target)calcSettle(CALC.el);calcOpen(e.target);}});
+document.addEventListener('focusout',function(e){
+  if(!CALC.open||e.target!==CALC.el)return;
+  var rt=e.relatedTarget;if(rt&&$('calcPad').contains(rt))return;
+  setTimeout(function(){if(!CALC.open)return;var a=document.activeElement;if(a&&(isCalcEl(a)||$('calcPad').contains(a)))return;calcClose(true);},150);
+});
+document.addEventListener('keydown',function(e){if(e.key==='Enter'&&isCalcEl(e.target)){calcSettle(e.target);calcPrev();}});
+/* ---------- 4/5. split bill: edit / delete this share or the whole bill ---------- */
+var CH={opts:[]};
+function askChoice(msg,opts){CH.opts=opts;$('chMsg').textContent=msg;
+  $('chBtns').innerHTML=opts.map(function(o,i){return '<button class="'+o.c+'" data-act="chpick" data-i="'+i+'">'+o.l+'</button>';}).join('')+'<button class="btn ghost" data-act="chno">Cancel</button>';
+  $('chmodal').classList.add('on');navSync();}
+function choiceClose(){$('chmodal').classList.remove('on');navSync();}
+function renderGroupNote(mode){
+  F.gmode=mode;var legs=DB.txns.filter(function(x){return x.group===F.gid;}),gn=$('fGroupNote');
+  gn.hidden=false;
+  gn.innerHTML='<div style="font-weight:800;color:var(--ink);margin-bottom:6px">'+ico('users')+' Split bill · '+legs.length+' shares</div>'
+    +'<div class="segmini" style="margin-bottom:6px"><button type="button" class="'+(mode==='one'?'on':'')+'" data-act="gmode" data-m="one">This share only</button><button type="button" class="'+(mode==='all'?'on':'')+'" data-act="gmode" data-m="all">Whole bill</button></div>'
+    +(mode==='one'?'Changes apply to this share only. The other shares stay as they are.':'Changes apply to every share. Edit the total, the details and the split below, then save.');
+  $('fSplitBox').hidden=(mode==='one')||F.type==='Transfer';
+  $('sheetTitle').textContent=mode==='one'?'Edit share':'Edit split bill';
+}
+function loadWholeBill(){
+  var legs=DB.txns.filter(function(x){return x.group===F.gid;});if(legs.length<2)return;
+  var t0=legs[0],tot=0;legs.forEach(function(l){tot+=+l.amount||0;});tot=Math.round(tot*100)/100;
+  F.id=F.legId;setFormType(t0.type);
+  $('fAccount').innerHTML=accOptions(t0.account);
+  F.sub=t0.subcategory||'';renderFormCats(t0.category);
+  $('fAmount').value=tot;$('fDate').value=t0.date;$('fNote').value=t0.note||'';
+  $('fRep').value='';repUI();
+  SPLIT.rows=legs.map(function(l){return {p:l.person,v:Math.abs(+l.amount||0)};});
+  renderSplitRows();$('fMore').open=true;updateOwnerUI();signUI();renderGroupNote('all');
+}
+var _openSheet48=openSheet;
+openSheet=function(id){
+  F.gid=null;F.gmode=null;F.legId=null;
+  _openSheet48(id);
+  var t=id?DB.txns.find(function(x){return x.id===id;}):null;
+  if(t&&t.group&&DB.txns.filter(function(x){return x.group===t.group;}).length>1){F.gid=t.group;F.legId=id;renderGroupNote('one');}
+};
+var _dupTxn48=dupTxn;
+dupTxn=function(){_dupTxn48();F.gid=null;F.gmode=null;$('fGroupNote').hidden=true;$('fSplitBox').hidden=F.type==='Transfer';};
+var _saveTxn48=saveTxn;
+saveTxn=function(){
+  if(!(F.gid&&F.gmode==='all'))return _saveTxn48();
+  var gid=F.gid,old=DB.txns.filter(function(x){return x.group===gid;}).map(function(x){return Object.assign({},x);});
+  DB.txns=DB.txns.filter(function(x){return x.group!==gid;});
+  var keep={};DB.txns.forEach(function(x){keep[x.id]=1;});
+  var fid=F.id;F.id=null;
+  _saveTxn48();
+  if($('sheet').classList.contains('on')){DB.txns=DB.txns.concat(old);F.id=fid;return;}
+  var made=DB.txns.filter(function(x){return !keep[x.id];}).map(function(x){return x.id;});
+  F.gid=null;F.gmode=null;
+  toastAct('Split bill updated · '+made.length+' share'+(made.length===1?'':'s')+' — undo?',function(){
+    var mk={};made.forEach(function(i){mk[i]=1;});
+    DB.txns=DB.txns.filter(function(x){return !mk[x.id];}).concat(old);touch();toast('Restored ✓');
+  });
+};
+var _delTxn48=delTxn;
+delTxn=function(){
+  if(!F.id)return;
+  var t=DB.txns.find(function(x){return x.id===F.id;}),legs=splitGroupTxns(F.id);
+  if(!t||!legs||legs.length<2)return _delTxn48();
+  askChoice('This is one share of a split bill with '+legs.length+' shares. What would you like to delete?',[
+    {c:'btn red',l:ico('user')+' This share only · '+esc(t.person||'')+' '+money(Math.abs(t.amount)),f:function(){
+      var s=[Object.assign({},t)];DB.txns=DB.txns.filter(function(x){return x.id!==t.id;});
+      closeSheet();touch();toastAct('Share deleted — undo?',function(){undoRestoreTxns(s);});}},
+    {c:'btn red-solid',l:ico('trash')+' Whole split bill · '+legs.length+' shares',f:function(){
+      var g=t.group,s=legs.map(function(x){return Object.assign({},x);});DB.txns=DB.txns.filter(function(x){return x.group!==g;});
+      closeSheet();touch();toastAct('Split bill deleted ('+s.length+' shares) — undo?',function(){undoRestoreTxns(s);});}}
+  ]);
+};
+/* ---------- 2. AI money assistant: on-device answers, optional OpenAI / Gemini with your own key ---------- */
+var AI={msgs:[],busy:false};
+function aiCfg(){try{return JSON.parse(localStorage.getItem('mm_ai')||'{}')||{};}catch(e){return {};}}
+var MFULL=['january','february','march','april','may','june','july','august','september','october','november','december'];
+function reEsc(s){return String(s).replace(/[.*+?^${}()|[\]\\]/g,'\\$&');}
+function rngWeek(off){var t=new Date();t.setHours(12,0,0,0);var dow=(t.getDay()+6)%7,s=new Date(t);s.setDate(t.getDate()-dow+7*off);var e=new Date(s);e.setDate(s.getDate()+6);return {s:isoD(s),e:isoD(e),label:dLabel(isoD(s))+' – '+dLabelY(isoD(e)),k:'week',off:off};}
+function rngMonth(y,m){var s=new Date(y,m,1,12),e=new Date(y,m+1,0,12);return {s:isoD(s),e:isoD(e),label:MONTHS[s.getMonth()]+' '+s.getFullYear(),k:'month',y:s.getFullYear(),m:s.getMonth()};}
+function rngYear(y){return {s:y+'-01-01',e:y+'-12-31',label:String(y),k:'year',y:y};}
+function aiPeriod(q){
+  var t=new Date(),y=t.getFullYear(),m=t.getMonth(),td=todayISO(),H=function(o){o.hit=1;return o;};
+  if(/\btoday\b/.test(q))return H({s:td,e:td,label:'today',k:'day'});
+  if(/\byesterday\b/.test(q)){var d=addDaysISO(td,-1);return H({s:d,e:d,label:'yesterday',k:'day'});}
+  if(/this week|week so far/.test(q))return H(rngWeek(0));
+  if(/last week|previous week/.test(q))return H(rngWeek(-1));
+  if(/this year|year to date|\bytd\b/.test(q))return H(rngYear(y));
+  if(/last year|previous year/.test(q))return H(rngYear(y-1));
+  if(/this month/.test(q))return H(rngMonth(y,m));
+  var ym=q.match(/\b(20\d\d)\b/);
+  for(var i=0;i<12;i++){if(new RegExp('\\b('+MFULL[i]+'|'+MONTHS[i].toLowerCase()+(i===8?'|sept':'')+')\\b').test(q)){var yy=ym?+ym[1]:(i>m?y-1:y);return H(rngMonth(yy,i));}}
+  if(ym)return H(rngYear(+ym[1]));
+  if(/last month|previous month/.test(q))return H(rngMonth(y,m-1));
+  var r=rngMonth(y,m);if(/this month/.test(q))r.hit=1;return r;
+}
+function aiPrev(p){if(p.k==='week')return rngWeek(p.off-1);if(p.k==='year')return rngYear(p.y-1);if(p.k==='day'){var d=addDaysISO(p.s,-1);return {s:d,e:d,label:dLabelY(d),k:'day'};}return rngMonth(p.y,p.m-1);}
+function aiWho(q){var w='couple';sortedAlpha(DB.people).forEach(function(p){if(new RegExp('(^|[^a-z0-9])'+reEsc(p.toLowerCase())+'([^a-z0-9]|$)').test(q))w=p;});return w;}
+function aiCat(q){
+  var cs=[];(DB.categories.Expense||[]).concat(DB.categories.Income||[]).forEach(function(c){if(c&&cs.indexOf(c)<0&&!/^others?$/i.test(c))cs.push(c);});
+  cs.sort(function(a,b){return b.length-a.length;});
+  for(var i=0;i<cs.length;i++){var c=cs[i].toLowerCase(),f=c.split(/[\s&\/,]+/)[0];
+    if(q.indexOf(c)>=0||(f.length>=4&&new RegExp('\\b'+reEsc(f)).test(q)))return cs[i];}
+  return '';
+}
+function aiTx(p,who,type){var l=DB.txns.filter(function(t){return t.date>=p.s&&t.date<=p.e&&t.type!=='Transfer'&&(!type||t.type===type);});return who==='couple'?l:applyPerson(l,who);}
+function aiBul(a){return a.length?'<br>'+a.map(function(x){return '• '+x;}).join('<br>'):'';}
+function aiPctTxt(a,b){if(!b)return '';var p=Math.round((a-b)/Math.abs(b)*100);return p===0?'about the same':(Math.abs(p)+'% '+(p>0?'more':'less'));}
+function aiHelp(){return 'I can answer questions about your money from the data in this app. Try:'+aiBul(['How much did we spend this month?','How much did HKO spend on groceries last week?','Top spending in August','Compare this month with last month','Who owes whom?','Budget left this month','Card payments due','How are our saving goals?','What are our account balances?','Income last month','Show transactions for transport this week'].map(esc))+'<br>Name a person to see their share; otherwise I answer for you both.';}
+function aiLocal(q0){
+  var q=q0.toLowerCase(),p=aiPeriod(q),who=aiWho(q),cat=aiCat(q),wl=who==='couple'?'You both':esc(who),pl=esc(p.label),td=todayISO();
+  if(/\bhelp\b|what can you|how do (i|you) use|^hi\b|^hello\b|^hey\b/.test(q))return aiHelp();
+  if(!DB.txns.length)return 'There are no transactions yet. Add a few, then ask me again.';
+  if(/owe|settle|debt|repay|split/.test(q)){
+    var d=p.hit?(p.e<td?p.e:td):td,ls=ledgersAt(d);
+    if(who!=='couple')ls=ls.filter(function(l){return l.name.split(' owes ').indexOf(who)>=0;});
+    if(!ls.length)return 'There are no shared debts to report.';
+    return '<b>Who owes whom</b> as at '+dLabelYW(d)+':'+aiBul(ls.map(function(l){return oweTxt(l.name,l.bal);}));
+  }
+  if(/\bdue\b|card|statement|credit|payment/.test(q)){
+    var du=dueList(31);if(who!=='couple')du=du.filter(function(x){return String(x.owner||'').split(' & ').indexOf(who)>=0;});
+    return du.length?'<b>Card payments to make</b>:'+aiBul(du.map(function(x){return esc(x.name)+': '+money(x.stillDue)+', '+dueTxt(x);})):'No card payments are due in the next 31 days. ✓';
+  }
+  if(/goal/.test(q)){
+    var gs=goalsList().filter(function(g){return who==='couple'||g.owner===who;});
+    if(!gs.length)return 'No saving goals yet. Add one in Settings → Saving goals.';
+    return '<b>Saving goals</b>:'+aiBul(gs.map(function(g){var sv=goalSaved(g),pc=g.target>0?Math.round(Math.min(100,sv/g.target*100)):0;return esc(g.name)+' ('+(g.owner==='couple'?'couple':esc(g.owner))+'): '+money(sv)+' of '+money(g.target)+' · '+pc+'%';}));
+  }
+  if(/budget|overspen|over spen|limit/.test(q)){
+    var sc=p.k==='week'?12/52:p.k==='year'?12:p.k==='day'?12/365:1,bs=bgStore()[who]||{},act=expBy(aiTx(p,who,'Expense'),function(t){return t.category;}),tb=0,ta=0,lines=[];
+    Object.keys(bs).forEach(function(c){var b=((+bs[c].f||0)+(+bs[c].v||0))*sc,a=act[c]||0;tb+=b;ta+=a;if(b>0)lines.push({c:c,b:b,a:a});});
+    if(!lines.length)return 'There is no '+(who==='couple'?'couple':who+'\u2019s personal')+' budget yet. Set one in Settings → Budgets.';
+    lines.sort(function(x,y){return (y.a/y.b)-(x.a/x.b);});
+    return '<b>'+(who==='couple'?'Couple':wl+'\u2019s')+' budget · '+pl+'</b><br>Spent '+money(ta)+' of '+money(tb)+' · '+(tb-ta>=0?money(tb-ta)+' left':'<span class="neg">over by '+money(ta-tb)+'</span>')
+      +aiBul(lines.slice(0,6).map(function(x){return esc(x.c)+': '+money(x.a)+' / '+money(x.b)+(x.a>x.b?' <span class="neg">over</span>':'');}));
+  }
+  if(/balance|account|how much (money )?(do|have) (i|we)|net worth/.test(q)){
+    var rows=balances().rows.filter(function(r){var a=DB.accounts.find(function(x){return x.name===r.name;});if(!a||a.recv||isRecvAcc(r.name))return false;return who==='couple'||a.owner===who;});
+    var tot=rows.reduce(function(s,r){return s+r.bal;},0);
+    return '<b>Account balances</b>'+(who==='couple'?'':' · '+wl)+aiBul(rows.sort(function(a,b){return b.bal-a.bal;}).map(function(r){return esc(r.name)+': '+money(r.bal);}))+'<br>Net of these accounts: <b>'+money(tot)+'</b>';
+  }
+  if(/compare|\bvs\b|versus|than last|than the previous|change from/.test(q)){
+    var pv=aiPrev(p),a1=aiTx(p,who,'Expense'),a0=aiTx(pv,who,'Expense'),s1=sumT(a1,'Expense'),s0=sumT(a0,'Expense');
+    var c1=expBy(a1,function(t){return t.category;}),c0=expBy(a0,function(t){return t.category;}),ks={};Object.keys(c1).concat(Object.keys(c0)).forEach(function(k){ks[k]=1;});
+    var dif=Object.keys(ks).map(function(k){return {k:k,d:(c1[k]||0)-(c0[k]||0)};}).sort(function(a,b){return Math.abs(b.d)-Math.abs(a.d);}).slice(0,4);
+    return '<b>'+pl+' vs '+esc(pv.label)+'</b><br>'+wl+' spent '+money(s1)+' vs '+money(s0)+(s0?' ('+aiPctTxt(s1,s0)+')':'')
+      +'<br>Biggest changes:'+aiBul(dif.map(function(x){return esc(x.k)+': '+(x.d>=0?'+':'−')+money(Math.abs(x.d));}));
+  }
+  if(/income|earn|salary|made|received/.test(q)){
+    var il=aiTx(p,who,'Income'),it=sumT(il,'Income'),ic={};il.forEach(function(t){ic[t.category]=(ic[t.category]||0)+t.amount;});
+    return '<b>Income · '+pl+'</b><br>'+wl+(who==='couple'?' received ':' received ')+'<b>'+money(it)+'</b>'+aiBul(Object.keys(ic).sort(function(a,b){return ic[b]-ic[a];}).map(function(k){return esc(k)+': '+money(ic[k]);}));
+  }
+  if(/\bnet\b|save|saved|saving|left over|surplus|cash ?flow/.test(q)){
+    var L2=aiTx(p,who),i2=sumT(L2,'Income'),e2=sumT(L2,'Expense'),n2=i2-e2;
+    return '<b>Cash flow · '+pl+'</b><br>Income '+money(i2)+' − expenses '+money(e2)+' = <b class="'+(n2<0?'neg':'pos')+'">'+(n2<0?'−':'')+money(Math.abs(n2))+'</b> '+(n2<0?'(spent more than earned)':'saved');
+  }
+  if(/average|per day|daily|a day/.test(q)){
+    var e3=sumT(aiTx(p,who,'Expense'),'Expense'),end=p.e<td?p.e:td,days=Math.max(1,Math.round((Date.parse(end)-Date.parse(p.s))/864e5)+1);
+    return wl+' spent '+money(e3)+' in '+pl+', about <b>'+money(e3/days)+' a day</b> over '+days+' day'+(days===1?'':'s')+'.';
+  }
+  if(/\blist\b|\bshow\b|transactions|what did (i|we) buy/.test(q)){
+    var tl3=aiTx(p,who).filter(function(t){return !cat||t.category===cat;}).sort(function(a,b){return a.date<b.date?1:-1;});
+    if(!tl3.length)return 'No transactions'+(cat?' for '+esc(cat):'')+' in '+pl+'.';
+    return '<b>'+tl3.length+' transaction'+(tl3.length===1?'':'s')+(cat?' · '+esc(cat):'')+' · '+pl+'</b>'+aiBul(tl3.slice(0,10).map(function(t){return dLabel(t.date)+' · '+esc(t.category)+(t.note?' ('+esc(t.note)+')':'')+' · '+(t.type==='Income'?'+':'')+money(t.amount);}))+(tl3.length>10?'<br>…and '+(tl3.length-10)+' more.':'');
+  }
+  var EL=aiTx(p,who,'Expense');
+  if(cat){
+    var cl=EL.filter(function(t){return t.category===cat;}),ct=sumT(cl,'Expense'),big=cl.slice().sort(function(a,b){return b.amount-a.amount;})[0],all=sumT(EL,'Expense');
+    return wl+' spent <b>'+money(ct)+'</b> on '+esc(cat)+' in '+pl+' ('+cl.length+' transaction'+(cl.length===1?'':'s')+(all?', '+Math.round(ct/all*100)+'% of spending':'')+').'+(big?'<br>Biggest: '+money(big.amount)+(big.note?' · '+esc(big.note):'')+' on '+dLabel(big.date)+'.':'');
+  }
+  var tot2=sumT(EL,'Expense'),cb=expBy(EL,function(t){return t.category;}),top=Object.keys(cb).sort(function(a,b){return cb[b]-cb[a];}),bg=EL.slice().sort(function(a,b){return b.amount-a.amount;})[0];
+  if(/top|biggest|largest|most|highest|where/.test(q))
+    return '<b>Top spending · '+pl+'</b>'+aiBul(top.slice(0,5).map(function(k,i){return (i+1)+'. '+esc(k)+': '+money(cb[k])+(tot2?' ('+Math.round(cb[k]/tot2*100)+'%)':'');}))+(bg?'<br>Biggest single purchase: '+money(bg.amount)+' · '+esc(bg.category)+(bg.note?' ('+esc(bg.note)+')':'')+'.':'');
+  return wl+' spent <b>'+money(tot2)+'</b> in '+pl+' across '+EL.length+' transaction'+(EL.length===1?'':'s')+'.'+(top.length?'<br>Top categories:'+aiBul(top.slice(0,3).map(function(k){return esc(k)+': '+money(cb[k]);})):'');
+}
+function aiContext(){
+  var td=todayISO(),t=new Date(),y=t.getFullYear(),m=t.getMonth(),o=[];
+  o.push('Today: '+td+'. Currency: '+(cur()||'(none)')+'. People: '+DB.people.join(', ')+'.');
+  o.push('ACCOUNTS (name | owner | type | kind | balance):');
+  balances().rows.forEach(function(r){var a=DB.accounts.find(function(x){return x.name===r.name;})||{};o.push(r.name+' | '+(a.owner||'-')+' | '+(a.type||'-')+' | '+accTypeKind(a.type)+' | '+r.bal.toFixed(2));});
+  o.push('MONTHLY TOTALS, couple (month | income | expenses | net):');
+  for(var k=11;k>=0;k--){var r=rngMonth(y,m-k),L=aiTx(r,'couple'),i=sumT(L,'Income'),e=sumT(L,'Expense');o.push(r.label+' | '+i.toFixed(2)+' | '+e.toFixed(2)+' | '+(i-e).toFixed(2));}
+  [rngMonth(y,m),rngMonth(y,m-1)].forEach(function(r){var cb=expBy(aiTx(r,'couple','Expense'),function(t){return t.category;});o.push('SPENDING BY CATEGORY '+r.label+': '+Object.keys(cb).sort(function(a,b){return cb[b]-cb[a];}).map(function(c){return c+' '+cb[c].toFixed(2);}).join('; '));});
+  o.push('WHO OWES WHOM today: '+(ledgersAt(td).map(function(l){return oweTxt(l.name,l.bal).replace(/&amp;/g,'&');}).join('; ')||'none'));
+  var bs=bgStore();o.push('MONTHLY BUDGETS (scope: category fixed/variable): '+(Object.keys(bs).map(function(s){return s+': '+Object.keys(bs[s]).map(function(c){return c+' '+(+bs[s][c].f||0)+'/'+(+bs[s][c].v||0);}).join(', ');}).join(' | ')||'none'));
+  o.push('SAVING GOALS: '+(goalsList().map(function(g){return g.name+' ('+g.owner+') saved '+goalSaved(g).toFixed(2)+' of '+g.target+(g.due?' by '+g.due:'');}).join('; ')||'none'));
+  o.push('CARD PAYMENTS DUE: '+(dueList(31).map(function(x){return x.name+' '+x.stillDue.toFixed(2)+' due '+x.due;}).join('; ')||'none'));
+  o.push('RECENT TRANSACTIONS, newest first (date | type | category/sub | amount | person | account | note | split group):');
+  allTxns().slice(-150).reverse().forEach(function(t){o.push([t.date,t.type,(t.category||'')+(t.subcategory?'/'+t.subcategory:''),(+t.amount).toFixed(2),t.person||'',t.type==='Transfer'?t.account+'→'+t.to:t.account,String(t.note||'').slice(0,40),t.group?'split':''].join(' | '));});
+  return o.join('\n');
+}
+function aiSys(){return 'You are the money assistant inside a personal finance app used by a couple ('+DB.people.join(' and ')+'). Answer using only the DATA below. Be concise and specific, use short lines or bullets, and show amounts with the currency. If the data does not contain the answer, say so plainly. You may give general budgeting tips, but not regulated financial, tax or investment advice.';}
+function aiLLM(q){
+  var c=aiCfg(),sys=aiSys()+'\n\nDATA\n'+aiContext(),hist=AI.msgs.filter(function(x){return !x.pend&&x.t;}).slice(-9,-1);
+  function chk(r){return r.json().then(function(j){if(!r.ok)throw new Error((j&&j.error&&(j.error.message||j.error.status))||('HTTP '+r.status));return j;});}
+  if(c.prov==='openai'){
+    return fetch('https://api.openai.com/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+c.key},
+      body:JSON.stringify({model:c.model||'gpt-4o-mini',messages:[{role:'system',content:sys}].concat(hist.map(function(x){return {role:x.r==='u'?'user':'assistant',content:x.t};})).concat([{role:'user',content:q}])})})
+      .then(chk).then(function(j){return j.choices[0].message.content;});
+  }
+  return fetch('https://generativelanguage.googleapis.com/v1beta/models/'+encodeURIComponent(c.model||'gemini-2.5-flash')+':generateContent?key='+encodeURIComponent(c.key),{method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({systemInstruction:{parts:[{text:sys}]},contents:hist.map(function(x){return {role:x.r==='u'?'user':'model',parts:[{text:x.t}]};}).concat([{role:'user',parts:[{text:q}]}])})})
+    .then(chk).then(function(j){return j.candidates[0].content.parts.map(function(p){return p.text||'';}).join('');});
+}
+function aiMd(s){return esc(s).replace(/\*\*(.+?)\*\*/g,'<b>$1</b>').replace(/^\s*[-*] /gm,'• ').replace(/\n/g,'<br>');}
+function aiPlain(h){var d=document.createElement('div');d.innerHTML=h.replace(/<br>/g,'\n');return d.textContent;}
+var AI_SUG=['How much did we spend this month?','Who owes whom?','Budget left this month','Top spending last month','Compare this month with last month','Card payments due','How are our saving goals?'];
+function aiRender(){
+  var c=aiCfg(),on=!!(c.prov&&c.key);
+  $('aiMode').textContent=on?(c.prov==='openai'?'OpenAI':'Gemini')+' · your key':'On-device · private';
+  $('aiLog').innerHTML=AI.msgs.map(function(m){return '<div class="aim '+m.r+(m.pend?' pend':'')+'">'+m.h+(m.src?'<span class="src">'+esc(m.src)+'</span>':'')+'</div>';}).join('');
+  $('aiSug').innerHTML=AI_SUG.map(function(s){return '<button class="chip" data-act="aiask" data-q="'+esc(s)+'">'+esc(s)+'</button>';}).join('');
+  var lg=$('aiLog');lg.scrollTop=lg.scrollHeight;
+}
+function aiOpen(){
+  if(!AI.msgs.length)AI.msgs.push({r:'a',h:'Hi! Ask me about your spending, budgets, goals, card payments or who owes whom. '+'Tap a suggestion below to start.',t:''});
+  $('aiCfg').hidden=true;$('aiOvl').classList.add('on');$('aiSheet').classList.add('on');aiRender();navSync();
+}
+function aiClose(){$('aiOvl').classList.remove('on');$('aiSheet').classList.remove('on');navSync();}
+function aiSend(q){
+  if(AI.busy)return;q=String(q||$('aiQ').value||'').trim();if(!q)return;$('aiQ').value='';
+  AI.msgs.push({r:'u',h:esc(q),t:q});
+  var c=aiCfg();
+  if(c.prov&&c.key){
+    AI.busy=true;var pm={r:'a',h:'Thinking…',pend:1};AI.msgs.push(pm);aiRender();
+    aiLLM(q).then(function(txt){pm.h=aiMd(txt||'(no answer)');pm.t=txt;pm.src=c.prov==='openai'?'OpenAI':'Gemini';})
+      .catch(function(e){var h=aiLocal(q);pm.h=h;pm.t=aiPlain(h);pm.src='On-device · AI unavailable: '+String(e&&e.message||e).slice(0,80);})
+      .then(function(){pm.pend=0;AI.busy=false;aiRender();});
+    return;
+  }
+  var h=aiLocal(q);AI.msgs.push({r:'a',h:h,t:aiPlain(h),src:'On-device'});aiRender();
+}
+function aiCfgOpen(){
+  var c=aiCfg(),b=$('aiCfg');
+  if(!b.hidden){b.hidden=true;return;}
+  b.innerHTML='<div class="mgr-lb">Answer with</div><select class="fin" id="aiProv" style="margin-bottom:8px" onchange="document.getElementById(\'aiKeyBox\').hidden=!this.value"><option value="">On-device only (private, works offline)</option><option value="openai"'+(c.prov==='openai'?' selected':'')+'>OpenAI (your API key)</option><option value="gemini"'+(c.prov==='gemini'?' selected':'')+'>Google Gemini (your API key)</option></select>'
+    +'<div id="aiKeyBox"'+(c.prov?'':' hidden')+'><div class="mgr-lb">API key</div><input class="fin" id="aiKey" type="password" autocomplete="off" value="'+esc(c.key||'')+'" placeholder="Paste your key" style="margin-bottom:8px">'
+    +'<div class="mgr-lb">Model (optional)</div><input class="fin" id="aiModel" value="'+esc(c.model||'')+'" placeholder="gpt-4o-mini or gemini-2.5-flash" style="margin-bottom:8px">'
+    +'<div class="help small" style="margin-bottom:8px">When a provider is on, your question and a summary of your data (balances, monthly totals, budgets, goals, debts and your latest 150 transactions) are sent to that provider with your key. The key is stored only on this device and is not included in backups, cloud sync or collaborator files.</div></div>'
+    +'<button class="btn" data-act="aicfgsave">Save</button>';
+  b.hidden=false;
+}
+function aiCfgSave(){
+  var p=$('aiProv').value,k=(($('aiKey')||{}).value||'').trim(),m=(($('aiModel')||{}).value||'').trim();
+  if(p&&!k){toast('Paste your API key first');return;}
+  localStorage.setItem('mm_ai',JSON.stringify(p?{prov:p,key:k,model:m}:{}));
+  $('aiCfg').hidden=true;aiRender();toast(p?'AI provider saved ✓':'On-device answers only ✓');
+}
+/* ---------- wiring: layers, Back button, sheet closes ---------- */
+var _aLO48=anyLayerOpen;anyLayerOpen=function(){return _aLO48()||$('chmodal').classList.contains('on')||$('aiSheet').classList.contains('on')||CALC.open;};
+var _nC48=navClose;navClose=function(){
+  if($('cmodal').classList.contains('on'))return _nC48();
+  if($('chmodal').classList.contains('on')){choiceClose();return;}
+  if(CALC.open){calcClose(true);return;}
+  if($('aiSheet').classList.contains('on')){aiClose();return;}
+  _nC48();
+};
+var _sTB48=swipeTabBlocked;swipeTabBlocked=function(){return _sTB48()||$('aiSheet').classList.contains('on')||$('chmodal').classList.contains('on')||CALC.open;};
+var _cS48=closeSheet;closeSheet=function(){if(CALC.open)calcClose(false);_cS48();};
+var _cM48=closeMgr;closeMgr=function(){if(CALC.open)calcClose(false);_cM48();};
+var _hA48=handleAct;handleAct=function(el){
+  switch(el.dataset.act){
+    case 'aiopen':aiOpen();return;
+    case 'aiclose':aiClose();return;
+    case 'aisend':aiSend();return;
+    case 'aiask':aiSend(el.dataset.q);return;
+    case 'aiset':aiCfgOpen();return;
+    case 'aicfgsave':aiCfgSave();return;
+    case 'gmode':if(el.dataset.m==='all')loadWholeBill();else openSheet(F.legId);return;
+    case 'chpick':var o=CH.opts[+el.dataset.i];choiceClose();if(o)o.f();return;
+    case 'chno':choiceClose();return;
+  }
+  _hA48(el);
+};
+(function(){
+  var pad=$('calcPad');
+  ['pointerdown','mousedown'].forEach(function(ev){pad.addEventListener(ev,function(e){e.preventDefault();});});
+  pad.addEventListener('click',function(e){var b=e.target.closest('[data-ck]');if(b)calcKey(b.dataset.ck);});
+  calcMark();
+  new MutationObserver(function(){calcMark();if(CALC.open&&CALC.el&&!document.body.contains(CALC.el))calcClose(false);}).observe(document.body,{childList:true,subtree:true});
+})();
 
 function renderAll(){
   renderOverview();
