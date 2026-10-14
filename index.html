@@ -482,39 +482,6 @@ body.calc-on .sheet.on{padding-bottom:calc(330px + env(safe-area-inset-bottom))}
 .lkpad .lkf{background:none;box-shadow:none;font-size:14px;color:var(--muted)}
 body.locked{overflow:hidden}
 body.hideamt .amt,body.hideamt .amt2,body.hideamt .kpi b,body.hideamt .bal-chip .amt,body.hideamt .mbal,body.hideamt .tbal,body.hideamt .fline b,body.hideamt .daybal,body.hideamt .dayg .day-h span:last-child,body.hideamt .mamt,body.hideamt .ccmid b,body.hideamt .goal small,body.hideamt .goal .gt span:last-child,body.hideamt .bvtop span:last-child,body.hideamt .bvsum,body.hideamt .rtab td.r,body.hideamt .tile small,body.hideamt #txSummary,body.hideamt .pie-wrap,body.hideamt .chart-scroll,body.hideamt .hcell b,body.hideamt .aim.a,body.hideamt .asum-r .amt2,body.hideamt .stat b{filter:blur(7px);user-select:none}
-
-/* v1.51: clearer hierarchy, mobile review and keyboard access */
-:focus-visible{outline:3px solid var(--accent);outline-offset:3px}
-.sync{max-width:38%;font-size:10.5px;padding:6px 8px}.sync span:last-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.hdr{gap:5px}.hdr h1{font-size:14px}.aibtn{padding:7px 9px}
-.ux-toolbar{display:flex;gap:8px;margin:10px 0;flex-wrap:wrap}.ux-toolbar .fin{flex:1;min-width:150px}
-.ux-note{padding:9px 11px;border:1px solid var(--line);border-radius:10px;background:var(--bg);font-size:12px;color:var(--muted);margin-bottom:10px;line-height:1.5}
-.ux-setting>summary{list-style:none;cursor:pointer;font-weight:800;display:flex;justify-content:space-between;padding:4px 0;min-height:36px;align-items:center}.ux-setting>summary:after{content:'+';color:var(--accent)}.ux-setting[open]>summary:after{content:'−'}.ux-setting>.card{box-shadow:none;padding:12px 0 0;margin:0;border-top:1px solid var(--line);border-radius:0}
-.ux-setting>.card h2{margin-top:8px}.ux-setting>.card h2:first-child{display:none}
-#fSplitBox{padding:12px;border:1px solid var(--line);border-radius:12px;background:var(--bg)}
-#uxRefund{margin-top:7px}.stmrow details>summary{cursor:pointer;font-size:13px;font-weight:700;padding:8px 0;min-height:40px}.stmrow .stmbot{grid-template-columns:1fr}
-@media(max-width:420px){.stmtop{grid-template-columns:22px minmax(0,1fr) auto}.stmtop .stamt{grid-column:2/4;width:100%}.hdr .logo{width:28px;height:28px}.hdr h1{font-size:12px}.aibtn{font-size:11px}.sync{max-width:34%}}
-@media(prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
-
-/* v1.52: touch-first learning, dimensional charts and iPhone layout */
-:root{--keyboard-inset:0px;--visible-height:100vh}
-html{-webkit-text-size-adjust:100%;overflow-x:hidden}body{min-height:100svh;overflow-x:hidden}
-input.fin,select.fin,textarea.fin,.split-row .fin,.fgrid .fin,.bgrow .fin,.stmrow .fin,.aiin .fin{font-size:16px!important;min-width:0}
-button,input,select,textarea{touch-action:manipulation}.chip,.hbtn,.calcbtn,.srchx,.nbtn{min-height:44px}.calcbtn{min-width:36px}.nbtn{min-width:44px}.calcbtn.in-amt{width:36px}
-.sheet{max-height:min(92dvh,calc(var(--visible-height) - 16px));bottom:var(--keyboard-inset);-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
-#aiSheet{height:min(88dvh,calc(var(--visible-height) - 16px));max-height:calc(var(--visible-height) - 16px)}
-#mgrSheet{max-height:min(88dvh,calc(var(--visible-height) - 16px))}.page{height:100dvh;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
-body.ios-keyboard .nav{visibility:hidden;pointer-events:none}body.ios-keyboard .sheet-foot{padding-bottom:12px;bottom:-12px}
-.amt-in{font-size:27px!important}.chart-scroll{padding:8px 4px 12px}.pie-wrap{padding:10px 0 18px}.pie-wrap svg,.donut-box svg{overflow:visible}
-.tbars i,.bvbar i,.bbar i,.gbar i{box-shadow:inset 0 2px 2px #ffffff70,inset -3px -3px 5px #00000030,2px 3px 3px #00000020;background-image:linear-gradient(100deg,#ffffff30,transparent 45%,#00000022)}
-html[data-chart-depth="flat"] .tbars i,html[data-chart-depth="flat"] .bvbar i,html[data-chart-depth="flat"] .bbar i,html[data-chart-depth="flat"] .gbar i{box-shadow:none;background-image:none}
-.mm52-banner{border:1px solid var(--accent);background:var(--accent-soft);padding:10px 12px;border-radius:14px;margin-bottom:12px;font-size:12px;line-height:1.5}.mm52-banner strong{display:block;color:var(--accent);font-size:13px}.mm52-actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:8px}.mm52-actions button{flex:1;min-width:110px;min-height:44px;text-align:center}
-#learn52{position:fixed;z-index:96;left:10px;right:10px;bottom:calc(78px + env(safe-area-inset-bottom));max-width:540px;margin:auto;background:var(--card);border:2px solid var(--accent);border-radius:18px;padding:12px;box-shadow:0 8px 30px #0004;max-height:35dvh;overflow-y:auto;font-size:13px}
-#learn52 h3{font-size:15px;margin:5px 0}#learn52 p{line-height:1.5;color:var(--muted)}#learn52 .learn-progress{height:5px;border-radius:4px;background:var(--line);margin:7px 0}#learn52 .learn-progress i{display:block;height:100%;background:var(--accent);border-radius:4px}.learn-target{outline:3px solid var(--accent)!important;outline-offset:3px;scroll-margin:100px 0 260px}
-body.learning52 main,body.learning52 .page{padding-bottom:300px}body.learning52 #sheet{padding-bottom:260px}body.learning52 #learn52{bottom:calc(76px + env(safe-area-inset-bottom))}body.learning52:has(#sheet.on) #learn52{bottom:calc(8px + var(--keyboard-inset));max-height:24dvh}
-.journey-row{display:flex;gap:10px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line);font-size:13px}.journey-row .status{width:25px;height:25px;border-radius:50%;display:grid;place-items:center;background:var(--bg);flex:none}.journey-row.done .status{background:var(--inc-soft);color:var(--inc)}.journey-row span:nth-child(2){flex:1}.journey-row small{display:block;color:var(--muted);margin-top:3px}
-@media(max-width:380px){.hdr h1{display:none}.hdr .sync{max-width:45%}.hdr .aibtn{margin-left:auto}.tiles{gap:6px}.tile{padding:10px}.bgrow{grid-template-columns:minmax(0,1fr) 85px 85px}.kpis{grid-template-columns:1fr 1fr}.fgrid{grid-template-columns:1fr}.amt-in{padding-left:35px!important;font-size:23px!important}.amt-wrap .cur{left:10px;font-size:13px}.sheet{padding-left:12px;padding-right:12px}}
-@media(orientation:landscape) and (max-height:500px){#learn52{max-width:300px;left:auto;max-height:60dvh;bottom:70px}.sheet{max-height:95dvh}.nav{padding-top:2px}.nbtn svg{width:17px;height:17px}}
 </style>
 </head>
 <body>
@@ -637,7 +604,7 @@ body.learning52 main,body.learning52 .page{padding-bottom:300px}body.learning52 
       </details>
       <details class="help" style="margin-top:10px">
         <summary>Privacy</summary>
-        <p style="margin:6px 0">Transaction data stays on this device unless you use cloud sync, sharing or online AI. Analytics are disabled. Online features and external readers may contact their providers. If you turn on Google cloud sync, your email and data are stored in Google Cloud (Firebase, asia-southeast1), encrypted in transit and at rest, and only your account can read them. “Delete cloud data” removes the cloud copy. Cloud access also depends on the deployed security rules; the device PIN does not encrypt exported files.</p>
+        <p style="margin:6px 0">By default, nothing leaves this device. If you turn on Google cloud sync, your email and data are stored in Google Cloud (Firebase, asia-southeast1), encrypted in transit and at rest, and only your account can read them. “Delete cloud data” removes the cloud copy. Anonymous app-open analytics never include transactions.</p>
       </details>
     </div>
     <div class="card">
@@ -675,12 +642,12 @@ body.learning52 main,body.learning52 .page{padding-bottom:300px}body.learning52 
       <div class="f-row"><label>Appearance</label><div class="segmini" id="modeSeg" style="margin-bottom:0"></div></div>
       <div class="f-row" style="margin-bottom:0"><label>Currency symbol</label><input class="fin" id="curSymbol" placeholder="RM, $, € …" onchange="DB.meta.currency=this.value.trim();touch();openSheetRefresh()"></div>
     </div>
-    <div class="card"><h2><svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><line x1="12" y1="10.5" x2="12" y2="16"/><line x1="12" y1="7.5" x2="12" y2="7.6"/></svg> About <span class="sub">v1.52</span></h2><div class="help"><b>Money Manager Mobile</b> is a single-file app that works offline. Your data lives on this device and cloud sync is opt-in.</div>
+    <div class="card"><h2><svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><line x1="12" y1="10.5" x2="12" y2="16"/><line x1="12" y1="7.5" x2="12" y2="7.6"/></svg> About <span class="sub">v1.50</span></h2><div class="help"><b>Money Manager Mobile</b> is a single-file app that works offline. Your data lives on this device and cloud sync is opt-in.</div>
       <details class="help" style="margin-top:10px"><summary>Help &amp; tips</summary><ol>
         <li><b>Add:</b> tap ＋, pick a category chip, then Save. Your last category is remembered.</li>
         <li><b>Edit:</b> tap a transaction. <b>Select several:</b> long-press one.</li>
         <li><b>Refunds:</b> tap “Refund” next to the amount to record a reduction in expenses.</li>
-        <li><b>Split a bill, refund or income:</b> Use Split between people, and type each share as a positive amount. For a bill, the other person's share is added to the “X owes Y” ledger. For a refund, it is taken off. For income received into your account, their share is owed back to them. Settle it from Who owes whom.</li>
+        <li><b>Split a bill, refund or income:</b> More options → Split, and type each share as a positive amount. For a bill, the other person's share is added to the “X owes Y” ledger. For a refund, it is taken off. For income received into your account, their share is owed back to them. Settle it from Who owes whom.</li>
         <li><b>Credit cards:</b> set a statement day and payment-due days in Settings → Accounts.</li>
         <li><b>Budgets:</b> Settings → Budgets. Set fixed and variable amounts per category, as a couple budget or a personal one.</li>
         <li><b>Saving goals:</b> Settings → Saving goals. Link a goal to a savings account, or add money to it by hand.</li>
@@ -763,8 +730,8 @@ body.learning52 main,body.learning52 .page{padding-bottom:300px}body.learning52 
     <div class="f-row" id="fDateRow"><label>Date</label><input type="date" class="fin" id="fDate"></div>
     <div class="f-row" id="fNoteRow"><label>Note</label><input class="fin" id="fNote" placeholder="optional"></div>
   </div>
-  <details class="more" id="fMore"><summary>More options: repeat &amp; privacy</summary>
-    <label class="mgr-row" style="cursor:pointer;border:0;padding:2px 0 10px"><span class="lb" style="white-space:normal"><svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg> Private<small>Hides category and note. Date, amount, account, person and transaction type remain visible to authorised collaborators and online AI.</small></span><input type="checkbox" class="tgl" id="fPriv"></label>
+  <details class="more" id="fMore"><summary>More options: repeat, split &amp; privacy</summary>
+    <label class="mgr-row" style="cursor:pointer;border:0;padding:2px 0 10px"><span class="lb" style="white-space:normal"><svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg> Private<small>Collaborators and the online AI see only the date and amount.</small></span><input type="checkbox" class="tgl" id="fPriv"></label>
     <div class="f-row" id="fRepRow"><label title="Auto-adds future transactions"><svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><path d="m17 2 4 4-4 4"/><path d="M3 11v-1a4 4 0 0 1 4-4h14"/><path d="m7 22-4-4 4-4"/><path d="M21 13v1a4 4 0 0 1-4 4H3"/></svg> Repeat</label><div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap"><select class="fin" id="fRep" style="flex:1;min-width:86px;padding-left:8px;padding-right:8px" onchange="repUI()"><option value="">No repeat</option><option value="day">Daily</option><option value="week">Weekly</option><option value="month">Monthly</option><option value="year">Yearly</option></select><input class="fin" id="fRepEvery" type="number" min="1" value="1" style="width:58px;flex:none" aria-label="repeat every N periods"><span class="small" id="fRepLbl" style="color:var(--muted);white-space:nowrap"></span></div></div>
     <div class="f-row" id="fSplitBox"><label><svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c0-3.6 2.9-6.5 6.5-6.5s6.5 2.9 6.5 6.5"/><path d="M16 4.6a3.5 3.5 0 0 1 0 6.8"/><path d="M18.5 13.9c1.8.9 3 2.8 3 5.1"/></svg> Split between people <span style="text-transform:none;font-weight:600">(works for bills, refunds and income — type each share as a positive amount)</span></label><div id="fSplitRows"></div><div class="small" id="fSplitHint" style="margin-top:2px;color:var(--muted)"></div></div>
   </details>
@@ -816,7 +783,7 @@ body.learning52 main,body.learning52 .page{padding-bottom:300px}body.learning52 
   <div id="mgrBody"></div>
 </div>
 
-<div id="calcPad" aria-label="calculator"><div class="cpv"><span id="cpLbl">Amount</span><b id="cpRes"></b></div><div class="cpg"><button type="button" data-ck="7" tabindex="0">7</button><button type="button" data-ck="8" tabindex="0">8</button><button type="button" data-ck="9" tabindex="0">9</button><button type="button" data-ck="/" class="op" tabindex="0">÷</button><button type="button" data-ck="4" tabindex="0">4</button><button type="button" data-ck="5" tabindex="0">5</button><button type="button" data-ck="6" tabindex="0">6</button><button type="button" data-ck="*" class="op" tabindex="0">×</button><button type="button" data-ck="1" tabindex="0">1</button><button type="button" data-ck="2" tabindex="0">2</button><button type="button" data-ck="3" tabindex="0">3</button><button type="button" data-ck="-" class="op" tabindex="0">−</button><button type="button" data-ck="." tabindex="0">.</button><button type="button" data-ck="0" tabindex="0">0</button><button type="button" data-ck="bk" class="fn" tabindex="0">⌫</button><button type="button" data-ck="+" class="op" tabindex="0">+</button><button type="button" data-ck="C" class="fn" tabindex="0">C</button><button type="button" data-ck="=" class="op" tabindex="0">=</button><button type="button" data-ck="done" class="eq" tabindex="0" style="grid-column:span 2">Done</button></div></div>
+<div id="calcPad" aria-label="calculator"><div class="cpv"><span id="cpLbl">Amount</span><b id="cpRes"></b></div><div class="cpg"><button type="button" data-ck="7" tabindex="-1">7</button><button type="button" data-ck="8" tabindex="-1">8</button><button type="button" data-ck="9" tabindex="-1">9</button><button type="button" data-ck="/" class="op" tabindex="-1">÷</button><button type="button" data-ck="4" tabindex="-1">4</button><button type="button" data-ck="5" tabindex="-1">5</button><button type="button" data-ck="6" tabindex="-1">6</button><button type="button" data-ck="*" class="op" tabindex="-1">×</button><button type="button" data-ck="1" tabindex="-1">1</button><button type="button" data-ck="2" tabindex="-1">2</button><button type="button" data-ck="3" tabindex="-1">3</button><button type="button" data-ck="-" class="op" tabindex="-1">−</button><button type="button" data-ck="." tabindex="-1">.</button><button type="button" data-ck="0" tabindex="-1">0</button><button type="button" data-ck="bk" class="fn" tabindex="-1">⌫</button><button type="button" data-ck="+" class="op" tabindex="-1">+</button><button type="button" data-ck="C" class="fn" tabindex="-1">C</button><button type="button" data-ck="=" class="op" tabindex="-1">=</button><button type="button" data-ck="done" class="eq" tabindex="-1" style="grid-column:span 2">Done</button></div></div>
 <div id="lockScr" hidden><div class="lkbox"><div class="lklogo"><svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></div><b id="lkTitle">Enter your PIN</b><div class="lkdots" id="lkDots"></div><div class="lkmsg" id="lkMsg"></div><div class="lkpad"><button type="button" data-act="lk" data-k="1">1</button><button type="button" data-act="lk" data-k="2">2</button><button type="button" data-act="lk" data-k="3">3</button><button type="button" data-act="lk" data-k="4">4</button><button type="button" data-act="lk" data-k="5">5</button><button type="button" data-act="lk" data-k="6">6</button><button type="button" data-act="lk" data-k="7">7</button><button type="button" data-act="lk" data-k="8">8</button><button type="button" data-act="lk" data-k="9">9</button><button type="button" id="lkCancel" data-act="lk" data-k="x" class="lkf">Cancel</button><button type="button" data-act="lk" data-k="0">0</button><button type="button" data-act="lk" data-k="bk" class="lkf">⌫</button></div></div></div>
 <div class="toast" id="toast"><span id="toastMsg"></span><button id="toastUndo" data-act="undo"><svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 14 4 9l5-5"/><path d="M4 9h10a6 6 0 0 1 6 6v5"/></svg> Undo</button><span id="toastBar" aria-hidden="true"><i></i></span></div>
 
@@ -1036,7 +1003,7 @@ function idbDel(k){return idbOpen().then(function(db){return new Promise(functio
 /* ================= cloud sync (Google Drive / OneDrive file) ================= */
 var Cloud={handle:null,perm:'unknown',pushH:null};
 var FS_OK=(typeof window!=='undefined')&&('showSaveFilePicker' in window);
-function syncUI(state,text){var c=$('syncChip');c.hidden=false;c.setAttribute('role','status');c.setAttribute('aria-live','polite');c.classList.remove('ok','warn');if(state==='ok')c.classList.add('ok');if(state==='warn')c.classList.add('warn');$('syncText').textContent=text;}
+function syncUI(state,text){var c=$('syncChip');c.hidden=(state!=='warn');c.classList.remove('ok','warn');if(state==='ok')c.classList.add('ok');if(state==='warn')c.classList.add('warn');$('syncText').textContent=text;}
 function syncStatus(){
   if(FB.user&&DB.meta.cloudSyncOn){syncUI('ok','Cloud sync on');return;} /* v1.31 */
   if(Cloud.handle){
@@ -1591,11 +1558,11 @@ function billingPeriodsCard(a,cyc){
   if(!ps.length)return '';
   var rb=accRunningBals(acc);
   var boxes=ps.slice().reverse().map(function(p){
-    var spent=0,paid=0,refunds=0,credits=0;
-    p.txns.forEach(function(t){var v=accEffect(t,acc);if(v<0)spent-=v;else if(t.type==='Transfer'&&t.to===acc)paid+=v;else if(t.type==='Expense'&&t.amount<0)refunds+=v;else credits+=v;});
+    var spent=0,paid=0;
+    p.txns.forEach(function(t){var v=accEffect(t,acc);if(v<0)spent-=v;else paid+=v;});
     var close=accountBalAsOf(acc,p.e);
     var head=dLabel(p.s)+' – '+dLabelY(p.e)+(p.o?' <span class="muted" style="font-weight:600">· current</span>':'');
-    var right=(p.txns.length?'spent '+money(spent)+(paid?' · payments '+money(paid):'')+(refunds?' · refunds '+money(refunds):'')+(credits?' · other credits '+money(credits):'')+' · ':'')+'<b class="'+(close<0?'neg':'')+'">Bal '+money(close)+'</b>';
+    var right=(p.txns.length?'spent '+money(spent)+(paid?' · paid '+money(paid):'')+' · ':'')+'<b class="'+(close<0?'neg':'')+'">Bal '+money(close)+'</b>';
     var rows=p.txns.slice().reverse().map(function(t){return accTxnRow(t,acc,rb.tx[t.id]);}).join('');
     return accBox(head,right,rows,'Nothing billed in this period. The balance is carried over.');
   }).join('');
@@ -1952,7 +1919,7 @@ function monthTotals(list){
 function applyPerson(list,p){
   p=p||OV.person;
   if(!p||p==='all')return list;
-  return list.map(function(t){var v=shareOf(t,p);if(!isFinite(v)||Math.abs(v)<0.000001)return null;var c=Object.assign({},t);c.amount=v;c.person=p;return c;}).filter(Boolean);
+  return list.map(function(t){var v=shareOf(t,p);if(!(v>0))return null;var c=Object.assign({},t);c.amount=v;c.person=p;return c;}).filter(Boolean);
 }
 function ovBase(){
   var list=allTxns().filter(function(t){return t.date.slice(0,4)===OV.year;});
@@ -2472,7 +2439,7 @@ function setSel(id,val,fb){
 function txFiltered(){
   var l=allTxns();
   if(TXF.month!=='all')l=l.filter(function(t){return t.date.slice(0,7)===TXF.month;});
-  if(TXF.person!=='all')l=l.filter(function(t){return Math.abs(shareOf(t,TXF.person))>0.000001;});
+  if(TXF.person!=='all')l=l.filter(function(t){return shareOf(t,TXF.person)>0;});
   if(TXF.account!=='all')l=l.filter(function(t){return t.account===TXF.account;});
   /* v1.11: filter by category (name matches Expense or Income lists) */
   if(TXF.cat!=='all')l=l.filter(function(t){return t.category===TXF.cat;});
@@ -4000,7 +3967,7 @@ function repSettle(){
       +'<div class="fline"><span>New split shares / loans this '+perWord()+(nS?' ('+nS+')':'')+'</span><b>'+money(add)+'</b></div>'
       +'<div class="fline"><span>Repayments, refunds &amp; income shares this '+perWord()+'</span><b>− '+money(paid)+'</b></div>'
       +'<div class="fline eq"><span>'+(done?'All settled up':'Overall: '+esc(l.debtor)+' owes '+esc(l.creditor))+'</span><b class="'+(done?'pos':'neg')+'">'+money(l.amt)+'</b></div></div>'
-      +(done?'':'<button class="btn" style="margin-top:10px" data-act="settle" data-n="'+esc(l.name)+'">'+ico('check')+' Settle current balance'+'</button>')+'</div>';
+      +(done?'':'<button class="btn" style="margin-top:10px" data-act="settle" data-n="'+esc(l.name)+'">'+ico('check')+' Settle up '+money(l.amt)+'</button>')+'</div>';
   }).join('');
 }
 /* v1.41: settle a credit-card / liability — a Transfer from the owner's cash/bank account into the card */
@@ -4297,21 +4264,18 @@ function applyUpdate(u){
   var p=u.from,m=collabMember(p);
   if(!m){toast(p+' is not one of your collaborators');return;}
   var sc=collabScope(p),addAcc=0,rej=0;
-  /* Account changes are staged until confirmation. */
-  sc=collabScope(p);
-  (u.accounts||[]).forEach(function(a){if(a&&a.owner===p&&!DB.accounts.some(function(x){return x.name===a.name;}))sc[a.name]=1;});
-  var incoming=(u.txns||[]).filter(function(t){if(sc[t.account])return true;rej++;return false;});
-  var cur=DB.txns.filter(function(t){return sc[t.account];}).length;
-  askConfirm('Apply '+p+'\u2019s changes? Their '+Object.keys(sc).length+' account(s) will hold '+incoming.length+' transaction(s) (currently '+cur+').'+(rej?' '+rej+' transaction(s) on accounts they are not allowed to manage will be ignored.':'')+' A backup is saved first.','Apply changes',function(){
-    var snap=snapLists(['txns','accounts','recur','people','categories','subcats']);
-    backupSnap('pre-collab-update');
   (u.accounts||[]).forEach(function(a){
     if(!a||!a.name)return;
     var ex=DB.accounts.find(function(x){return x.name===a.name;});
     if(ex){if(sc[a.name]){ex.start=+a.start||0;if(a.type&&DB.accTypes.indexOf(a.type)>=0)ex.type=a.type;ex.cycle=a.cycle||0;if(a.dueDays)ex.dueDays=a.dueDays;}}
     else if(a.owner===p){DB.accounts.push({name:a.name,start:+a.start||0,type:DB.accTypes.indexOf(a.type)>=0?a.type:DB.accTypes[0],owner:p,cycle:a.cycle||0});addAcc++;}
   });
-    sc=collabScope(p);
+  sc=collabScope(p);
+  var incoming=(u.txns||[]).filter(function(t){if(sc[t.account])return true;rej++;return false;});
+  var cur=DB.txns.filter(function(t){return sc[t.account];}).length;
+  askConfirm('Apply '+p+'\u2019s changes? Their '+Object.keys(sc).length+' account(s) will hold '+incoming.length+' transaction(s) (currently '+cur+').'+(rej?' '+rej+' transaction(s) on accounts they are not allowed to manage will be ignored.':'')+' A backup is saved first.','Apply changes',function(){
+    var snap=snapLists(['txns','accounts','recur','people','categories','subcats']);
+    backupSnap('pre-collab-update');
     DB.txns=DB.txns.filter(function(t){return !sc[t.account];}).concat(incoming.map(function(t){return Object.assign({},t);}));
     DB.recur=DB.recur.filter(function(r){return !(r.tpl&&sc[r.tpl.account]);}).concat((u.recur||[]).filter(function(r){return r.tpl&&sc[r.tpl.account];}));
     (u.people||[]).forEach(function(x){if(DB.people.indexOf(x)<0)DB.people.push(x);});
@@ -4671,9 +4635,9 @@ function repSnapshot(){
     +'<table class="rtab"><thead><tr><th>Person</th><th class="r">Spent</th><th class="r">vs last</th><th>Biggest purchase</th></tr></thead><tbody>'+rows+'</tbody></table>'
     +(bud?budgetBar(tot,bud):'<div class="help small" style="margin-top:8px">Set '+(cpl?'a couple':'a personal')+' budget in Settings → Budgets to track it here.</div>')+'</div>';
 }
-function ledgersScoped(){var ls=ledgers().map(function(l){var b=Math.round(accountBalAsOf(l.name,perRange().e)*100)/100,pp=l.name.split(' owes ');return Object.assign({},l,{bal:b,amt:Math.abs(b),debtor:b>=0?pp[0]:pp[1],creditor:b>=0?pp[1]:pp[0]});});return whoOK()==='couple'?ls:ls.filter(function(l){return l.name.split(' owes ').indexOf(PER.who)>=0;});}
+function ledgersScoped(){var ls=ledgers();return whoOK()==='couple'?ls:ls.filter(function(l){return l.name.split(' owes ').indexOf(PER.who)>=0;});}
 function repSettle(){
-  var r=perRange(),ls=ledgersScoped(),asat='as at '+dLabelYW(perRange().e);
+  var r=perRange(),ls=ledgersScoped(),asat='as at '+dLabelYW(todayISO());
   if(!ls.length)return '<div class="card"><h2>'+ico('scale')+' Who owes whom <span class="sub">'+asat+'</span></h2><div class="help">No shared debts'+(PER.who==='couple'?'':' for '+esc(PER.who))+'. Split a bill between two people, or tick “Amount owed” on a transfer, and it will show up here.</div></div>';
   return ls.map(function(l){
     var add=0,paid=0,nS=0;
@@ -4687,8 +4651,8 @@ function repSettle(){
     return '<div class="card"><h2>'+ico('scale')+' Who owes whom <span class="sub">'+asat+'</span></h2><div class="rows">'
       +'<div class="fline"><span>New split shares / loans · '+esc(r.label)+(nS?' ('+nS+')':'')+'</span><b>'+money(add)+'</b></div>'
       +'<div class="fline"><span>Repayments, refunds &amp; income shares · '+esc(r.label)+'</span><b>− '+money(paid)+'</b></div>'
-      +'<div class="fline eq"><span>'+(done?'Settled at selected cutoff':esc(l.debtor)+' owes '+esc(l.creditor)+' at selected cutoff')+'</span><b class="'+(done?'pos':'neg')+'">'+money(l.amt)+'</b></div></div>'
-      +(done?'':'<button class="btn" style="margin-top:10px" data-act="settle" data-n="'+esc(l.name)+'">'+ico('check')+' Settle current balance'+'</button>')+'</div>';
+      +'<div class="fline eq"><span>'+(done?'All settled up today':esc(l.debtor)+' owes '+esc(l.creditor)+' today')+'</span><b class="'+(done?'pos':'neg')+'">'+money(l.amt)+'</b></div></div>'
+      +(done?'':'<button class="btn" style="margin-top:10px" data-act="settle" data-n="'+esc(l.name)+'">'+ico('check')+' Settle up '+money(l.amt)+'</button>')+'</div>';
   }).join('');
 }
 function heatBg(v,mx){if(!(v>0)||!(mx>0))return '';var a=Math.max(0,v)/mx;return 'background:color-mix(in srgb,var(--accent) '+Math.round(14+a*76)+'%,transparent)';}
@@ -4809,7 +4773,7 @@ function renderPeriodOV(){
     +(dues.length?'<div class="card" style="border:1.5px solid color-mix(in srgb,var(--warn) 45%,transparent)"><h2 style="color:var(--warn)">'+ico('bell')+' Card payments due</h2>'+dues.map(function(x){return '<button class="fline" data-act="acc" data-n="'+esc(x.name)+'" style="width:100%"><span><b>'+esc(x.name)+'</b> · '+dueTxt(x)+'</span><b class="neg">'+money(x.stillDue)+'</b></button>';}).join('')+'</div>':'')
     +repSnapshot()
     +'<div class="card"><h2>'+ico('trend')+' Cash flow <span class="sub">'+esc(r.label)+'</span></h2><div class="kpis" style="margin-bottom:0">'+kpi('Income',money(i),'pos')+kpi('Expenses',money(e),'neg')+kpi('Net',money(n),n<0?'neg':'pos')+'</div></div>'
-    +'<div class="card"><h2>'+ico('scale')+' Who owes whom <span class="sub">as at '+dLabelYW(r.e)+'</span></h2>'+(ls.length?ls.map(function(l){return '<div class="fline" style="align-items:center"><span>'+esc(l.debtor)+' owes '+esc(l.creditor)+'</span><span style="display:flex;gap:8px;align-items:center"><b class="neg">'+money(l.amt)+'</b><button class="ibtn" data-act="settle" data-n="'+esc(l.name)+'" style="color:var(--accent)">Settle</button></span></div>';}).join(''):'<div class="help">All settled up.</div>')+'</div>'
+    +'<div class="card"><h2>'+ico('scale')+' Who owes whom <span class="sub">as at '+dLabelYW(todayISO())+'</span></h2>'+(ls.length?ls.map(function(l){return '<div class="fline" style="align-items:center"><span>'+esc(l.debtor)+' owes '+esc(l.creditor)+'</span><span style="display:flex;gap:8px;align-items:center"><b class="neg">'+money(l.amt)+'</b><button class="ibtn" data-act="settle" data-n="'+esc(l.name)+'" style="color:var(--accent)">Settle</button></span></div>';}).join(''):'<div class="help">All settled up.</div>')+'</div>'
     +(gl.length?'<div class="card"><h2>'+ico('target')+' Saving goals <span class="sub">'+gl.length+'</span></h2><div class="dayg">'+gl.slice(0,3).map(goalHTML).join('')+'</div>'+(gl.length>3?'<button class="btn ghost" data-act="rep" data-k="goals">See all '+gl.length+' goals</button>':'')+'</div>':'');
   var f=tileFigs();
   $('repTiles').innerHTML=TILES.map(function(x){return tileBtn(x[0],x[1],x[2],f[x[0]]);}).join('');
@@ -4882,7 +4846,7 @@ function repSettle48(){
       +'<div class="fline"><span>Added in '+esc(r.label)+'<br><small class="muted">split shares, loans</small></span><b>+ '+money(add)+'</b></div>'
       +'<div class="fline"><span>Reduced in '+esc(r.label)+'<br><small class="muted">repayments, refunds, income shares</small></span><b>− '+money(red)+'</b></div>'
       +'<div class="fline eq"><span>As at '+dLabelY(asd)+(n?' <small class="muted">· '+n+' transaction'+(n===1?'':'s')+'</small>':'')+'</span><b class="'+(done?'pos':'neg')+'">'+oweTxt(l.name,l.bal)+'</b></div></div>'
-      +(isNow&&!done?'<button class="btn" style="margin-top:10px" data-act="settle" data-n="'+esc(l.name)+'">'+ico('check')+' Settle current balance'+'</button>':'')
+      +(isNow&&!done?'<button class="btn" style="margin-top:10px" data-act="settle" data-n="'+esc(l.name)+'">'+ico('check')+' Settle up '+money(l.amt)+'</button>':'')
       +(!isNow?'<div class="help small" style="margin-top:8px">Today: '+oweTxt(l.name,Math.round(accountBalAsOf(l.name,td)*100)/100)+'</div>':'')+'</div>';
   }).join('');
 }
@@ -5237,11 +5201,11 @@ function billingPeriodsCard(a,cyc){
   var acc=a.name,ps=cyclePeriods(cyc,acc);
   if(!ps.length)return '';
   var rows=ps.slice().reverse().map(function(p){
-    var spent=0,paid=0,refunds=0,credits=0;
-    p.txns.forEach(function(t){var v=accEffect(t,acc);if(v<0)spent-=v;else if(t.type==='Transfer'&&t.to===acc)paid+=v;else if(t.type==='Expense'&&t.amount<0)refunds+=v;else credits+=v;});
+    var spent=0,paid=0;
+    p.txns.forEach(function(t){var v=accEffect(t,acc);if(v<0)spent-=v;else paid+=v;});
     var close=accountBalAsOf(acc,p.e),n=p.txns.length;
     return '<button class="trow cycrow" data-act="cycopen" data-s="'+p.s+'" data-e="'+p.e+'"><span class="lb">'+dLabel(p.s)+' – '+dLabelY(p.e)+(p.o?' <span class="pill due" style="font-size:10px;padding:1px 7px">current</span>':'')
-      +'<small>'+(n?n+' txn'+(n===1?'':'s')+' · spent '+money(spent)+(paid?' · payments '+money(paid):'')+(refunds?' · refunds '+money(refunds):'')+(credits?' · other credits '+money(credits):''):'nothing billed')+'</small></span>'
+      +'<small>'+(n?n+' txn'+(n===1?'':'s')+' · spent '+money(spent)+(paid?' · paid '+money(paid):''):'nothing billed')+'</small></span>'
       +'<span class="amt2 '+(close<0?'neg':'')+'">Bal '+money(close)+'</span><span class="muted">'+ico('chevright')+'</span></button>';
   }).join('');
   return '<div class="card"><h2>'+ico('calendar')+' Billing periods <span class="sub">statement day '+cyc+' · newest first</span></h2><div class="rows">'+rows+'</div>'
@@ -5385,7 +5349,7 @@ function renderPriv(){
     +tg(ico('eyeoff')+' Hide amounts','Blurs every amount on screen. Also on the '+ico('eye')+' button at the top.',!!pc.hide,'hideAmtToggle()')
     +'<div class="mgr-sec">'+(own?'Sharing with collaborators':'Sharing with '+esc(cfg.owner||'the owner'))+'</div>'
     +tg(ico('book')+' Share my notes','When off, '+who+' see your transactions without their notes.',shareNotes(),'collabCfg().shareNotes=this.checked;touch()')
-    +'<div class="help small" style="margin:2px 2px 8px">To keep one transaction private, open it and switch on <b>Private</b> under More options. '+(own?'Collaborators':esc(cfg.owner||'The owner'))+' see the date, amount, account, person and type, but not the category or note. Shared balances stay right.</div>'
+    +'<div class="help small" style="margin:2px 2px 8px">To keep one transaction private, open it and switch on <b>Private</b> under More options. '+(own?'Collaborators':esc(cfg.owner||'The owner'))+' then see only the date and amount, so shared balances stay right.</div>'
     +'<div class="mgr-sec">AI assistant</div>'
     +tg(ico('spark')+' Send notes to the online AI','Only used when Gemini or OpenAI is connected. Private transactions are always sent as amount only.',!!pc.aiNotes,'var c=privCfg();c.aiNotes=this.checked;privSave(c)');
 }
@@ -5590,12 +5554,9 @@ function stmCatFn(){
   };
 }
 function stmDup(){
-  STM.rows.forEach(function(r){
-    r.matches=DB.txns.filter(function(t){return (t.account===STM.acc||t.to===STM.acc)&&Math.abs(Math.abs(t.amount)-Math.abs(parseAmt(r.amount)))<0.005&&Math.abs(Date.parse(t.date)-Date.parse(r.date))<=86400000;}).map(function(t){return {date:t.date,amount:t.amount,note:t.note||t.category,type:t.type};});
-    r.dup=!!r.matches.length;
-  });
+  var have={};DB.txns.forEach(function(t){if(t.type==='Transfer'?(t.account===STM.acc||t.to===STM.acc):t.account===STM.acc)have[t.date+'|'+Math.round(Math.abs(t.amount)*100)]=1;});
+  STM.rows.forEach(function(r){var k=Math.round(Math.abs(parseAmt(r.amount))*100),dup=!!(have[r.date+'|'+k]||have[addDaysISO(r.date,-1)+'|'+k]||have[addDaysISO(r.date,1)+'|'+k]);if(dup&&!r.dup)r.inc=false;r.dup=dup;});
 }
-
 function stmFile(inp){
   var f=inp.files&&inp.files[0];inp.value='';if(!f)return;
   var nm=f.name.toLowerCase(),p;toast('Reading '+f.name+'…');
@@ -5615,12 +5576,12 @@ function stmFile(inp){
 }
 function stmAccs(){return sortedAlpha(DB.accounts.filter(function(a){return !a.locked&&!a.recv&&!/^.+ owes .+$/.test(a.name);}).map(function(a){return a.name;}));}
 function stmCount(){var n=0,i=0,e=0;STM.rows.forEach(function(r){if(!r.inc)return;n++;var v=Math.abs(parseAmt(r.amount));if(r.type==='Income')i+=v;else e+=v;});return {n:n,i:i,e:e};}
-function stmFoot(){var c=stmCount(),b=$('stmGo');if(b)b.innerHTML=ico('plus')+' Add '+c.n+' transaction'+(c.n===1?'':'s');var s=$('stmSum');if(s)s.innerHTML=c.n+' selected · <span class="neg">−'+money(c.e)+'</span> · <span class="pos">+'+money(c.i)+'</span>';}
+function stmFoot(){var c=stmCount(),b=$('stmGo');if(b)b.innerHTML=ico('plus')+' Add '+c.n+' transaction'+(c.n===1?'':'s');var s=$('stmSum');if(s)s.innerHTML='<span class="neg">−'+money(c.e)+'</span> · <span class="pos">+'+money(c.i)+'</span>';}
 function stmSet(el){var r=STM.rows[+el.dataset.i];if(!r)return;var f=el.dataset.f;if(f==='inc'){r.inc=el.checked;el.closest('.stmrow').classList.toggle('off',!r.inc);}else r[f]=el.value;stmFoot();}
 function renderStmt(){
   var acs=stmAccs(),nd=STM.rows.filter(function(r){return r.dup;}).length;
   function opts(ty,sel){return sortedAlpha(DB.categories[ty]||[]).map(function(c){return '<option'+(c===sel?' selected':'')+'>'+esc(c)+'</option>';}).join('');}
-  $('mgrBody').innerHTML='<div class="help small" style="margin-bottom:8px">'+ico('receipt')+' <b>'+esc(STM.file)+'</b> · '+STM.rows.length+' line'+(STM.rows.length===1?'':'s')+' found'+(nd?' · '+nd+' possible duplicates need your review; selection is unchanged':'')+'. Check each line, then add.</div>'
+  $('mgrBody').innerHTML='<div class="help small" style="margin-bottom:8px">'+ico('receipt')+' <b>'+esc(STM.file)+'</b> · '+STM.rows.length+' line'+(STM.rows.length===1?'':'s')+' found'+(nd?' · '+nd+' look like duplicates and are unticked':'')+'. Check each line, then add.</div>'
     +'<div class="f-row" style="margin-bottom:8px"><label>Add to account</label><select class="fin" onchange="STM.acc=this.value;DB.meta.stmAcc=this.value;stmDup();renderMgr()">'+acs.map(function(a){return '<option'+(a===STM.acc?' selected':'')+'>'+esc(a)+'</option>';}).join('')+'</select></div>'
     +'<div class="chips" style="margin-bottom:10px"><button class="chip" data-act="stmall" data-v="1">Select all</button><button class="chip" data-act="stmall" data-v="0">Select none</button><button class="chip" data-act="stmswap">'+ico('swap')+' Swap income / expense</button></div>'
     +STM.rows.map(function(r,i){
@@ -5630,7 +5591,7 @@ function renderStmt(){
         +'<input class="fin stamt" inputmode="decimal" data-i="'+i+'" data-f="amount" value="'+r.amount+'" oninput="stmSet(this)" aria-label="amount"></div>'
         +'<div class="stmbot"><input class="fin" data-i="'+i+'" data-f="desc" value="'+esc(r.desc)+'" placeholder="Description" oninput="stmSet(this)">'
         +'<select class="fin" data-i="'+i+'" data-f="cat" onchange="stmSet(this)">'+opts(r.type,r.cat)+'</select></div>'
-        +(r.dup?'<div class="small" style="color:var(--warn);font-weight:700;margin-top:5px">'+ico('warn')+' Possible duplicate — review before importing</div><div class="help small">'+(r.matches||[]).map(function(m){return esc(m.date)+' · '+esc(m.type)+' · '+money(m.amount)+' · '+esc(m.note);}).join('<br>')+'</div>':'')+'</div>';
+        +(r.dup?'<div class="small" style="color:var(--warn);font-weight:700;margin-top:5px">'+ico('warn')+' Looks like a transaction you already have</div>':'')+'</div>';
     }).join('')
     +'<div class="sheet-foot" style="padding-bottom:4px"><div class="small muted" id="stmSum" style="text-align:center;margin-bottom:6px;font-weight:700"></div><button class="btn" id="stmGo" data-act="stmadd"></button></div>';
   stmFoot();
@@ -5731,7 +5692,7 @@ function boot(){
   renderAll();
   gotoView('overview');
   cloudInit();
-  /* Analytics disabled: no startup telemetry. */
+  fbInitAnalytics();
   backupLoad().then(function(){renderSettings();});
   document.addEventListener('visibilitychange',function(){if(document.hidden)backupFlush();});
   window.addEventListener('pagehide',backupFlush);
@@ -5741,272 +5702,7 @@ document.addEventListener('click',function(e){
   if(LP.fired){LP.fired=false;if(el&&el.closest&&el.closest('#txList')){e.preventDefault();e.stopPropagation();return;}}
   if(el)handleAct(el);
 },true);
-
-/* ================= v1.51 usability and data confidence ================= */
-var UX51={draft:null,saving:false,scroll:{},accountsFlat:false,accountQuery:'',reportsOpen:false};
-function uxDraft(){return JSON.stringify({f:F,split:SPLIT.rows,fields:Array.from($('sheet').querySelectorAll('input,select')).map(function(e){return [e.id,e.value,e.checked];})});}
-var uxOpen51=openSheet;openSheet=function(id){uxOpen51(id);UX51.draft=uxDraft();};
-var uxClose51=closeSheet;closeSheet=function(){
- if(!UX51.saving&&$('sheet').classList.contains('on')&&UX51.draft!==null&&UX51.draft!==uxDraft()){
-  askConfirm('Discard your unsaved transaction changes?','Discard changes',function(){UX51.draft=null;uxClose51();});return;
- }
- UX51.draft=null;uxClose51();
-};
-var uxSave51=saveTxn;saveTxn=function(){UX51.saving=true;try{return uxSave51();}finally{UX51.saving=false;}};
-window.addEventListener('beforeunload',function(e){if($('sheet').classList.contains('on')&&UX51.draft!==null&&UX51.draft!==uxDraft()){e.preventDefault();e.returnValue='';}});
-var uxNav51=gotoView;gotoView=function(v){
- var current=document.querySelector('.view.on');if(current)UX51.scroll[current.id]=window.scrollY;
- if($('sheet').classList.contains('on')&&UX51.draft!==null&&UX51.draft!==uxDraft()){
-  askConfirm('Discard your unsaved transaction changes and switch screens?','Discard changes',function(){UX51.draft=null;uxClose51();gotoView(v);});return;
- }
- uxNav51(v);requestAnimationFrame(function(){window.scrollTo(0,UX51.scroll['view-'+v]||0);});
-};
-var uxSign51=signUI;signUI=function(){uxSign51();var refund=F.type==='Expense'&&parseAmt($('fAmount').value)<0,b=$('fSign'),n=$('uxRefund');
- if(b){b.textContent=refund?'Refund mode':'Refund';b.setAttribute('aria-pressed',String(refund));}
- if(n){n.hidden=F.type==='Transfer';n.textContent=refund?'Refund mode: reduces expenses and increases the account balance.':F.type==='Income'?'Income increases the receiving account balance.':'Expense reduces the paying account balance. Tap Refund to record money returned.';}
-};
-var uxSplit51=updateSplitHint;updateSplitHint=function(){uxSplit51();var h=$('fSplitHint');if(h&&SPLIT.rows.length){var allocated=SPLIT.rows.reduce(function(v,r){return v+Math.abs(parseAmt(r.v));},0),total=Math.abs(parseAmt($('fAmount').value));h.insertAdjacentHTML('afterbegin','<b>Allocated '+money(allocated)+' / '+money(total)+' · Remaining '+money(total-allocated)+'</b><br>');}};
-function uxAccounts51(){
- var rows=balances().rows,q=UX51.accountQuery.toLowerCase();
- rows=rows.filter(function(r){var a=DB.accounts.find(function(x){return x.name===r.name;})||{};return !q||(r.name+' '+a.owner+' '+a.type).toLowerCase().includes(q);});
- if(UX51.accountsFlat||q)$('accList').innerHTML=rows.length?rows.sort(function(a,b){return alphasort(a.name,b.name);}).map(function(r){var a=DB.accounts.find(function(x){return x.name===r.name;})||{},liab=accTypeKind(a.type)==='liability';return trow({act:'acc',attrs:'data-n="'+esc(r.name)+'"',lb:esc(r.name),sub:esc(a.owner||'No owner')+' · '+esc(a.type||'')+' · '+(liab?(r.bal<0?'Amount owed':'Credit balance'):'Available balance'),amt:money(liab?Math.abs(r.bal):r.bal),cls:r.bal<0?'neg':''});}).join(''):'<div class="empty">No matching accounts.</div>';
-}
-var uxAcc51=renderAccounts;renderAccounts=function(){uxAcc51();uxAccounts51();};
-function uxOverview51(){
- var el=$('perBody');if(!el||!DB.txns.length)return;
- var r=perRange(),l=perTx(r),inc=sumT(l,'Income'),exp=sumT(l,'Expense'),bud=budgetTotal(),due=dueList(7).filter(function(x){return ownedByWho(x.owner);});
- el.innerHTML=perCtrlHTML()+'<div class="card"><h2>Activity during this period <span class="sub">'+esc(r.label)+'</span></h2><div class="kpis">'+kpi('Income',money(inc),'pos')+kpi('Expenses',money(exp),'neg')+kpi('Net',money(inc-exp),inc-exp<0?'neg':'pos')+kpi('Budget remaining',bud?money(bud-exp):'Not set',bud&&bud-exp<0?'neg':'')+'</div></div>'+(due.length?'<div class="card"><h2>Payments needing attention <span class="sub">Current status · '+dLabelY(todayISO())+'</span></h2>'+due.map(function(x){return '<button class="fline" data-act="acc" data-n="'+esc(x.name)+'" style="width:100%"><span>'+esc(x.name)+'<br><small>'+dueTxt(x)+'</small></span><b class="neg">'+money(x.stillDue)+'</b></button>';}).join('')+'</div>':'');
- var tiles=$('repTiles');if(tiles){Array.from(tiles.children).forEach(function(e,i){e.hidden=!UX51.reportsOpen&&i>=4;});var toggle=$('uxReportsToggle');if(!toggle){toggle=document.createElement('button');toggle.id='uxReportsToggle';toggle.className='btn ghost';toggle.style.marginTop='10px';toggle.onclick=function(){UX51.reportsOpen=!UX51.reportsOpen;uxOverview51();};tiles.after(toggle);}toggle.textContent=UX51.reportsOpen?'Show fewer reports':'View all reports';}
- var balance=$('accStrip');if(balance){var card=balance.closest('.card');if(card&&!card.parentElement.matches('details')){var d=document.createElement('details');d.className='card ux-setting';var sum=document.createElement('summary');sum.textContent='Account balances · current recorded position';d.append(sum);card.before(d);d.append(card);}}
-}
-var uxPeriod51=renderPeriodOV;renderPeriodOV=function(){uxPeriod51();uxOverview51();};
-var uxReport51=renderReport;renderReport=function(){uxReport51();if(!REPORT.open)return;var current=REPORT.kind==='cc'||REPORT.kind==='goals',n=document.createElement('div');n.className='ux-note';n.textContent=current?'Current status as at '+dLabelY(todayISO())+'. Not a historical period report.':REPORT.kind==='settle'?'Balance as at '+dLabelY(perRange().e)+'. Movements relate to the selected period.':'Activity during '+perRange().label+'. Refunds reduce expenses.';$('repDyn').prepend(n);};
-// Persistent save/sync status. Never label failed uploads as synced.
-var uxSaveLocal51=save;save=function(){uxSaveLocal51();if($('syncChip'))syncUI('', 'Saved locally');};
-var uxCloudPush51=cloudPush;cloudPush=function(){if(Cloud.handle&&Cloud.perm==='granted')syncUI('','Syncing…');return uxCloudPush51().then(function(v){if(!$('syncChip').classList.contains('warn')&&Cloud.handle)syncUI('ok','Synced '+new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}));return v;});};
-var uxFb51=fbSyncNow;fbSyncNow=function(){if(FB.user&&DB.meta.cloudSyncOn)syncUI('','Syncing…');var before=DB.meta.cloudPushedAt||0;return Promise.resolve(uxFb51()).then(function(v){if(FB.user&&DB.meta.cloudSyncOn){if((DB.meta.cloudPushedAt||0)>before)syncUI('ok','Synced '+new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}));else syncUI('warn','Sync failed · retry');}return v;});};
-var uxCloudAction51=cloudAction;cloudAction=function(){if(FB.user&&DB.meta.cloudSyncOn)return fbSyncNow();return uxCloudAction51();};
-// File collaboration: base fingerprints enable safe three-way merges.
-var uxInvite51=buildInvite;buildInvite=function(p){var text=uxInvite51(p),d=JSON.parse(text),payload=d.payload;if(payload){payload.collab.baseTxns=JSON.parse(JSON.stringify(payload.txns||[]));payload.collab.baseAccounts=JSON.parse(JSON.stringify(payload.accounts||[]));payload.collab.baseRecur=JSON.parse(JSON.stringify(payload.recur||[]));}return JSON.stringify(d,null,1);};
-var uxChanges51=collabSendChanges;collabSendChanges=function(){
- var original=shareOrDownload,cfg=collabCfg();
- shareOrDownload=function(name,text,msg){var pkg=JSON.parse(text);pkg.baseTxns=cfg.baseTxns||null;pkg.baseAccounts=cfg.baseAccounts||null;pkg.baseRecur=cfg.baseRecur||null;return original(name,JSON.stringify(pkg,null,1),msg);};
- try{return uxChanges51();}finally{shareOrDownload=original;}
-};
-
-var uxApply51=applyUpdate;applyUpdate=function(u){
- if(isCollabMode())return toast('Only the main owner can import changes');
- if(!collabMember(u.from))return toast('Unknown collaborator');
- var sc=collabScope(u.from),local=DB.txns,base=u.baseTxns,incoming=u.txns||[],conflicts=[],previewState=JSON.stringify(DB);
- (u.accounts||[]).forEach(function(a){if(a&&a.owner===u.from&&!DB.accounts.some(function(x){return x.name===a.name;}))sc[a.name]=1;});
- incoming=incoming.map(function(t){var original=local.find(function(x){return x.id===t.id;});return t.masked&&original&&!original.masked?Object.assign({},original):t;});
- if(!Array.isArray(base)){askConfirm('Legacy changes file has no comparison baseline. Existing records will be kept; only new transaction IDs will be added. Send a new invite to enable conflict-aware edits and deletions.','Review safe additions',function(){var safe=incoming.filter(function(t){return sc[t.account]&&!local.some(function(x){return x.id===t.id;});});backupSnap('pre-legacy-collab');ensureEntities(safe);DB.txns=DB.txns.concat(safe);touch();toast(safe.length+' new transactions added; existing data kept');});return;}
- function equal(a,b){return JSON.stringify(a)===JSON.stringify(b);}
- function merge(list,remote,old,key,allow){var out=list.slice(),ids={};old.concat(remote).forEach(function(t){ids[t[key]]=1;});Object.keys(ids).forEach(function(id){var b=old.find(function(t){return t[key]===id;}),r=remote.find(function(t){return t[key]===id;}),l=out.find(function(t){return t[key]===id;});if(!(r?allow(r):b&&allow(b)))return;if(equal(b,r))return;if(equal(l,b)){out=out.filter(function(t){return t[key]!==id;});if(r)out.push(JSON.parse(JSON.stringify(r)));}else if(!equal(l,r))conflicts.push(id);});return out;}
- var merged=merge(local,incoming,base,'id',function(t){return !!sc[t.account];});
- var remoteAccounts=(u.accounts||[]).map(function(a){var original=DB.accounts.find(function(x){return x.name===a.name;});return original?Object.assign({},original,{start:a.start,type:a.type,cycle:a.cycle,dueDays:a.dueDays}):Object.assign({},a,{owner:u.from,access:[]});});
- var accounts=merge(DB.accounts,remoteAccounts,u.baseAccounts||[],'name',function(a){return !!sc[a.name];});
- DB.accounts.forEach(function(a){if(!accounts.some(function(x){return x.name===a.name;}))accounts.push(a);});
- var recurring=merge(DB.recur,u.recur||[],u.baseRecur||[],'id',function(r){return r.tpl&&sc[r.tpl.account];});
- var changed=merged.filter(function(t){return !local.some(function(l){return l.id===t.id&&equal(l,t);});}).length,removed=local.filter(function(t){return !merged.some(function(x){return x.id===t.id;});}).length;
- askConfirm('Change preview: '+changed+' added/updated transaction(s), '+removed+' deletion(s). '+conflicts.length+' conflict(s) will KEEP the owner’s current records.'+(conflicts.length?' Conflicting IDs: '+conflicts.slice(0,8).join(', '):'')+' Accounts and recurring entries are also compared with the invite baseline. A backup is saved first.','Apply safe changes',function(){if(JSON.stringify(DB)!==previewState){toast('Data changed while preview was open. Review the changes file again.');return;}var snap=snapLists(['txns','accounts','recur','people','categories','subcats']);backupSnap('pre-collab-merge');DB.txns=merged;DB.accounts=accounts;DB.recur=recurring;ensureEntities(DB.txns);normalizeDB();touch();renderAll();toastAct('Safe changes applied; '+conflicts.length+' conflicts kept locally',function(){undoRestoreLists(snap);});});
-};
-// Mobile statement rows: compact summary with optional editing.
-var uxStmt51=renderStmt;renderStmt=function(){uxStmt51();Array.from($('mgrBody').querySelectorAll('.stmrow')).forEach(function(row,i){var bottom=row.querySelector('.stmbot');if(!bottom)return;var d=document.createElement('details'),sum=document.createElement('summary'),r=STM.rows[i];sum.textContent=(r.desc||'No description')+' · '+(r.cat||'Choose category');d.append(sum);bottom.before(d);d.append(bottom);if(!r.cat||r.cat==='Others'){d.open=true;var note=document.createElement('div');note.className='ux-note';note.textContent='Check classification before importing.';d.append(note);}});};
-function uxSetup51(){
- var split=$('fSplitBox'),more=$('fMore');more.before(split);
- var refund=document.createElement('div');refund.id='uxRefund';refund.className='help small';$('fAmount').closest('.f-row').append(refund);
- var toolbar=document.createElement('div');toolbar.className='ux-toolbar';toolbar.innerHTML='<input id="uxAccSearch" class="fin" type="search" placeholder="Search account, owner or type" aria-label="Search accounts"><button id="uxAccFlat" class="ibtn" aria-pressed="false">Flat list</button>';$('accList').before(toolbar);
- $('uxAccSearch').oninput=function(){UX51.accountQuery=this.value;renderAccounts();};$('uxAccFlat').onclick=function(){UX51.accountsFlat=!UX51.accountsFlat;this.textContent=UX51.accountsFlat?'Hierarchy':'Flat list';this.setAttribute('aria-pressed',String(UX51.accountsFlat));renderAccounts();};
- var settings=$('view-settings'),cards=Array.from(settings.children).filter(function(e){return e.classList.contains('card');});
- var groups=[['Lists',[0]],['Sharing & privacy',[1,2]],['Backup & sync',[3]],['Import / export',[4]],['Appearance',[7,8]],['Advanced & app information',[5,6,9]]];
- groups.forEach(function(g){var d=document.createElement('details');d.className='card ux-setting';var sum=document.createElement('summary');sum.textContent=g[0];d.append(sum);g[1].forEach(function(i){if(cards[i])d.append(cards[i]);});settings.append(d);});
- var names={sheet:'Add or edit transaction',mgrSheet:'Manage lists and review imports',aiSheet:'Money assistant',cmodal:'Confirm action',chmodal:'Choose action',clrmodal:'Clear data',calcPad:'Calculator'};
- Object.keys(names).forEach(function(id){var e=$(id);if(e){e.setAttribute('role','dialog');e.setAttribute('aria-modal','true');e.setAttribute('aria-label',names[id]);e.setAttribute('tabindex','-1');}});
- $('toast').setAttribute('role','status');$('toast').setAttribute('aria-live','polite');
- document.querySelectorAll('.backbtn').forEach(function(b){b.setAttribute('aria-label','Back');});
- var focusStack=[],active=null;
- function top(){return ['calcPad','cmodal','chmodal','clrmodal','aiSheet','mgrSheet','sheet'].map($).find(function(e){return e&&e.classList.contains('on');});}
- var observer=new MutationObserver(function(){var next=top();if(next===active)return;var previous=active;active=next;if(next){if(previous)focusStack.push({dialog:previous,el:document.activeElement});else focusStack.push({dialog:null,el:document.activeElement});var f=next.querySelector('button:not([hidden]),input:not([type=hidden]),select');(f||next).focus({preventScroll:true});}else{var item=focusStack.shift();focusStack=[];if(item&&item.el&&item.el.isConnected)item.el.focus({preventScroll:true});}});
- Object.keys(names).forEach(function(id){if($(id))observer.observe($(id),{attributes:true,attributeFilter:['class']});});
- document.addEventListener('keydown',function(e){var d=top();if(typeof MM52!=='undefined'&&MM52.active)return;if(!d||e.key!=='Tab')return;var list=Array.from(d.querySelectorAll('button,input,select,textarea,summary,[tabindex="0"]')).filter(function(el){return !el.disabled&&el.getClientRects().length&&el.type!=='hidden';});if(!list.length){e.preventDefault();d.focus();return;}var first=list[0],last=list[list.length-1];if(e.shiftKey&&(document.activeElement===first||!d.contains(document.activeElement))){e.preventDefault();last.focus();}else if(!e.shiftKey&&(document.activeElement===last||!d.contains(document.activeElement))){e.preventDefault();first.focus();}},true);
- var stateObs=new MutationObserver(function(records){records.forEach(function(record){var root=record.target;if(root.nodeType!==1)return;root.querySelectorAll('[data-act="asum"],[data-act="txgrp"],[data-act="mtog"]').forEach(function(b){var expanded=b.dataset.act==='asum'?!!ASUM[b.dataset.k]:b.dataset.act==='txgrp'?!!EXP.grp[b.dataset.g]:!!(DRILL.mopen||{})[b.dataset.k];b.setAttribute('aria-expanded',String(expanded));});});});
- ['accList','txList','drillBody'].forEach(function(id){stateObs.observe($(id),{childList:true,subtree:true});});
- signUI();syncStatus();
-}
-
-var uxSettle51=openSettle;openSettle=function(n){uxSettle51(n);if($('sheet').classList.contains('on'))UX51.draft=uxDraft();};
-// Consistent transaction drill behaviour: tap to inspect, then Edit.
-var uxAct51=handleAct;handleAct=function(el){
- if(el.dataset.act==='txn'&&!el.closest('#txList')&&el.closest('#pageDrill,#pageReport')){
-  var t=DB.txns.find(function(x){return x.id===el.dataset.id;});if(!t)return;
-  var next=el.nextElementSibling,open=next&&next.classList.contains('ux-drill-detail');
-  if(open){next.remove();el.setAttribute('aria-expanded','false');}
-  else{el.insertAdjacentHTML('afterend',txDetailHTML(t));el.nextElementSibling.classList.add('ux-drill-detail');el.setAttribute('aria-expanded','true');}
-  return;
- }
- return uxAct51(el);
-};
-var uxDrill51=renderDrill;renderDrill=function(){uxDrill51();
- $('drillBody').querySelectorAll('.mhead').forEach(function(head){var span=head.lastElementChild;if(!span)return;var balance=span.querySelector('b'),movement=span.querySelector('span');if(balance&&movement){span.classList.add('mstack');balance.classList.add('mbal');movement.classList.add('mmov');balance.textContent=balance.textContent.replace(/^Bal /,'Month-end balance ');span.replaceChildren(balance,movement);}});
- $('drillBody').querySelectorAll('.help').forEach(function(e){if(e.textContent.includes('Tap a transaction to edit'))e.textContent=e.textContent.replace('Tap a transaction to edit it.','Tap a transaction to inspect it, then choose Edit.');});
-};
-// Report failures remain visible until retry or a new local change.
-var UXSync51={state:'',text:'Saved locally'};
-var uxSyncUI51=syncUI;syncUI=function(state,text){UXSync51={state:state,text:text};uxSyncUI51(state,text);};
-save=function(){try{localStorage.setItem(LS_KEY,JSON.stringify(DB));syncUI('','Saved locally');return true;}catch(e){syncUI('warn','Not saved · export now');toast('Storage full — export a backup!');return false;}};
-syncStatus=function(){
- if(UXSync51.state==='warn'||UXSync51.text==='Syncing…'){uxSyncUI51(UXSync51.state,UXSync51.text);return;}
- var on=FB.user&&DB&&DB.meta.cloudSyncOn,linked=Cloud.handle&&Cloud.perm==='granted',at=on?(DB.meta.cloudPushedAt||0):linked?(DB.meta.pushedAt||0):0;
- if((on||linked)&&at&&at>=(DB.meta.changedAt||0))syncUI('ok','Synced '+new Date(at).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}));
- else if(Cloud.handle&&Cloud.perm!=='granted')syncUI('warn','Tap to reconnect');
- else syncUI('','Saved locally');
-};
-var uxQuiet51=fbPushQuiet;fbPushQuiet=function(){if(!FB.user||!DB.meta.cloudSyncOn)return Promise.resolve(false);syncUI('','Syncing…');return uxQuiet51().then(function(ok){if(ok)syncUI('ok','Synced '+new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}));else syncUI('warn','Sync failed · retry');return ok;});};
-
-
-/* ================= v1.52: practice workspace, learning journey and dimensional charts ================= */
-var SAMPLE52=[{"Date": "2026-08-01", "Income/Expense": "Expense", "Category": "Groceries", "Subcategory": "Supermarket", "Account": "eWallet", "Person": "Hubby", "Note": "Household groceries", "Amount": 116.32, "Split": null, "To Account": null, "Owed Account": null, "Owed Amount": null}, {"Date": "2026-08-02", "Income/Expense": "Expense", "Category": "Groceries", "Subcategory": "Wet Market", "Account": "Cash", "Person": "Wifey", "Note": "Fresh produce", "Amount": 93.45, "Split": null, "To Account": null, "Owed Account": null, "Owed Amount": null}, {"Date": "2026-08-03", "Income/Expense": "Expense", "Category": "Food & Dining", "Subcategory": "Restaurant", "Account": "Cash", "Person": "Hubby", "Note": "Meal - split bill 60/40", "Amount": 81.42, "Split": "Hubby:48.85|Wifey:32.57", "To Account": null, "Owed Account": null, "Owed Amount": null}, {"Date": "2026-08-04", "Income/Expense": "Expense", "Category": "Food & Dining", "Subcategory": "Coffee", "Account": "Cash", "Person": "Wifey", "Note": "Coffee and snack", "Amount": 10.68, "Split": null, "To Account": null, "Owed Account": null, "Owed Amount": null}, {"Date": "2026-08-05", "Income/Expense": "Income", "Category": "Salary", "Subcategory": "Monthly Salary", "Account": "Maybank", "Person": "Hubby", "Note": "Salary credited", "Amount": 6038.14, "Split": null, "To Account": null, "Owed Account": null, "Owed Amount": null}, {"Date": "2026-08-06", "Income/Expense": "Expense", "Category": "Transport", "Subcategory": "Fuel", "Account": "Credit Card", "Person": "Wifey", "Note": "Petrol", "Amount": 73.43, "Split": null, "To Account": null, "Owed Account": null, "Owed Amount": null}, {"Date": "2026-08-07", "Income/Expense": "Expense", "Category": "Utilities", "Subcategory": "Electricity", "Account": "Maybank", "Person": "Hubby", "Note": "Monthly electricity bill", "Amount": 208.01, "Split": null, "To Account": null, "Owed Account": null, "Owed Amount": null}, {"Date": "2026-08-08", "Income/Expense": "Transfer", "Category": null, "Subcategory": null, "Account": "Maybank", "Person": "Hubby", "Note": "Move funds to eWallet", "Amount": 250, "Split": null, "To Account": "eWallet", "Owed Account": null, "Owed Amount": null}, {"Date": "2026-08-09", "Income/Expense": "Expense", "Category": "Shopping", "Subcategory": "Household", "Account": "Credit Card", "Person": "Hubby", "Note": "Household item", "Amount": 143.36, "Split": null, "To Account": null, "Owed Account": null, "Owed Amount": null}, {"Date": "2026-08-10", "Income/Expense": "Expense", "Category": "Entertainment", "Subcategory": "Streaming", "Account": "Credit Card", "Person": "Wifey", "Note": "Streaming subscription", "Amount": 59.8, "Split": null, "To Account": null, "Owed Account": null, "Owed Amount": null}, {"Date": "2026-08-11", "Income/Expense": "Expense", "Category": "Health", "Subcategory": "Pharmacy", "Account": "Credit Card", "Person": "Hubby", "Note": "Pharmacy purchase - split bill 60/40", "Amount": 36.74, "Split": "Hubby:22.04|Wifey:14.70", "To Account": null, "Owed Account": null, "Owed Amount": null}, {"Date": "2026-08-12", "Income/Expense": "Expense", "Category": "Personal Care", "Subcategory": "Haircut", "Account": "Cash", "Person": "Wifey", "Note": "Haircut", "Amount": 34.17, "Split": null, "To Account": null, "Owed Account": null, "Owed Amount": null}, {"Date": "2026-08-13", "Income/Expense": "Income", "Category": "Income", "Subcategory": "Reimbursement", "Account": "Maybank", "Person": "Hubby", "Note": "Expense reimbursement", "Amount": 334.7, "Split": null, "To Account": null, "Owed Account": null, "Owed Amount": null}, {"Date": "2026-08-14", "Income/Expense": "Expense", "Category": "Groceries", "Subcategory": "Wet Market", "Account": "Cash", "Person": "Wifey", "Note": "Fresh produce", "Amount": 79.82, "Split": null, "To Account": null, "Owed Account": null, "Owed Amount": null}, {"Date": "2026-08-15", "Income/Expense": "Expense", "Category": "Food & Dining", "Subcategory": "Restaurant", "Account": "Cash", "Person": "Hubby", "Note": "Meal", "Amount": 87.56, "Split": null, "To Account": null, "Owed Account": null, "Owed Amount": null}, {"Date": "2026-08-16", "Income/Expense": "Transfer", "Category": null, "Subcategory": null, "Account": "Maybank", "Person": "Hubby", "Note": "Move savings to cash", "Amount": 300, "Split": null, "To Account": "Cash", "Owed Account": null, "Owed Amount": null}, {"Date": "2026-08-17", "Income/Expense": "Expense", "Category": "Transport", "Subcategory": "Grab", "Account": "Credit Card", "Person": "Hubby", "Note": "Ride fare", "Amount": 14.95, "Split": null, "To Account": null, "Owed Account": null, "Owed Amount": null}, {"Date": "2026-08-18", "Income/Expense": "Expense", "Category": "Transport", "Subcategory": "Fuel", "Account": "Maybank", "Person": "Wifey", "Note": "Petrol", "Amount": 107.81, "Split": null, "To Account": null, "Owed Account": null, "Owed Amount": null}, {"Date": "2026-08-19", "Income/Expense": "Expense", "Category": "Utilities", "Subcategory": "Electricity", "Account": "Maybank", "Person": "Hubby", "Note": "Monthly electricity bill - split bill 60/40", "Amount": 216.06, "Split": "Hubby:129.64|Wifey:86.42", "To Account": null, "Owed Account": null, "Owed Amount": null}, {"Date": "2026-08-20", "Income/Expense": "Expense", "Category": "Utilities", "Subcategory": "Mobile", "Account": "Credit Card", "Person": "Wifey", "Note": "Mobile plan", "Amount": 68.14, "Split": null, "To Account": null, "Owed Account": null, "Owed Amount": null}, {"Date": "2026-08-21", "Income/Expense": "Income", "Category": "Income", "Subcategory": "Freelance", "Account": "Maybank", "Person": "Wifey", "Note": "Freelance income", "Amount": 679.2, "Split": null, "To Account": null, "Owed Account": null, "Owed Amount": null}, {"Date": "2026-08-22", "Income/Expense": "Expense", "Category": "Entertainment", "Subcategory": "Streaming", "Account": "Credit Card", "Person": "Wifey", "Note": "Streaming subscription", "Amount": 40.92, "Split": null, "To Account": null, "Owed Account": null, "Owed Amount": null}, {"Date": "2026-08-23", "Income/Expense": "Expense", "Category": "Health", "Subcategory": "Pharmacy", "Account": "Credit Card", "Person": "Hubby", "Note": "Pharmacy purchase", "Amount": 82.99, "Split": null, "To Account": null, "Owed Account": null, "Owed Amount": null}, {"Date": "2026-08-24", "Income/Expense": "Transfer", "Category": null, "Subcategory": null, "Account": "Cash", "Person": "Hubby", "Note": "Loan to Wifey wallet", "Amount": 120, "Split": null, "To Account": "Wifey Wallet", "Owed Account": "Wifey owes Hubby", "Owed Amount": 120}, {"Date": "2026-08-25", "Income/Expense": "Expense", "Category": "Groceries", "Subcategory": "Supermarket", "Account": "eWallet", "Person": "Hubby", "Note": "Household groceries", "Amount": 171.51, "Split": null, "To Account": null, "Owed Account": null, "Owed Amount": null}, {"Date": "2026-08-26", "Income/Expense": "Expense", "Category": "Groceries", "Subcategory": "Wet Market", "Account": "Cash", "Person": "Wifey", "Note": "Fresh produce", "Amount": 41.88, "Split": null, "To Account": null, "Owed Account": null, "Owed Amount": null}, {"Date": "2026-08-27", "Income/Expense": "Expense", "Category": "Food & Dining", "Subcategory": "Restaurant", "Account": "Credit Card", "Person": "Hubby", "Note": "Meal - split bill 60/40", "Amount": 38.22, "Split": "Hubby:22.93|Wifey:15.29", "To Account": null, "Owed Account": null, "Owed Amount": null}, {"Date": "2026-08-28", "Income/Expense": "Expense", "Category": "Food & Dining", "Subcategory": "Coffee", "Account": "Cash", "Person": "Wifey", "Note": "Coffee and snack", "Amount": 11.63, "Split": null, "To Account": null, "Owed Account": null, "Owed Amount": null}, {"Date": "2026-08-29", "Income/Expense": "Income", "Category": "Income", "Subcategory": "Interest", "Account": "Maybank", "Person": "Hubby", "Note": "Bank interest", "Amount": 16.64, "Split": null, "To Account": null, "Owed Account": null, "Owed Amount": null}, {"Date": "2026-08-30", "Income/Expense": "Expense", "Category": "Transport", "Subcategory": "Fuel", "Account": "Maybank", "Person": "Wifey", "Note": "Petrol", "Amount": 73.83, "Split": null, "To Account": null, "Owed Account": null, "Owed Amount": null}, {"Date": "2026-08-31", "Income/Expense": "Expense", "Category": "Utilities", "Subcategory": "Electricity", "Account": "Maybank", "Person": "Hubby", "Note": "Monthly electricity bill", "Amount": 157.97, "Split": null, "To Account": null, "Owed Account": null, "Owed Amount": null}, {"Date": "2026-09-01", "Income/Expense": "Transfer", "Category": null, "Subcategory": null, "Account": "Wifey Wallet", "Person": "Wifey", "Note": "Repayment to Hubby", "Amount": 80, "Split": null, "To Account": "Maybank", "Owed Account": "Wifey owes Hubby", "Owed Amount": -80}, {"Date": "2026-09-02", "Income/Expense": "Expense", "Category": "Shopping", "Subcategory": "Household", "Account": "Credit Card", "Person": "Hubby", "Note": "Household item", "Amount": 55.61, "Split": null, "To Account": null, "Owed Account": null, "Owed Amount": null}, {"Date": "2026-09-03", "Income/Expense": "Expense", "Category": "Entertainment", "Subcategory": "Streaming", "Account": "Credit Card", "Person": "Wifey", "Note": "Streaming subscription", "Amount": 50.81, "Split": null, "To Account": null, "Owed Account": null, "Owed Amount": null}, {"Date": "2026-09-04", "Income/Expense": "Expense", "Category": "Health", "Subcategory": "Pharmacy", "Account": "Credit Card", "Person": "Hubby", "Note": "Pharmacy purchase - split bill 60/40", "Amount": 72.17, "Split": "Hubby:43.30|Wifey:28.87", "To Account": null, "Owed Account": null, "Owed Amount": null}, {"Date": "2026-09-05", "Income/Expense": "Expense", "Category": "Personal Care", "Subcategory": "Haircut", "Account": "Cash", "Person": "Wifey", "Note": "Haircut", "Amount": 63.5, "Split": null, "To Account": null, "Owed Account": null, "Owed Amount": null}, {"Date": "2026-09-06", "Income/Expense": "Income", "Category": "Salary", "Subcategory": "Monthly Salary", "Account": "Maybank", "Person": "Hubby", "Note": "Salary credited", "Amount": 4559.24, "Split": null, "To Account": null, "Owed Account": null, "Owed Amount": null}, {"Date": "2026-09-07", "Income/Expense": "Expense", "Category": "Groceries", "Subcategory": "Wet Market", "Account": "Cash", "Person": "Wifey", "Note": "Fresh produce", "Amount": 85.76, "Split": null, "To Account": null, "Owed Account": null, "Owed Amount": null}, {"Date": "2026-09-08", "Income/Expense": "Expense", "Category": "Food & Dining", "Subcategory": "Restaurant", "Account": "Credit Card", "Person": "Hubby", "Note": "Meal", "Amount": 66.55, "Split": null, "To Account": null, "Owed Account": null, "Owed Amount": null}, {"Date": "2026-09-09", "Income/Expense": "Transfer", "Category": null, "Subcategory": null, "Account": "Maybank", "Person": "Hubby", "Note": "Settle credit card", "Amount": 650, "Split": null, "To Account": "Credit Card", "Owed Account": null, "Owed Amount": null}, {"Date": "2026-09-10", "Income/Expense": "Expense", "Category": "Transport", "Subcategory": "Grab", "Account": "Credit Card", "Person": "Hubby", "Note": "Ride fare", "Amount": 13.47, "Split": null, "To Account": null, "Owed Account": null, "Owed Amount": null}, {"Date": "2026-09-11", "Income/Expense": "Expense", "Category": "Transport", "Subcategory": "Fuel", "Account": "Maybank", "Person": "Wifey", "Note": "Petrol", "Amount": 100.66, "Split": null, "To Account": null, "Owed Account": null, "Owed Amount": null}, {"Date": "2026-09-12", "Income/Expense": "Expense", "Category": "Utilities", "Subcategory": "Electricity", "Account": "Maybank", "Person": "Hubby", "Note": "Monthly electricity bill - split bill 60/40", "Amount": 208.77, "Split": "Hubby:125.26|Wifey:83.51", "To Account": null, "Owed Account": null, "Owed Amount": null}, {"Date": "2026-09-13", "Income/Expense": "Expense", "Category": "Utilities", "Subcategory": "Mobile", "Account": "Maybank", "Person": "Wifey", "Note": "Mobile plan", "Amount": 67.62, "Split": null, "To Account": null, "Owed Account": null, "Owed Amount": null}, {"Date": "2026-09-14", "Income/Expense": "Income", "Category": "Income", "Subcategory": "Reimbursement", "Account": "Maybank", "Person": "Hubby", "Note": "Expense reimbursement", "Amount": 430.05, "Split": null, "To Account": null, "Owed Account": null, "Owed Amount": null}, {"Date": "2026-09-15", "Income/Expense": "Expense", "Category": "Entertainment", "Subcategory": "Streaming", "Account": "Credit Card", "Person": "Wifey", "Note": "Streaming subscription", "Amount": 51.23, "Split": null, "To Account": null, "Owed Account": null, "Owed Amount": null}, {"Date": "2026-09-16", "Income/Expense": "Transfer", "Category": null, "Subcategory": null, "Account": "eWallet", "Person": "Hubby", "Note": "Top up cash wallet", "Amount": 100, "Split": null, "To Account": "Cash", "Owed Account": null, "Owed Amount": null}, {"Date": "2026-09-17", "Income/Expense": "Income", "Category": "Income", "Subcategory": "Reimbursement", "Account": "Maybank", "Person": "Hubby", "Note": "Expense reimbursement", "Amount": 152.09, "Split": null, "To Account": null, "Owed Account": null, "Owed Amount": null}, {"Date": "2026-09-18", "Income/Expense": "Expense", "Category": "Groceries", "Subcategory": "Supermarket", "Account": "eWallet", "Person": "Hubby", "Note": "Household groceries", "Amount": 82.63, "Split": null, "To Account": null, "Owed Account": null, "Owed Amount": null}, {"Date": "2026-09-19", "Income/Expense": "Income", "Category": "Income", "Subcategory": "Freelance", "Account": "Maybank", "Person": "Wifey", "Note": "Freelance income", "Amount": 414.41, "Split": null, "To Account": null, "Owed Account": null, "Owed Amount": null}];
-var MM52={demo:false,realKey:LS_KEY,demoKey:'mm_practice_v152',switching:false,depth:'depth',trend:'bar',active:false,step:0,completed:{},highlight:null};
-function storage52(k,v){try{if(arguments.length>1)localStorage.setItem(k,v);else return localStorage.getItem(k);}catch(e){return null;}}
-function journeyKey52(){return 'mm_journey_v152_'+(MM52.demo?'practice':'real');}
-function journeyLoad52(){try{MM52.completed=JSON.parse(storage52(journeyKey52())||'{}');}catch(e){MM52.completed={};}}
-function mark52(k){if(MM52.completed[k])return;MM52.completed[k]=true;storage52(journeyKey52(),JSON.stringify(MM52.completed));if(MM52.active)learnRender52();journeyRender52();}
-function demoDB52(){
- var keep=DB;DB=defaultDB();DB.people=['Hubby','Wifey'];DB.accounts=[];DB.accTypes=['Cash','Bank','eWallet','Credit Card','Receivable'];DB.accTypeMeta={'Credit Card':{kind:'liability',cycle:20},Receivable:{kind:'asset',cycle:0}};
- function acc(n,p){if(!n)return '';var name=p+' · '+n;if(!DB.accounts.some(function(a){return a.name===name;}))DB.accounts.push({name:name,owner:p,type:/credit/i.test(n)?'Credit Card':/cash/i.test(n)?'Cash':/wallet/i.test(n)?'eWallet':'Bank',start:/credit/i.test(n)?0:/cash/i.test(n)?500:2000,cycle:/credit/i.test(n)?20:0,dueDays:20});return name;}
- SAMPLE52.forEach(function(row,i){
-  var p=row.Person||'Hubby',a=acc(row.Account,p),to=acc(row['To Account'],p),raw=mkTxn({date:row.Date,type:row['Income/Expense'],category:row.Category,sub:row.Subcategory,account:a,to:to,person:p,note:row.Note,amount:row.Amount,split:row.Split});raw.id='demo52-'+i;raw.demo52=1;
-  if(raw.split&&raw.type!=='Transfer'){
-   var gid='demo52-split-'+i;raw.split.forEach(function(part,j){var leg=Object.assign({},raw,{id:raw.id+'-'+j,group:gid,person:part.p,amount:part.v,split:null,to:part.p===p?'':ensureRecvAcc(part.p+' owes '+p)});DB.txns.push(leg);});
-  }else DB.txns.push(raw);
- });
- ensureEntities(DB.txns);normalizeDB();DB.meta.demo52=true;DB.meta.sampleSource='50 supplied sample rows, 1 Aug to 19 Sep 2026; WHY renamed Hubby and HKO renamed Wifey; accounts separated by owner; opening balances are illustrative.';
- DB.meta.currency='RM';DB.meta.cloudSyncOn=false;DB.meta.cloudUid='';DB.meta.cloudEmail='';DB.meta.changedAt=Date.now();DB.budgets2={couple:{Groceries:{f:0,v:700},'Food & Dining':{f:0,v:500},Utilities:{f:250,v:0},Transport:{f:0,v:300}}};DB.goals=[{id:'demo52-goal',name:'Holiday fund',owner:'couple',target:5000,saved:1200,acc:'',due:''}];
- var out=DB;DB=keep;return out;
-}
-function selectDemoPeriod52(){PER.mode='month';PER.who='couple';var last=DB.txns.reduce(function(v,t){return t.date>v?t.date:v;},'');if(last){var now=new Date();PER.off=(+last.slice(0,4)-now.getFullYear())*12+(+last.slice(5,7)-1-now.getMonth());}}
-function workspace52(demo,reset){
- if(MM52.switching)return;MM52.switching=true;
- clearTimeout(renderH);clearTimeout(Cloud.pushH);clearTimeout(FB._ph);clearTimeout(BK.h);BK.h=null;
- MM52.active=false;learnHide52();UX51.draft=null;if(CALC.open)calcClose(false);uxClose51();closeMgr();if(REPORT.open)closeReport();if(DRILL.open){DRILL.open=false;hidePage();}
- storage52('mm_workspace_choice52',demo?'practice':'real');MM52.demo=demo;LS_KEY=demo?MM52.demoKey:MM52.realKey;
- if(demo){var raw=reset?null:storage52(LS_KEY);try{DB=raw?JSON.parse(raw):demoDB52();}catch(e){DB=demoDB52();}normalizeDB();save();selectDemoPeriod52();}
- else{loadDB();PER.mode='month';PER.off=0;PER.who='couple';}
- TXF={month:'all',person:'all',account:'all',type:'all',cat:'all',q:'',open:false};$('txSearch').value='';BSEL={on:false,ids:[]};EXP={txn:'',grp:{}};ASUM={};UX51.accountQuery='';$('uxAccSearch').value='';UX51.accountsFlat=false;BG.work=null;AI.msgs=[];MM52.switching=false;journeyLoad52();renderAll();gotoView('overview');banner52();
-}
-// Practice data never writes to the real database, cloud files, backups or collaborator packages.
-var saveBefore52=save;save=function(){if(MM52.demo){try{localStorage.setItem(MM52.demoKey,JSON.stringify(DB));syncUI('','Practice · saved locally');return true;}catch(e){toast('Practice storage unavailable');return false;}}return saveBefore52();};
-['cloudPush','cloudPull','fbPushQuiet','fbSyncNow'].forEach(function(n){var original=window[n];window[n]=function(){if(MM52.demo){toast('Cloud sync is off in practice mode');return Promise.resolve(false);}return original.apply(this,arguments);};});
-['cloudPushSoon','fbPushSoon','backupSoon','backupSnap','fbAutoSync','cloudInit','remCheck'].forEach(function(n){var original=window[n];window[n]=function(){if(MM52.demo)return;return original.apply(this,arguments);};});
-['fbSignIn','fbToggle','fbRestore','fbDeleteCloud','cloudLink','cloudOpen','cloudAction','collabSendChanges','collabSendInvite','collabImport','applyInvite','applyUpdate','collabLeave','collabCreate','backupRestore','backupClearAll','backupDelOne','clearAll','replaceFile','importFile','stmFile'].forEach(function(n){var original=window[n];window[n]=function(){if(MM52.demo){toast('Use your own workspace for sync, sharing, imports and real backups.');return;}return original.apply(this,arguments);};});
-var fbSetBefore52=fbSetUser;fbSetUser=function(u){if(MM52.demo){FB.user=u;return;}return fbSetBefore52(u);};
-var backupLoadBefore52=backupLoad;backupLoad=function(){return MM52.demo?Promise.resolve():backupLoadBefore52();};
-var syncBefore52=syncStatus;syncStatus=function(){if(MM52.demo)return syncUI('','Practice · saved locally');return syncBefore52();};
-var aiSendBefore52=aiSend;aiSend=function(q){if(!MM52.demo)return aiSendBefore52(q);q=String(q||$('aiQ').value||'').trim();if(!q)return;$('aiQ').value='';var h=aiLocal(q);AI.msgs.push({r:'u',h:esc(q),t:q},{r:'a',h:h,t:aiPlain(h),src:'Practice · on-device only'});aiRender();};
-function banner52(){
- var e=$('workspace52');if(!e){e=document.createElement('div');e.id='workspace52';e.className='mm52-banner';$('view-overview').prepend(e);}
- e.innerHTML=MM52.demo?'<strong>Practice workspace · dummy data</strong>50 sample transactions for Hubby and Wifey, Aug–Sep 2026. Opening balances, budgets and goal are illustrative. Changes stay separate from your own data.<div class="mm52-actions"><button class="ibtn" onclick="startLearn52()">Learn by doing</button><button class="ibtn" onclick="workspace52(false)">Use my own data</button></div>':'<strong>Your own workspace</strong><div class="mm52-actions"><button class="ibtn" onclick="practiceAsk52()">Try sample data & walkthrough</button><button class="ibtn" onclick="journeyOpen52()">My checklist</button></div>';
- var b=$('learningSettings52');if(b){b.querySelector('.mode52').textContent=MM52.demo?'Practice workspace · separate dummy data':'Your own workspace';}
- if(MM52.demo&&$('dsStatus'))$('dsStatus').textContent='Practice only. Cloud, sharing and real backup history are disabled.';
-}
-function practiceAsk52(){if(MM52.demo)return startLearn52();askConfirm('Open a separate practice workspace with 50 dummy transactions? Your own data stays untouched.','Open practice',function(){workspace52(true);startLearn52();});}
-function resetDemo52(){askConfirm('Reset only the practice workspace to its original 50 sample transactions? Your own data is not changed.','Reset practice',function(){workspace52(true,true);MM52.completed={};storage52(journeyKey52(),'{}');journeyRender52();});}
-/* Plain-language labels. Stored type identifiers and imported references stay unchanged. */
-function layman52(root){
- if(!root||root.nodeType!==1||root.closest('script,style'))return;
- var walker=document.createTreeWalker(root,NodeFilter.SHOW_TEXT),nodes=[],n;while(n=walker.nextNode())if(/receivables?/i.test(n.nodeValue)&&!n.parentElement.closest('script,style,textarea'))nodes.push(n);
- nodes.forEach(function(t){var p=t.parentElement;if(p.tagName==='OPTION'&&!p.hasAttribute('value'))p.setAttribute('value',p.value);t.nodeValue=t.nodeValue.replace(/receivables?/gi,'Money owed between people');});
-}
-var layObs52=new MutationObserver(function(rs){rs.forEach(function(r){if(r.type==='childList')r.addedNodes.forEach(function(n){if(n.nodeType===1)layman52(n);else if(n.nodeType===3&&/receivables?/i.test(n.nodeValue))layman52(n.parentElement);});});});
-layObs52.observe(document.body,{childList:true,subtree:true});
-/* Dimensional charts: unchanged data geometry, extruded edges, gradients and shadows. */
-var chartSeq52=0;
-function depthSVG52(markup,kind){
- if(MM52.depth==='flat')return markup;
- var doc=new DOMParser().parseFromString(markup.replace('<svg ','<svg xmlns="http://www.w3.org/2000/svg" '),'image/svg+xml'),svg=doc.documentElement;if(svg.tagName!=='svg')return markup;
- var ns='http://www.w3.org/2000/svg',defs=doc.createElementNS(ns,'defs'),id='depth52-'+(++chartSeq52),filter=doc.createElementNS(ns,'filter');filter.id=id;filter.setAttribute('x','-30%');filter.setAttribute('y','-30%');filter.setAttribute('width','170%');filter.setAttribute('height','180%');
- var shadow=doc.createElementNS(ns,'feDropShadow');shadow.setAttribute('dx','1');shadow.setAttribute('dy',kind==='pie'?'4':'2');shadow.setAttribute('stdDeviation',kind==='pie'?'2':'1.2');shadow.setAttribute('flood-opacity','.22');filter.append(shadow);defs.append(filter);svg.prepend(defs);
- var shapes=Array.from(svg.querySelectorAll('rect,path,circle')).filter(function(e){var fill=e.getAttribute('fill'),stroke=e.getAttribute('stroke');return fill&&fill!=='none'&&fill!=='transparent'&&fill!=='var(--line)'||kind==='pie'&&stroke&&stroke!=='var(--line)'&&stroke!=='var(--card)';});
- shapes.forEach(function(e,i){
-  var fill=e.getAttribute('fill'),stroke=e.getAttribute('stroke'),color=fill&&fill!=='none'?fill:stroke;if(!color)return;
-  if(kind==='pie'){
-   for(var d=7;d>=2;d-=2){var back=e.cloneNode(true);Array.from(back.attributes).forEach(function(a){if(a.name.indexOf('data-')===0||a.name==='style')back.removeAttribute(a.name);});back.setAttribute('transform','translate(0 '+d+')');back.setAttribute('pointer-events','none');back.setAttribute('aria-hidden','true');back.setAttribute('opacity','.6');e.parentNode.insertBefore(back,e);}
-  }else if(e.tagName==='rect'){
-   var x=+e.getAttribute('x'),y=+e.getAttribute('y'),w=+e.getAttribute('width'),h=+e.getAttribute('height');if(h>0&&w>0){var side=doc.createElementNS(ns,'path');side.setAttribute('d','M'+(x+w)+' '+y+' l4 -3 v'+h+' l-4 3 Z');side.setAttribute('fill',color);side.setAttribute('opacity','.65');side.setAttribute('pointer-events','none');e.parentNode.insertBefore(side,e);var top=doc.createElementNS(ns,'path');top.setAttribute('d','M'+x+' '+y+' l4 -3 h'+w+' l-4 3 Z');top.setAttribute('fill',color);top.setAttribute('opacity','.8');top.setAttribute('pointer-events','none');e.parentNode.insertBefore(top,e);}
-  }
-  var gradient=doc.createElementNS(ns,'linearGradient'),gid=id+'-g'+i;gradient.id=gid;gradient.setAttribute('x1','0');gradient.setAttribute('y1','0');gradient.setAttribute('x2','1');gradient.setAttribute('y2','1');
-  [['0%',color,'1'],['100%',color,'.68']].forEach(function(a){var stop=doc.createElementNS(ns,'stop');stop.setAttribute('offset',a[0]);stop.setAttribute('stop-color',a[1]);stop.setAttribute('stop-opacity',a[2]);gradient.append(stop);});defs.append(gradient);
-  e.setAttribute(fill&&fill!=='none'?'fill':'stroke','url(#'+gid+')');e.setAttribute('filter','url(#'+id+')');
- });
- svg.setAttribute('role','img');svg.setAttribute('aria-label',kind==='pie'?'Spending chart with decorative depth; values are listed below.':'Chart with decorative depth; exact values are shown in the report.');svg.setAttribute('style',(svg.getAttribute('style')||'')+';overflow:visible');return new XMLSerializer().serializeToString(svg);
-}
-['svgPie','svgDonut','svgNet','svgTrend','svgStacked'].forEach(function(n){var old=window[n];window[n]=function(){return depthSVG52(old.apply(this,arguments),n==='svgPie'||n==='svgDonut'?'pie':'bar');};});
-function lineTrend52(tr){
- var W=Math.max(320,tr.length*44),H=210,left=16,right=16,top=25,bot=35,max=1,min=0;
- tr.forEach(function(x){max=Math.max(max,x.i,x.ex);min=Math.min(min,x.i,x.ex);});var span=max-min,base=H-bot,step=(W-left-right)/Math.max(1,tr.length-1),zero=top+(max/span)*(H-top-bot),o='';
- function y(v){return top+(max-v)/span*(H-top-bot);}for(var k=0;k<4;k++){var yy=top+k*(H-top-bot)/3;o+='<line x1="8" x2="'+(W-8)+'" y1="'+yy+'" y2="'+yy+'" stroke="var(--line)"/>';}
- ['i','ex'].forEach(function(key,j){var color=j?'var(--exp)':'var(--inc)',pts=tr.map(function(x,i){return (left+i*step)+','+y(x[key]);}).join(' ');if(MM52.depth!=='flat')o+='<polyline points="'+pts+'" fill="none" stroke="'+color+'" stroke-width="8" opacity=".16" transform="translate(0 4)"/>';o+='<polyline points="'+pts+'" fill="none" stroke="'+color+'" stroke-width="3.5" stroke-linejoin="round"/>';tr.forEach(function(x,i){o+='<circle cx="'+(left+i*step)+'" cy="'+y(x[key])+'" r="4.5" fill="'+color+'" stroke="var(--card)" stroke-width="1.5"><title>'+esc(x.full)+': '+(j?'Expenses ':'Income ')+money(x[key])+'</title></circle>';});});
- tr.forEach(function(x,i){var cx=left+i*step;o+='<text x="'+cx+'" y="'+(H-8)+'" text-anchor="middle" font-size="10" fill="var(--muted)">'+esc(x.lb)+'</text><rect x="'+Math.max(0,cx-step/2)+'" y="0" width="'+step+'" height="'+H+'" fill="transparent"'+tl(x.s,x.e,x.full,'','all')+'><title>'+esc(x.full)+' · Income '+money(x.i)+' · Expenses '+money(x.ex)+'</title></rect>';});return '<svg viewBox="0 0 '+W+' '+H+'" style="width:100%;height:auto" role="img" aria-label="Income and expense line chart">'+o+'</svg>';
-}
-var svgTrendBars52=svgTrend;svgTrend=function(tr){return MM52.trend==='line'?lineTrend52(tr):svgTrendBars52(tr);};
-var repTrendBefore52=DYNF.trend;DYNF.trend=function(){var h=repTrendBefore52();return h.replace('<div class="chart-scroll">','<div class="segmini"><button onclick="MM52.trend=\'bar\';renderReport()" class="'+(MM52.trend==='bar'?'on':'')+'">Bars</button><button onclick="MM52.trend=\'line\';renderReport()" class="'+(MM52.trend==='line'?'on':'')+'">Lines</button></div><div class="chart-scroll">');};
-function depthSet52(v){MM52.depth=v;storage52('mm_chart_depth52',v);document.documentElement.dataset.chartDepth=v;renderAll();}
-/* Hands-on journey: steps complete only after the requested action succeeds. */
-var STEPS52=[
- {id:'expense',title:'Record an everyday expense',text:'Tap Try it. Enter 12 for a drink, choose Food & Dining, then Save transaction. Nothing here affects your real money.',target:'#fAmount',go:function(){openSheet();$('fAccount').value=DB.accounts.find(function(a){return a.owner==='Hubby'&&a.type==='Cash';}).name;updateOwnerUI();}},
- {id:'split',title:'Split a bill between two people',text:'Enter a bill amount, choose a category, add Hubby and Wifey under Split between people, then Split equally and Save. Watch who owes whom update.',target:'#fSplitBox',go:function(){openSheet();$('fAccount').value=DB.accounts.find(function(a){return a.owner==='Hubby'&&a.type==='Cash';}).name;updateOwnerUI();}},
- {id:'refund',title:'Record money returned to you',text:'Enter 5, choose a category, tap Refund beside the amount, then Save. The refund reduces spending instead of counting as income.',target:'#fSign',go:function(){openSheet();}},
- {id:'inspect',title:'Open a transaction’s details',text:'Tap any transaction row. If it is a split bill, expand the shares and tap one share. Its details appear without opening the editor.',target:'#txList',go:function(){gotoView('txns');}},
- {id:'report',title:'Explore a chart',text:'Tap a slice in Spending breakdown. It opens the transactions behind that category. Use Back to return.',target:'#repDyn .pie-wrap',go:function(){openReport('breakdown');}},
- {id:'budget',title:'Set a spending limit',text:'Enter a monthly variable budget for Food & Dining, then Save budgets. You can compare the limit with actual spending in reports.',target:'#mgrBody .bgrow',go:function(){BG.work=null;BG.scope='couple';openMgr('budgets');}},
- {id:'backup',title:'Save a practice backup',text:'Tap Save practice backup below. This exports dummy data only. On iPhone, choose Save to Files when the share sheet appears.',target:'#learn52',go:function(){backupDownload(-1);}}
-];
-function journeyRender52(){var el=$('journeyList52');if(!el)return;el.innerHTML=STEPS52.map(function(s,i){var done=!!MM52.completed[s.id];return '<div class="journey-row '+(done?'done':'')+'"><span class="status">'+(done?'✓':i+1)+'</span><span>'+s.title+'<small>'+(done?'Completed by doing':'Not completed yet')+'</small></span><button class="ibtn" onclick="startLearn52('+i+')">'+(done?'Practise':'Start')+'</button></div>';}).join('');var c=$('journeyCount52');if(c)c.textContent=Object.keys(MM52.completed).filter(function(k){return STEPS52.some(function(s){return s.id===k;});}).length+' / '+STEPS52.length+' completed';}
-function journeyOpen52(){gotoView('settings');$('learningSettings52').open=true;journeyRender52();$('learningSettings52').scrollIntoView({block:'start',behavior:'smooth'});}
-function learnHide52(){var e=$('learn52');if(e)e.hidden=true;document.body.classList.remove('learning52');if(MM52.highlight)MM52.highlight.classList.remove('learn-target');MM52.highlight=null;}
-function startLearn52(i){if(!MM52.demo){askConfirm('The hands-on walkthrough uses a separate practice workspace. Your own data stays untouched.','Practise safely',function(){workspace52(true);startLearn52(i);});return;}MM52.active=true;MM52.step=i==null?Math.max(0,STEPS52.findIndex(function(s){return !MM52.completed[s.id];})):i;learnRender52();}
-function learnRender52(){
- var el=$('learn52');if(!el){el=document.createElement('aside');el.id='learn52';el.setAttribute('aria-label','Hands-on learning guide');document.body.append(el);}if(!MM52.active){learnHide52();return;}
- var s=STEPS52[MM52.step],done=!!MM52.completed[s.id],count=Object.keys(MM52.completed).length;el.hidden=false;document.body.classList.add('learning52');
- el.innerHTML='<div style="display:flex;justify-content:space-between;align-items:center"><b>Learn by doing · '+(MM52.step+1)+' / '+STEPS52.length+'</b><button class="ibtn" onclick="MM52.active=false;learnHide52()">Pause</button></div><div class="learn-progress"><i style="width:'+(count/STEPS52.length*100)+'%"></i></div><h3>'+(done?'✓ ':'')+s.title+'</h3><p aria-live="polite">'+(done?'Done. You completed this action successfully.':s.text)+'</p><div class="mm52-actions">'+(MM52.step?'<button class="ibtn" onclick="MM52.step--;learnRender52()">Previous</button>':'')+'<button class="ibtn" onclick="tryStep52()">'+(s.id==='backup'?'Save practice backup':'Try it')+'</button><button class="ibtn" '+(!done?'disabled':'')+' onclick="nextStep52()">'+(MM52.step===STEPS52.length-1?'Finish':'Next')+'</button></div>';
-}
-function tryStep52(){if(MM52.highlight)MM52.highlight.classList.remove('learn-target');var s=STEPS52[MM52.step];s.go();setTimeout(function(){var target=document.querySelector(s.target);if(target){MM52.highlight=target;target.classList.add('learn-target');if(s.target!=='#learn52')target.scrollIntoView({block:'center',behavior:'smooth'});}},200);}
-function nextStep52(){if(!MM52.completed[STEPS52[MM52.step].id])return;if(MM52.step===STEPS52.length-1){MM52.active=false;learnHide52();journeyOpen52();toast('Journey complete. Your own data is still untouched.');}else{MM52.step++;learnRender52();}}
-var saveTxnBefore52=saveTxn;saveTxn=function(){var ids={};DB.txns.forEach(function(t){ids[t.id]=JSON.stringify(t);});saveTxnBefore52();if($('sheet').classList.contains('on'))return;var changed=DB.txns.filter(function(t){return ids[t.id]!==JSON.stringify(t);});if(changed.some(function(t){return t.type==='Expense'&&t.amount>0&&!t.group;}))mark52('expense');if(changed.some(function(t){return !!t.group;}))mark52('split');if(changed.some(function(t){return t.type==='Expense'&&t.amount<0;}))mark52('refund');};
-var budgetSaveBefore52=saveBudgets;saveBudgets=function(){budgetSaveBefore52();if(!Object.keys(bgStore()).some(function(k){return Object.keys(bgStore()[k]||{}).length;}))return;mark52('budget');};
-var backupBefore52=backupDownload;backupDownload=function(i){if(MM52.demo){download('money-practice-backup.json','application/json',backupWrapText(JSON.stringify(DB)));toast('Practice backup export requested');}else backupBefore52(i);};
-var actionBefore52=handleAct;handleAct=function(el){var a=el.dataset.act;if(a==='txn'&&el.closest('#txList')&&!BSEL.on){EXP.txn=EXP.txn===el.dataset.id?'':el.dataset.id;renderTxns();if(EXP.txn)mark52('inspect');return;}actionBefore52(el);if(a==='txn'&&el.nextElementSibling&&el.nextElementSibling.classList.contains('txdetail'))mark52('inspect');if(a==='tlist'&&DRILL.open)mark52('report');};
-/* iPhone: native share/download fallback and visual-viewport keyboard handling. */
-function isIOS52(){return /iPhone|iPad|iPod/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);}
-var downloadBefore52=download;download=function(name,mime,text){
- function done(){if(/backup/i.test(name))mark52('backup');}
- if(isIOS52()&&navigator.share&&navigator.canShare&&window.File){try{var file=new File([text],name,{type:mime});if(navigator.canShare({files:[file]})){navigator.share({files:[file],title:name}).then(done).catch(function(e){if(e.name!=='AbortError'){downloadBefore52(name,mime,text);done();}});return;}}catch(e){}}
- downloadBefore52(name,mime,text);done();
-};
-// Keep object URLs alive long enough for Safari's asynchronous download handling.
-// Existing download helper is replaced with a longer-lived fallback.
-downloadBefore52=function(name,mime,text){var url=URL.createObjectURL(new Blob([text],{type:mime})),a=document.createElement('a');a.href=url;a.download=name;a.rel='noopener';document.body.append(a);a.click();setTimeout(function(){a.remove();URL.revokeObjectURL(url);},60000);};
-function viewport52(){var v=window.visualViewport,h=v?v.height:innerHeight,offset=v?v.offsetTop:0,inset=v&&v.scale===1?Math.max(0,innerHeight-h-offset):0;document.documentElement.style.setProperty('--visible-height',h+'px');document.documentElement.style.setProperty('--keyboard-inset',(inset>100?inset:0)+'px');document.body.classList.toggle('ios-keyboard',inset>100);}
-if(window.visualViewport){visualViewport.addEventListener('resize',viewport52);visualViewport.addEventListener('scroll',viewport52);}window.addEventListener('orientationchange',function(){setTimeout(viewport52,250);});viewport52();
-// Preserve browser edge-back gestures instead of firing a second app swipe.
-if(isIOS52()){document.addEventListener('touchstart',function(e){if(e.touches.length===1&&(e.touches[0].clientX<24||e.touches[0].clientX>innerWidth-24)){SWIPE=null;EDGEBACK=null;}},{passive:true});}
-var mgrBefore52=renderMgr;renderMgr=function(){mgrBefore52();if(MGR.kind==='acctype'&&MGR.edit==='Receivable'&&$('mgrEName'))$('mgrEName').value='Money owed between people';};
-var saveTypeBefore52=saveAccType;saveAccType=function(old){if(old==='Receivable'&&$('mgrEName')&&$('mgrEName').value==='Money owed between people')$('mgrEName').value='Receivable';return saveTypeBefore52(old);};
-function setup52(){
- MM52.depth=storage52('mm_chart_depth52')||'depth';document.documentElement.dataset.chartDepth=MM52.depth;
- var d=document.createElement('details');d.id='learningSettings52';d.className='card ux-setting';d.innerHTML='<summary>Learning & sample data</summary><div class="help small mode52" style="margin:8px 0"></div><p class="help">A hands-on journey, not a slideshow. Each check completes after you perform the action. Practice data is stored separately and never synced.</p><div class="mm52-actions"><button class="ibtn" onclick="practiceAsk52()">Learn with sample data</button><button class="ibtn" onclick="workspace52(false)">My own workspace</button><button class="ibtn" onclick="resetDemo52()">Reset dummy data</button></div><h3 style="font-size:14px;margin-top:14px">Your checklist <small id="journeyCount52"></small></h3><div id="journeyList52"></div><div class="f-row" style="margin-top:14px"><label for="depthChoice52">Chart appearance</label><select class="fin" id="depthChoice52" onchange="depthSet52(this.value)"><option value="depth">3D-style depth</option><option value="flat">Flat (2D)</option></select><p class="help small">Depth is decorative. Values, percentages and chart scale are unchanged.</p></div><details class="help"><summary>Using this app on iPhone</summary><ol><li>Open the hosted HTTPS app in Safari. A downloaded HTML preview in Files or a chat app may not run it fully.</li><li>Use Safari’s Share menu, then Add to Home Screen for an app-like view.</li><li>Export a backup using Save to Files. Import through the Files picker. Direct cloud-file linking is not available in every browser.</li><li>Cloud sign-in requires a hosted website and configured authentication. Reminders are checked while the app is open, not guaranteed background alerts.</li></ol><p class="small">Compatibility references: <a href="https://support.apple.com/guide/iphone/open-as-web-app-iphea86e5236/ios" target="_blank" rel="noopener">Home Screen web apps</a> · <a href="https://developer.mozilla.org/en-US/docs/Web/API/VisualViewport" target="_blank" rel="noopener">Keyboard viewport</a> · <a href="https://developer.mozilla.org/en-US/docs/Web/API/Navigator/share" target="_blank" rel="noopener">Native sharing</a></p></details>';$('view-settings').prepend(d);$('depthChoice52').value=MM52.depth;
- var oldOverview52=renderOverview;renderOverview=function(){oldOverview52();renderPeriodOV();};
- var oldRender=renderAll;renderAll=function(){oldRender();banner52();journeyRender52();};
- var oldSettings=renderSettings;renderSettings=function(){oldSettings();banner52();journeyRender52();};
- var raw=storage52(MM52.realKey),realHas=false;try{var real=raw?JSON.parse(raw):null;realHas=!!(real&&(real.txns.length||real.accounts.some(function(a){return a.start||a.owner;})||real.people.join(',')!=='Me'));}catch(e){realHas=true;}
- if(storage52('mm_workspace_choice52')==='practice'||!realHas&&storage52('mm_workspace_choice52')!=='real')workspace52(true);else{journeyLoad52();banner52();journeyRender52();}
- layman52(document.body);
-}
-
-uxSetup51();
 boot();
-setup52();
 
 </script>
 </body>
