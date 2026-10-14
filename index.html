@@ -420,6 +420,7 @@ button.hcell{cursor:pointer;font:inherit;color:inherit;text-align:left;width:100
 .day-h.bghd{display:grid;font-size:10.5px;text-transform:uppercase;letter-spacing:.4px}
 .day-h.bghd span{text-align:right;color:var(--muted)!important}.day-h.bghd span:first-child{text-align:left}
 button.fline{font:inherit;color:inherit;text-align:left}
+.cycrow .lb{white-space:normal}.cycrow .amt2{margin-left:auto}
 
 /* v1.48 */
 .aibtn{display:inline-flex;align-items:center;gap:5px;flex:none;font-size:12.5px;font-weight:800;color:var(--accent);background:var(--accent-soft);border-radius:999px;padding:7px 12px}
@@ -597,7 +598,7 @@ body.calc-on .sheet.on{padding-bottom:calc(330px + env(safe-area-inset-bottom))}
       <div class="f-row"><label>Appearance</label><div class="segmini" id="modeSeg" style="margin-bottom:0"></div></div>
       <div class="f-row" style="margin-bottom:0"><label>Currency symbol</label><input class="fin" id="curSymbol" placeholder="RM, $, € …" onchange="DB.meta.currency=this.value.trim();touch();openSheetRefresh()"></div>
     </div>
-    <div class="card"><h2><svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><line x1="12" y1="10.5" x2="12" y2="16"/><line x1="12" y1="7.5" x2="12" y2="7.6"/></svg> About <span class="sub">v1.48</span></h2><div class="help"><b>Money Manager Mobile</b> is a single-file app that works offline. Your data lives on this device and cloud sync is opt-in.</div>
+    <div class="card"><h2><svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><line x1="12" y1="10.5" x2="12" y2="16"/><line x1="12" y1="7.5" x2="12" y2="7.6"/></svg> About <span class="sub">v1.49</span></h2><div class="help"><b>Money Manager Mobile</b> is a single-file app that works offline. Your data lives on this device and cloud sync is opt-in.</div>
       <details class="help" style="margin-top:10px"><summary>Help &amp; tips</summary><ol>
         <li><b>Add:</b> tap ＋, pick a category chip, then Save. Your last category is remembered.</li>
         <li><b>Edit:</b> tap a transaction. <b>Select several:</b> long-press one.</li>
@@ -5128,6 +5129,67 @@ var _hA48=handleAct;handleAct=function(el){
   calcMark();
   new MutationObserver(function(){calcMark();if(CALC.open&&CALC.el&&!document.body.contains(CALC.el))calcClose(false);}).observe(document.body,{childList:true,subtree:true});
 })();
+
+/* ===================== v1.49: card billing periods → tap a period for its own screen (day boxes + split bills) ===================== */
+function cycTxnRow(t,acc,bal,kid){
+  var isTrf=t.type==='Transfer',v=accEffect(t,acc),cls=v<0?'neg':'pos';
+  var sub=isTrf?(esc(t.account)+' → '+esc(t.to||'?')+(t.note?' · '+esc(t.note):'')):((t.note?esc(t.note)+' · ':'')+whoStr(t)+(t.account!==acc?' · '+esc(t.account):''));
+  return '<button class="txn'+(kid?' kid':'')+'" data-act="txn" data-id="'+t.id+'"><span class="mid"><b>'+esc(isTrf?'Transfer':t.category)+(t.subcategory?' · '+esc(t.subcategory):'')+'</b><small>'+sub+'</small></span>'
+    +'<span class="amt '+cls+'">'+(v<0?'-':'+')+(cur()?'<small class="cur2">'+esc(cur())+'</small> ':'')+fmt(Math.abs(v))+(bal!==undefined?'<small class="tbal">Bal '+money(bal)+'</small>':'')+'</span></button>';
+}
+function cycGrpRow(gid,legs,acc,bal){
+  var t0=legs[0],tot=0,ppl=[];
+  legs.forEach(function(x){tot+=accEffect(x,acc);if(ppl.indexOf(x.person)<0)ppl.push(x.person);});
+  tot=Math.round(tot*100)/100;
+  var open=!!EXP.grp[gid],cls=tot<0?'neg':'pos';
+  var sub=(t0.note?esc(t0.note)+' · ':'')+ico('users')+' Split · '+ppl.map(esc).join(' + ');
+  return '<button class="txn grp'+(open?' open':'')+'" data-act="dgrp" data-g="'+esc(gid)+'"><span class="mid"><b><span class="gchev'+(open?' on':'')+'" aria-hidden="true"></span>'+esc(t0.category)+(t0.subcategory?' · '+esc(t0.subcategory):'')+' <span class="gbadge">'+legs.length+' shares</span></b><small>'+sub+'</small></span>'
+    +'<span class="amt '+cls+'">'+(tot<0?'-':'+')+(cur()?'<small class="cur2">'+esc(cur())+'</small> ':'')+fmt(Math.abs(tot))+(bal!==undefined?'<small class="tbal">Bal '+money(bal)+'</small>':'')+'</span></button>'
+    +(open?'<div class="txkids">'+legs.map(function(x){return cycTxnRow(x,acc,undefined,true);}).join('')+'</div>':'');
+}
+function billingPeriodsCard(a,cyc){
+  var acc=a.name,ps=cyclePeriods(cyc,acc);
+  if(!ps.length)return '';
+  var rows=ps.slice().reverse().map(function(p){
+    var spent=0,paid=0;
+    p.txns.forEach(function(t){var v=accEffect(t,acc);if(v<0)spent-=v;else paid+=v;});
+    var close=accountBalAsOf(acc,p.e),n=p.txns.length;
+    return '<button class="trow cycrow" data-act="cycopen" data-s="'+p.s+'" data-e="'+p.e+'"><span class="lb">'+dLabel(p.s)+' – '+dLabelY(p.e)+(p.o?' <span class="pill due" style="font-size:10px;padding:1px 7px">current</span>':'')
+      +'<small>'+(n?n+' txn'+(n===1?'':'s')+' · spent '+money(spent)+(paid?' · paid '+money(paid):''):'nothing billed')+'</small></span>'
+      +'<span class="amt2 '+(close<0?'neg':'')+'">Bal '+money(close)+'</span><span class="muted">'+ico('chevright')+'</span></button>';
+  }).join('');
+  return '<div class="card"><h2>'+ico('calendar')+' Billing periods <span class="sub">statement day '+cyc+' · newest first</span></h2><div class="rows">'+rows+'</div>'
+    +'<div class="help small" style="margin-top:6px">Tap a period to see its transactions. Bal = card balance at the period end (negative means you owe it).</div></div>';
+}
+function renderCycDrill(){
+  var acc=DRILL.acc,s=DRILL.cs,e=DRILL.ce,rb=accRunningBals(acc);
+  $('drillCrumb').innerHTML='<button data-act="dback">'+esc(acc)+'</button><span class="sep">›</span><span class="cur">'+dLabel(s)+' – '+dLabel(e)+'</span>';
+  var l=allTxns().filter(function(t){return t.date>=s&&t.date<=e&&txnTouchesAcc(t,acc);}),g={},spent=0,paid=0;
+  l.forEach(function(t){(g[t.date]=g[t.date]||[]).push(t);var v=accEffect(t,acc);if(v<0)spent-=v;else paid+=v;});
+  var days=Object.keys(g).sort().reverse(),open=accountBalAsOf(acc,addDaysISO(s,-1)),close=accountBalAsOf(acc,e);
+  var list=days.map(function(d){
+    var dn=0,seen={};g[d].forEach(function(t){dn+=accEffect(t,acc);});
+    var rows=g[d].slice().reverse().map(function(t){
+      if(t.group){if(seen[t.group])return '';var legs=g[d].filter(function(x){return x.group===t.group;});
+        if(legs.length>1){seen[t.group]=1;var lb;legs.forEach(function(x){if(rb.tx[x.id]!==undefined)lb=rb.tx[x.id];});return cycGrpRow(t.group,legs,acc,lb);}}
+      return cycTxnRow(t,acc,rb.tx[t.id]);
+    }).join('');
+    return '<div class="dayg"><div class="day-h"><span>'+dLabelYW(d)+'</span><span>net '+(dn<0?'-':'+')+money(Math.abs(dn))+(rb.day[d]!==undefined?' · <b class="'+(rb.day[d]<0?'neg':'')+'">Bal '+money(rb.day[d])+'</b>':'')+'</span></div>'+rows+'</div>';
+  }).join('');
+  $('drillBody').innerHTML='<div class="card"><h2>'+ico('card')+' '+esc(acc)+' <span class="sub">'+dLabel(s)+' – '+dLabelY(e)+'</span></h2>'
+    +'<div class="kpis" style="grid-template-columns:1fr 1fr">'+kpi('Opening bal',money(open),open<0?'neg':'')+kpi('Spent',money(spent),'neg')+kpi('Paid',money(paid),'pos')+kpi('Closing bal',money(close),close<0?'neg':'')+'</div>'
+    +(list||'<div class="help" style="padding:8px 2px">Nothing billed in this period.</div>')
+    +'<div class="help small">Newest first. Tap a split bill to see its shares, tap a transaction to edit it.</div></div>';
+}
+var _rDr49=renderDrill;renderDrill=function(){if(DRILL.level==='cyc')return renderCycDrill();_rDr49();};
+var _dB49=drillBack;drillBack=function(){if(DRILL.level==='cyc'){DRILL.level='accmonth';renderDrill();navSync();return;}_dB49();};
+var _hA49=handleAct;handleAct=function(el){
+  switch(el.dataset.act){
+    case 'cycopen':DRILL.level='cyc';DRILL.cs=el.dataset.s;DRILL.ce=el.dataset.e;renderDrill();$('pageDrill').scrollTop=0;return;
+    case 'dgrp':var g=el.dataset.g;if(EXP.grp[g])delete EXP.grp[g];else EXP.grp[g]=1;renderDrill();return;
+  }
+  _hA49(el);
+};
 
 function renderAll(){
   renderOverview();
