@@ -378,6 +378,20 @@ details.more[open] summary{margin-bottom:10px}
 .dayg .txkids .txn.kid{padding:8px 12px 8px 30px;border-bottom:1px dashed var(--line)}
 .dayg .txkids .txn.kid:last-child{border-bottom:0}
 .txn.kid .mid b{font-size:12.5px}.txn.kid .amt{font-size:13px}
+.subg .mgr-row{padding:8px 12px}
+.chip.more{border-style:dashed;color:var(--accent);border-color:var(--accent)}
+.pk .txn{padding:11px 12px}.pk .txn .pos svg{width:16px;height:16px}
+.paybar{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.paybar .btn.sm{padding:8px 13px;font-size:12.5px;border-radius:10px}
+.txn .amt .tbal{display:block;font-size:11px;color:var(--muted);font-weight:600;text-align:right;margin-top:1px}
+.dayg .day-h span:last-child{text-align:right}
+.dayg .day-h{gap:8px;flex-wrap:wrap}
+.subg>div[style*="border:1.5px solid var(--accent)"]{margin:8px 10px!important}
+/* v1.45 collaborators */
+input.tgl{appearance:none;-webkit-appearance:none;width:44px;height:26px;border-radius:13px;background:var(--line);position:relative;flex:none;cursor:pointer;transition:background .15s}
+input.tgl:after{content:'';position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.3);transition:left .15s}
+input.tgl:checked{background:var(--accent)}input.tgl:checked:after{left:21px}
+#collabBody .dayg .txn .mid b svg{vertical-align:-.15em}
 </style>
 </head>
 <body>
@@ -459,14 +473,9 @@ details.more[open] summary{margin-bottom:10px}
   <!-- ============ ACCOUNTS (v1.6 simplified) ============ -->
   <section class="view" id="view-accounts">
     <div class="card">
-      <h2><svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg> Total Balance <span class="sub" id="accAsOf"></span></h2>
-      <div style="font-size:30px;font-weight:800" id="accTotal"></div>
-      <div class="help small" style="margin-top:6px" id="accSplit"></div>
-    </div>
-    <div class="card">
-      <h2><svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 21h18"/><path d="M5 21v-9"/><path d="M9.5 21v-9"/><path d="M14.5 21v-9"/><path d="M19 21v-9"/><path d="M3 8l9-5 9 5z"/><path d="M4 12h16"/></svg> Account Summary <span class="sub">people → types → accounts</span></h2>
+      <h2><svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 21h18"/><path d="M5 21v-9"/><path d="M9.5 21v-9"/><path d="M14.5 21v-9"/><path d="M19 21v-9"/><path d="M3 8l9-5 9 5z"/><path d="M4 12h16"/></svg> Account Summary <span class="sub">tap to open one level at a time</span></h2>
       <div class="rows" id="accList"></div>
-      <div class="help small" style="margin-top:8px">Tap a person or type to expand or collapse. Tap an account to see its months.</div>
+      <div class="help small" style="margin-top:8px">Tap a person to see their account types, tap a type to see its accounts, then tap an account to open it.</div>
       <button class="btn" data-act="accaddq" style="width:100%;margin-top:12px"><svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Add account</button>
     </div>
   </section>
@@ -478,6 +487,11 @@ details.more[open] summary{margin-bottom:10px}
       <div class="rows">
         <button class="trow" data-act="mgr" data-k="people"><span class="lb"><svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c0-3.6 2.9-6.5 6.5-6.5s6.5 2.9 6.5 6.5"/><path d="M16 4.6a3.5 3.5 0 0 1 0 6.8"/><path d="M18.5 13.9c1.8.9 3 2.8 3 5.1"/></svg> People<small id="cntPeople"></small></span><span class="amt2 muted"><svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></span></button><button class="trow" data-act="mgr" data-k="acctype"><span class="lb"><svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.7-.9l-.8-1.2A2 2 0 0 0 7.9 4H4a2 2 0 0 0-2 2v12c0 1.1.9 2 2 2Z"/></svg> Account Types<small id="cntAccTypes"></small></span><span class="amt2 muted"><svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></span></button><button class="trow" data-act="mgr" data-k="accs"><span class="lb"><svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="5" width="20" height="14" rx="2.5"/><line x1="2" y1="10" x2="22" y2="10"/><line x1="6" y1="15" x2="10" y2="15"/></svg> Accounts<small id="cntAccs"></small></span><span class="amt2 muted"><svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></span></button><button class="trow" data-act="mgr" data-k="cats"><span class="lb"><svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.6 13.4 12 4.8V2H4.8A2.8 2.8 0 0 0 2 4.8V12l8.6 8.6a2 2 0 0 0 2.8 0l7.2-7.2a2 2 0 0 0 0-2.8Z"/><circle cx="7.5" cy="7.5" r="1.2"/></svg> Categories<small id="cntCats"></small></span><span class="amt2 muted"><svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></span></button><button class="trow" data-act="mgr" data-k="subs"><span class="lb"><svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><line x1="9" y1="6" x2="21" y2="6"/><line x1="9" y1="12" x2="21" y2="12"/><line x1="9" y1="18" x2="21" y2="18"/><circle cx="4" cy="6" r="1"/><circle cx="4" cy="12" r="1"/><circle cx="4" cy="18" r="1"/></svg> Sub-categories<small id="cntSubs"></small></span><span class="amt2 muted"><svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></span></button><button class="trow" data-act="mgr" data-k="recur"><span class="lb"><svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><path d="m17 2 4 4-4 4"/><path d="M3 11v-1a4 4 0 0 1 4-4h14"/><path d="m7 22-4-4 4-4"/><path d="M21 13v1a4 4 0 0 1-4 4H3"/></svg> Recurring<small id="cntRecur"></small></span><span class="amt2 muted"><svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></span></button><button class="trow" data-act="mgr" data-k="budgets"><span class="lb"><svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4Z"/></svg> Budgets &amp; fixed costs<small id="cntBudgets"></small></span><span class="amt2 muted"><svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></span></button>
       </div>
+    </div>
+    <div class="card">
+      <h2><svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c0-3.6 2.9-6.5 6.5-6.5s6.5 2.9 6.5 6.5"/><path d="M16 4.6a3.5 3.5 0 0 1 0 6.8"/><path d="M18.5 13.9c1.8.9 3 2.8 3 5.1"/></svg> Collaborators <span class="sub" id="collabSub"></span></h2>
+      <div id="collabBody"></div>
+      <input type="file" id="fileCollab" accept=".json,application/json" hidden onchange="collabImport(this)">
     </div>
     <div class="card">
       <h2><svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 22s8-3.6 8-10V5.5L12 2 4 5.5V12c0 6.4 8 10 8 10Z"/><path d="m9 11.5 2 2 4-4.5"/></svg> Data &amp; Sync</h2>
@@ -535,7 +549,7 @@ details.more[open] summary{margin-bottom:10px}
       <div class="f-row"><label>Appearance</label><div class="segmini" id="modeSeg" style="margin-bottom:0"></div></div>
       <div class="f-row" style="margin-bottom:0"><label>Currency symbol</label><input class="fin" id="curSymbol" placeholder="RM, $, € …" onchange="DB.meta.currency=this.value.trim();touch();openSheetRefresh()"></div>
     </div>
-    <div class="card"><h2><svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><line x1="12" y1="10.5" x2="12" y2="16"/><line x1="12" y1="7.5" x2="12" y2="7.6"/></svg> About <span class="sub">v1.41</span></h2><div class="help"><b>Money Manager Mobile</b> is a single-file app that works offline. Your data lives on this device and cloud sync is opt-in.</div>
+    <div class="card"><h2><svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><line x1="12" y1="10.5" x2="12" y2="16"/><line x1="12" y1="7.5" x2="12" y2="7.6"/></svg> About <span class="sub">v1.45</span></h2><div class="help"><b>Money Manager Mobile</b> is a single-file app that works offline. Your data lives on this device and cloud sync is opt-in.</div>
       <details class="help" style="margin-top:10px"><summary>Help &amp; tips</summary><ol>
         <li><b>Add:</b> tap ＋, pick a category chip, then Save. Your last category is remembered.</li>
         <li><b>Edit:</b> tap a transaction. <b>Select several:</b> long-press one.</li>
@@ -543,6 +557,7 @@ details.more[open] summary{margin-bottom:10px}
         <li><b>Split a bill, refund or income:</b> More options → Split, and type each share as a positive amount. For a bill, the other person's share is added to the “X owes Y” ledger. For a refund, it is taken off. For income received into your account, their share is owed back to them. Settle it from Who owes whom.</li>
         <li><b>Credit cards:</b> set a statement day and payment-due days in Settings → Accounts.</li>
         <li><b>Budgets:</b> Settings → Budgets &amp; fixed costs (monthly, scaled for weekly reports).</li>
+        <li><b>Collaborate:</b> Settings → Collaborators → Invite. Choose which accounts they may manage, send the invite file, and import their changes file when they send it back.</li>
         <li><b>Back:</b> the phone Back button or Esc closes the top screen.</li>
       </ol></details></div>
   </section>
@@ -628,8 +643,7 @@ details.more[open] summary{margin-bottom:10px}
     <div class="amt-wrap"><span class="cur" id="fCur"></span><input class="fin amt-in" id="fAmount" inputmode="decimal" placeholder="0.00" oninput="updateSplitHint();updateOwnerUI();signUI()"><button type="button" class="sgn" id="fSign" data-act="fsign" title="Record as a refund (reduces expenses)" aria-label="Toggle refund">Refund</button></div>
   </div>
   <div class="f-row" id="fCatBox"><label>Category</label><div class="cat-chips" id="fCatChips"></div></div>
-  <div class="f-row" id="fSubRow"><label>Sub-category</label><div class="cat-chips" id="fSubChips"></div>
-    <div class="subnew"><input class="fin" id="fSubNew" placeholder="New sub-category"><button type="button" class="ibtn" data-act="subadd2" style="color:var(--accent);font-weight:800">Add</button></div><input type="hidden" id="fSub"></div>
+  <div class="f-row" id="fSubRow"><label>Sub-category</label><div class="cat-chips" id="fSubChips"></div><input type="hidden" id="fSub"></div>
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
     <div class="f-row"><label id="fAccLabel">Account</label><select class="fin" id="fAccount" onchange="updateOwnerUI();updateSplitHint()"></select></div>
     <div class="f-row" id="fOwnerRow"><label id="fOwnerLbl">Owner</label><div class="otxt" id="fOwner">—</div></div>
@@ -1436,29 +1450,32 @@ function cyclePeriods(cyc,acc){
 }
 /* the "Billing periods" card for a liability account with a statement day —
    one expandable row per statement period, newest first, txns with running balance */
+function accEffect(t,acc){var v=0;if(t.type==='Transfer'){if(t.account===acc)v-=t.amount;if(t.to===acc)v+=t.amount;}else{if(t.account===acc)v+=(t.type==='Income'?t.amount:-t.amount);if(t.to===acc)v+=legDelta(t);}if(t.owedAcc===acc)v+=(t.owedAmt||0);return Math.round(v*100)/100;}
+function accTxnRow(t,acc,bal){
+  var isTrf=t.type==='Transfer',v=accEffect(t,acc),cls=v<0?'neg':'pos';
+  var sub=isTrf?(esc(t.account)+' → '+esc(t.to||'?')+(t.note?' · '+esc(t.note):'')):((t.note?esc(t.note)+' · ':'')+whoStr(t)+(t.account!==acc?' · '+esc(t.account):''));
+  sub+=' · '+dLabelW(t.date);
+  return '<button class="txn" data-act="txn" data-id="'+t.id+'"><span class="mid"><b>'+esc(isTrf?'Transfer':t.category)+(t.subcategory?' · '+esc(t.subcategory):'')+'</b><small>'+sub+'</small></span>'
+    +'<span class="amt '+cls+'">'+(v<0?'-':'+')+(cur()?'<small class="cur2">'+esc(cur())+'</small> ':'')+fmt(Math.abs(v))+(bal!==undefined?'<small class="tbal">Bal '+money(bal)+'</small>':'')+'</span></button>';
+}
+function accBox(head,right,rows,empty){
+  return '<div class="dayg"><div class="day-h"><span>'+head+'</span><span>'+right+'</span></div>'+(rows||'<div class="help small" style="padding:10px 12px">'+(empty||'No transactions.')+'</div>')+'</div>';
+}
 function billingPeriodsCard(a,cyc){
   var acc=a.name,ps=cyclePeriods(cyc,acc);
   if(!ps.length)return '';
   var rb=accRunningBals(acc);
-  var rows=ps.slice().reverse().map(function(p){
+  var boxes=ps.slice().reverse().map(function(p){
     var spent=0,paid=0;
-    p.txns.forEach(function(t){
-      if(t.type==='Income'||(t.type==='Transfer'&&t.to===acc))paid+=t.amount;
-      else spent+=t.amount; /* expenses + transfers out both add to what you owe */
-    });
-    var close=accountBalAsOf(acc,p.e),open=p.o;
-    var lb=dLabel(p.s)+' – '+dLabelY(p.e)+(open?' <span class="muted" style="font-weight:600">· current</span>':'');
-    var sub=p.txns.length?((p.txns.length===1?'1 txn':p.txns.length+' txns')+' · spent -'+money(spent)+' · paid +'+money(paid)):'no transactions · balance carried over';
-    var body='';
-    if(DRILL.cyc===p.s){
-      body=p.txns.length
-        ?'<div class="expand">'+p.txns.slice().reverse().map(function(t){return miniTxn(t,rb.tx[t.id],false,dLabelW(t.date));}).join('')+'</div>'
-        :'<div class="help" style="padding:8px 2px">Nothing billed in this cycle yet — the closing balance is carried over from the previous statement.</div>';
-    }
-    return trow({act:'cycper',attrs:'data-s="'+p.s+'"',lb:lb,sub:sub,amt:money(close),cls:close<0?'neg':''})+body;
+    p.txns.forEach(function(t){var v=accEffect(t,acc);if(v<0)spent-=v;else paid+=v;});
+    var close=accountBalAsOf(acc,p.e);
+    var head=dLabel(p.s)+' – '+dLabelY(p.e)+(p.o?' <span class="muted" style="font-weight:600">· current</span>':'');
+    var right=(p.txns.length?'spent '+money(spent)+(paid?' · paid '+money(paid):'')+' · ':'')+'<b class="'+(close<0?'neg':'')+'">Bal '+money(close)+'</b>';
+    var rows=p.txns.slice().reverse().map(function(t){return accTxnRow(t,acc,rb.tx[t.id]);}).join('');
+    return accBox(head,right,rows,'Nothing billed in this period. The balance is carried over.');
   }).join('');
-  return '<div class="card"><h2>'+ico('calendar')+' Billing periods <span class="sub">statement day '+cyc+' · tap a period to expand</span></h2><div class="rows">'+rows+'</div>'
-    +'<div class="help small" style="margin-top:8px">Each billing period runs from the day after one statement to the statement day ('+cyc+') of the next month. The amount on the right is the account balance at the period end — negative means you owe it.</div></div>';
+  return '<div class="card"><h2>'+ico('calendar')+' Billing periods <span class="sub">statement day '+cyc+' · newest first</span></h2>'+boxes
+    +'<div class="help small" style="margin-top:4px">Each period runs from the day after one statement to the next statement day. Bal = card balance at the period end (negative means you owe it). Tap a transaction to edit it.</div></div>';
 }
 /* materialize due recurring occurrences into normal transactions (boot + every save) */
 function materializeRecur(){
@@ -1626,6 +1643,7 @@ function rowsFromAnyFile(f){
     return f.text().then(function(txt){
       var d;
       try{d=JSON.parse(txt);}catch(e){throw new Error('Not a valid JSON file');}
+      if(d&&String(d.kind||'').indexOf('mm-collab')===0)throw new Error('collab');
       d=unwrapBackup(d); /* wrapped backup files are welcome here too */
       if(Array.isArray(d)){
         var rows=d.map(csvRowToTxn).filter(function(t){return t.date&&t.amount;});
@@ -1665,7 +1683,7 @@ function importFile(inp){
         tot+=r.added;dup+=r.dup;
         DB.meta.changedAt=Date.now();save();
       });
-    }).catch(function(e){console.warn('import '+f.name,e);bad.push(f.name);});
+    }).catch(function(e){console.warn('import '+f.name,e);if(e&&e.message==='collab')toast('That is a collaborator file — open it from Settings → Collaborators');bad.push(f.name);});
   });
   p.then(function(){
     save();backupSnap('import');cloudPushSoon();renderAll();
@@ -1869,6 +1887,7 @@ function balances(){
   });
   var known={},rows=[];
   DB.accounts.forEach(function(a){
+    if(a.locked){known[a.name]=1;return;} /* v1.45: view-only accounts on a collaborator device */
     rows.push({name:a.name,start:a.start||0,income:inc[a.name]||0,expense:exp[a.name]||0,tin:tin[a.name]||0,tout:tout[a.name]||0,bal:(a.start||0)+(inc[a.name]||0)-(exp[a.name]||0)});
     known[a.name]=1;
   });
@@ -2189,7 +2208,7 @@ function renderDrill(){
     var isLiab=!!(accMeta&&accTypeKind(accMeta.type)==='liability');
     if(accMeta&&accTypeKind(accMeta.type)==='liability'){
       var cyc=accCycleFor(accMeta),owed=bbal<0?-bbal:0;
-      var payBtn=function(lb,v,primary){return '<button class="btn'+(primary?'':' ghost')+'" style="margin-top:8px" data-act="ccpay" data-n="'+esc(DRILL.acc)+'" data-a="'+(Math.round(v*100)/100)+'">'+ico('check')+' '+lb+' '+money(v)+'</button>';};
+      var payBtn=function(lb,v,primary){return '<button class="btn sm'+(primary?'':' ghost')+'" data-act="ccpay" data-n="'+esc(DRILL.acc)+'" data-a="'+(Math.round(v*100)/100)+'">'+lb+' '+money(v)+'</button>';};
       if(cyc){
         /* v1.41: plain-language statement card + settle-payment buttons */
         var ref=todayISO();
@@ -2208,36 +2227,33 @@ function renderDrill(){
           +fl('New spending since the statement<br><small class="muted">goes on the next statement</small>',money(newSpend),'')
           +fl('<b>Total you owe on this card</b>',money(owed),owed?'neg':'',true)
           +'</div>'
-          +(stillDue>=0.005?payBtn('Pay statement',stillDue,true):'')
-          +(owed>=0.005&&owed-stillDue>=0.005?payBtn('Pay full balance',owed,stillDue<0.005):'')
+          +'<div class="paybar">'+(stillDue>=0.005?payBtn('Pay statement',stillDue,true):'')
+          +(owed>=0.005&&owed-stillDue>=0.005?payBtn('Pay full',owed,stillDue<0.005):'')+'</div>'
           +'<div class="help small" style="margin-top:8px">Paying the statement amount by the due date usually avoids interest. Change the statement day and payment period in Settings → Accounts.</div></div>';
         html+=billingPeriodsCard(accMeta,cyc);
       }else{
         html+='<div class="card"><h2>'+ico('card')+' Balance owed <span class="sub">'+esc(accMeta.type)+'</span></h2><div class="rows"><div class="fline eq"><span>Total you owe</span><b class="'+(owed?'neg':'')+'">'+money(owed)+'</b></div></div>'
-          +(owed>=0.005?payBtn('Pay off',owed,true):'')
+          +(owed>=0.005?'<div class="paybar">'+payBtn('Pay off',owed,true)+'</div>':'')
           +'<div class="help small" style="margin-top:8px">Set a statement day in Settings → Accounts to see your statement amount, due date and billing periods.</div></div>';
-        var rbL=accRunningBals(DRILL.acc),recent=l.slice().reverse().slice(0,30);
-        html+='<div class="card"><h2>'+ico('list')+' Recent transactions <span class="sub">latest '+recent.length+'</span></h2>'+(recent.length?recent.map(function(t){return miniTxn(t,rbL.tx[t.id],false,dLabelW(t.date));}).join(''):'<div class="help">No transactions yet.</div>')+'</div>';
+        var rbL=accRunningBals(DRILL.acc),recent=l.slice().reverse();
+        html+='<div class="card"><h2>'+ico('list')+' Transactions <span class="sub">newest first</span></h2>'+accBox('All transactions',recent.length+' txn'+(recent.length===1?'':'s'),recent.map(function(t){return accTxnRow(t,DRILL.acc,rbL.tx[t.id]);}).join(''))+'</div>';
       }
     }
   }
-  if(DRILL.level==='accmonth'&&!isLiab){ /* v1.41: liabilities use statements, not months */
-    var mm={},tn={},trf={};
-    l.forEach(function(t){
-      var k=t.date.slice(0,7);
-      if(!mm[k])mm[k]={income:0,expense:0};
-      if(t.type==='Transfer')trf[k]=(trf[k]||0)+((t.to===DRILL.acc?1:-1)*t.amount);
-      else if(t.to===DRILL.acc&&t.account!==DRILL.acc)trf[k]=(trf[k]||0)+legDelta(t); /* v1.37 */
-      else mm[k][t.type.toLowerCase()]+=t.amount;
-      tn[k]=(tn[k]||0)+1;
-    });
-    var ks=Object.keys(mm).sort().reverse();
-    /* v1.10: each month row carries the account's cumulative balance at month end;
-       v1.30: the subtitle also shows the account balance (the asset drill no longer has a breakdown card) */
-    var moB=accRunningBals(DRILL.acc).mo;
-    html+='<div class="card"><h2>'+ico('calendar')+' '+esc(DRILL.acc)+' · Months <span class="sub">balance '+money(bbal)+' · tap a month to drill</span></h2><div class="rows">';
-    html+=ks.length?ks.map(function(k){var net=mm[k].income-mm[k].expense+(trf[k]||0);var tr=trf[k]||0;var bv=moB[k],mb=(bv!==undefined)?'<span class="mbal'+(bv<0?' neg':'')+'">'+money(bv)+'</span>':''; /* v1.39: balance on top, movement below */return trow({act:'month',attrs:'data-k="'+k+'"',lb:MONTHS[(+k.slice(5))-1]+' '+k.slice(0,4),sub:tn[k]+' txns · <span class="pos">+'+money(mm[k].income)+'</span> / <span class="'+(mm[k].expense<0?'pos':'neg')+'">'+(mm[k].expense<0?'+':'-')+money(Math.abs(mm[k].expense))+'</span>'+(tr?' · ⇄ '+(tr>0?'+':'-')+money(Math.abs(tr)):''),amt:'<span class="mstack">'+mb+'<span class="mmov '+(net<0?'neg':'pos')+'">'+(net<0?'-':'+')+money(Math.abs(net))+'</span></span>',cls:''});}).join(''):'<div class="help" style="padding:8px 2px">No transactions for this account.</div>';
-    html+='</div></div>';
+  if(DRILL.level==='accmonth'&&!isLiab){
+    var byM={},rbM=accRunningBals(DRILL.acc);
+    l.forEach(function(t){(byM[t.date.slice(0,7)]=byM[t.date.slice(0,7)]||[]).push(t);});
+    var ks=Object.keys(byM).sort().reverse();
+    html+='<div class="card"><h2>'+ico('calendar')+' '+esc(DRILL.acc)+' · Monthly <span class="sub">balance <b class="'+(bbal<0?'neg':'')+'">'+money(bbal)+'</b></span></h2>';
+    html+=ks.length?ks.map(function(k){
+      var tl=byM[k],inn=0,out=0;
+      tl.forEach(function(t){var v=accEffect(t,DRILL.acc);if(v<0)out-=v;else inn+=v;});
+      var net=inn-out,mb=rbM.mo[k];
+      var head=MONTHS[(+k.slice(5))-1]+' '+k.slice(0,4)+' <span class="muted" style="font-weight:600">· '+tl.length+' txn'+(tl.length===1?'':'s')+'</span>';
+      var right='<span class="'+(net<0?'neg':'pos')+'">net '+(net<0?'-':'+')+money(Math.abs(net))+'</span>'+(mb!==undefined?' · <b class="'+(mb<0?'neg':'')+'">Bal '+money(mb)+'</b>':'');
+      return accBox(head,right,tl.slice().reverse().map(function(t){return accTxnRow(t,DRILL.acc,rbM.tx[t.id]);}).join(''));
+    }).join(''):'<div class="help" style="padding:8px 2px">No transactions for this account.</div>';
+    html+='<div class="help small" style="margin-top:4px">Newest first. Bal = account balance after each transaction; the month header shows the month-end balance. Tap a transaction to edit it.</div></div>';
   }else if(DRILL.level==='accmonth'){ /* v1.41: liability — the statement cards are the whole view */
   }else if(DRILL.level==='pmonth'){
     var mm={},tn={},trf={};
@@ -2462,17 +2478,17 @@ function txDetailHTML(t){
 function renderAccounts(){
   var bl=balances();
   var n=bl.rows.length;
-  $('accAsOf').textContent=(n?n+(n===1?' account':' accounts'):'')+(bl.latest?((n?' · ':'')+'as at '+dLabelYW(bl.latest)):'');
-  $('accTotal').textContent=money(bl.rows.reduce(function(s,r){return s+r.bal;},0));
+  if($('accAsOf'))$('accAsOf').textContent=(n?n+(n===1?' account':' accounts'):'')+(bl.latest?((n?' · ':'')+'as at '+dLabelYW(bl.latest)):'');
+  if($('accTotal'))$('accTotal').textContent=money(bl.rows.reduce(function(s,r){return s+r.bal;},0));
   var asA=0,asL=0;
   bl.rows.forEach(function(r){var a=DB.accounts.find(function(x){return x.name===r.name;});if(a&&accTypeKind(a.type)==='liability')asL+=r.bal;else asA+=r.bal;});
-  $('accSplit').innerHTML=bl.rows.length?('Assets <b class="pos">'+money(asA)+'</b> · Liabilities <b class="'+(asL<0?'neg':'')+'">'+(asL<0?money(-asL)+' owed':money(asL))+'</b>'):'';
+  if($('accSplit'))$('accSplit').innerHTML=bl.rows.length?('Assets <b class="pos">'+money(asA)+'</b> · Liabilities <b class="'+(asL<0?'neg':'')+'">'+(asL<0?money(-asL)+' owed':money(asL))+'</b>'):'';
   $('accList').innerHTML=bl.rows.length?accSummaryHTML(bl.rows):'<div class="empty"><div class="big">'+ico('card')+'</div><b>No accounts</b><p>Add your first account below.</p></div>';
 }
 /* v1.10: collapsible account summary — people → account types → accounts.
    ASUM holds collapsed keys: 'p:NAME' folds a person's types, 'p:NAME|t:TYPE' folds their accounts. */
-var ASUM={};
-function asumToggle(k){if(ASUM[k])delete ASUM[k];else ASUM[k]=1;renderAccounts();}
+var ASUM={}; /* v1.44: holds EXPANDED keys — everything starts collapsed, each tap opens one level */
+function asumToggle(k){if(ASUM[k]){Object.keys(ASUM).forEach(function(x){if(x===k||x.indexOf(k+'|')===0)delete ASUM[x];});}else ASUM[k]=1;renderAccounts();} /* closing a person also closes its types */
 function accSummaryHTML(rows){
   var byP={},po=[];
   rows.forEach(function(r){
@@ -2504,7 +2520,7 @@ function accSummaryHTML(rows){
     return trow({act:'acc',attrs:'data-n="'+esc(r.name)+'"',lb:(a&&a.recv?ico('bank'):ico('card'))+' '+esc(r.name),sub:subTxt,amt:money(r.bal),cls:r.bal<0?'neg':''});
   }
   return order.map(function(p){
-    var g=byP[p],pk='p:'+p,openP=!ASUM[pk];
+    var g=byP[p],pk='p:'+p,openP=!!ASUM[pk];
     var isJoint=p!=='—'&&String(p).indexOf(' & ')>=0; /* v1.18: joint owners show the couple icon */
     var isOwner=p!=='—'&&!isJoint; /* v1.17: joint debt-ledger owners have no person drill */
     var nty=Object.keys(g.types).length;
@@ -2521,7 +2537,7 @@ function accSummaryHTML(rows){
     if(!openP)return ph;
     var tys=Object.keys(g.types).sort(alphasort); /* v1.16: types alphabetical */
     return ph+tys.map(function(ty){
-      var tk=pk+'|t:'+ty,openT=!ASUM[tk],sub2=0,tl=false; /* v1.19: net the ledgers inside the type too */
+      var tk=pk+'|t:'+ty,openT=!!ASUM[tk],sub2=0,tl=false; /* v1.19: net the ledgers inside the type too */
       g.types[ty].forEach(function(e){sub2+=e.net;if(e.isl)tl=true;});
       var isL=accTypeKind(ty)==='liability';
       var th='<button class="asum-row asum-l2" data-act="asum" data-k="'+esc(tk)+'">'
@@ -2585,7 +2601,7 @@ function renderSettings(){
   $('cntCats').textContent=(((DB.categories.Expense||[]).length)+((DB.categories.Income||[]).length))+' · tap to view & edit';
   var sc=0;Object.keys(DB.subcats||{}).forEach(function(k){sc+=(DB.subcats[k]||[]).length;});
   $('cntSubs').textContent=sc+(sc===1?' sub-category':' sub-categories')+' · tap to view & edit';
-  $('cntAccs').textContent=DB.accounts.length+(DB.accounts.length===1?' account':' accounts')+' · tap to view & edit';
+  var nAc=DB.accounts.filter(function(a){return !a.locked;}).length;$('cntAccs').textContent=nAc+(nAc===1?' account':' accounts')+' · tap to view & edit';
   $('cntAccTypes').textContent=DB.accTypes.length+(DB.accTypes.length===1?' type':' types')+' · tap to view & edit';
   $('cntRecur').textContent=DB.recur.length+(DB.recur.length===1?' series':' series')+' · auto-adds transactions';
   $('bkSub').textContent=BK.log.length?BK.log.length+' kept · latest '+bkWhen(BK.log[0].at):'auto · every change';
@@ -2596,7 +2612,7 @@ function renderSettings(){
 }
 /* ============ list manager modal (v1.3: pop-out for people/categories/subs/accounts) ============ */
 var MGR={kind:'',edit:null};
-var MGR_TITLE={people:ico('users')+' People',cats:ico('tag')+' Categories',subs:ico('list')+' Sub-categories',accs:ico('card')+' Accounts',acctype:ico('folder')+' Account Types',recur:ico('repeat')+' Recurring transactions',backups:ico('clock')+' Backup history',pickcat:ico('tag')+' Choose category',picksub:ico('list')+' Choose sub-category',batchedit:ico('pencil')+' Batch edit',budgets:ico('wallet')+' Budgets & fixed costs'};
+var MGR_TITLE={people:ico('users')+' People',cats:ico('tag')+' Categories',subs:ico('list')+' Sub-categories',accs:ico('card')+' Accounts',acctype:ico('folder')+' Account Types',recur:ico('repeat')+' Recurring transactions',backups:ico('clock')+' Backup history',pickcat:ico('tag')+' Choose category',picksub:ico('list')+' Choose sub-category',batchedit:ico('pencil')+' Batch edit',budgets:ico('wallet')+' Budgets & fixed costs',collabinv:ico('users')+' Invite collaborator',collabedit:ico('users')+' Collaborator access'};
 function subList(c){if(!DB.subcats||typeof DB.subcats!=='object')DB.subcats={};if(!DB.subcats[c])DB.subcats[c]=[];return DB.subcats[c];}
 function openMgr(kind){MGR.kind=kind;MGR.edit=null;$('mgrTitle').innerHTML=MGR_TITLE[kind]||'Manage';renderMgr();$('mgrOvl').classList.add('on');$('mgrSheet').classList.add('on');navSync();}
 function closeMgr(){$('mgrOvl').classList.remove('on');$('mgrSheet').classList.remove('on');navSync();}
@@ -2612,6 +2628,7 @@ function mgrEditRow(i,val,saveAttrs){
     +'<button class="ibtn" data-act="mgrcancel" aria-label="cancel">'+ico('x')+'</button></div>';
 }
 function ownerOptions(sel){
+  if(isCollabMode()){var me=collabCfg().me;return '<option'+(sel===me||!sel?' selected':'')+'>'+esc(me)+'</option>'+(sel&&sel!==me?'<option selected>'+esc(sel)+'</option>':'');}
   var h='<option value="">— No owner —</option>'+sortedAlpha(DB.people).map(function(p){return '<option'+(sel===p?' selected':'')+'>'+esc(p)+'</option>';}).join('');
   if(sel&&DB.people.indexOf(sel)<0)h+='<option selected>'+esc(sel)+'</option>'; /* v1.17: keep joint / stale owners visible */
   return h;
@@ -2653,10 +2670,11 @@ function renderMgr(){
     h+='<div style="border-top:1px solid var(--line);margin-top:10px;padding-top:10px"><select class="fin" id="mgrNewType" style="margin-bottom:7px"><option>Expense</option><option>Income</option></select><div style="display:flex;gap:7px"><input class="fin" id="mgrNew" placeholder="New category name" style="flex:1"><button class="ibtn" data-act="mgradd" style="color:var(--accent);font-weight:800">Add</button></div></div>';
   }else if(MGR.kind==='subs'){
     var any=false;
-    Object.keys(DB.subcats||{}).sort().forEach(function(c){
+    sortedAlpha(Object.keys(DB.subcats||{})).forEach(function(c){
       if(!(DB.subcats[c]||[]).length)return;
       any=true;
-      h+='<div class="mgr-sec">'+esc(c)+'</div>';
+      var nS=DB.subcats[c].length,isInc=(DB.categories.Income||[]).indexOf(c)>=0&&(DB.categories.Expense||[]).indexOf(c)<0;
+      h+='<div class="dayg subg"><div class="day-h"><span>'+esc(c)+'</span><span>'+(isInc?'Income · ':'')+nS+' sub-categor'+(nS===1?'y':'ies')+'</span></div>';
       h+=sortedAlpha(DB.subcats[c]).map(function(s){
         var k=c+'::'+s;
         var n=0;DB.txns.forEach(function(t){if(t.category===c&&t.subcategory===s)n++;});
@@ -2671,8 +2689,8 @@ function renderMgr(){
             +'<div class="help small" style="margin:4px 2px 7px">Picking another category moves this sub-category and its '+n+' transaction'+(n===1?'':'s')+' there.</div>'
             +'<div style="display:flex;gap:7px"><button class="ibtn" data-act="mgrsave" data-i="'+ei+'" data-k="'+esc(k)+'" style="flex:1;color:var(--inc)">Save</button><button class="ibtn" data-act="mgrcancel" style="flex:1">Cancel</button></div></div>';
         }
-        return mgrRow(esc(s),esc(c)+' · '+n+' txns','data-k="'+esc(k)+'"','data-k="'+esc(k)+'"');
-      }).join('');
+        return mgrRow(esc(s),n+' txn'+(n===1?'':'s'),'data-k="'+esc(k)+'"','data-k="'+esc(k)+'"');
+      }).join('')+'</div>';
     });
     if(!any)h+='<div class="help" style="padding:8px 2px">No sub-categories yet — add one below, or they fill up automatically from transactions.</div>';
     var allCats=[].concat(DB.categories.Expense||[],DB.categories.Income||[]);
@@ -2695,7 +2713,7 @@ function renderMgr(){
     h+='<div class="mgr-add"><div class="mgr-lb">Add a new type</div><input class="fin" id="mgrNew" placeholder="Type name, e.g. Credit Card" style="margin-bottom:7px"><div class="mgr-lb">Kind</div><select class="fin" id="mgrNewKind" style="margin-bottom:7px"><option value="asset">Asset (+ balance) — cash, wallet, savings</option><option value="liability">Liability (− balance) — credit card, loan, CC balance transfer</option></select><button class="ibtn" data-act="mgradd" style="width:100%;color:var(--accent);font-weight:800">Add type</button><div class="help small" style="margin-top:6px">Assets hold money you have; liabilities are what you owe. A name like a credit card defaults to liability. Billing-cycle (statement day) settings are per account — set them in <b>Settings → Accounts</b> for credit-card accounts. Used types cannot be deleted; renaming updates every account.</div></div>';
   }else if(MGR.kind==='accs'){
     var BALM={};balances().rows.forEach(function(r){BALM[r.name]=r.bal;}); /* v1.23: current balance per account row */
-    h+=DB.accounts.slice().sort(function(x,y){return alphasort(x.name,y.name);}).map(function(a){
+    h+=DB.accounts.filter(function(a){return !a.locked;}).sort(function(x,y){return alphasort(x.name,y.name);}).map(function(a){
       if(MGR.edit===a.name){ /* v1.23: labelled, tidier edit card */
         return '<div style="border:1.5px solid var(--accent);border-radius:12px;padding:10px;margin:6px 0">'
           +'<div style="display:grid;grid-template-columns:1.4fr 1fr;gap:7px;margin-bottom:7px">'
@@ -2712,7 +2730,7 @@ function renderMgr(){
       var n=0;DB.txns.forEach(function(t){if(txnTouchesAcc(t,a.name))n++;});
       var cyTxt=(typeHasCycle(a.type)&&accCycleFor(a))?' · cycle day '+accCycleFor(a):'';
       var bal=BALM[a.name]||0;
-      return mgrRow(ico('card')+' '+esc(a.name),ico('tag')+' '+esc(a.type||'—')+' · '+((a.owner)?ownerIco(a.owner)+' '+esc(a.owner):'<i>no owner</i>')+' · '+n+' txn'+(n===1?'':'s')+cyTxt,'data-k="'+esc(a.name)+'"','data-k="'+esc(a.name)+'"','<span class="'+(bal<0?'neg':'')+'">'+money(bal)+'</span>');
+      return mgrRow(ico('card')+' '+esc(a.name),ico('tag')+' '+esc(a.type||'—')+' · '+((a.owner)?ownerIco(a.owner)+' '+esc(a.owner):'<i>no owner</i>')+' · '+n+' txn'+(n===1?'':'s')+cyTxt+((a.access&&a.access.length)?' · '+ico('users')+' shared with '+esc(a.access.join(', ')):''),'data-k="'+esc(a.name)+'"','data-k="'+esc(a.name)+'"','<span class="'+(bal<0?'neg':'')+'">'+money(bal)+'</span>');
     }).join('');
     var defTy=sortedAlpha(DB.accTypes)[0]||'';
     h+='<div class="mgr-add"><div class="mgr-lb">Add a new account</div><input class="fin" id="mgrNewName" placeholder="Account name" style="margin-bottom:7px"><div style="display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:7px"><input class="fin" id="mgrNewStart" inputmode="decimal" placeholder="Start balance'+(cur()?' ('+esc(cur())+')':'')+'"><select class="fin" id="mgrNewOwner">'+ownerOptions('')+'</select></div><div class="mgr-lb">Type</div><select class="fin" id="mgrNewAType" style="margin-bottom:7px" onchange="var w=document.getElementById(\'cycNWrap\');if(w)w.style.display=typeHasCycle(this.value)?\'\':\'none\'">'+sortedAlpha(DB.accTypes).map(function(ty){return '<option>'+esc(ty)+'</option>';}).join('')+'</select><div id="cycNWrap" style="display:'+(typeHasCycle(defTy)?'':'none')+';margin-bottom:7px"><input class="fin" id="mgrNewCyc" inputmode="numeric" placeholder="Billing cycle day 1–31 (optional)"></div><button class="ibtn" data-act="mgradd" style="width:100%;color:var(--accent)">'+ico('plus')+' Add account</button></div>';
@@ -2736,28 +2754,38 @@ function renderRecurMgr(){
   h+='<div class="help small" style="border-top:1px solid var(--line);margin-top:10px;padding-top:10px">Due occurrences are added automatically as normal transactions (up to today). Tap '+ico('pencil')+' to edit the original transaction, or '+ico('trash')+' to stop the series — past transactions are kept.</div>';
   $('mgrBody').innerHTML=h;
 }
+function pickFilter(v){v=String(v||'').toLowerCase();var rs=document.querySelectorAll('#mgrBody .pkrow'),n=0;for(var i=0;i<rs.length;i++){var on=rs[i].dataset.q.indexOf(v)>=0;rs[i].hidden=!on;if(on)n++;}var e=$('pkNone');if(e)e.hidden=n>0;var ad=$('mgrNew');if(ad&&v&&!ad.dataset.touched)ad.value=$('pkSearch').value;}
+function pickList(items,sel,act,attr){
+  return '<input class="fin" id="pkSearch" placeholder="Search…" oninput="pickFilter(this.value)" style="margin-bottom:8px">'
+    +'<div class="dayg pk" style="max-height:46vh;overflow-y:auto">'+items.map(function(c){return '<button class="txn pkrow" data-q="'+esc(String(c).toLowerCase())+'" data-act="'+act+'" '+attr+'="'+esc(c)+'"><span class="mid"><b>'+esc(c)+'</b></span>'+(c===sel?'<span class="pos">'+ico('check')+'</span>':'')+'</button>';}).join('')
+    +'<div class="help small" id="pkNone" hidden style="padding:10px 12px">No match. Add it below.</div></div>';
+}
 function renderPickCat(){
-  var cats=DB.categories[F.type]||[];
-  $('mgrBody').innerHTML='<div class="rows">'+(cats.length?sortedAlpha(cats).map(function(c){
-    return '<button class="trow" data-act="pickcat" data-c="'+esc(c)+'"><span class="lb">'+(F.cat===c?'<b style="color:var(--accent)">'+ico('check')+' </b>':'')+esc(c)+'</span></button>';
-  }).join(''):'<div class="help" style="padding:8px 2px">No categories for this type.</div>')+'</div>';
+  var cats=sortedAlpha(DB.categories[F.type]||[]);
+  $('mgrTitle').innerHTML=ico('tag')+' '+(F.type==='Income'?'Income':'Expense')+' categories';
+  $('mgrBody').innerHTML=pickList(cats,F.cat,'pickcat','data-c')
+    +'<div class="mgr-add"><div class="mgr-lb">Add a new '+(F.type==='Income'?'income':'expense')+' category</div><div style="display:flex;gap:7px"><input class="fin" id="mgrNew" placeholder="e.g. Pets" oninput="this.dataset.touched=1" style="flex:1"><button class="ibtn" data-act="catadd2" style="color:var(--accent);font-weight:800">Add</button></div></div>';
 }
 function renderPickSub(){
-  var subs=subList(F.cat).slice();
-  if(F.sub&&subs.indexOf(F.sub)<0)subs.unshift(F.sub);
-  $('mgrBody').innerHTML='<div class="rows">'
-    +'<button class="trow" data-act="picksubnone"><span class="lb">'+(F.sub?'':'<b style="color:var(--accent)">'+ico('check')+' </b>')+'None</span></button>'
-    +(subs.length?sortedAlpha(subs).map(function(s){return '<button class="trow" data-act="picksub" data-s="'+esc(s)+'"><span class="lb">'+(F.sub===s?'<b style="color:var(--accent)">'+ico('check')+' </b>':'')+esc(s)+'</span></button>';}).join(''):'')
-    +'</div>'
-    +'<div style="border-top:1px solid var(--line);margin-top:10px;padding-top:10px"><div class="help small" style="margin-bottom:6px">Add a new sub-category for <b>'+esc(F.cat)+'</b>:</div><div style="display:flex;gap:7px"><input class="fin" id="mgrNew" placeholder="e.g. Restaurant" style="flex:1"><button class="ibtn" data-act="subadd" style="color:var(--accent);font-weight:800">Add</button></div></div>';
+  var subs=sortedAlpha(subList(F.cat));
+  $('mgrTitle').innerHTML=ico('list')+' '+esc(F.cat)+' · sub-categories';
+  $('mgrBody').innerHTML=(subs.length?pickList(['(None)'].concat(subs),F.sub||'(None)','picksub','data-s'):'<div class="help small" style="margin-bottom:8px">No sub-categories for '+esc(F.cat)+' yet.</div>')
+    +'<div class="mgr-add"><div class="mgr-lb">Add a new sub-category</div><div style="display:flex;gap:7px"><input class="fin" id="mgrNew" placeholder="e.g. Restaurant" oninput="this.dataset.touched=1" style="flex:1"><button class="ibtn" data-act="subadd" style="color:var(--accent);font-weight:800">Add</button></div></div>';
+}
+function catAddFromPicker(){
+  var n=(($('mgrNew')||{}).value||'').trim();
+  if(!n){toast('Enter a category name');return;}
+  var list=DB.categories[F.type]=DB.categories[F.type]||[];
+  var hit=list.find(function(c){return c.toLowerCase()===n.toLowerCase();});
+  if(!hit){list.push(n);hit=n;}
+  F.cat=hit;F.sub='';renderFormCats(F.cat);touch();closeMgr();toast(hit===n?'Category “'+n+'” added ✓':'Selected existing “'+hit+'”');
 }
 function subAddFromPicker(){
   var n=(($('mgrNew')||{}).value||'').trim();
   if(!n){toast('Enter a sub-category name');return;}
-  if(subList(F.cat).indexOf(n)>=0){toast('Already exists');return;}
-  subList(F.cat).push(n);
-  F.sub=n;$('fSub').value=n;$('fSubBtn').textContent=n;
-  touch();closeMgr();toast('Sub-category added ✓');
+  if(subList(F.cat).indexOf(n)<0)subList(F.cat).push(n);
+  F.sub=n;renderFormCats(F.cat);
+  touch();closeMgr();toast('Sub-category “'+n+'” added ✓');
 }
 function mgrAdd(){
   var n=(($('mgrNew')||{}).value||'').trim();
@@ -3029,7 +3057,7 @@ function clearAll(sel){
 /* ================= add / edit sheet ================= */
 var F={id:null,type:'Expense',cat:'',sub:''};
 function accOptions(sel){
-  var names=sortedAlpha(DB.accounts.map(function(a){return a.name;}));
+  var names=sortedAlpha(DB.accounts.filter(function(a){return !a.locked;}).map(function(a){return a.name;}));
   var h=names.map(function(n){return '<option'+(sel===n?' selected':'')+'>'+esc(n)+'</option>';}).join('');
   if(sel&&names.indexOf(sel)<0)h='<option selected>'+esc(sel)+'</option>'+h;
   return h;
@@ -3077,16 +3105,30 @@ function updateOwnerUI(){
 }
 function catFreq(ty){var m={};DB.txns.forEach(function(t){if(t.type===ty)m[t.category]=(m[t.category]||0)+1;});return m;}
 /* v1.36: inline category + sub-category chips (most-used first) — no pop-up picker, no silent default */
+function quickPick(all,sel,n){
+  var q=all.slice(0,n);
+  if(sel&&q.indexOf(sel)<0){q=[sel].concat(q.slice(0,n-1));}
+  return q;
+}
 function renderFormCats(sel){
   var cats=DB.categories[F.type]||[];
   if(sel&&cats.indexOf(sel)<0)sel='';
   F.cat=sel||'';
   if(F.sub&&(!F.cat||subList(F.cat).indexOf(F.sub)<0))F.sub='';
   var fq=catFreq(F.type),ord=cats.slice().sort(function(a,b){return (fq[b]||0)-(fq[a]||0)||alphasort(a,b);});
-  $('fCatChips').innerHTML=ord.length?ord.map(function(c){return '<button type="button" class="chip'+(c===F.cat?' on':'')+'" data-act="fcat" data-c="'+esc(c)+'">'+esc(c)+'</button>';}).join(''):'<span class="help small">No categories yet. Add one in Settings → Categories.</span>';
+  var q=quickPick(ord,F.cat,5);
+  $('fCatChips').innerHTML=q.map(function(c){return '<button type="button" class="chip'+(c===F.cat?' on':'')+'" data-act="fcat" data-c="'+esc(c)+'">'+esc(c)+'</button>';}).join('')
+    +'<button type="button" class="chip more" data-act="fcatmenu">'+ico('search')+' '+(cats.length>q.length?'All ('+cats.length+')':'More')+'</button>';
   $('fSub').value=F.sub||'';
   $('fSubRow').hidden=(F.type==='Transfer')||!F.cat;
-  if(F.cat){var subs=sortedAlpha(subList(F.cat));$('fSubChips').innerHTML='<button type="button" class="chip'+(!F.sub?' on':'')+'" data-act="fsubpick" data-s="">None</button>'+subs.map(function(x){return '<button type="button" class="chip'+(x===F.sub?' on':'')+'" data-act="fsubpick" data-s="'+esc(x)+'">'+esc(x)+'</button>';}).join('');}
+  if(F.cat){
+    var sf={};DB.txns.forEach(function(t){if(t.category===F.cat&&t.subcategory)sf[t.subcategory]=(sf[t.subcategory]||0)+1;});
+    var subs=subList(F.cat).slice().sort(function(a,b){return (sf[b]||0)-(sf[a]||0)||alphasort(a,b);});
+    var qs=quickPick(subs,F.sub,4);
+    $('fSubChips').innerHTML='<button type="button" class="chip'+(!F.sub?' on':'')+'" data-act="fsubpick" data-s="">None</button>'
+      +qs.map(function(x){return '<button type="button" class="chip'+(x===F.sub?' on':'')+'" data-act="fsubpick" data-s="'+esc(x)+'">'+esc(x)+'</button>';}).join('')
+      +'<button type="button" class="chip more" data-act="fsubmenu">'+(subs.length>qs.length?ico('search')+' All ('+subs.length+')':ico('plus')+' New')+'</button>';
+  }
 }
 function signUI(){var b=$('fSign');if(b)b.classList.toggle('on',F.type==='Expense'&&parseAmt($('fAmount').value)<0);}
 function setFormType(t){
@@ -3114,6 +3156,7 @@ function setFormType(t){
 }
 function openSheet(id){
   var t=id?DB.txns.find(function(x){return x.id===id;}):null;
+  if(t&&accLocked(t.account)){toast('View only — this transaction belongs to an account you cannot manage');return;}
   F.id=id||null;F.type=F.type||'Expense';
   $('sheetTitle').textContent=t?'Edit transaction':'Add transaction';
   $('btnDel').hidden=!t;
@@ -3147,7 +3190,6 @@ function openSheet(id){
   SPLIT.rows=(t&&hasSplit(t))?t.split.map(function(s){return {p:s.p,v:s.v,a:''};}):[];
   renderSplitRows();
   $('fMore').open=!!(rr||SPLIT.rows.length);
-  $('fSubNew').value='';
   signUI();
   $('ovl').classList.add('on');
   $('sheet').classList.add('on');
@@ -3460,7 +3502,7 @@ function batchApply(){
   BSEL.ids.forEach(function(id){
     var t=DB.txns.find(function(x){return x.id===id;});
     if(!t)return;
-    if(t.type==='Transfer'){skip++;return;}
+    if(t.type==='Transfer'||accLocked(t.account)){skip++;return;}
     snaps.push(Object.assign({},t));
     if(use.cat){t.category=val.cat;t.subcategory='';}
     if(use.sub){t.subcategory=val.sub;if(subList(t.category).indexOf(val.sub)<0)subList(t.category).push(val.sub);}
@@ -3683,9 +3725,10 @@ function handleAct(el){
     case 'fcatmenu':openMgr('pickcat');break;
     case 'fsubmenu':openMgr('picksub');break;
     case 'pickcat':F.cat=el.dataset.c;renderFormCats(F.cat);closeMgr();break;
-    case 'picksub':F.sub=el.dataset.s;renderFormCats(F.cat);closeMgr();break;
+    case 'picksub':F.sub=(el.dataset.s==='(None)')?'':el.dataset.s;renderFormCats(F.cat);closeMgr();break;
     case 'picksubnone':F.sub='';renderFormCats(F.cat);closeMgr();break;
     case 'subadd':subAddFromPicker();break;
+    case 'catadd2':catAddFromPicker();break;
     case 'psum':exportPersonCSV();break;
     case 'month':openMonth(el.dataset.k);break;
     case 'dtoacc':if(DRILL.person){DRILL.acc='';}else{DRILL.level='accmonth';DRILL.month='';DRILL.cat='';}DRILL.expDay=null;renderDrill();break;
@@ -3744,6 +3787,15 @@ function handleAct(el){
     case 'rep':openReport(el.dataset.k);break;
     case 'settle':openSettle(el.dataset.n);break;
     case 'bgsave':saveBudgets();break;
+    case 'colinvite':openMgr('collabinv');break;
+    case 'colcreate':collabCreate();break;
+    case 'coledit':COL.p=el.dataset.p;openMgr('collabedit');$('mgrTitle').innerHTML=ico('users')+' '+esc(COL.p)+' · access';break;
+    case 'colchip':(function(){var a=DB.accounts.find(function(x){return x.name===el.dataset.a;});if(!a)return;if(a.owner===el.dataset.p)return;collabToggle(el.dataset.a,el.dataset.p,(a.access||[]).indexOf(el.dataset.p)<0);})();break;
+    case 'colsendinv':collabSendInvite(el.dataset.p);break;
+    case 'colremove':collabRemove(el.dataset.p);break;
+    case 'colsend':collabSendChanges();break;
+    case 'colload':$('fileCollab').click();break;
+    case 'colleave':collabLeave();break;
   }
 }
 /* ===================== v1.36: couple reports — week / month period engine ===================== */
@@ -4034,6 +4086,215 @@ var _rST=renderSettings;renderSettings=function(){
   var txt=on?'Synced to Google cloud'+fbSyncLabel():(lk?'Auto-saving to your linked Drive / OneDrive file':(Cloud.handle?'Linked file needs reconnecting. Tap Advanced below.':'Saved on this device only'));
   el.innerHTML='<span class="dot" style="background:'+(on||lk?'var(--inc)':(Cloud.handle?'var(--warn)':'var(--muted)'))+'"></span><span>'+esc(txt)+' · '+BK.log.length+' auto-backup'+(BK.log.length===1?'':'s')+'</span>';
 };
+
+/* ===================== v1.45: collaborators — per-account access, invite & sync files =====================
+   Model: every account has an owner. A collaborator is one of the people; they always manage the
+   accounts they own, plus any account whose `access` list includes them. On the main owner's device
+   everything stays visible. A collaborator's device holds only their scope (other accounts that their
+   transactions touch arrive as read-only “locked” accounts). Sync runs through files — invite file
+   (owner → collaborator) and changes file (collaborator → owner) — shared by Drive / OneDrive / WhatsApp. */
+function collabCfg(){if(!DB.collab||typeof DB.collab!=='object')DB.collab={role:'owner',me:'',members:[]};if(!Array.isArray(DB.collab.members))DB.collab.members=[];if(DB.collab.role!=='collab')DB.collab.role='owner';return DB.collab;}
+function isCollabMode(){return collabCfg().role==='collab';}
+function canManage(a,p){
+  if(!a||!p)return false;
+  if(a.owner===p)return true;
+  if(String(a.owner||'').indexOf(' & ')>=0&&a.owner.split(' & ').indexOf(p)>=0)return true;
+  return (a.access||[]).indexOf(p)>=0;
+}
+function accLocked(n){var a=DB.accounts.find(function(x){return x.name===n;});return !!(a&&a.locked);}
+function collabScope(p){var s={};DB.accounts.forEach(function(a){if(!a.locked&&canManage(a,p))s[a.name]=1;});return s;}
+function collabMember(p){return collabCfg().members.find(function(m){return m.person===p;});}
+function shareOrDownload(name,text,msg){
+  try{
+    if(typeof File!=='undefined'&&navigator.canShare){
+      var f=new File([text],name,{type:'application/json'});
+      if(navigator.canShare({files:[f]})){navigator.share({files:[f],title:name}).then(function(){toast(msg);}).catch(function(){download(name,'application/json',text);toast(msg);});return;}
+    }
+  }catch(e){}
+  download(name,'application/json',text);toast(msg);
+}
+function fileStamp(){var d=new Date();return d.getFullYear()+pad2(d.getMonth()+1)+pad2(d.getDate())+'-'+pad2(d.getHours())+pad2(d.getMinutes());}
+/* ---------- owner side: invite package ---------- */
+function buildInvite(p){
+  var sc=collabScope(p),cfg=collabCfg();
+  var txns=DB.txns.filter(function(t){return sc[t.account]||sc[t.to]||sc[t.owedAcc];});
+  var accs=DB.accounts.filter(function(a){return sc[a.name];}).map(function(a){return JSON.parse(JSON.stringify(a));});
+  var have={};accs.forEach(function(a){have[a.name]=1;});
+  txns.forEach(function(t){[t.account,t.to,t.owedAcc].forEach(function(n){if(n&&!have[n]){var o=DB.accounts.find(function(x){return x.name===n;});have[n]=1;accs.push({name:n,start:0,type:o?o.type:DB.accTypes[0],owner:o?o.owner:'',locked:1,recv:o&&o.recv?1:undefined});}});});
+  var db={version:DB.version,people:DB.people.slice(),accTypes:DB.accTypes.slice(),accTypeMeta:JSON.parse(JSON.stringify(DB.accTypeMeta)),accounts:accs,
+    categories:JSON.parse(JSON.stringify(DB.categories)),subcats:JSON.parse(JSON.stringify(DB.subcats||{})),txns:JSON.parse(JSON.stringify(txns)),
+    recur:JSON.parse(JSON.stringify(DB.recur.filter(function(r){return r.tpl&&sc[r.tpl.account];}))),budgets:JSON.parse(JSON.stringify(DB.budgets||{})),fixedCats:(DB.fixedCats||[]).slice(),
+    collab:{role:'collab',me:p,owner:cfg.me||'',members:[]},meta:{currency:DB.meta.currency,accent:DB.meta.accent,mode:DB.meta.mode}};
+  return JSON.stringify({app:'money-manager',kind:'mm-collab',for:p,from:cfg.me||'',sentAt:new Date().toISOString(),payload:db},null,1);
+}
+function collabSendInvite(p){
+  var m=collabMember(p);if(!m){toast('Not a collaborator');return;}
+  var n=Object.keys(collabScope(p)).length;
+  m.invitedAt=Date.now();save();
+  shareOrDownload('money-invite-'+p+'-'+fileStamp()+'.json',buildInvite(p),'Invite for '+p+' ready ('+n+' account'+(n===1?'':'s')+'). Send it to them by WhatsApp, Drive or OneDrive.');
+  if(MGR.kind==='collabedit')renderMgr();renderCollab();
+}
+/* ---------- collaborator side: changes package ---------- */
+function collabSendChanges(){
+  var cfg=collabCfg(),me=cfg.me,sc=collabScope(me);
+  var pkg={app:'money-manager',kind:'mm-collab-update',from:me,to:cfg.owner||'',sentAt:new Date().toISOString(),
+    accounts:DB.accounts.filter(function(a){return sc[a.name];}),txns:DB.txns.filter(function(t){return sc[t.account];}),
+    recur:DB.recur.filter(function(r){return r.tpl&&sc[r.tpl.account];}),people:DB.people,categories:DB.categories,subcats:DB.subcats};
+  cfg.sentAt=Date.now();save();
+  shareOrDownload('money-changes-'+me+'-'+fileStamp()+'.json',JSON.stringify(pkg,null,1),'Changes file ready. Send it to '+(cfg.owner||'the owner')+'.');
+  renderCollab();
+}
+/* ---------- applying files ---------- */
+function collabImport(inp){
+  var f=inp.files&&inp.files[0];inp.value='';if(!f)return;
+  f.text().then(function(txt){
+    var d;try{d=JSON.parse(txt);}catch(e){toast('Not a valid file');return;}
+    if(!d||String(d.kind||'').indexOf('mm-collab')!==0){toast('This is not a collaborator file. Use Import files instead.');return;}
+    if(d.kind==='mm-collab')return applyInvite(d);
+    if(d.kind==='mm-collab-update')return applyUpdate(d);
+  }).catch(function(){toast('Could not read the file');});
+}
+function applyInvite(d){
+  var p=d.for,cm=isCollabMode()&&collabCfg().me===p;
+  askConfirm(cm?('Load the latest data from '+(d.from||'the owner')+'? Changes you have not sent yet will be replaced, so send them first.'):('Open this invite as '+p+'? The data on this device is replaced by '+(d.from||'the owner')+'\u2019s shared accounts. A backup is saved first.'),cm?'Load update':'Join as '+p,function(){
+    backupSnap('pre-collab');
+    var local=DB.meta;
+    adoptJSON(JSON.stringify(d.payload)).then(function(){
+      DB.collab=d.payload.collab;DB.collab.receivedAt=Date.now();
+      DB.meta.accent=local.accent||DB.meta.accent;DB.meta.mode=local.mode||DB.meta.mode;
+      save();applyTheme();renderAll();toast(cm?'Updated from '+(d.from||'owner')+' ✓':'You are now collaborating as '+p+' ✓');
+    }).catch(function(e){toast('Could not open invite: '+(e&&e.message||'bad file'));});
+  });
+}
+function applyUpdate(u){
+  if(isCollabMode()){toast('Only the main owner can import a changes file');return;}
+  var p=u.from,m=collabMember(p);
+  if(!m){toast(p+' is not one of your collaborators');return;}
+  var sc=collabScope(p),addAcc=0,rej=0;
+  (u.accounts||[]).forEach(function(a){
+    if(!a||!a.name)return;
+    var ex=DB.accounts.find(function(x){return x.name===a.name;});
+    if(ex){if(sc[a.name]){ex.start=+a.start||0;if(a.type&&DB.accTypes.indexOf(a.type)>=0)ex.type=a.type;ex.cycle=a.cycle||0;if(a.dueDays)ex.dueDays=a.dueDays;}}
+    else if(a.owner===p){DB.accounts.push({name:a.name,start:+a.start||0,type:DB.accTypes.indexOf(a.type)>=0?a.type:DB.accTypes[0],owner:p,cycle:a.cycle||0});addAcc++;}
+  });
+  sc=collabScope(p);
+  var incoming=(u.txns||[]).filter(function(t){if(sc[t.account])return true;rej++;return false;});
+  var cur=DB.txns.filter(function(t){return sc[t.account];}).length;
+  askConfirm('Apply '+p+'\u2019s changes? Their '+Object.keys(sc).length+' account(s) will hold '+incoming.length+' transaction(s) (currently '+cur+').'+(rej?' '+rej+' transaction(s) on accounts they are not allowed to manage will be ignored.':'')+' A backup is saved first.','Apply changes',function(){
+    var snap=snapLists(['txns','accounts','recur','people','categories','subcats']);
+    backupSnap('pre-collab-update');
+    DB.txns=DB.txns.filter(function(t){return !sc[t.account];}).concat(incoming.map(function(t){return Object.assign({},t);}));
+    DB.recur=DB.recur.filter(function(r){return !(r.tpl&&sc[r.tpl.account]);}).concat((u.recur||[]).filter(function(r){return r.tpl&&sc[r.tpl.account];}));
+    (u.people||[]).forEach(function(x){if(DB.people.indexOf(x)<0)DB.people.push(x);});
+    ['Expense','Income'].forEach(function(ty){((u.categories||{})[ty]||[]).forEach(function(c){if(DB.categories[ty].indexOf(c)<0)DB.categories[ty].push(c);});});
+    Object.keys(u.subcats||{}).forEach(function(c){(u.subcats[c]||[]).forEach(function(s){if(subList(c).indexOf(s)<0)subList(c).push(s);});});
+    ensureEntities(DB.txns);normalizeDB();
+    m.syncedAt=Date.now();touch();renderCollab();
+    toastAct('Applied '+p+'\u2019s changes'+(addAcc?' · '+addAcc+' new account'+(addAcc===1?'':'s'):'')+' — undo?',function(){undoRestoreLists(snap);});
+  });
+}
+function collabLeave(){
+  askConfirm('Stop collaborating on this device? Your shared data stays here as a normal local copy, and you can no longer send changes.','Leave',function(){
+    var c=collabCfg();c.role='owner';c.members=[];c.owner='';
+    DB.accounts.forEach(function(a){delete a.locked;});
+    touch();renderCollab();toast('Left the collaboration');
+  });
+}
+/* ---------- owner side: membership & permissions ---------- */
+function collabCreate(){
+  var sel=($('colPerson')||{}).value||'',nw=(($('colNew')||{}).value||'').trim(),em=(($('colEmail')||{}).value||'').trim();
+  var p=nw||sel;
+  if(!p){toast('Choose or type a person');return;}
+  var cfg=collabCfg();
+  if(p===cfg.me){toast('That is you — pick someone else');return;}
+  if(collabMember(p)){toast(p+' is already a collaborator');return;}
+  if(DB.people.indexOf(p)<0)DB.people.push(p);
+  cfg.members.push({person:p,email:em,addedAt:Date.now()});
+  touch();COL.p=p;MGR.kind='collabedit';$('mgrTitle').innerHTML=ico('users')+' '+esc(p)+' · access';renderMgr();renderCollab();
+  toast(p+' added. Choose their accounts, then send the invite.');
+}
+function collabToggle(acc,p,on){
+  var a=DB.accounts.find(function(x){return x.name===acc;});if(!a)return;
+  a.access=(a.access||[]).filter(function(x){return x!==p;});
+  if(on)a.access.push(p);
+  if(!a.access.length)delete a.access;
+  touch();renderMgr();renderCollab();
+}
+function collabRemove(p){
+  askConfirm('Remove '+p+' as a collaborator? Their access to other owners\u2019 accounts is cleared. Their accounts and transactions stay.','Remove',function(){
+    var snap=snapLists(['accounts']),cfg=collabCfg(),ms=cfg.members.slice();
+    cfg.members=cfg.members.filter(function(m){return m.person!==p;});
+    DB.accounts.forEach(function(a){if(a.access){a.access=a.access.filter(function(x){return x!==p;});if(!a.access.length)delete a.access;}});
+    closeMgr();touch();renderCollab();
+    toastAct(p+' removed — undo?',function(){cfg.members=ms;undoRestoreLists(snap);renderCollab();});
+  });
+}
+var COL={p:''};
+function ago(t){if(!t)return 'never';var s=(Date.now()-t)/1000;if(s<90)return 'just now';if(s<3600)return Math.round(s/60)+' min ago';if(s<86400)return Math.round(s/3600)+' h ago';return Math.round(s/86400)+' d ago';}
+function renderCollab(){
+  var b=$('collabBody');if(!b)return;
+  var cfg=collabCfg(),sub=$('collabSub');
+  if(cfg.role==='collab'){
+    var n=Object.keys(collabScope(cfg.me)).length;
+    if(sub)sub.textContent='as '+cfg.me;
+    b.innerHTML='<div class="ds-status"><span class="dot" style="background:var(--accent)"></span><span>You are collaborating as <b>'+esc(cfg.me)+'</b> with '+esc(cfg.owner||'the owner')+' · '+n+' account'+(n===1?'':'s')+'</span></div>'
+      +'<div class="help small" style="margin-bottom:10px">Received '+ago(cfg.receivedAt)+' · changes last sent '+ago(cfg.sentAt)+'. Accounts you can only view are hidden from your lists.</div>'
+      +'<div style="display:grid;gap:8px"><button class="btn" data-act="colsend">'+ico('upload')+' Send my changes to '+esc(cfg.owner||'owner')+'</button>'
+      +'<button class="btn ghost" data-act="colload">'+ico('download')+' Load update from '+esc(cfg.owner||'owner')+'</button>'
+      +'<button class="btn red" data-act="colleave">Leave collaboration…</button></div>';
+    return;
+  }
+  if(sub)sub.textContent=cfg.members.length?cfg.members.length+' collaborator'+(cfg.members.length===1?'':'s'):'not shared';
+  var opts=sortedAlpha(DB.people).map(function(p){return '<option'+(p===cfg.me?' selected':'')+'>'+esc(p)+'</option>';}).join('');
+  b.innerHTML='<div class="f-row" style="margin-bottom:10px"><label>You are</label><select class="fin" id="colMe" onchange="collabCfg().me=this.value;touch();renderCollab()"><option value="">— choose —</option>'+opts+'</select></div>'
+    +(cfg.members.length?'<div class="dayg"><div class="day-h"><span>Collaborators</span><span>tap to set access</span></div>'+cfg.members.map(function(m){
+      var n=Object.keys(collabScope(m.person)).length;
+      return '<button class="txn" data-act="coledit" data-p="'+esc(m.person)+'"><span class="mid"><b>'+ico('user')+' '+esc(m.person)+'</b><small>'+n+' account'+(n===1?'':'s')+' · invite sent '+ago(m.invitedAt)+' · changes received '+ago(m.syncedAt)+'</small></span><span class="muted">'+ico('chevright')+'</span></button>';
+    }).join('')+'</div>':'')
+    +'<div style="display:grid;gap:8px"><button class="btn" data-act="colinvite">'+ico('plus')+' Invite collaborator</button>'
+    +(cfg.members.length?'<button class="btn ghost" data-act="colload">'+ico('download')+' Import a collaborator\u2019s changes</button>':'')+'</div>'
+    +'<details class="help" style="margin-top:10px"><summary>How collaboration works</summary><ol>'
+    +'<li>Invite a person. They always manage the accounts they own.</li>'
+    +'<li>Tick which of the other owners\u2019 accounts they may also manage, and which of their accounts other owners may manage.</li>'
+    +'<li>Send the invite file (WhatsApp, Drive, OneDrive). They open this app and choose <b>Settings → Collaborators → Load update</b>. Their phone only holds their allowed accounts.</li>'
+    +'<li>They tap <b>Send my changes</b>; you import that file here. Only transactions on accounts they may manage are accepted.</li></ol></details>';
+}
+function renderCollabInvite(){
+  var cfg=collabCfg(),av=sortedAlpha(DB.people).filter(function(p){return p!==cfg.me&&!collabMember(p);});
+  $('mgrBody').innerHTML=(cfg.me?'':'<div class="help small" style="margin-bottom:8px;color:var(--warn)">Tip: set “You are” on the Collaborators card first.</div>')
+    +'<div class="mgr-lb">Choose a person</div><select class="fin" id="colPerson" style="margin-bottom:8px"><option value="">— choose —</option>'+av.map(function(p){return '<option>'+esc(p)+'</option>';}).join('')+'</select>'
+    +'<div class="mgr-lb">…or add a new person</div><input class="fin" id="colNew" placeholder="Name" style="margin-bottom:8px">'
+    +'<div class="mgr-lb">Email (optional, for your reference)</div><input class="fin" id="colEmail" inputmode="email" placeholder="name@example.com" style="margin-bottom:10px">'
+    +'<button class="btn" data-act="colcreate">Continue to access settings</button>';
+}
+function renderCollabEdit(){
+  var p=COL.p,cfg=collabCfg();
+  var real=DB.accounts.filter(function(a){return !a.locked&&!a.recv&&!/^.+ owes .+$/.test(a.name);});
+  var own=real.filter(function(a){return a.owner===p;});
+  var ledg=DB.accounts.filter(function(a){return (a.recv||/^.+ owes .+$/.test(a.name))&&canManage(a,p)&&a.owner!==p;});
+  var others={};real.forEach(function(a){if(a.owner!==p){var o=a.owner||'No owner';(others[o]=others[o]||[]).push(a);}});
+  var h='<div class="help small" style="margin-bottom:10px"><b>'+esc(p)+'</b> always manages the accounts they own. Use the switches below to share more, then send the invite.</div>';
+  h+='<div class="dayg"><div class="day-h"><span>'+ico('user')+' '+esc(p)+'\u2019s own accounts</span><span>always managed</span></div>'
+    +(own.length||ledg.length?own.concat(ledg).map(function(a){return '<div class="mgr-row" style="padding:9px 12px"><span class="lb">'+esc(a.name)+'<small>'+esc(a.type)+'</small></span><span class="pos">'+ico('check')+'</span></div>';}).join(''):'<div class="help small" style="padding:10px 12px">No accounts yet. Set '+esc(p)+' as owner in Settings → Accounts.</div>')+'</div>';
+  sortedAlpha(Object.keys(others)).forEach(function(o){
+    h+='<div class="dayg"><div class="day-h"><span>'+esc(o)+'\u2019s accounts</span><span>allow '+esc(p)+' to manage</span></div>'
+      +others[o].slice().sort(function(x,y){return alphasort(x.name,y.name);}).map(function(a){var on=(a.access||[]).indexOf(p)>=0;
+        return '<label class="mgr-row" style="padding:9px 12px;cursor:pointer"><span class="lb">'+esc(a.name)+'<small>'+esc(a.type)+'</small></span><input type="checkbox" class="tgl"'+(on?' checked':'')+' onchange="collabToggle(\''+esc(a.name).replace(/'/g,"\\'")+'\',\''+esc(p).replace(/'/g,"\\'")+'\',this.checked)"></label>';}).join('')+'</div>';
+  });
+  var oth=sortedAlpha(DB.people).filter(function(x){return x!==p;});
+  if(own.length&&oth.length){
+    h+='<div class="dayg"><div class="day-h"><span>'+esc(p)+'\u2019s accounts</span><span>who else may manage</span></div>'
+      +own.map(function(a){return '<div class="mgr-row" style="padding:9px 12px;flex-wrap:wrap"><span class="lb" style="flex-basis:100%">'+esc(a.name)+'</span><div class="chips wrap" style="padding:0">'
+        +oth.map(function(x){var on=canManage(a,x);return '<button class="chip'+(on?' on':'')+'" data-act="colchip" data-a="'+esc(a.name)+'" data-p="'+esc(x)+'">'+(on?ico('check')+' ':'')+esc(x)+'</button>';}).join('')+'</div></div>';}).join('')
+      +'<div class="help small" style="padding:6px 12px 10px">'+(cfg.me?esc(cfg.me)+' (you) always sees everything on this device. ':'')+'Ticked people can add, edit and delete transactions on that account.</div></div>';
+  }
+  var n=Object.keys(collabScope(p)).length;
+  h+='<div class="sheet-foot" style="padding-bottom:4px;display:grid;gap:8px"><button class="btn" data-act="colsendinv" data-p="'+esc(p)+'">'+ico('upload')+' Send invite · '+n+' account'+(n===1?'':'s')+'</button>'
+    +'<button class="btn red" data-act="colremove" data-p="'+esc(p)+'">Remove collaborator</button></div>';
+  $('mgrBody').innerHTML=h;
+}
+var _rMgr=renderMgr;renderMgr=function(){if(MGR.kind==='collabinv')return renderCollabInvite();if(MGR.kind==='collabedit')return renderCollabEdit();return _rMgr();};
+var _rST2=renderSettings;renderSettings=function(){_rST2();renderCollab();};
 
 function renderAll(){
   renderOverview();
