@@ -12,7 +12,7 @@
 <style>
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 :root{
-  --bg:#eef1f7; --card:#ffffff; --ink:#18213a; --muted:#68718a; --line:#e4e8f2;
+  --bg:#eef1f7; --card:#ffffff; --ink:#18213a; --muted:#56607a; --line:#e4e8f2;
   --accent:#2563eb; --accent-soft:#e8efff; --accent-2:#7c3aed; --accent-glow:rgba(37,99,235,.4);
   --inc:#16a34a; --inc-soft:#e2f6ea; --exp:#ef4444; --exp-soft:#fdeaea; --warn:#d97706;
   --shadow:0 2px 10px rgba(23,32,58,.06); --r:16px;
@@ -309,6 +309,65 @@ h2 svg.icn{width:1.18em;height:1.18em;vertical-align:-0.22em}
 .asum-ch svg.icn,.asum-drill svg.icn{width:12px;height:12px;vertical-align:-2px}
 .empty .big svg.icn{width:42px;height:42px;vertical-align:0}
 .lg-dot{display:inline-block;width:10px;height:10px;border-radius:3px;vertical-align:-1px}
+
+/* ===== v1.36: UI/UX pass + couple reports ===== */
+body{font-variant-numeric:tabular-nums}
+.small{font-size:12px}.stat small,.donut-c span{font-size:11.5px}.amt .cur2{font-size:10.5px}
+.ibtn{min-height:40px;min-width:40px;display:inline-flex;align-items:center;justify-content:center;gap:4px}
+.backbtn{width:44px;height:44px}.chip{min-height:38px}.chip .x{padding:6px 2px 6px 6px;opacity:.8}
+.btn.red-solid{background:var(--exp);color:#fff}
+.sheet-foot{position:sticky;bottom:calc(-18px - env(safe-area-inset-bottom));background:var(--card);padding:10px 0 calc(18px + env(safe-area-inset-bottom));margin-top:4px;box-shadow:0 -8px 12px -10px rgba(0,0,0,.25);z-index:2}
+.hbtn{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:18px}
+.hbtn.del{color:var(--exp)}
+.otxt{display:flex;align-items:center;gap:6px;flex-wrap:wrap;min-height:44px;font-size:14px;font-weight:700;color:var(--ink)}
+.sgn{min-width:76px;font-size:12.5px}.sgn.on{background:var(--inc-soft);color:var(--inc);border-color:var(--inc)}
+.amt-in{padding-right:92px!important}
+details.more{border:1px dashed var(--line);border-radius:12px;padding:10px 12px;margin-bottom:12px}
+details.more summary{cursor:pointer;font-weight:800;font-size:13px;color:var(--accent)}
+details.more[open] summary{margin-bottom:10px}
+.subnew{display:flex;gap:7px;margin-top:8px}.subnew .fin{padding:9px 10px;font-size:13.5px}
+.tiles{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.tile{display:flex;flex-direction:column;gap:3px;border:1px solid var(--line);border-radius:14px;padding:11px 12px;background:var(--bg);min-height:84px}
+.tile:active{background:var(--line)}
+.tile .ti{color:var(--accent)}.tile b{font-size:13.5px}.tile small{font-size:12px;color:var(--muted);font-weight:600}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:8px;margin-bottom:10px}
+.kpi{background:var(--bg);border-radius:12px;padding:9px 10px}.kpi small{display:block;font-size:11.5px;color:var(--muted);font-weight:700}.kpi b{display:block;font-size:15px;margin-top:2px;overflow-wrap:anywhere;line-height:1.25}
+.page{padding-top:calc(72px + env(safe-area-inset-top))}
+.rtab{width:100%;border-collapse:collapse;font-size:13px}
+.rtab th{font-size:11.5px;color:var(--muted);text-align:left;font-weight:800;padding:6px 4px;border-bottom:1px solid var(--line)}
+.rtab td{padding:8px 4px;border-bottom:1px dashed var(--line);vertical-align:top}
+.rtab tr:last-child td{border-bottom:0}.rtab .r{text-align:right;white-space:nowrap}.rtab tfoot td{font-weight:800;border-top:1.5px solid var(--line)}
+.bbar{height:8px;border-radius:5px;background:var(--line);overflow:hidden;margin-top:10px}.bbar i{display:block;height:100%;border-radius:5px}
+.pernav{display:flex;align-items:center;justify-content:space-between;gap:8px}.pernav b{font-size:14px;text-align:center}
+.pernav .ibtn[disabled]{opacity:.35}
+.hgrid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+.hhead div{font-size:11.5px;color:var(--muted);text-align:center;font-weight:800;padding-bottom:2px}
+.hcell{border:1px solid var(--line);border-radius:9px;min-height:50px;padding:4px;display:flex;flex-direction:column;justify-content:space-between}
+.hcell span{font-size:11.5px;color:var(--muted);font-weight:700}.hcell b{font-size:11.5px;text-align:right}
+.hcell.today{outline:2px solid var(--accent)}
+.tbars{display:flex;align-items:flex-end;gap:6px;height:110px;margin-top:6px}
+.tbars div{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;gap:3px}
+.tbars i{display:block;width:70%;border-radius:5px 5px 0 0;min-height:2px}.tbars small{font-size:11px;color:var(--muted);font-weight:700;white-space:nowrap}
+.ds-status{display:flex;align-items:center;gap:8px;background:var(--bg);border-radius:12px;padding:10px 12px;font-size:13px;font-weight:700;margin-bottom:6px}
+.ds-status .dot{width:9px;height:9px;border-radius:50%;flex:none}
+.card.danger{border:1.5px solid var(--exp-soft)}
+.txn .ck svg{width:12px;height:12px}
+
+/* v1.38: each day's transactions sit in their own bordered card */
+.dayg{background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);margin-bottom:12px;overflow:hidden}
+.dayg .day-h{margin:0;padding:9px 12px;background:var(--bg);border-bottom:1px solid var(--line);font-size:12px;color:var(--ink)}
+.dayg .day-h span:last-child{color:var(--muted)}
+.dayg .txn{padding:10px 12px}
+.dayg .txn:last-child,.dayg .txn:last-of-type{border-bottom:0}
+.dayg .txdetail{margin:0 10px 10px}
+#txList>.empty,#txList>#txMore{background:var(--card);border-radius:14px}
+.card .dayg{box-shadow:none}
+
+/* v1.39: account months — month-end balance on top, net movement underneath */
+.mstack{display:flex;flex-direction:column;align-items:flex-end;gap:2px}
+.mstack .mbal{font-size:14.5px;font-weight:800;color:var(--ink)}
+.mstack .mbal.neg{color:var(--exp)}
+.mstack .mmov{font-size:12px;font-weight:700}
 </style>
 </head>
 <body>
@@ -332,43 +391,35 @@ h2 svg.icn{width:1.18em;height:1.18em;vertical-align:-0.22em}
       </div></div>
     </div>
     <div id="ovMain">
+      <div id="perBody"></div>
       <div class="card">
         <h2><svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 21h18"/><path d="M5 21v-9"/><path d="M9.5 21v-9"/><path d="M14.5 21v-9"/><path d="M19 21v-9"/><path d="M3 8l9-5 9 5z"/><path d="M4 12h16"/></svg> Balances <span class="sub" id="balAsOf"></span></h2>
         <div class="bal-strip" id="accStrip"></div>
-        <div class="small muted" style="margin-top:8px"><svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><path d="m4 4 7 17 2.5-7.5L21 11Z"/></svg> Tap an account to drill into its months</div>
+        <div class="small muted" style="margin-top:8px"><svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><path d="m4 4 7 17 2.5-7.5L21 11Z"/></svg> Tap an account to see its months</div>
         <div class="bal-total"><span class="muted small">Total balance</span><span class="amt" id="balTotal"></span></div>
       </div>
       <div class="card">
-        <h2><svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M5 21c0-3.9 3.1-7 7-7s7 3.1 7 7"/></svg> Person <span class="sub">filters reports &amp; stats</span></h2>
-        <div class="chips" id="ovPerson"></div>
+        <h2><svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><line x1="6" y1="20" x2="6" y2="14"/><line x1="12" y1="20" x2="12" y2="9"/><line x1="18" y1="20" x2="18" y2="4"/><path d="M3 20h18"/></svg> Reports <span class="sub">for the selected week / month</span></h2>
+        <div class="tiles" id="repTiles"></div>
       </div>
       <div class="card">
-        <h2><svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><line x1="16" y1="3" x2="16" y2="7"/><line x1="8" y1="3" x2="8" y2="7"/><line x1="3" y1="10" x2="21" y2="10"/></svg> Period <span class="sub">charts &amp; reports</span></h2>
-        <div class="chips" id="ovYears" style="margin-bottom:10px"></div>
+        <h2><svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><line x1="16" y1="3" x2="16" y2="7"/><line x1="8" y1="3" x2="8" y2="7"/><line x1="3" y1="10" x2="21" y2="10"/></svg> Year view</h2>
+        <div class="help small" style="margin-bottom:8px">These filters apply to the year reports below only. Balances aren't affected.</div>
+        <div class="chips" id="ovPerson" style="margin-bottom:8px"></div>
+        <div class="chips" id="ovYears" style="margin-bottom:8px"></div>
         <select class="fin" id="ovScopeSel" onchange="OV.scope=this.value;renderOverview()"></select>
-      </div>
-      <div class="card">
-        <h2><svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><line x1="6" y1="20" x2="6" y2="14"/><line x1="12" y1="20" x2="12" y2="9"/><line x1="18" y1="20" x2="18" y2="4"/><path d="M3 20h18"/></svg> Reports <span class="sub">opens a new screen</span></h2>
-        <select class="fin" id="ovReportSel" onchange="if(this.value){openReport(this.value);this.selectedIndex=0;}">
-          <option value="">Choose a report…</option>
-          <option value="person">By person</option>
-          <option value="year">By year</option>
-          <option value="monthly">Monthly cash flow</option>
-          <option value="breakdown">Spending breakdown</option>
-          <option value="top">Top 10 spending</option>
-        </select>
-        <div class="help small" style="margin-top:8px">Breakdown, cash-flow chart, Top 10, yearly totals and per-person stats each open in their own full screen — tap the ‹ arrow to come back. This keeps the Overview light and fast.</div>
+        <div class="tiles" id="repTiles2" style="margin-top:10px"></div>
       </div>
     </div>
   </section>
-
   <!-- ============ TRANSACTIONS ============ -->
   <section class="view" id="view-txns">
     <div class="card">
       <div style="display:flex;gap:8px;align-items:center">
-        <input class="fin" id="txSearch" placeholder="Search note / category…" style="flex:1;min-width:0;margin:0" oninput="TXF.q=this.value;renderTxns()">
+        <input class="fin" id="txSearch" placeholder="Search transactions…" style="flex:1;min-width:0;margin:0" oninput="TXF.q=this.value;renderTxns()">
         <button class="ibtn" id="txFilterBtn" data-act="txfilter" style="flex:none;margin:0">Filters<span class="fbadge" id="txFilterN" hidden></span></button> <!-- v1.29: text-only -->
       </div>
+      <div class="chips wrap" id="txChips" hidden style="margin-top:8px"></div>
       <div class="fgrid" id="txFGrid" hidden style="margin-top:8px">
         <select class="fin" id="txMonth" onchange="TXF.month=this.value;renderTxns()"></select>
         <select class="fin" id="txPerson" onchange="TXF.person=this.value;renderTxns()"></select>
@@ -384,7 +435,7 @@ h2 svg.icn{width:1.18em;height:1.18em;vertical-align:-0.22em}
       </div>
       <button class="ibtn" id="txPersonDrill" data-act="pdrill" hidden style="margin-top:10px">Drill into this person</button> <!-- v1.29: text-only -->
     </div>
-    <div class="card"><div id="txList"></div></div> <!-- v1.35: every transaction is shown — no Show more cap -->
+    <div id="txList"></div> <!-- v1.35: every transaction is shown — no Show more cap -->
     <div id="txSelBar" hidden>
       <b id="txSelCount" style="white-space:nowrap">0 selected</b>
       <span class="sp"></span>
@@ -405,7 +456,7 @@ h2 svg.icn{width:1.18em;height:1.18em;vertical-align:-0.22em}
     <div class="card">
       <h2><svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 21h18"/><path d="M5 21v-9"/><path d="M9.5 21v-9"/><path d="M14.5 21v-9"/><path d="M19 21v-9"/><path d="M3 8l9-5 9 5z"/><path d="M4 12h16"/></svg> Account Summary <span class="sub">people → types → accounts</span></h2>
       <div class="rows" id="accList"></div>
-      <div class="help small" style="margin-top:8px">Tap <svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M5 21c0-3.9 3.1-7 7-7s7 3.1 7 7"/></svg> a person or <svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.7-.9l-.8-1.2A2 2 0 0 0 7.9 4H4a2 2 0 0 0-2 2v12c0 1.1.9 2 2 2Z"/></svg> a type to collapse / expand · tap <svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="5" width="20" height="14" rx="2.5"/><line x1="2" y1="10" x2="22" y2="10"/><line x1="6" y1="15" x2="10" y2="15"/></svg> an account to drill into its months · <svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><line x1="6" y1="20" x2="6" y2="14"/><line x1="12" y1="20" x2="12" y2="9"/><line x1="18" y1="20" x2="18" y2="4"/><path d="M3 20h18"/></svg> drills into the person. Owners are set per account in Settings → Accounts.</div>
+      <div class="help small" style="margin-top:8px">Tap a person or type to expand or collapse. Tap an account to see its months.</div>
       <button class="btn" data-act="accaddq" style="width:100%;margin-top:12px"><svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Add account</button>
     </div>
   </section>
@@ -414,63 +465,59 @@ h2 svg.icn{width:1.18em;height:1.18em;vertical-align:-0.22em}
   <section class="view" id="view-settings">
     <div class="card">
       <h2><svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 4h6a4 4 0 0 1 4 4v13a3 3 0 0 0-3-3H2Z"/><path d="M22 4h-6a4 4 0 0 0-4 4v13a3 3 0 0 1 3-3h7Z"/></svg> Manage Lists</h2>
-      <div class="help small" style="margin-bottom:8px">People, account types, accounts, categories, sub-categories and recurring series open in pop-up managers — add, rename or delete from there.</div>
       <div class="rows">
-        <button class="trow" data-act="mgr" data-k="people"><span class="lb"><svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c0-3.6 2.9-6.5 6.5-6.5s6.5 2.9 6.5 6.5"/><path d="M16 4.6a3.5 3.5 0 0 1 0 6.8"/><path d="M18.5 13.9c1.8.9 3 2.8 3 5.1"/></svg> People<small id="cntPeople"></small></span><span class="amt2 muted">›</span></button>
-        <button class="trow" data-act="mgr" data-k="acctype"><span class="lb"><svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.7-.9l-.8-1.2A2 2 0 0 0 7.9 4H4a2 2 0 0 0-2 2v12c0 1.1.9 2 2 2Z"/></svg> Account Types<small id="cntAccTypes"></small></span><span class="amt2 muted">›</span></button>
-        <button class="trow" data-act="mgr" data-k="accs"><span class="lb"><svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="5" width="20" height="14" rx="2.5"/><line x1="2" y1="10" x2="22" y2="10"/><line x1="6" y1="15" x2="10" y2="15"/></svg> Accounts<small id="cntAccs"></small></span><span class="amt2 muted">›</span></button>
-        <button class="trow" data-act="mgr" data-k="cats"><span class="lb"><svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.6 13.4 12 4.8V2H4.8A2.8 2.8 0 0 0 2 4.8V12l8.6 8.6a2 2 0 0 0 2.8 0l7.2-7.2a2 2 0 0 0 0-2.8Z"/><circle cx="7.5" cy="7.5" r="1.2"/></svg> Categories<small id="cntCats"></small></span><span class="amt2 muted">›</span></button>
-        <button class="trow" data-act="mgr" data-k="subs"><span class="lb"><svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><line x1="9" y1="6" x2="21" y2="6"/><line x1="9" y1="12" x2="21" y2="12"/><line x1="9" y1="18" x2="21" y2="18"/><circle cx="4" cy="6" r="1"/><circle cx="4" cy="12" r="1"/><circle cx="4" cy="18" r="1"/></svg> Sub-categories<small id="cntSubs"></small></span><span class="amt2 muted">›</span></button>
-        <button class="trow" data-act="mgr" data-k="recur"><span class="lb"><svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><path d="m17 2 4 4-4 4"/><path d="M3 11v-1a4 4 0 0 1 4-4h14"/><path d="m7 22-4-4 4-4"/><path d="M21 13v1a4 4 0 0 1-4 4H3"/></svg> Recurring<small id="cntRecur"></small></span><span class="amt2 muted">›</span></button>
+        <button class="trow" data-act="mgr" data-k="people"><span class="lb"><svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c0-3.6 2.9-6.5 6.5-6.5s6.5 2.9 6.5 6.5"/><path d="M16 4.6a3.5 3.5 0 0 1 0 6.8"/><path d="M18.5 13.9c1.8.9 3 2.8 3 5.1"/></svg> People<small id="cntPeople"></small></span><span class="amt2 muted"><svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></span></button><button class="trow" data-act="mgr" data-k="acctype"><span class="lb"><svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.7-.9l-.8-1.2A2 2 0 0 0 7.9 4H4a2 2 0 0 0-2 2v12c0 1.1.9 2 2 2Z"/></svg> Account Types<small id="cntAccTypes"></small></span><span class="amt2 muted"><svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></span></button><button class="trow" data-act="mgr" data-k="accs"><span class="lb"><svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="5" width="20" height="14" rx="2.5"/><line x1="2" y1="10" x2="22" y2="10"/><line x1="6" y1="15" x2="10" y2="15"/></svg> Accounts<small id="cntAccs"></small></span><span class="amt2 muted"><svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></span></button><button class="trow" data-act="mgr" data-k="cats"><span class="lb"><svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.6 13.4 12 4.8V2H4.8A2.8 2.8 0 0 0 2 4.8V12l8.6 8.6a2 2 0 0 0 2.8 0l7.2-7.2a2 2 0 0 0 0-2.8Z"/><circle cx="7.5" cy="7.5" r="1.2"/></svg> Categories<small id="cntCats"></small></span><span class="amt2 muted"><svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></span></button><button class="trow" data-act="mgr" data-k="subs"><span class="lb"><svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><line x1="9" y1="6" x2="21" y2="6"/><line x1="9" y1="12" x2="21" y2="12"/><line x1="9" y1="18" x2="21" y2="18"/><circle cx="4" cy="6" r="1"/><circle cx="4" cy="12" r="1"/><circle cx="4" cy="18" r="1"/></svg> Sub-categories<small id="cntSubs"></small></span><span class="amt2 muted"><svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></span></button><button class="trow" data-act="mgr" data-k="recur"><span class="lb"><svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><path d="m17 2 4 4-4 4"/><path d="M3 11v-1a4 4 0 0 1 4-4h14"/><path d="m7 22-4-4 4-4"/><path d="M21 13v1a4 4 0 0 1-4 4H3"/></svg> Recurring<small id="cntRecur"></small></span><span class="amt2 muted"><svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></span></button><button class="trow" data-act="mgr" data-k="budgets"><span class="lb"><svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4Z"/></svg> Budgets &amp; fixed costs<small id="cntBudgets"></small></span><span class="amt2 muted"><svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></span></button>
       </div>
     </div>
     <div class="card">
-      <h2><svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 22s8-3.6 8-10V5.5L12 2 4 5.5V12c0 6.4 8 10 8 10Z"/><path d="m9 11.5 2 2 4-4.5"/></svg> Backup <span class="sub" id="bkSub"></span></h2>
-      <div class="help" style="margin-bottom:12px">Every change is <b>auto-backed up on this device</b> (latest 20 snapshots kept) — transactions, accounts, people, categories, recurring series and <b>all settings</b>. Restore any point in time, or download one JSON file and drop it in your <b>Google Drive</b> / OneDrive.</div>
+      <h2><svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 22s8-3.6 8-10V5.5L12 2 4 5.5V12c0 6.4 8 10 8 10Z"/><path d="m9 11.5 2 2 4-4.5"/></svg> Data &amp; Sync</h2>
+      <div class="ds-status" id="dsStatus"></div>
+      <div class="mgr-sec">Google cloud sync · <span id="fbSub" style="text-transform:none"></span></div>
+      <div id="fbBody"></div>
+      <div class="mgr-sec" style="margin-top:16px">Backups · <span id="bkSub" style="text-transform:none"></span></div>
       <div style="display:grid;gap:8px">
-        <button class="btn" data-act="bklist"><svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/></svg> Backup history</button>
+        <button class="btn ghost" data-act="bklist"><svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/></svg> Backup history</button>
         <button class="btn ghost" data-act="bkdown"><svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Download backup file (.json)</button>
       </div>
-      <div class="help small" style="margin:8px 2px 0">The backup file carries everything in a single JSON. Put it in a Drive-synced folder or upload it on drive.google.com — restore it later via <b>Import files</b> (merged) or <b><svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11V9a4 4 0 0 1 4-4h11"/><path d="m15 2 3 3-3 3"/><path d="M21 13v2a4 4 0 0 1-4 4H6"/><path d="m9 22-3-3 3-3"/></svg> Replace all</b>.</div>
-    </div>
-    <div class="card">
-      <h2><svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><path d="M17.5 19H9a7 7 0 1 1 6.7-9h1.8a4.5 4.5 0 1 1 0 9Z"/></svg> Cloud Storage</h2>
-      <div class="help" style="margin-bottom:12px">Keep your data file inside your <b>Google Drive</b> or <b>OneDrive</b> folder — this app reads &amp; writes it automatically on Chrome / Android, or use Import &amp; Export on iPhone.</div>
-      <div style="display:grid;gap:8px">
-        <button class="btn" id="btnLink" data-act="cloudlink"><svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><path d="M17.5 19H9a7 7 0 1 1 6.7-9h1.8a4.5 4.5 0 1 1 0 9Z"/></svg> Link cloud file (auto-sync)</button>
-        <button class="btn ghost" id="btnOpenCloud" data-act="cloudopen" hidden><svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 14 1.5-2.9A2 2 0 0 1 9.2 10H20a2 2 0 0 1 1.9 2.5l-1.5 6a2 2 0 0 1-2 1.5H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h3.9a2 2 0 0 1 1.7.9l.8 1.2a2 2 0 0 0 1.7.9H18a2 2 0 0 1 2 2v2"/></svg> Re-open cloud file</button>
-        <div style="display:flex;gap:8px">
-          <button class="btn ghost" style="flex:1" data-act="snap"><svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Snapshot file</button>
-          <button class="btn ghost" style="flex:1" data-act="csv"><svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Export CSV</button>
-        </div>
-        <button class="btn ghost" data-act="psum"><svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Per-person summary (CSV)</button>
-        <button class="btn ghost" data-act="import"><svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 8 5-5 5 5"/><line x1="12" y1="3" x2="12" y2="15"/></svg> Import files (JSON / CSV / XLSX)</button>
-        <div class="help small" style="margin:2px 2px 0">Pick <b>one or several</b> files — everything is <b>added</b> to your current data, nothing is overwritten, and identical transactions are skipped automatically. Migrating from Excel? Grab the template below — it has the exact columns, sample rows and a How-to-fill sheet. To start over from a file instead, use <svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11V9a4 4 0 0 1 4-4h11"/><path d="m15 2 3 3-3 3"/><path d="M21 13v2a4 4 0 0 1-4 4H6"/><path d="m9 22-3-3 3-3"/></svg> Replace below.</div>
-        <button class="btn ghost" data-act="xlstpl"><svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Excel upload template (XLSX)</button>
-        <button class="btn ghost" data-act="replacefile"><svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11V9a4 4 0 0 1 4-4h11"/><path d="m15 2 3 3-3 3"/><path d="M21 13v2a4 4 0 0 1-4 4H6"/><path d="m9 22-3-3 3-3"/></svg> Replace all with a file…</button>
-        <button class="btn red" data-act="clear"><svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg> Clear data…</button>
-      </div>
-      <input type="file" id="fileImport" accept=".json,.csv,.txt,.tsv,.xlsx,.xls" multiple hidden onchange="importFile(this)">
-      <input type="file" id="fileReplace" accept=".json,.csv,.txt,.tsv,.xlsx,.xls" hidden onchange="replaceFile(this)">
       <details class="help" style="margin-top:14px">
-        <summary>How to store data in Google Drive / OneDrive</summary>
+        <summary>Advanced: sync through a Drive / OneDrive file</summary>
+        <div style="display:grid;gap:8px;margin-top:8px">
+          <button class="btn ghost" id="btnLink" data-act="cloudlink"><svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><path d="M17.5 19H9a7 7 0 1 1 6.7-9h1.8a4.5 4.5 0 1 1 0 9Z"/></svg> Link cloud file (auto-sync)</button>
+          <button class="btn ghost" id="btnOpenCloud" data-act="cloudopen" hidden><svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 14 1.5-2.9A2 2 0 0 1 9.2 10H20a2 2 0 0 1 1.9 2.5l-1.5 6a2 2 0 0 1-2 1.5H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h3.9a2 2 0 0 1 1.7.9l.8 1.2a2 2 0 0 0 1.7.9H18a2 2 0 0 1 2 2v2"/></svg> Re-open cloud file</button>
+        </div>
         <ol>
-          <li><b>Android + Chrome:</b> tap “Link cloud file”, then pick your Google Drive or OneDrive folder (install the Drive / OneDrive app first). Every change is written back to that file automatically — the Drive / OneDrive app then syncs it to the cloud.</li>
-          <li><b>iPhone:</b> Safari can’t write files directly. After editing, open Settings → Backup → “Download backup file” → Share → “Save to Files” → choose your OneDrive / Google Drive folder. Next time, open this app and tap “Import files” (you can select several at once) — Drive and OneDrive appear inside the iOS Files picker.</li>
-          <li><b>Family sharing:</b> put the JSON file in a <i>shared</i> Drive / OneDrive folder — everyone links the same file and shares one dataset. Last save wins, so sync after editing.</li>
-          <li><b>No hosting, fully offline:</b> download this HTML file once to your phone and open it in Chrome (Android) or the free “Documents” app (iPhone). Everything also auto-saves in the browser as a local backup.</li>
+          <li><b>Android + Chrome:</b> tap “Link cloud file” and pick a file in your Drive / OneDrive folder. Changes are saved to it automatically.</li>
+          <li><b>iPhone:</b> download a backup file and save it to Files → Drive / OneDrive. Bring it back with Import files.</li>
+          <li><b>Sharing:</b> both of you link the same file in a shared folder. The last save wins.</li>
         </ol>
       </details>
+      <details class="help" style="margin-top:10px">
+        <summary>Privacy</summary>
+        <p style="margin:6px 0">By default, nothing leaves this device. If you turn on Google cloud sync, your email and data are stored in Google Cloud (Firebase, asia-southeast1), encrypted in transit and at rest, and only your account can read them. “Delete cloud data” removes the cloud copy. Anonymous app-open analytics never include transactions.</p>
+      </details>
     </div>
     <div class="card">
-      <h2><svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><path d="M17.5 19H9a7 7 0 1 1 6.7-9h1.8a4.5 4.5 0 1 1 0 9Z"/></svg> Account &amp; cloud sync <span class="sub" id="fbSub"></span></h2>
-      <div id="fbBody"></div>
-      <details class="help" style="margin-top:12px">
-        <summary>Privacy — “Local only” stays the default; cloud sync is opt-in</summary>
-        <p style="margin:6px 0"><b>By default nothing leaves this device.</b> All data lives in this browser on this device. No account is needed and nothing is uploaded anywhere unless you ask for it.</p>
-        <p style="margin:6px 0"><b>If you enable sync</b> (sign in with Google above and turn Cloud sync on), your <b>email / user ID and financial data</b> are stored in <b>Google Cloud (Firebase, region asia-southeast1)</b>, <b>encrypted in transit</b> (TLS) <b>&amp; at rest</b>. Only your own Google account can read or write your copy — access to each copy is restricted to its signed-in owner.</p>
-        <p style="margin:6px 0"><b>Deletion path:</b> “Delete cloud data” removes the cloud copy from Firebase immediately (the deletion path declared in the Play Store data-safety form); “Clear data” wipes this device; “Sign out” returns the app to local-only. Standard, non-financial usage analytics (Firebase Analytics) count app opens — no transaction data is ever included in analytics.</p>
-      </details>
+      <h2><svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 8 5-5 5 5"/><line x1="12" y1="3" x2="12" y2="15"/></svg> Import &amp; Export</h2>
+      <div style="display:grid;gap:8px">
+        <button class="btn" data-act="import"><svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 8 5-5 5 5"/><line x1="12" y1="3" x2="12" y2="15"/></svg> Import files (JSON / CSV / XLSX)</button>
+        <button class="btn ghost" data-act="xlstpl"><svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Excel upload template</button>
+        <div style="display:flex;gap:8px">
+          <button class="btn ghost" style="flex:1" data-act="csv"><svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Export CSV</button>
+          <button class="btn ghost" style="flex:1" data-act="psum"><svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Per-person CSV</button>
+        </div>
+        <button class="btn ghost" data-act="snap"><svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Snapshot file (.json)</button>
+      </div>
+      <div class="help small" style="margin-top:8px">Imports are merged with your data. Nothing is overwritten and duplicates are skipped.</div>
+      <input type="file" id="fileImport" accept=".json,.csv,.txt,.tsv,.xlsx,.xls" multiple hidden onchange="importFile(this)">
+      <input type="file" id="fileReplace" accept=".json,.csv,.txt,.tsv,.xlsx,.xls" hidden onchange="replaceFile(this)">
+    </div>
+    <div class="card danger">
+      <h2 style="color:var(--exp)"><svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> Danger zone</h2>
+      <div style="display:grid;gap:8px">
+        <button class="btn red" data-act="replacefile"><svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11V9a4 4 0 0 1 4-4h11"/><path d="m15 2 3 3-3 3"/><path d="M21 13v2a4 4 0 0 1-4 4H6"/><path d="m9 22-3-3 3-3"/></svg> Replace all data with a file…</button>
+        <button class="btn red" data-act="clear"><svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg> Clear data…</button>
+      </div>
+      <div class="help small" style="margin-top:8px">A safety snapshot is saved to Backup history first.</div>
     </div>
     <div class="card">
       <h2><svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg> Display</h2>
@@ -478,7 +525,16 @@ h2 svg.icn{width:1.18em;height:1.18em;vertical-align:-0.22em}
       <div class="f-row"><label>Appearance</label><div class="segmini" id="modeSeg" style="margin-bottom:0"></div></div>
       <div class="f-row" style="margin-bottom:0"><label>Currency symbol</label><input class="fin" id="curSymbol" placeholder="RM, $, € …" onchange="DB.meta.currency=this.value.trim();touch();openSheetRefresh()"></div>
     </div>
-    <div class="card"><h2><svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><line x1="12" y1="10.5" x2="12" y2="16"/><line x1="12" y1="7.5" x2="12" y2="7.6"/></svg> About <span class="sub">v1.35</span></h2><div class="help"><b>Money Manager Mobile</b> v1.35 — a single-file app that <b>works offline</b>, no hosting needed. Data lives on this device; cloud sync is opt-in.</div><details class="help" style="margin-top:10px"><summary>All features &amp; how-tos</summary><p style="margin:8px 0 0"><b>Money Manager Mobile</b> v1.35 — single-file app, works offline, no hosting required. Income / Expense / <b>Transfer</b> transactions, custom <b>account types</b> with <b>asset / liability</b> kinds, a <b>billing cycle</b> (statement day) set per account under <b>Settings → Accounts</b> for <b>credit-card</b> accounts — with a <b>billing-period breakdown</b> (tap a period to see its transactions + closing balance), <b>recurring transactions</b> (daily / weekly / monthly / yearly, every N periods — auto-added up to today), balance = start + income − expenses + transfer in − transfer out, transactions listed <b>latest date first</b> with a <b>category filter</b> on the Transactions page, <b>cumulative balance</b> at every level of the account drill (month end → day end → after each transaction), collapsible <b>account summary</b> (people → account types → accounts), <b>footer navigation stays visible on every screen, the phone <b>Back button walks back through your screens</b> (close a sheet, exit selection, return to the previous tab) instead of leaving the app</b>, every transaction row shows its <b>date</b> and tapping it <b>expands the full details</b> inline (with Edit one tap away), split expenses — <b>payer fronts all</b> (the full amount leaves the payer's account; every other person's share is credited to a receivable asset account like “HKO owes WHY” under the payer — settle it with a Transfer from that account) — and <b>deleting a split bill removes every related transaction it created</b> (with undo), account &amp; person drill-down (also combined), tap-to-edit in every drill, <b>batch select · edit · delete</b> with undo, full-screen <b>report screens</b>, per-person CSV, display themes. Compatible with the desktop dashboard format (Date, Income/Expense, Category, Subcategory, Account, Person, Note, Amount, Split, To Account). <b>Excel upload template</b>: download a ready-made XLSX with the exact columns, sample rows and a How-to-fill sheet for data migration. <b>Multi-file import</b>: pick several JSON / CSV / XLSX files at once — they are <b>merged into your existing data</b> (nothing is overwritten, identical transactions are skipped), and <svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11V9a4 4 0 0 1 4-4h11"/><path d="m15 2 3 3-3 3"/><path d="M21 13v2a4 4 0 0 1-4 4H6"/><path d="m9 22-3-3 3-3"/></svg> <b>Replace all with a file</b> restores from a snapshot when you want a clean start. <b>Clear data</b> lets you choose exactly which lists to wipe — or wipe everything. <b>Auto-backup</b>: every change is snapshotted on-device (latest 20, restore any point from Backup history) and one tap downloads a <b>single JSON backup file</b> that can be dropped into Google Drive / OneDrive and re-imported any time.</p></details></div>
+    <div class="card"><h2><svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><line x1="12" y1="10.5" x2="12" y2="16"/><line x1="12" y1="7.5" x2="12" y2="7.6"/></svg> About <span class="sub">v1.39</span></h2><div class="help"><b>Money Manager Mobile</b> is a single-file app that works offline. Your data lives on this device and cloud sync is opt-in.</div>
+      <details class="help" style="margin-top:10px"><summary>Help &amp; tips</summary><ol>
+        <li><b>Add:</b> tap ＋, pick a category chip, then Save. Your last category is remembered.</li>
+        <li><b>Edit:</b> tap a transaction. <b>Select several:</b> long-press one.</li>
+        <li><b>Refunds:</b> tap “Refund” next to the amount to record a reduction in expenses.</li>
+        <li><b>Split a bill, refund or income:</b> More options → Split, and type each share as a positive amount. For a bill, the other person's share is added to the “X owes Y” ledger. For a refund, it is taken off. For income received into your account, their share is owed back to them. Settle it from Who owes whom.</li>
+        <li><b>Credit cards:</b> set a statement day and payment-due days in Settings → Accounts.</li>
+        <li><b>Budgets:</b> Settings → Budgets &amp; fixed costs (monthly, scaled for weekly reports).</li>
+        <li><b>Back:</b> the phone Back button or Esc closes the top screen.</li>
+      </ol></details></div>
   </section>
 </main>
 
@@ -501,6 +557,7 @@ h2 svg.icn{width:1.18em;height:1.18em;vertical-align:-0.22em}
     </div>
   </div>
   <div id="reportBody">
+    <div class="rep" data-rep="dyn" id="repDyn" hidden></div>
     <div class="card rep" data-rep="breakdown" hidden>
       <h2><svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1Z"/><path d="M8 8h8"/><path d="M8 12h8"/><path d="M8 16h5"/></svg> Breakdown <span class="sub" id="catSub"></span></h2>
       <div class="donut-wrap">
@@ -544,9 +601,11 @@ h2 svg.icn{width:1.18em;height:1.18em;vertical-align:-0.22em}
 <div class="ov" id="ovl" data-act="closesheet"></div>
 <div class="sheet" id="sheet">
   <div class="grab"></div>
-  <div style="display:flex;align-items:center;margin-bottom:12px">
-    <b id="sheetTitle" style="font-size:16px">Add transaction</b>
-    <button class="muted" style="margin-left:auto;font-size:20px;line-height:1;padding:4px" data-act="closesheet" aria-label="close"><svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+  <div style="display:flex;align-items:center;gap:4px;margin-bottom:12px">
+    <b id="sheetTitle" style="font-size:16px;flex:1">Add transaction</b>
+    <button class="hbtn" id="btnDup" data-act="duptxn" hidden aria-label="Duplicate as new" title="Duplicate as new"><svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg></button>
+    <button class="hbtn del" id="btnDel" data-act="deltxn" hidden aria-label="Delete transaction" title="Delete"><svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg></button>
+    <button class="hbtn" data-act="closesheet" aria-label="close"><svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
   </div>
   <div class="help small" id="fGroupNote" hidden style="margin-bottom:10px;padding:8px 10px;background:var(--bg);border-radius:10px"></div>
   <div class="seg" style="margin-bottom:14px">
@@ -556,35 +615,29 @@ h2 svg.icn{width:1.18em;height:1.18em;vertical-align:-0.22em}
   </div>
   <div class="f-row">
     <label>Amount</label>
-    <div class="amt-wrap"><span class="cur" id="fCur"></span><input class="fin amt-in" id="fAmount" inputmode="decimal" placeholder="0.00" oninput="updateSplitHint();updateOwnerUI()"><button type="button" class="sgn" id="fSign" data-act="fsign" title="Flip sign — a negative expense is a reduction in expenses" aria-label="Flip amount sign">±</button></div>
+    <div class="amt-wrap"><span class="cur" id="fCur"></span><input class="fin amt-in" id="fAmount" inputmode="decimal" placeholder="0.00" oninput="updateSplitHint();updateOwnerUI();signUI()"><button type="button" class="sgn" id="fSign" data-act="fsign" title="Record as a refund (reduces expenses)" aria-label="Toggle refund">Refund</button></div>
   </div>
+  <div class="f-row" id="fCatBox"><label>Category</label><div class="cat-chips" id="fCatChips"></div></div>
+  <div class="f-row" id="fSubRow"><label>Sub-category</label><div class="cat-chips" id="fSubChips"></div>
+    <div class="subnew"><input class="fin" id="fSubNew" placeholder="New sub-category"><button type="button" class="ibtn" data-act="subadd2" style="color:var(--accent);font-weight:800">Add</button></div><input type="hidden" id="fSub"></div>
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-    <div class="f-row" id="fDateRow"><label>Date</label><input type="date" class="fin" id="fDate"></div>
-    <div class="f-row" id="fRepRow"><label title="Auto-adds future transactions"><svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><path d="m17 2 4 4-4 4"/><path d="M3 11v-1a4 4 0 0 1 4-4h14"/><path d="m7 22-4-4 4-4"/><path d="M21 13v1a4 4 0 0 1-4 4H3"/></svg> Repeat</label><div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap"><select class="fin" id="fRep" style="flex:1;min-width:86px;padding-left:8px;padding-right:8px" onchange="repUI()"><option value="">No repeat</option><option value="day">Daily</option><option value="week">Weekly</option><option value="month">Monthly</option><option value="year">Yearly</option></select><input class="fin" id="fRepEvery" type="number" min="1" value="1" style="width:58px;flex:none" aria-label="repeat every N periods"><span class="small" id="fRepLbl" style="color:var(--muted);white-space:nowrap"></span></div></div>
-  </div>
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-    <div class="f-row"><label id="fAccLabel">Account</label><select class="fin" id="fAccount" onchange="updateOwnerUI()"></select></div>
-    <div class="f-row" id="fOwnerRow"><label id="fOwnerLbl">Owner</label><div class="fin" id="fOwner" style="display:flex;align-items:center;gap:5px;flex-wrap:wrap;color:var(--muted);cursor:default;font-size:13.5px">—</div></div>
+    <div class="f-row"><label id="fAccLabel">Account</label><select class="fin" id="fAccount" onchange="updateOwnerUI();updateSplitHint()"></select></div>
+    <div class="f-row" id="fOwnerRow"><label id="fOwnerLbl">Owner</label><div class="otxt" id="fOwner">—</div></div>
   </div>
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
     <div class="f-row" id="fToRow" hidden><label>To account</label><select class="fin" id="fTo" onchange="updateOwnerUI()"></select></div>
-    <div class="f-row" id="fOwnerToRow" hidden><label>To owner</label><div class="fin" id="fOwnerTo" style="display:flex;align-items:center;gap:5px;flex-wrap:wrap;color:var(--muted);cursor:default;font-size:13.5px">—</div></div>
+    <div class="f-row" id="fOwnerToRow" hidden><label>To owner</label><div class="otxt" id="fOwnerTo">—</div></div>
   </div>
   <div class="f-row" id="fOwedRow" hidden style="background:var(--bg);border-radius:10px;padding:9px 10px"><label style="display:flex;align-items:center;gap:8px;text-transform:none;font-weight:600;cursor:pointer"><input type="checkbox" id="fOwed" style="width:17px;height:17px;accent-color:var(--accent)"><span>Amount owed <span style="font-weight:400;color:var(--muted)">— track the debt between the two owners</span></span></label><div class="help small" id="fOwedHint" style="margin-top:5px"></div></div>
-  <div class="f-row" id="fSplitBox"><label><svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c0-3.6 2.9-6.5 6.5-6.5s6.5 2.9 6.5 6.5"/><path d="M16 4.6a3.5 3.5 0 0 1 0 6.8"/><path d="M18.5 13.9c1.8.9 3 2.8 3 5.1"/></svg> Split between people <span style="text-transform:none;font-weight:600">(each share is saved as its own transaction)</span></label><div id="fSplitRows"></div><div class="small" id="fSplitHint" style="margin-top:2px;color:var(--muted)"></div></div>
-  <div class="f-row" id="fCatBox">
-    <label>Category</label>
-    <button class="fin pick" id="fCatBtn" data-act="fcatmenu" type="button"></button>
-  </div>
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-    <div class="f-row" id="fSubRow"><label>Subcategory</label><button class="fin pick" id="fSubBtn" data-act="fsubmenu" type="button"></button><input type="hidden" id="fSub"></div>
+    <div class="f-row" id="fDateRow"><label>Date</label><input type="date" class="fin" id="fDate"></div>
     <div class="f-row" id="fNoteRow"><label>Note</label><input class="fin" id="fNote" placeholder="optional"></div>
   </div>
-  <button class="btn" data-act="savetxn">Save transaction</button>
-  <div style="height:8px"></div>
-  <button class="btn ghost" id="btnDup" data-act="duptxn" hidden><svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> Duplicate as new</button>
-  <div style="height:2px"></div>
-  <button class="btn red" id="btnDel" data-act="deltxn" hidden><svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg> Delete transaction</button>
+  <details class="more" id="fMore"><summary>More options: repeat &amp; split</summary>
+    <div class="f-row" id="fRepRow"><label title="Auto-adds future transactions"><svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><path d="m17 2 4 4-4 4"/><path d="M3 11v-1a4 4 0 0 1 4-4h14"/><path d="m7 22-4-4 4-4"/><path d="M21 13v1a4 4 0 0 1-4 4H3"/></svg> Repeat</label><div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap"><select class="fin" id="fRep" style="flex:1;min-width:86px;padding-left:8px;padding-right:8px" onchange="repUI()"><option value="">No repeat</option><option value="day">Daily</option><option value="week">Weekly</option><option value="month">Monthly</option><option value="year">Yearly</option></select><input class="fin" id="fRepEvery" type="number" min="1" value="1" style="width:58px;flex:none" aria-label="repeat every N periods"><span class="small" id="fRepLbl" style="color:var(--muted);white-space:nowrap"></span></div></div>
+    <div class="f-row" id="fSplitBox"><label><svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c0-3.6 2.9-6.5 6.5-6.5s6.5 2.9 6.5 6.5"/><path d="M16 4.6a3.5 3.5 0 0 1 0 6.8"/><path d="M18.5 13.9c1.8.9 3 2.8 3 5.1"/></svg> Split between people <span style="text-transform:none;font-weight:600">(works for bills, refunds and income — type each share as a positive amount)</span></label><div id="fSplitRows"></div><div class="small" id="fSplitHint" style="margin-top:2px;color:var(--muted)"></div></div>
+  </details>
+  <div class="sheet-foot"><button class="btn" data-act="savetxn">Save transaction</button></div>
 </div>
 
 <!-- confirm modal -->
@@ -599,11 +652,9 @@ h2 svg.icn{width:1.18em;height:1.18em;vertical-align:-0.22em}
   <p class="help small" style="margin-bottom:8px">Tick the lists to wipe, or wipe everything. Unticked lists are kept. A safety snapshot is always kept in <svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 22s8-3.6 8-10V5.5L12 2 4 5.5V12c0 6.4 8 10 8 10Z"/><path d="m9 11.5 2 2 4-4.5"/></svg> Backup history, so a wipe can be undone right after.</p>
   <div id="clrBody" style="text-align:left;margin-bottom:10px;display:grid;gap:6px"></div>
   <div style="display:grid;gap:8px">
-    <div style="display:flex;gap:8px">
-      <button class="btn red" style="flex:1" data-act="clrsel">Clear selected</button>
-      <button class="btn red" style="flex:1" data-act="clrall">Wipe everything</button>
-    </div>
+    <button class="btn red-solid" data-act="clrsel">Clear selected</button>
     <button class="btn ghost" data-act="clrclose">Cancel</button>
+    <button data-act="clrall" style="display:block;margin:4px auto 0;padding:8px;color:var(--exp);font-size:13px;font-weight:700;text-decoration:underline;text-align:center">Wipe everything instead…</button>
   </div>
 </div></div>
 
@@ -639,6 +690,7 @@ var ICONS={
   tag:'<path d="M20.6 13.4 12 4.8V2H4.8A2.8 2.8 0 0 0 2 4.8V12l8.6 8.6a2 2 0 0 0 2.8 0l7.2-7.2a2 2 0 0 0 0-2.8Z"/><circle cx="7.5" cy="7.5" r="1.2"/>',
   chevdown:'<path d="M6 9l6 6 6-6"/>',
   chevright:'<path d="M9 6l6 6-6 6"/>',
+  chevleft:'<path d="M15 6l-6 6 6 6"/>',
   repeat:'<path d="m17 2 4 4-4 4"/><path d="M3 11v-1a4 4 0 0 1 4-4h14"/><path d="m7 22-4-4 4-4"/><path d="M21 13v1a4 4 0 0 1-4 4H3"/>',
   receipt:'<path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1Z"/><path d="M8 8h8"/><path d="M8 12h8"/><path d="M8 16h5"/>',
   chart:'<line x1="6" y1="20" x2="6" y2="14"/><line x1="12" y1="20" x2="12" y2="9"/><line x1="18" y1="20" x2="18" y2="4"/><path d="M3 20h18"/>',
@@ -702,7 +754,7 @@ function fmt(n){
   var neg=n<0;n=Math.abs(Math.round(n*100)/100);
   var p=n.toFixed(2).split('.');
   var i=p[0].replace(/\B(?=(\d{3})+(?!\d))/g,',');
-  return (neg?'-':'')+i+(p[1]==='00'?'':'.'+p[1]);
+  return (neg?'-':'')+i+'.'+p[1];
 }
 function cur(){return DB.meta.currency||'';}
 function money(n){var c=cur();return c?c+' '+fmt(n):fmt(n);}
@@ -755,7 +807,7 @@ function undoRestoreLists(s){
   toast('Restored ✓');
 }
 var confirmCb=null;
-function askConfirm(msg,okLabel,cb){$('confirmMsg').textContent=msg;$('confirmOk').textContent=okLabel||'OK';confirmCb=cb;$('cmodal').classList.add('on');navSync();}
+function askConfirm(msg,okLabel,cb){$('confirmMsg').textContent=msg;$('confirmOk').textContent=okLabel||'OK';$('confirmOk').className='btn'+(/delete|remove|clear|wipe|stop|replace/i.test(okLabel||'')?' red-solid':'');confirmCb=cb;$('cmodal').classList.add('on');navSync();}
 function confirmResolve(v){$('cmodal').classList.remove('on');var cb=confirmCb;confirmCb=null;if(v&&cb)cb();navSync();}
 
 /* ================= state & storage ================= */
@@ -765,10 +817,13 @@ var DB=null;
 function defaultDB(){
   return {version:4,people:['Me'],accTypes:['Cash','Bank','Card','eWallet'],accTypeMeta:{},accounts:[{name:'Cash',start:0,owner:'',type:'Cash'},{name:'Bank',start:0,owner:'',type:'Bank'}],
     categories:JSON.parse(JSON.stringify(DEF_CATS)),subcats:{},txns:[],recur:[],
+    budgets:{},fixedCats:[],
     meta:{changedAt:0,pushedAt:0,currency:'RM',accent:'',mode:'',legsMigrated:false}};
 }
 function normalizeDB(){
   if(!DB.subcats||typeof DB.subcats!=='object'||Array.isArray(DB.subcats))DB.subcats={};
+  if(!DB.budgets||typeof DB.budgets!=='object'||Array.isArray(DB.budgets))DB.budgets={};
+  if(!Array.isArray(DB.fixedCats))DB.fixedCats=[];
   if(!DB.accTypeMeta||typeof DB.accTypeMeta!=='object'||Array.isArray(DB.accTypeMeta))DB.accTypeMeta={};
   /* v1.15: a billing cycle only makes sense on liability types — scrubbed everywhere else */
   Object.keys(DB.accTypeMeta).forEach(function(k){var m=DB.accTypeMeta[k]||{};m.kind=(m.kind==='liability')?'liability':'asset';var d=parseInt(m.cycle,10);m.cycle=(m.kind==='liability'&&d>=1&&d<=31)?d:0;DB.accTypeMeta[k]=m;});
@@ -832,7 +887,7 @@ function idbDel(k){return idbOpen().then(function(db){return new Promise(functio
 /* ================= cloud sync (Google Drive / OneDrive file) ================= */
 var Cloud={handle:null,perm:'unknown',pushH:null};
 var FS_OK=(typeof window!=='undefined')&&('showSaveFilePicker' in window);
-function syncUI(state,text){var c=$('syncChip');c.classList.remove('ok','warn');if(state==='ok')c.classList.add('ok');if(state==='warn')c.classList.add('warn');$('syncText').textContent=text;}
+function syncUI(state,text){var c=$('syncChip');c.hidden=(state!=='warn');c.classList.remove('ok','warn');if(state==='ok')c.classList.add('ok');if(state==='warn')c.classList.add('warn');$('syncText').textContent=text;}
 function syncStatus(){
   if(FB.user&&DB.meta.cloudSyncOn){syncUI('ok','Cloud sync on');return;} /* v1.31 */
   if(Cloud.handle){
@@ -983,8 +1038,8 @@ function fbSignIn(){
   }).catch(function(e){
     var c=(e&&e.code)||'';
     /* v1.33: the one failure fixed in the Firebase console, not in code */
-    if(c==='auth/unauthorized-domain'){toast('This site is not yet authorised for Google sign-in — add gabrielkoho-del.github.io under Firebase → Authentication → Settings → Authorised domains');return;}
-    toast('Sign-in failed — '+((e&&e.code)||e&&e.message||'try again'));
+    if(c==='auth/unauthorized-domain'){toast('Google sign-in isn\'t available on this site yet. Your data is still saved on this device.');return;}
+    toast('Sign-in failed. Check your connection and try again.');
   });
 }
 function fbSignOut(){
@@ -1005,7 +1060,7 @@ function fbSyncNow(){
     var ref=FB.mod.doc(FB.db,'users',FB.user.uid);
     return FB.mod.setDoc(ref,{email:FB.user.email,app:'money-manager',data:JSON.stringify(DB),updatedAt:new Date().toISOString()});
   }).then(function(){DB.meta.cloudPushedAt=Date.now();save();renderCloudAcc();toast('Synced to cloud ✓');})
-  .catch(function(e){console.warn('fb-sync',e);toast('Sync failed — '+((e&&e.code)||e&&e.message||'check connection'));});
+  .catch(function(e){console.warn('fb-sync',e);toast('Sync failed. Check your connection and try again.');});
 }
 function fbPushSoon(){
   if(!FB.user||!DB.meta.cloudSyncOn||!FB.ready)return;
@@ -1024,7 +1079,7 @@ function fbRestore(){
         .catch(function(e){toast('Restore failed — '+(e&&e.message||'bad data'));});
       });
     });
-  }).catch(function(e){console.warn('fb-restore',e);toast('Restore failed — '+((e&&e.code)||e&&e.message||'check connection'));});
+  }).catch(function(e){console.warn('fb-restore',e);toast('Restore failed. Check your connection and try again.');});
 }
 function fbDeleteCloud(){
   if(!FB.user){toast('Sign in with Google first');return;}
@@ -1034,9 +1089,9 @@ function fbDeleteCloud(){
       FB.mod.deleteDoc(ref).then(function(){
         DB.meta.cloudPushedAt=0;DB.meta.cloudSyncOn=false;save();renderCloudAcc();
         toast('Cloud data deleted — local only');
-      }).catch(function(e){toast('Delete failed — '+((e&&e.code)||e&&e.message||'try again'));});
+      }).catch(function(e){toast('Delete failed. Check your connection and try again.');});
     });
-  }).catch(function(e){console.warn('fb-del',e);toast('Delete failed — '+((e&&e.code)||e&&e.message||'check connection'));});
+  }).catch(function(e){console.warn('fb-del',e);toast('Delete failed. Check your connection and try again.');});
 }
 function fbSyncLabel(){
   if(!DB.meta.cloudPushedAt)return'';
@@ -1264,6 +1319,10 @@ function migrateLegs(){
 }
 /* does a txn touch this account (transfers count for both ends; v1.12: a split share
    whose `to` is a receivable also touches that receivable account) */
+/* v1.37: signed effect of a split-share leg on its “X owes Y” ledger (t.to).
+   Expense share (+) → X owes more · Expense refund share (−) → X owes less ·
+   Income share → the payer received X's portion, so X is owed it back (ledger −). */
+function legDelta(t){if(!t||t.type==='Transfer'||!t.to)return 0;var a=+t.amount||0;return t.type==='Income'?-a:a;}
 function txnTouchesAcc(t,acc){return t.account===acc||(t.to===acc)||(t.owedAcc===acc);}
 /* ===== v1.12: receivable accounts — split bills where one person fronts the money =====
    A receivable is a normal ASSET account named “<debtor> owes <payer>” (owner = payer).
@@ -1306,7 +1365,7 @@ function accountBalAsOf(name,cutoff){
   DB.txns.forEach(function(t){
     if(t.date>cutoff)return;
     if(t.type==='Transfer'){if(t.account===name)bal-=t.amount;if(t.to===name)bal+=t.amount;}
-    else{if(t.account===name)bal+=(t.type==='Income'?t.amount:-t.amount);if(t.to===name)bal+=t.amount;}
+    else{if(t.account===name)bal+=(t.type==='Income'?t.amount:-t.amount);if(t.to===name)bal+=legDelta(t);}
     if(t.owedAcc===name)bal+=(t.owedAmt||0); /* v1.17: the owed entry of a cross-owner transfer */
   });
   return bal;
@@ -1321,7 +1380,7 @@ function accRunningBals(acc){
   allTxns().forEach(function(t){
     if(!txnTouchesAcc(t,acc))return;
     if(t.type==='Transfer'){if(t.account===acc)bal-=t.amount;if(t.to===acc)bal+=t.amount;}
-    else{if(t.account===acc)bal+=(t.type==='Income'?t.amount:-t.amount);if(t.to===acc)bal+=t.amount;}
+    else{if(t.account===acc)bal+=(t.type==='Income'?t.amount:-t.amount);if(t.to===acc)bal+=legDelta(t);}
     if(t.owedAcc===acc)bal+=(t.owedAmt||0); /* v1.17 */
     tx[t.id]=bal;day[t.date]=bal;mo[t.date.slice(0,7)]=bal;
   });
@@ -1781,8 +1840,12 @@ function balances(){
       tout[t.account]+=t.amount;
       if(t.to){if(!inc[t.to])inc[t.to]=0;inc[t.to]+=t.amount;if(!tin[t.to])tin[t.to]=0;tin[t.to]+=t.amount;}
     }
-    else if(t.type==='Income')inc[t.account]+=t.amount;
-    else{exp[t.account]+=t.amount;if(t.to){if(!inc[t.to])inc[t.to]=0;inc[t.to]+=t.amount;if(!tin[t.to])tin[t.to]=0;tin[t.to]+=t.amount;}}
+    else{
+      if(t.type==='Income')inc[t.account]+=t.amount;else exp[t.account]+=t.amount;
+      if(t.to){var lg=legDelta(t),lt=t.to; /* v1.37: income & refund shares move the ledger the right way */
+        if(!inc[lt])inc[lt]=0;if(!exp[lt])exp[lt]=0;if(!tin[lt])tin[lt]=0;if(!tout[lt])tout[lt]=0;
+        if(lg>=0){inc[lt]+=lg;tin[lt]+=lg;}else{exp[lt]-=lg;tout[lt]-=lg;}}
+    }
     /* v1.17: the third entry of an owed transfer — credit / debit the joint debt ledger */
     if(t.owedAcc&&t.owedAmt){
       var oa=t.owedAcc,od=t.owedAmt;
@@ -1980,10 +2043,12 @@ function openReport(k){
 function closeReport(){REPORT.open=false;$('pageReport').classList.remove('on');document.body.style.overflow='';navSync();}
 function renderReport(){
   if(!REPORT.open)return;
+  var dyn=!!DYNF[REPORT.kind];
   var cards=document.querySelectorAll('#reportBody .rep'),i;
-  for(i=0;i<cards.length;i++)cards[i].hidden=(cards[i].dataset.rep!==REPORT.kind);
+  for(i=0;i<cards.length;i++)cards[i].hidden=dyn?(cards[i].dataset.rep!=='dyn'):(cards[i].dataset.rep!==REPORT.kind);
   $('repTitle').innerHTML=REP_TITLES[REPORT.kind]||'Report';
-  $('repSub').innerHTML=esc(scopeLabel())+(OV.person!=='all'?' · '+ico('user')+' '+esc(OV.person):'');
+  if(dyn){$('repDyn').innerHTML=(REPORT.kind==='cc'?'':perCtrlHTML())+DYNF[REPORT.kind]();$('repSub').textContent=(PER.mode==='week'?'Week · ':'Month · ')+perRange().label;}
+  else $('repSub').innerHTML=esc(scopeLabel())+(OV.person!=='all'?' · '+ico('user')+' '+esc(OV.person):'');
 }
 function drillMonthTxns(){
   var l=allTxns().filter(function(t){return t.date.slice(0,7)===DRILL.month;});
@@ -2019,11 +2084,12 @@ function miniTxn(t,bal,flip,dt){
   if(dt)via+=' · '+dt; /* v1.35: billing-period rows show each transaction's date (user request) */
   /* v1.12: inside a receivable drill a split-share leg (to = the receivable) is a credit → show + */
   var redn=!isTrf&&!flip&&t.type==='Expense'&&t.amount<0; /* v1.24: negative expense = reduction */
-  var cls=isTrf?'':(flip?'pos':((t.type==='Income'||redn)?'pos':'neg'));
-  var pre=flip?'+':((t.type==='Income'||redn)?'+':(isTrf?'⇄ ':'-'));
+  var fd=flip?legDelta(t):0; /* v1.37 */
+  var cls=isTrf?'':(flip?(fd<0?'neg':'pos'):((t.type==='Income'||redn)?'pos':'neg'));
+  var pre=flip?(fd<0?'-':'+'):((t.type==='Income'||redn)?'+':(isTrf?'⇄ ':'-'));
   /* v1.8/v1.9: optional running balance (account balance AFTER this txn) under the amount,
      in parentheses like the Money Manager reference app */
-  return '<button class="mini" data-act="txn" data-id="'+t.id+'" aria-label="edit transaction"><span class="l"><b>'+lb+'</b>'+(t.subcategory?' · '+esc(t.subcategory):'')+(t.note?' — '+esc(t.note):'')+' · '+via+'</span><span class="r"><span class="amt2 '+cls+'">'+pre+money(redn?-t.amount:t.amount)+'</span>'+(bal!==undefined?'<span class="minibal">('+money(bal)+')</span>':'')+'</span><span class="ed">'+ico('pencil')+'</span></button>';
+  return '<button class="mini" data-act="txn" data-id="'+t.id+'" aria-label="edit transaction"><span class="l"><b>'+lb+'</b>'+(t.subcategory?' · '+esc(t.subcategory):'')+(t.note?' — '+esc(t.note):'')+' · '+via+'</span><span class="r"><span class="amt2 '+cls+'">'+pre+money(flip?Math.abs(fd):(redn?-t.amount:t.amount))+'</span>'+(bal!==undefined?'<span class="minibal">Bal '+money(bal)+'</span>':'')+'</span><span class="ed">'+ico('pencil')+'</span></button>';
 }
 function dayRows(list,mode){
   var db=dayBreakdown(list,mode);
@@ -2050,8 +2116,8 @@ function dayRows(list,mode){
     if(DRILL.acc)dayList=dayList.concat(list.filter(function(t){return t.date===d.date&&t.type==='Transfer';}));
     var amtHtml,dcls=(mode==='Expense')?(flip?'pos':'neg'):'pos';
     if(d.trfOnly){var n=tnet[d.date]||0;amtHtml='⇄ '+(n<0?'-':'+')+money(Math.abs(n));dcls=n<0?'neg':'pos';}
-    else amtHtml=((mode==='Expense'&&!flip)?'-':'+')+money(d.value);
-    var dayBal=(rb&&rb.day[d.date]!==undefined)?'<span class="daybal">('+money(rb.day[d.date])+')</span>':'';
+    else{var dv=(mode==='Expense'?-1:1)*(flip?-1:1)*d.value;amtHtml=(dv<0?'-':'+')+money(Math.abs(dv));dcls=dv<0?'neg':'pos';} /* v1.37: signed — refunds & income shares */
+    var dayBal=(rb&&rb.day[d.date]!==undefined)?'<span class="daybal">Bal '+money(rb.day[d.date])+'</span>':'';
     var h='<button class="trow" data-act="dday" data-d="'+d.date+'"><span class="lb">'+dLabelW(d.date)+' <span class="muted" style="font-weight:500">'+(open?ico('chevdown'):ico('chevright'))+'</span></span><span style="display:flex;align-items:baseline;gap:8px"><span class="amt2 '+dcls+'">'+amtHtml+'</span>'+dayBal+'</span></button>';
     return h+(open?'<div class="expand">'+dayList.map(function(t){return miniTxn(t,rb?rb.tx[t.id]:undefined,flip&&t.type!=='Transfer'&&t.to===DRILL.acc);}).join('')+'</div>':'');
   }).join('');
@@ -2061,15 +2127,15 @@ function renderDrill(){
   var accCrumb=DRILL.acc?('<button data-act="dtoacc">'+esc(DRILL.acc)+'</button><span class="sep">›</span>'):'';
   var perCrumb=DRILL.person?('<button data-act="dtoperson">'+ico('user')+' '+esc(DRILL.person)+'</button><span class="sep">›</span>'):'';
   if(DRILL.level==='accmonth'){
-    cr.innerHTML='<button data-act="dback">Overview</button><span class="sep">›</span><span class="cur">'+ico('card')+' '+esc(DRILL.acc)+'</span>';
+    cr.innerHTML='<button data-act="dback">'+drillFrom()+'</button><span class="sep">›</span><span class="cur">'+ico('card')+' '+esc(DRILL.acc)+'</span>';
   }else if(DRILL.level==='pmonth'){
-    cr.innerHTML='<button data-act="dback">Overview</button><span class="sep">›</span><span class="cur">'+ico('user')+' '+esc(DRILL.person)+(DRILL.acc?' · '+ico('card')+' '+esc(DRILL.acc):'')+'</span>';
+    cr.innerHTML='<button data-act="dback">'+drillFrom()+'</button><span class="sep">›</span><span class="cur">'+ico('user')+' '+esc(DRILL.person)+(DRILL.acc?' · '+ico('card')+' '+esc(DRILL.acc):'')+'</span>';
   }else if(DRILL.level==='month'){
-    cr.innerHTML='<button data-act="dback">Overview</button><span class="sep">›</span>'+accCrumb+perCrumb+'<span class="cur">'+MONTHS[(+DRILL.month.slice(5))-1]+' '+DRILL.month.slice(0,4)+'</span>';
+    cr.innerHTML='<button data-act="dback">'+drillFrom()+'</button><span class="sep">›</span>'+accCrumb+perCrumb+'<span class="cur">'+MONTHS[(+DRILL.month.slice(5))-1]+' '+DRILL.month.slice(0,4)+'</span>';
   }else if(DRILL.level==='cat'){
-    cr.innerHTML='<button data-act="dback">Overview</button><span class="sep">›</span>'+accCrumb+perCrumb+'<button data-act="dtomonth">'+MONTHS[(+DRILL.month.slice(5))-1]+' '+DRILL.month.slice(0,4)+'</button><span class="sep">›</span><span class="cur">'+esc(DRILL.cat)+'</span>';
+    cr.innerHTML='<button data-act="dback">'+drillFrom()+'</button><span class="sep">›</span>'+accCrumb+perCrumb+'<button data-act="dtomonth">'+MONTHS[(+DRILL.month.slice(5))-1]+' '+DRILL.month.slice(0,4)+'</button><span class="sep">›</span><span class="cur">'+esc(DRILL.cat)+'</span>';
   }else{
-    cr.innerHTML='<button data-act="dback">Overview</button><span class="sep">›</span><span class="cur">'+OV.year+' · '+esc(DRILL.cat)+'</span>';
+    cr.innerHTML='<button data-act="dback">'+drillFrom()+'</button><span class="sep">›</span><span class="cur">'+OV.year+' · '+esc(DRILL.cat)+'</span>';
   }
   var l=drillMonthTxns(),html='';
   if(DRILL.level==='accmonth'){
@@ -2102,7 +2168,7 @@ function renderDrill(){
     var bi=0,bx=0,biN=0,boN=0,bio=0,boo=0;
     DB.txns.forEach(function(t){
       if(t.type==='Transfer'){if(t.account===DRILL.acc){boo+=t.amount;boN++;}if(t.to===DRILL.acc){bio+=t.amount;biN++;}}
-      else{if(t.account===DRILL.acc){if(t.type==='Income')bi+=t.amount;else bx+=t.amount;}if(t.to===DRILL.acc){bi+=t.amount;biN++;}}
+      else{if(t.account===DRILL.acc){if(t.type==='Income')bi+=t.amount;else bx+=t.amount;}if(t.to===DRILL.acc){bi+=legDelta(t);biN++;}}
       if(t.owedAcc===DRILL.acc){var dO=t.owedAmt||0;if(dO>0){bio+=dO;biN++;}else if(dO<0){boo-=dO;boN++;}} /* v1.17 */
     });
     var bbal=accStart+bi-bx+bio-boo;
@@ -2145,6 +2211,7 @@ function renderDrill(){
       var k=t.date.slice(0,7);
       if(!mm[k])mm[k]={income:0,expense:0};
       if(t.type==='Transfer')trf[k]=(trf[k]||0)+((t.to===DRILL.acc?1:-1)*t.amount);
+      else if(t.to===DRILL.acc&&t.account!==DRILL.acc)trf[k]=(trf[k]||0)+legDelta(t); /* v1.37 */
       else mm[k][t.type.toLowerCase()]+=t.amount;
       tn[k]=(tn[k]||0)+1;
     });
@@ -2152,8 +2219,8 @@ function renderDrill(){
     /* v1.10: each month row carries the account's cumulative balance at month end;
        v1.30: the subtitle also shows the account balance (the asset drill no longer has a breakdown card) */
     var moB=accRunningBals(DRILL.acc).mo;
-    html+='<div class="card"><h2>'+ico('calendar')+' '+esc(DRILL.acc)+' · Months <span class="sub">balance '+money(bbal)+' · tap a month to drill · (…) = month end</span></h2><div class="rows">';
-    html+=ks.length?ks.map(function(k){var net=mm[k].income-mm[k].expense+(trf[k]||0);var tr=trf[k]||0;var mb=(moB[k]!==undefined)?'<span class="daybal">('+money(moB[k])+')</span>':'';return trow({act:'month',attrs:'data-k="'+k+'"',lb:MONTHS[(+k.slice(5))-1]+' '+k.slice(0,4),sub:tn[k]+' txns · <span class="pos">+'+money(mm[k].income)+'</span> / <span class="'+(mm[k].expense<0?'pos':'neg')+'">'+(mm[k].expense<0?'+':'-')+money(Math.abs(mm[k].expense))+'</span>'+(tr?' · ⇄ '+(tr>0?'+':'-')+money(Math.abs(tr)):''),amt:(net<0?'-':'+')+money(Math.abs(net))+mb,cls:net<0?'neg':'pos'});}).join(''):'<div class="help" style="padding:8px 2px">No transactions for this account.</div>';
+    html+='<div class="card"><h2>'+ico('calendar')+' '+esc(DRILL.acc)+' · Months <span class="sub">balance '+money(bbal)+' · tap a month to drill</span></h2><div class="rows">';
+    html+=ks.length?ks.map(function(k){var net=mm[k].income-mm[k].expense+(trf[k]||0);var tr=trf[k]||0;var bv=moB[k],mb=(bv!==undefined)?'<span class="mbal'+(bv<0?' neg':'')+'">'+money(bv)+'</span>':''; /* v1.39: balance on top, movement below */return trow({act:'month',attrs:'data-k="'+k+'"',lb:MONTHS[(+k.slice(5))-1]+' '+k.slice(0,4),sub:tn[k]+' txns · <span class="pos">+'+money(mm[k].income)+'</span> / <span class="'+(mm[k].expense<0?'pos':'neg')+'">'+(mm[k].expense<0?'+':'-')+money(Math.abs(mm[k].expense))+'</span>'+(tr?' · ⇄ '+(tr>0?'+':'-')+money(Math.abs(tr)):''),amt:'<span class="mstack">'+mb+'<span class="mmov '+(net<0?'neg':'pos')+'">'+(net<0?'-':'+')+money(Math.abs(net))+'</span></span>',cls:''});}).join(''):'<div class="help" style="padding:8px 2px">No transactions for this account.</div>';
     html+='</div></div>';
   }else if(DRILL.level==='pmonth'){
     var mm={},tn={},trf={};
@@ -2192,16 +2259,17 @@ function renderDrill(){
         var isTrf=t.type==='Transfer';
         var flipLeg=flip&&!isTrf&&t.to===DRILL.acc; /* v1.12: split-share leg credited to a receivable */
         var redn=!isTrf&&!flipLeg&&t.type==='Expense'&&t.amount<0; /* v1.24: expense reduction */
+        var ld=flipLeg?legDelta(t):0; /* v1.37 */
         var sub=isTrf?(esc(t.account)+' → '+esc(t.to||'?')+(t.owedAcc?' · '+esc(t.owedAcc):'')+(t.note?' · '+esc(t.note):'')):((t.note?esc(t.note)+' · ':'')+(whoStr(t)+' · '+esc(t.account))+(t.to?' · '+esc(t.to):'')+(redn?' · <span style="color:var(--inc)">expense reduction</span>':''));
-        var cls=isTrf?'':((t.type==='Income'||flipLeg||redn)?'pos':'neg');
-        var pre=isTrf?'':((t.type==='Income'||flipLeg||redn)?'+':'-');
-        var av=flipLeg?t.amount:(redn?-t.amount:t.amount);
-        var sv=isTrf?((t.to===DRILL.acc?1:-1)*t.amount):(flipLeg?t.amount:((t.type==='Income')?t.amount:-t.amount)); /* display-signed value (a reduction is +), so the day net reconciles with the rows */
+        var cls=isTrf?'':(flipLeg?(ld<0?'neg':'pos'):((t.type==='Income'||redn)?'pos':'neg'));
+        var pre=isTrf?'':(flipLeg?(ld<0?'-':'+'):((t.type==='Income'||redn)?'+':'-'));
+        var av=flipLeg?Math.abs(ld):(redn?-t.amount:t.amount);
+        var sv=isTrf?((t.to===DRILL.acc?1:-1)*t.amount):(flipLeg?ld:((t.type==='Income')?t.amount:-t.amount)); /* display-signed value (a reduction is +), so the day net reconciles with the rows */
         dn+=sv;dnet+=sv;dN++;
         return '<button class="txn" data-act="txn" data-id="'+t.id+'"><span class="mid"><b>'+esc(isTrf?'Transfer':t.category)+(t.subcategory?' · '+esc(t.subcategory):'')+'</b><small>'+sub+'</small></span><span class="amt '+cls+'">'+pre+(cur()?'<small class="cur2">'+esc(cur())+'</small> ':'')+fmt(av)+'</span></button>';
       }).join('');
-      var dayBal=(rbA.day[d]!==undefined)?' <span class="daybal">('+money(rbA.day[d])+')</span>':'';
-      return '<div class="day-h"><span>'+dLabelYW(d)+'</span><span>net '+(dn<0?'-':'+')+(cur()?cur()+' ':'')+fmt(Math.abs(dn))+dayBal+'</span></div>'+rows;
+      var dayBal=(rbA.day[d]!==undefined)?' <span class="daybal">Bal '+money(rbA.day[d])+'</span>':'';
+      return '<div class="dayg"><div class="day-h"><span>'+dLabelYW(d)+'</span><span>net '+(dn<0?'-':'+')+(cur()?cur()+' ':'')+fmt(Math.abs(dn))+dayBal+'</span></div>'+rows+'</div>';
     }).join('');
     html+='<div class="card"><h2>'+ico('calendar')+' '+MONTHS[(+DRILL.month.slice(5))-1]+' '+DRILL.month.slice(0,4)+' · '+esc(DRILL.acc)+' <span class="sub">'+(dN?dN+' transactions · net '+money(dnet):'no transactions this month')+'</span></h2>'+(list||'<div class="help" style="padding:8px 2px">Nothing in this month.</div>')+'</div>';
   }else if(DRILL.level==='month'){
@@ -2282,6 +2350,9 @@ function renderTxns(){
   var nf=(TXF.month!=='all')+(TXF.person!=='all')+(TXF.account!=='all')+(TXF.type!=='all')+(TXF.cat!=='all');
   var fnEl=$('txFilterN');if(fnEl){fnEl.textContent=nf;fnEl.hidden=!nf;}
   var fgEl=$('txFGrid');if(fgEl)fgEl.hidden=!TXF.open;
+  var fcL={month:TXF.month!=='all'?MONTHS[(+TXF.month.slice(5))-1]+' '+TXF.month.slice(0,4):'',person:TXF.person!=='all'?TXF.person:'',account:TXF.account!=='all'?TXF.account:'',type:TXF.type!=='all'?TXF.type:'',cat:TXF.cat!=='all'?TXF.cat:''},fc=[];
+  Object.keys(fcL).forEach(function(k){if(fcL[k])fc.push('<button class="chip on" data-act="txfclr" data-f="'+k+'" aria-label="remove filter">'+esc(fcL[k])+'<span class="x">'+ico('x')+'</span></button>');});
+  var chEl=$('txChips');if(chEl){chEl.hidden=!fc.length;chEl.innerHTML=fc.join('')+(fc.length>1?'<button class="chip" data-act="txfclrall">Clear all</button>':'');}
   var l=txFiltered();
   if(BSEL.on){
     var okIds={},keep=[];
@@ -2310,7 +2381,7 @@ function renderTxns(){
   var days=Object.keys(g).sort().reverse();
   /* v1.35: every transaction is shown — the v1.29 "Show more" cap is gone (user request);
      the list stays grouped by day, latest first */
-  $('txList').innerHTML=days.length?days.map(function(d){
+  $('txList').innerHTML=days.length?days.slice(0,TXR.n).map(function(d){
     var din=0,dexp=0;
     g[d].forEach(function(t){if(t.type==='Transfer')return;var v=vOf(t);if(t.type==='Income')din+=v;else dexp+=v;});
     /* v1.10: within a day the most recently entered transaction comes first */
@@ -2319,15 +2390,15 @@ function renderTxns(){
       var isTrf=t.type==='Transfer';
       var redn=!isTrf&&t.type==='Expense'&&v<0; /* v1.24: negative expense = reduction in expenses */
       var sub=isTrf?(esc(t.account)+' → '+esc(t.to||'?')+(t.owedAcc?' · '+esc(t.owedAcc):'')+(t.note?' · '+esc(t.note):'')):((t.note?esc(t.note)+' · ':'')+(whoStr(t)+' · '+esc(t.account))+(t.to?' · '+esc(t.to):'')+(redn?' · <span style="color:var(--inc)">expense reduction</span>':'')); /* v1.28: note reads first */
-      sub+=' · '+dLabelW(t.date); /* v1.35: the transaction date on every row (user request) */
       var cls=isTrf?'':((t.type==='Income'||redn)?'pos':'neg');
       var pre=isTrf?'':((t.type==='Income'||redn)?'+':'-'); /* the amount sign tells the type */
       var av=redn?-v:v;
       var openRow=!selMode&&EXP.txn===t.id;
-      return '<button class="txn'+(selMode&&BSEL.ids.indexOf(t.id)>=0?' sel':'')+(openRow?' open':'')+'" data-act="txn" data-id="'+t.id+'">'+(selMode?'<span class="ck">✓</span>':'')+'<span class="mid"><b>'+esc(isTrf?'Transfer':t.category)+(t.subcategory?' · '+esc(t.subcategory):'')+'</b><small>'+sub+'</small></span><span class="amt '+cls+'">'+pre+(cur()?'<small class="cur2">'+esc(cur())+'</small> ':'')+fmt(av)+(shareMode&&!isTrf&&v!==t.amount?' <small style="font-weight:600;opacity:.65">/ '+fmt(t.amount)+'</small>':'')+'</span>'+(selMode?'':'<span class="crt">›</span>')+'</button>'+(openRow?txDetailHTML(t):'');
+      return '<button class="txn'+(selMode&&BSEL.ids.indexOf(t.id)>=0?' sel':'')+(openRow?' open':'')+'" data-act="txn" data-id="'+t.id+'">'+(selMode?'<span class="ck">'+ico('check')+'</span>':'')+'<span class="mid"><b>'+esc(isTrf?'Transfer':t.category)+(t.subcategory?' · '+esc(t.subcategory):'')+'</b><small>'+sub+'</small></span><span class="amt '+cls+'">'+pre+(cur()?'<small class="cur2">'+esc(cur())+'</small> ':'')+fmt(av)+(shareMode&&!isTrf&&v!==t.amount?' <small style="font-weight:600;opacity:.65">/ '+fmt(t.amount)+'</small>':'')+'</span>'+''+'</button>'+(openRow?txDetailHTML(t):'');
     }).join('');
-    return '<div class="day-h"><span>'+dLabelYW(d)+'</span><span>net '+(din-dexp<0?'-':'+')+(cur()?cur()+' ':'')+fmt(Math.abs(din-dexp))+'</span></div>'+rows;
+    return '<div class="dayg"><div class="day-h"><span>'+dLabelYW(d)+'</span><span>net '+(din-dexp<0?'-':'+')+(cur()?cur()+' ':'')+fmt(Math.abs(din-dexp))+'</span></div>'+rows+'</div>';
   }).join(''):'<div class="empty"><b>No transactions</b><p>Adjust the filters above, or tap ＋ to add one.</p></div>';
+  if(days.length>TXR.n){$('txList').insertAdjacentHTML('beforeend','<div id="txMore" class="help small" style="text-align:center;padding:12px">Loading older transactions…</div>');txObserve();}
 }
 /* v1.35: the inline detail card rendered under an expanded transaction row (tap again to
    collapse; Edit opens the same editor as before — drill rows keep their old tap-to-edit) */
@@ -2415,7 +2486,7 @@ function accSummaryHTML(rows){
       var isL=accTypeKind(ty)==='liability';
       var th='<button class="asum-row asum-l2" data-act="asum" data-k="'+esc(tk)+'">'
         +'<span class="lb">'+ico('folder')+' '+esc(ty)+(isL?'<span class="asum-liab">liability</span>':'')+'<small>'+g.types[ty].length+(g.types[ty].length>1?' accounts':' account')+' · tap to '+(openT?'collapse':'expand')+'</small></span>'
-        +'<span class="asum-r"><span class="amt2 '+(!tl&&sub2<0?'neg':'')+'">'+money(tl?Math.abs(sub2):sub2)+'</span><span class="asum-ch" aria-hidden="true">'+(openT?'▾':'▸')+'</span></span></button>';
+        +'<span class="asum-r"><span class="amt2 '+(!tl&&sub2<0?'neg':'')+'">'+money(tl?Math.abs(sub2):sub2)+'</span><span class="asum-ch" aria-hidden="true">'+(openT?ico('chevdown'):ico('chevright'))+'</span></span></button>';
       if(!openT)return th;
       return th+'<div class="asum-l3">'+g.types[ty].slice().sort(function(x,y){return alphasort(x.r.name,y.r.name);}).map(accRow).join('')+'</div>';
     }).join('');
@@ -2459,6 +2530,7 @@ function accSave(n){
   var cyc=0;
   if(typeHasCycle(a.type)){var c=parseInt(($('mgrECycA')?$('mgrECycA').value:''),10);if(c>=1&&c<=31)cyc=c;}
   a.cycle=cyc;
+  var ddv=parseInt(($('mgrEDue')||{}).value,10);if(ddv>=1&&ddv<=60)a.dueDays=ddv;
   if(MGR.edit===n)MGR.edit=null;
   if(DRILL.acc===n)DRILL.acc=nn;
   touch();renderMgr();toast('Account updated');
@@ -2484,7 +2556,7 @@ function renderSettings(){
 }
 /* ============ list manager modal (v1.3: pop-out for people/categories/subs/accounts) ============ */
 var MGR={kind:'',edit:null};
-var MGR_TITLE={people:ico('users')+' People',cats:ico('tag')+' Categories',subs:ico('list')+' Sub-categories',accs:ico('card')+' Accounts',acctype:ico('folder')+' Account Types',recur:ico('repeat')+' Recurring transactions',backups:ico('clock')+' Backup history',pickcat:ico('tag')+' Choose category',picksub:ico('list')+' Choose sub-category',batchedit:ico('pencil')+' Batch edit'};
+var MGR_TITLE={people:ico('users')+' People',cats:ico('tag')+' Categories',subs:ico('list')+' Sub-categories',accs:ico('card')+' Accounts',acctype:ico('folder')+' Account Types',recur:ico('repeat')+' Recurring transactions',backups:ico('clock')+' Backup history',pickcat:ico('tag')+' Choose category',picksub:ico('list')+' Choose sub-category',batchedit:ico('pencil')+' Batch edit',budgets:ico('wallet')+' Budgets & fixed costs'};
 function subList(c){if(!DB.subcats||typeof DB.subcats!=='object')DB.subcats={};if(!DB.subcats[c])DB.subcats[c]=[];return DB.subcats[c];}
 function openMgr(kind){MGR.kind=kind;MGR.edit=null;$('mgrTitle').innerHTML=MGR_TITLE[kind]||'Manage';renderMgr();$('mgrOvl').classList.add('on');$('mgrSheet').classList.add('on');navSync();}
 function closeMgr(){$('mgrOvl').classList.remove('on');$('mgrSheet').classList.remove('on');navSync();}
@@ -2510,6 +2582,7 @@ function renderMgr(){
   if(MGR.kind==='batchedit')return renderBatchEdit();
   if(MGR.kind==='recur')return renderRecurMgr();
   if(MGR.kind==='backups')return renderBackupMgr();
+  if(MGR.kind==='budgets')return renderBudgetMgr();
   var h='',ei=0;
   if(MGR.kind==='people'){
     h+=DB.people.length?sortedAlpha(DB.people).map(function(p){
@@ -2591,7 +2664,7 @@ function renderMgr(){
           +'</div>'
           +'<div class="mgr-lb">Type</div><select class="fin" id="mgrEType" style="margin-bottom:7px" onchange="var w=document.getElementById(\'cycAWrap\');if(w)w.style.display=typeHasCycle(this.value)?\'\':\'none\'">'+sortedAlpha(DB.accTypes).map(function(ty){return '<option'+(ty===a.type?' selected':'')+'>'+esc(ty)+'</option>';}).join('')+'</select>'
           +'<div class="mgr-lb">Owner</div><select class="fin" id="mgrEOwner" style="margin-bottom:7px">'+ownerOptions(a.owner)+'</select>'
-          +'<div id="cycAWrap" style="display:'+(typeHasCycle(a.type)?'':'none')+';margin-bottom:7px"><div class="mgr-lb">Billing cycle day (statement day)</div><input class="fin" id="mgrECycA" inputmode="numeric" value="'+(a.cycle||accTypeCycle(a.type)||'')+'" placeholder="1–31"></div>'
+          +'<div id="cycAWrap" style="display:'+(typeHasCycle(a.type)?'':'none')+';margin-bottom:7px"><div class="mgr-lb">Billing cycle day (statement day)</div><input class="fin" id="mgrECycA" inputmode="numeric" value="'+(a.cycle||accTypeCycle(a.type)||'')+'" placeholder="1–31"><div class="mgr-lb" style="margin-top:7px">Payment due (days after statement)</div><input class="fin" id="mgrEDue" inputmode="numeric" value="'+(a.dueDays||20)+'" placeholder="20"></div>'
           +'<div class="help small" style="margin-bottom:7px">The statement day (1–31) splits this account\'s balance into statement vs new cycle — shown for <b>credit-card</b> accounts.</div>'
           +'<div style="display:flex;gap:7px"><button class="ibtn" data-act="mgrsave" data-k="'+esc(a.name)+'" style="flex:1;color:var(--inc)">Save</button>'
           +'<button class="ibtn" data-act="mgrcancel" style="flex:1">Cancel</button></div></div>';
@@ -2962,15 +3035,20 @@ function updateOwnerUI(){
   var sg=ex2?'−':'+';
   $('fOwedHint').innerHTML='Entries on save: '+esc(from)+' <b class="neg">−'+money(amt)+'</b> · '+ico('bank')+' “'+esc(nm)+'” <b class="pos">'+sg+money(amt)+'</b> · '+esc(to)+' <b class="pos">+'+money(amt)+'</b>'+(ex2?' <span style="color:var(--muted)">(repays the debt)</span>':'');
 }
+function catFreq(ty){var m={};DB.txns.forEach(function(t){if(t.type===ty)m[t.category]=(m[t.category]||0)+1;});return m;}
+/* v1.36: inline category + sub-category chips (most-used first) — no pop-up picker, no silent default */
 function renderFormCats(sel){
   var cats=DB.categories[F.type]||[];
-  if(!sel||cats.indexOf(sel)<0)sel=cats[0]||'Others';
-  F.cat=sel;
-  if(F.sub&&subList(F.cat).indexOf(F.sub)<0)F.sub='';
-  var cb=$('fCatBtn');if(cb)cb.textContent=F.cat;
+  if(sel&&cats.indexOf(sel)<0)sel='';
+  F.cat=sel||'';
+  if(F.sub&&(!F.cat||subList(F.cat).indexOf(F.sub)<0))F.sub='';
+  var fq=catFreq(F.type),ord=cats.slice().sort(function(a,b){return (fq[b]||0)-(fq[a]||0)||alphasort(a,b);});
+  $('fCatChips').innerHTML=ord.length?ord.map(function(c){return '<button type="button" class="chip'+(c===F.cat?' on':'')+'" data-act="fcat" data-c="'+esc(c)+'">'+esc(c)+'</button>';}).join(''):'<span class="help small">No categories yet. Add one in Settings → Categories.</span>';
   $('fSub').value=F.sub||'';
-  $('fSubBtn').textContent=F.sub||'None';
+  $('fSubRow').hidden=(F.type==='Transfer')||!F.cat;
+  if(F.cat){var subs=sortedAlpha(subList(F.cat));$('fSubChips').innerHTML='<button type="button" class="chip'+(!F.sub?' on':'')+'" data-act="fsubpick" data-s="">None</button>'+subs.map(function(x){return '<button type="button" class="chip'+(x===F.sub?' on':'')+'" data-act="fsubpick" data-s="'+esc(x)+'">'+esc(x)+'</button>';}).join('');}
 }
+function signUI(){var b=$('fSign');if(b)b.classList.toggle('on',F.type==='Expense'&&parseAmt($('fAmount').value)<0);}
 function setFormType(t){
   F.type=t;
   var trf=t==='Transfer';
@@ -2984,19 +3062,19 @@ function setFormType(t){
   $('fOwnerToRow').hidden=!trf; /* v1.20: the To-owner box lives beside To account */
   if($('fSign'))$('fSign').hidden=(t!=='Expense'); /* v1.24: ± sign flip only for expenses */
   $('fAccLabel').textContent=trf?'From account':'Account';
-  $('fNoteRow').style.gridColumn=trf?'span 2':'';
+  
   if(trf){
     var pv=$('fTo').value,def=DB.accounts[1]?DB.accounts[1].name:(DB.accounts[0]?DB.accounts[0].name:'');
     $('fTo').innerHTML=accOptions(pv||def);
   }else{
     F.sub='';
-    renderFormCats('');
+    renderFormCats(F.id?'':((DB.meta.lastCat||{})[t]||''));
   }
   updateOwnerUI();
 }
 function openSheet(id){
   var t=id?DB.txns.find(function(x){return x.id===id;}):null;
-  F.id=id||null;
+  F.id=id||null;F.type=F.type||'Expense';
   $('sheetTitle').textContent=t?'Edit transaction':'Add transaction';
   $('btnDel').hidden=!t;
   $('btnDup').hidden=!t; /* v1.23 */
@@ -3015,22 +3093,27 @@ function openSheet(id){
   }else{
     $('fAccount').innerHTML=accOptions(t?t.account:'');
     F.sub=t?(t.subcategory||''):'';
-    renderFormCats(t?t.category:'');
+    renderFormCats(t?t.category:((DB.meta.lastCat||{})[F.type]||''));
   }
   $('fOwed').checked=!!(t&&t.owedAcc); /* v1.17: restore the owed tick when editing */
   updateOwnerUI();
   var gn=$('fGroupNote');
   if(t&&t.group){
     var nLegs=DB.txns.filter(function(x){return x.group===t.group;}).length;
-    gn.hidden=false;gn.textContent='This is 1 of '+nLegs+' transactions saved from a split between people. Each share is its own transaction — edit or delete this one only.'+(t.to&&t.type!=='Transfer'?' This share is credited to receivable “'+t.to+'” — settle it with a Transfer from that account.':'');
+    gn.hidden=false;gn.textContent='This is 1 of '+nLegs+' transactions saved from a split between people. Each share is its own transaction — edit or delete this one only.'+(t.to&&t.type!=='Transfer'?' This share moves the “'+t.to+'” ledger by '+(legDelta(t)<0?'−':'+')+money(Math.abs(legDelta(t)))+' — settle it from Who owes whom.':'');
   }else if(t&&t.to&&t.type!=='Transfer'){
     gn.hidden=false;gn.textContent='Receivable — this share is credited to “'+t.to+'” — settle it with a Transfer from that account.';
   }else gn.hidden=true;
   SPLIT.rows=(t&&hasSplit(t))?t.split.map(function(s){return {p:s.p,v:s.v,a:''};}):[];
   renderSplitRows();
+  $('fMore').open=!!(rr||SPLIT.rows.length);
+  $('fSubNew').value='';
+  signUI();
   $('ovl').classList.add('on');
   $('sheet').classList.add('on');
+  var sh=$('sheet');if(sh)sh.scrollTop=0;
   navSync();
+  if(!t)setTimeout(function(){try{$('fAmount').focus();}catch(e){}},300);
 }
 function openSheetRefresh(){if($('sheet').classList.contains('on'))$('fCur').textContent=cur();}
 function dupTxn(){ /* v1.23: edit a copy — Save adds it as a NEW transaction */
@@ -3126,7 +3209,7 @@ function splitEdit(el){
 function splitAdd(){var p=nextSplitPerson();SPLIT.rows.push({p:p,v:''});renderSplitRows();}
 function splitDel(i){SPLIT.rows.splice(i,1);renderSplitRows();}
 function splitEven(){
-  var amt=parseAmt($('fAmount').value);
+  var amt=Math.abs(parseAmt($('fAmount').value)); /* v1.37: refunds split by size too */
   if(!(amt>0)){toast('Enter the amount first');return;}
   var n=SPLIT.rows.length;
   if(!n)return;
@@ -3137,7 +3220,7 @@ function splitEven(){
 function splitRowsClean(){
   var rows=[],seen={};
   SPLIT.rows.forEach(function(r){
-    var v=Math.round(parseAmt(r.v)*100)/100,p=(r.p||'').trim();
+    var v=Math.round(Math.abs(parseAmt(r.v))*100)/100,p=(r.p||'').trim(); /* v1.37: shares are sizes — the sign follows the amount */
     if(!(v>0)||!p)return;
     if(seen[p]){rows=rows.map(function(x){if(x.p===p)x.v=Math.round((x.v+v)*100)/100;return x;});}
     else{seen[p]=1;rows.push({p:p,v:v});}
@@ -3148,15 +3231,22 @@ function updateSplitHint(){
   var h=$('fSplitHint');
   if(!h)return;
   if(!SPLIT.rows.length){h.textContent='';return;}
-  var amt=parseAmt($('fAmount').value),sum=0;
-  SPLIT.rows.forEach(function(r){sum+=parseAmt(r.v);});
+  var raw=parseAmt($('fAmount').value),amt=Math.abs(raw),sum=0;
+  var refund=F.type==='Expense'&&raw<0,inc=F.type==='Income';
+  SPLIT.rows.forEach(function(r){sum+=Math.abs(parseAmt(r.v));});
   var left=Math.round((amt-sum)*100)/100;
-  if(left>0.004){h.textContent='Unassigned: '+money(left)+' of '+money(amt)+' — will be paid by the account owner';h.style.color='var(--warn)';}
-  else if(left<-0.004){h.textContent='Over by '+fmt(-left)+' — portions exceed the amount';h.style.color='var(--exp)';}
+  var kind=refund?'refund':(inc?'income':'bill');
+  if(left>0.004){h.textContent='Unassigned: '+money(left)+' of the '+money(amt)+' '+kind+' — goes to the account owner';h.style.color='var(--warn)';}
+  else if(left<-0.004){h.textContent='Over by '+fmt(-left)+' — shares exceed the '+kind+' amount';h.style.color='var(--exp)';}
   else{
     var payer=ownerOf(($('fAccount')&&$('fAccount').value)||'')||DB.people[0]||'Me';
-    var dbt=SPLIT.rows.map(function(r){return (r.p||'').trim();}).filter(function(p){return p&&p!==payer;});
-    h.innerHTML=ico('check')+' Portions add up to '+money(amt)+(dbt.length?(' · '+dbt.map(function(d){return esc(d)+' → '+ico('bank')+' “'+esc(d)+' owes '+esc(payer)+'”';}).join(', ')):'');
+    var dbt=SPLIT.rows.map(function(r){return {p:(r.p||'').trim(),v:Math.abs(parseAmt(r.v))};}).filter(function(x){return x.p&&x.p!==payer&&x.v>0;});
+    var eff=dbt.map(function(d){
+      if(refund)return esc(d.p)+' owes '+esc(payer)+' '+money(d.v)+' less';
+      if(inc)return esc(payer)+' owes '+esc(d.p)+' '+money(d.v)+' (their share)';
+      return esc(d.p)+' owes '+esc(payer)+' '+money(d.v);
+    });
+    h.innerHTML=ico('check')+' Shares add up to the '+money(amt)+' '+kind+(eff.length?' · '+eff.join(', '):'');
     h.style.color='var(--inc)';
   }
 }
@@ -3167,7 +3257,8 @@ function flipSign(){
   var v=parseAmt(el.value);
   if(!v){toast('Type the amount first');return;}
   el.value=String(Math.round(-v*100)/100);
-  updateSplitHint();updateOwnerUI();
+  updateSplitHint();updateOwnerUI();signUI();
+  toast(parseAmt(el.value)<0?'Recorded as a refund (reduces expenses)':'Back to a normal expense');
 }
 function saveTxn(){
   var amt=parseAmt($('fAmount').value);
@@ -3198,15 +3289,18 @@ function saveTxn(){
   }
   /* v1.17: person follows the account owner — except a receivable share leg, which stays
      attributed to the debtor it was created for */
+  if(!F.cat){toast('Choose a category');return;}
+  DB.meta.lastCat=DB.meta.lastCat||{};DB.meta.lastCat[F.type]=F.cat;
   var keepP=null;
   if(F.id){var t0b=DB.txns.find(function(x){return x.id===F.id;});if(t0b&&t0b.type!=='Transfer'&&t0b.to&&isRecvAcc(t0b.to))keepP=t0b.person;}
   var rec={date:date,type:F.type,category:F.cat,subcategory:$('fSub').value.trim(),account:$('fAccount').value||'Cash',person:keepP!=null?keepP:(ownerOf($('fAccount').value)||''),note:note,amount:amt,split:null};
   if(DB.categories[F.type].indexOf(F.cat)<0)DB.categories[F.type].push(F.cat);
   var srows=splitRowsClean();
   var t1=F.id?DB.txns.find(function(x){return x.id===F.id;}):null;
+  var sg=amt<0?-1:1,absA=Math.abs(amt); /* v1.37: split refunds (negative expense) and income */
   if(srows.length){
     var ssum0=Math.round(srows.reduce(function(s,x){return s+x.v;},0)*100)/100;
-    if(Math.round((amt-ssum0)*100)/100<-0.004){toast('Split portions exceed the amount by '+fmt(Math.round((ssum0-amt)*100)/100));return;}
+    if(Math.round((absA-ssum0)*100)/100<-0.004){toast('Split shares exceed the amount by '+fmt(Math.round((ssum0-absA)*100)/100));return;}
   }
   var multiLeg=srows.length>1||srows.some(function(r){return r.p&&r.p!==rec.person;});
   if(multiLeg){
@@ -3215,7 +3309,7 @@ function saveTxn(){
   var nR=materializeRecur();
   if(srows.length){
     var ssum=Math.round(srows.reduce(function(s,x){return s+x.v;},0)*100)/100;
-    var left=Math.round((amt-ssum)*100)/100;
+    var left=Math.round((absA-ssum)*100)/100;
     /* v1.12: payer fronts the whole bill — the full amount leaves the payer's account;
        every other person's share is credited to a receivable asset account "<name> owes <payer>"
        (v1.19: the each-pays-own mode was removed — this is the only split path) */
@@ -3226,15 +3320,15 @@ function saveTxn(){
     else{
       var gidF=uid(),legsF=[];
       var pShare=Math.round(srows.filter(function(r){return r.p===payer;}).reduce(function(s,r){return s+r.v;},0)*100)/100;
-      if(pShare>0.004)legsF.push({id:uid(),group:gidF,date:date,type:F.type,category:F.cat,subcategory:rec.subcategory,account:rec.account,person:payer,note:note,amount:pShare,split:null});
+      if(pShare>0.004)legsF.push({id:uid(),group:gidF,date:date,type:F.type,category:F.cat,subcategory:rec.subcategory,account:rec.account,person:payer,note:note,amount:sg*pShare,split:null});
       debtors.forEach(function(d){
         var rn=ensureRecvAcc(d.p+' owes '+payer);
-        legsF.push({id:uid(),group:gidF,date:date,type:F.type,category:F.cat,subcategory:rec.subcategory,account:rec.account,to:rn,person:d.p,note:note,amount:d.v,split:null});
+        legsF.push({id:uid(),group:gidF,date:date,type:F.type,category:F.cat,subcategory:rec.subcategory,account:rec.account,to:rn,person:d.p,note:note,amount:sg*d.v,split:null});
       });
       if(F.id)DB.txns=DB.txns.filter(function(x){return x.id!==F.id;});
       DB.txns=DB.txns.concat(legsF);
       closeSheet();touch();
-      toast((wasNew?'Added ✓ ':'Updated ✓ ')+legsF.length+' transactions · '+money(amt)+' · '+debtors.length+' receivable'+(debtors.length>1?'s':''));
+      toast((wasNew?'Added ✓ ':'Updated ✓ ')+legsF.length+' shares · '+(sg<0?'refund ':(F.type==='Income'?'income ':''))+money(absA)+' · '+debtors.length+' ledger'+(debtors.length>1?'s':'')+' updated');
       F.id=null;return;
     }
   }
@@ -3474,8 +3568,8 @@ document.addEventListener('touchend',function(e){
      within 400ms, and even a slow deliberate drag flips at 24px (was 22/44 in v1.22);
      ratio 1.3 + the untouched dead rule below still keep vertical scrolls safe */
   var dt=Date.now()-st.t;
-  var need=dt<160?8:(dt<400?12:24);
-  if(ax<need||ax<ay*1.3)return;
+  var need=dt<250?45:60; /* v1.36: calmer — no accidental tab flips while scrolling */
+  if(ax<need||ax<ay*2)return;
   var cur=document.querySelector('.nbtn.on');
   if(!cur)return;
   var nxt=TAB_ORDER[TAB_ORDER.indexOf(cur.dataset.v)+(dx<0?1:-1)];
@@ -3527,7 +3621,6 @@ function handleAct(el){
     case 'yrow':OV.year=el.dataset.y;OV.scope='year';renderOverview();if(REPORT.open)closeReport();break;
     case 'ovcat':ovCatTap(el.dataset.c);break;
     case 'txn':if(BSEL.on){var bi=BSEL.ids.indexOf(el.dataset.id);if(bi<0)BSEL.ids.push(el.dataset.id);else BSEL.ids.splice(bi,1);renderTxns();}
-      else if(typeof el.closest==='function'&&el.closest('#txList')){EXP.txn=(EXP.txn===el.dataset.id)?'':el.dataset.id;renderTxns();} /* v1.35: tap = expand/collapse the detail card */
       else openSheet(el.dataset.id); /* drill/report rows keep tap-to-edit */break;
     case 'txnedit':openSheet(el.dataset.id);break; /* v1.35: Edit inside the expanded detail card */
     case 'acc':openAccount(el.dataset.n);break;
@@ -3596,8 +3689,295 @@ function handleAct(el){
     case 'batchedit':if(!BSEL.ids.length){toast('Tick at least one transaction first');break;}openMgr('batchedit');break;
     case 'batchdel':batchDel();break;
     case 'batchapply':batchApply();break;
+    case 'fcat':F.cat=el.dataset.c;F.sub='';renderFormCats(F.cat);break;
+    case 'fsubpick':F.sub=el.dataset.s||'';renderFormCats(F.cat);break;
+    case 'subadd2':(function(){var nv=(($('fSubNew')||{}).value||'').trim();if(!nv){toast('Type a sub-category name');return;}if(!F.cat){toast('Choose a category first');return;}if(subList(F.cat).indexOf(nv)<0)subList(F.cat).push(nv);F.sub=nv;$('fSubNew').value='';renderFormCats(F.cat);save();})();break;
+    case 'txfclr':TXF[el.dataset.f]='all';renderTxns();break;
+    case 'txfclrall':TXF.month=TXF.person=TXF.account=TXF.type=TXF.cat='all';renderTxns();break;
+    case 'permode':PER.mode=el.dataset.m;PER.off=0;renderOverview();renderReport();break;
+    case 'peroff':PER.off=Math.min(0,PER.off+(+el.dataset.d));renderOverview();renderReport();break;
+    case 'rep':openReport(el.dataset.k);break;
+    case 'settle':openSettle(el.dataset.n);break;
+    case 'bgsave':saveBudgets();break;
   }
 }
+/* ===================== v1.36: couple reports — week / month period engine ===================== */
+var PER={mode:'week',off:0};
+function isoD(d){return d.getFullYear()+'-'+pad2(d.getMonth()+1)+'-'+pad2(d.getDate());}
+function perRange(off){
+  off=(off==null)?PER.off:off;
+  var t=new Date();t.setHours(12,0,0,0);
+  if(PER.mode==='week'){
+    var dow=(t.getDay()+6)%7,s=new Date(t);s.setDate(t.getDate()-dow+7*off);
+    var e=new Date(s);e.setDate(s.getDate()+6);
+    var si=isoD(s),ei=isoD(e);
+    return {s:si,e:ei,label:dLabel(si)+' – '+dLabelY(ei),short:dLabel(si),n:7};
+  }
+  var s2=new Date(t.getFullYear(),t.getMonth()+off,1,12),e2=new Date(t.getFullYear(),t.getMonth()+off+1,0,12);
+  return {s:isoD(s2),e:isoD(e2),label:MONTHS[s2.getMonth()]+' '+s2.getFullYear(),short:MONTHS[s2.getMonth()],n:e2.getDate()};
+}
+function perTx(r){return DB.txns.filter(function(t){return t.date>=r.s&&t.date<=r.e&&t.type!=='Transfer';});}
+function expBy(list,kf){var m={};list.forEach(function(t){if(t.type!=='Expense')return;var k=kf(t);m[k]=(m[k]||0)+t.amount;});return m;}
+function sumT(list,ty){return list.reduce(function(a,t){return a+(t.type===ty?t.amount:0);},0);}
+function perWord(){return PER.mode==='week'?'week':'month';}
+function budgetOf(c){var b=+((DB.budgets||{})[c])||0;return PER.mode==='week'?b*12/52:b;}
+function budgetTotal(){var x=0;Object.keys(DB.budgets||{}).forEach(function(c){x+=budgetOf(c);});return x;}
+function pctChg(a,b){if(!b)return a?'new':'—';var p=Math.round((a-b)/Math.abs(b)*100);return (p>0?'▲ ':p<0?'▼ ':'')+Math.abs(p)+'%';}
+function kpi(l,v,c){return '<div class="kpi"><small>'+l+'</small><b class="'+(c||'')+'">'+v+'</b></div>';}
+function sdot(c){return '<span class="lg-dot" style="background:'+c+'"></span>';}
+function peopleWith(m){var p=sortedAlpha(DB.people);Object.keys(m||{}).forEach(function(k){if(p.indexOf(k)<0)p.push(k);});return p;}
+function budgetBar(a,b){
+  var p=b>0?Math.min(100,a/b*100):0,col=a>b?'var(--exp)':(p>85?'var(--warn)':'var(--inc)');
+  return '<div class="bbar"><i style="width:'+p.toFixed(1)+'%;background:'+col+'"></i></div><div class="help small" style="margin-top:4px">'+Math.round(b>0?a/b*100:0)+'% of the '+money(b)+' '+perWord()+'ly budget used</div>';
+}
+function perCtrlHTML(){
+  var r=perRange();
+  return '<div class="card" style="padding:10px">'
+    +'<div class="segmini" style="margin-bottom:8px"><button class="'+(PER.mode==='week'?'on':'')+'" data-act="permode" data-m="week">Week</button><button class="'+(PER.mode==='month'?'on':'')+'" data-act="permode" data-m="month">Month</button></div>'
+    +'<div class="pernav"><button class="ibtn" data-act="peroff" data-d="-1" aria-label="previous '+perWord()+'">'+ico('chevleft')+'</button><b>'+esc(r.label)+(PER.off===0?' <span class="muted" style="font-weight:600">· this '+perWord()+'</span>':'')+'</b><button class="ibtn" data-act="peroff" data-d="1" aria-label="next '+perWord()+'"'+(PER.off>=0?' disabled':'')+'>'+ico('chevright')+'</button></div></div>';
+}
+/* 1 — Couple snapshot */
+function repSnapshot(){
+  var r=perRange(),p=perRange(PER.off-1),L=perTx(r),Pv=perTx(p);
+  var kf=function(t){return t.person||'No owner';};
+  var by=expBy(L,kf),pb=expBy(Pv,kf),ppl=peopleWith(by);
+  var tot=sumT(L,'Expense'),ptot=sumT(Pv,'Expense'),bud=budgetTotal();
+  var rows=ppl.map(function(pn){
+    var big=null;L.forEach(function(t){if(t.type==='Expense'&&kf(t)===pn&&(!big||t.amount>big.amount))big=t;});
+    return '<tr><td><b>'+esc(pn)+'</b></td><td class="r neg">'+money(by[pn]||0)+'</td><td class="r muted">'+pctChg(by[pn]||0,pb[pn]||0)+'</td><td class="muted">'+(big?esc(big.note||big.category)+' · '+money(big.amount):'—')+'</td></tr>';
+  }).join('');
+  return '<div class="card"><h2>'+ico('users')+' Couple snapshot <span class="sub">'+esc(r.label)+'</span></h2>'
+    +'<div class="kpis">'+kpi('Spent together',money(tot),'neg')+kpi('vs last '+perWord(),pctChg(tot,ptot),'')+(bud?kpi('Budget left',money(bud-tot),bud-tot<0?'neg':'pos'):kpi('Budget','not set','muted'))+'</div>'
+    +'<table class="rtab"><thead><tr><th>Person</th><th class="r">Spent</th><th class="r">vs last</th><th>Biggest purchase</th></tr></thead><tbody>'+rows+'</tbody></table>'
+    +(bud?budgetBar(tot,bud):'<div class="help small" style="margin-top:8px">Set budgets in Settings → Budgets &amp; fixed costs to track them here.</div>')+'</div>';
+}
+/* 2 — Who owes whom (uses the “X owes Y” debt ledgers) */
+function ledgers(){
+  var bm={};balances().rows.forEach(function(r){bm[r.name]=r.bal;});
+  var nm=[];DB.accounts.forEach(function(a){if(/^.+ owes .+$/.test(a.name))nm.push(a.name);});
+  Object.keys(bm).forEach(function(n){if(/^.+ owes .+$/.test(n)&&nm.indexOf(n)<0)nm.push(n);});
+  return nm.map(function(n){return {name:n};}).map(function(a){
+    var pp=a.name.split(' owes '),b=Math.round((bm[a.name]||0)*100)/100;
+    return {name:a.name,bal:b,debtor:b>=0?pp[0]:pp[1],creditor:b>=0?pp[1]:pp[0],amt:Math.abs(b)};
+  });
+}
+function repSettle(){
+  var r=perRange(),ls=ledgers();
+  if(!ls.length)return '<div class="card"><h2>'+ico('scale')+' Who owes whom</h2><div class="help">No shared debts yet. Split a bill between two people, or tick “Amount owed” on a transfer, and it will show up here.</div></div>';
+  return ls.map(function(l){
+    var add=0,paid=0,nS=0;
+    DB.txns.forEach(function(t){
+      if(t.date<r.s||t.date>r.e)return;
+      if(t.type!=='Transfer'&&t.to===l.name){var lg2=legDelta(t);if(lg2>=0)add+=lg2;else paid+=-lg2;nS++;}
+      if(t.owedAcc===l.name){if(t.owedAmt>0)add+=t.owedAmt;else paid+=-t.owedAmt;}
+      if(t.type==='Transfer'&&(t.account===l.name||t.to===l.name))paid+=t.amount;
+    });
+    var done=l.amt<0.005;
+    return '<div class="card"><h2>'+ico('scale')+' Who owes whom <span class="sub">'+esc(l.name.split(' owes ').sort(alphasort).join(' & '))+'</span></h2><div class="rows">'
+      +'<div class="fline"><span>New split shares / loans this '+perWord()+(nS?' ('+nS+')':'')+'</span><b>'+money(add)+'</b></div>'
+      +'<div class="fline"><span>Repayments, refunds &amp; income shares this '+perWord()+'</span><b>− '+money(paid)+'</b></div>'
+      +'<div class="fline eq"><span>'+(done?'All settled up':'Overall: '+esc(l.debtor)+' owes '+esc(l.creditor))+'</span><b class="'+(done?'pos':'neg')+'">'+money(l.amt)+'</b></div></div>'
+      +(done?'':'<button class="btn" style="margin-top:10px" data-act="settle" data-n="'+esc(l.name)+'">'+ico('check')+' Settle up '+money(l.amt)+'</button>')+'</div>';
+  }).join('');
+}
+function openSettle(n){
+  var l=ledgers().find(function(x){return x.name===n;});if(!l)return;
+  var acc=DB.accounts.filter(function(a){return !isRecvAcc(a.name);});
+  function accOf(p){var a=acc.find(function(x){return x.owner===p;});return a?a.name:(acc[0]?acc[0].name:'');}
+  if(!DB.accounts.some(function(a){return a.name===n;}))ensureRecvAcc(n);
+  openSheet();setFormType('Transfer');
+  if(l.bal>0){$('fAccount').innerHTML=accOptions(n);$('fTo').innerHTML=accOptions(accOf(l.creditor));}
+  else{$('fAccount').innerHTML=accOptions(accOf(l.debtor));$('fTo').innerHTML=accOptions(n);}
+  $('fAmount').value=l.amt;$('fNote').value='Settle up';
+  $('sheetTitle').textContent='Settle up: '+l.debtor+' → '+l.creditor;
+  updateOwnerUI();
+}
+/* 3 — Daily spending heatmap */
+function repHeat(){
+  var r=perRange(),m=expBy(perTx(r),function(t){return t.date;}),days=[],d=r.s,mx=0,tot=0;
+  while(d<=r.e){days.push(d);mx=Math.max(mx,m[d]||0);tot+=Math.max(0,m[d]||0);d=addDaysISO(d,1);}
+  var td=todayISO();
+  function cell(x,wk){var v=m[x]||0,a=mx>0?Math.max(0,v)/mx:0;
+    return '<div class="hcell'+(x===td?' today':'')+'" style="background:rgba(239,68,68,'+(v>0?(0.12+a*0.7).toFixed(2):0)+')" title="'+dLabelW(x)+'"><span>'+(wk?wdOf(x):(+x.slice(8)))+'</span><b>'+(v>0?cfmt(v):'')+'</b></div>';}
+  var grid;
+  if(PER.mode==='week')grid='<div class="hgrid">'+days.map(function(x){return cell(x,true);}).join('')+'</div>';
+  else{
+    var lead=(new Date(+r.s.slice(0,4),+r.s.slice(5,7)-1,1).getDay()+6)%7,pad='';
+    for(var i=0;i<lead;i++)pad+='<div></div>';
+    grid='<div class="hgrid hhead">'+['Mon','Tue','Wed','Thu','Fri','Sat','Sun'].map(function(w){return '<div>'+w+'</div>';}).join('')+'</div><div class="hgrid">'+pad+days.map(function(x){return cell(x,false);}).join('')+'</div>';
+  }
+  var wd=[0,0,0,0,0,0,0];days.forEach(function(x){wd[(new Date(+x.slice(0,4),+x.slice(5,7)-1,+x.slice(8)).getDay()+6)%7]+=Math.max(0,m[x]||0);});
+  var top=wd.indexOf(Math.max.apply(null,wd)),WN=['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
+  var wkend=wd[5]+wd[6];
+  return '<div class="card"><h2>'+ico('calendar')+' Daily spending <span class="sub">'+esc(r.label)+' · '+money(tot)+'</span></h2>'+grid
+    +'<div class="help small" style="margin-top:10px">Darker means more was spent. '+(tot?'Heaviest day: <b>'+WN[top]+'</b> ('+money(wd[top])+'). Weekend share: <b>'+Math.round(wkend/tot*100)+'%</b>. Average '+money(tot/days.length)+' a day.':'No spending in this period.')+'</div></div>';
+}
+/* 4 — Budget vs actual */
+function repBudget(){
+  var r=perRange(),act=expBy(perTx(r),function(t){return t.category;});
+  var cats=sortedAlpha(DB.categories.Expense||[]);
+  Object.keys(act).forEach(function(c){if(cats.indexOf(c)<0)cats.push(c);});
+  cats=cats.filter(function(c){return budgetOf(c)>0||Math.abs(act[c]||0)>0.004;});
+  var tb=0,ta=0;
+  var rows=cats.map(function(c){
+    var b=budgetOf(c),a=act[c]||0,left=b-a;tb+=b;ta+=a;
+    var st=!b?'<span class="muted small">no budget</span>':(a>b?sdot('var(--exp)'):(a>b*0.85?sdot('var(--warn)'):sdot('var(--inc)')));
+    return '<tr><td>'+esc(c)+'</td><td class="r">'+(b?money(b):'—')+'</td><td class="r">'+money(a)+'</td><td class="r '+(b&&left<0?'neg':'')+'">'+(b?money(left):'—')+'</td><td class="r">'+st+'</td></tr>';
+  }).join('');
+  var has=Object.keys(DB.budgets||{}).length;
+  return '<div class="card"><h2>'+ico('wallet')+' Budget vs actual <span class="sub">'+esc(r.label)+'</span></h2>'
+    +(has?'':'<div class="help" style="margin-bottom:10px">No budgets set yet. Add a monthly amount per category to see what\'s left.</div>')
+    +(rows?'<table class="rtab"><thead><tr><th>Category</th><th class="r">Budget</th><th class="r">Actual</th><th class="r">Left</th><th></th></tr></thead><tbody>'+rows+'</tbody><tfoot><tr><td>Total</td><td class="r">'+money(tb)+'</td><td class="r">'+money(ta)+'</td><td class="r '+(tb-ta<0?'neg':'')+'">'+money(tb-ta)+'</td><td></td></tr></tfoot></table>':'<div class="help">No spending in this period.</div>')
+    +(tb?budgetBar(ta,tb):'')
+    +'<div class="help small" style="margin-top:8px">'+sdot('var(--inc)')+' on track · '+sdot('var(--warn)')+' over 85% · '+sdot('var(--exp)')+' over budget. Budgets are monthly; the weekly view uses × 12 ÷ 52.</div>'
+    +'<button class="btn ghost" style="margin-top:10px" data-act="mgr" data-k="budgets">'+ico('pencil')+' Edit budgets</button></div>';
+}
+/* 5 — Shared vs personal */
+function repShared(){
+  var r=perRange(),L=perTx(r),sh={},pe={},inc={},tE=0,tI=0;
+  L.forEach(function(t){var p=t.person||'No owner';
+    if(t.type==='Expense'){if(t.group)sh[p]=(sh[p]||0)+t.amount;else pe[p]=(pe[p]||0)+t.amount;tE+=t.amount;}
+    else if(t.type==='Income'){inc[p]=(inc[p]||0)+t.amount;tI+=t.amount;}});
+  var ppl=peopleWith(Object.assign({},sh,pe,inc));
+  function line(lb,f,cls){return '<tr><td>'+lb+'</td>'+ppl.map(function(p){return '<td class="r '+(cls||'')+'">'+f(p)+'</td>';}).join('')+'</tr>';}
+  var notes=ppl.map(function(p){var se=tE?((sh[p]||0)+(pe[p]||0))/tE:0,si=tI?(inc[p]||0)/tI:0;if(!tE||!tI)return '';var d=Math.round((se-si)*100);return Math.abs(d)>=10?'<li><b>'+esc(p)+'</b> pays '+Math.abs(d)+' points '+(d>0?'more':'less')+' of the spending than their share of income.</li>':'';}).join('');
+  return '<div class="card"><h2>'+ico('users')+' Shared vs personal <span class="sub">'+esc(r.label)+'</span></h2>'
+    +'<div style="overflow-x:auto"><table class="rtab"><thead><tr><th></th>'+ppl.map(function(p){return '<th class="r">'+esc(p)+'</th>';}).join('')+'</tr></thead><tbody>'
+    +line('Shared (split bills)',function(p){return money(sh[p]||0);})
+    +line('Personal',function(p){return money(pe[p]||0);})
+    +line('<b>Total spent</b>',function(p){return '<b>'+money((sh[p]||0)+(pe[p]||0))+'</b>';})
+    +line('Share of spending',function(p){return tE?Math.round(((sh[p]||0)+(pe[p]||0))/tE*100)+'%':'—';})
+    +line('Share of income',function(p){return tI?Math.round((inc[p]||0)/tI*100)+'%':'—';})
+    +'</tbody></table></div>'
+    +'<div class="help small" style="margin-top:8px">“Shared” means each person\u2019s share of bills split in the app. In a fair split, the share of spending is close to the share of income.</div>'
+    +(notes?'<ul class="help small" style="padding-left:18px;margin-top:6px">'+notes+'</ul>':'')+'</div>';
+}
+/* 6 — Cash flow & savings rate */
+function repCash(){
+  var r=perRange(),L=perTx(r),i=sumT(L,'Income'),e=sumT(L,'Expense'),n=i-e,rate=i>0?n/i*100:null;
+  var tr=[],k,mx=0;
+  for(k=5;k>=0;k--){var rr=perRange(PER.off-k),LL=perTx(rr),ii=sumT(LL,'Income'),ee=sumT(LL,'Expense');tr.push({lb:rr.short,net:ii-ee,rate:ii>0?Math.round((ii-ee)/ii*100):null});mx=Math.max(mx,Math.abs(ii-ee));}
+  var bars='<div class="tbars">'+tr.map(function(x){var h=mx>0?Math.max(2,Math.abs(x.net)/mx*80):2;return '<div><small>'+(x.rate==null?'—':x.rate+'%')+'</small><i style="height:'+h.toFixed(0)+'px;background:'+(x.net<0?'var(--exp)':'var(--inc)')+'"></i><small>'+esc(x.lb)+'</small></div>';}).join('')+'</div>';
+  return '<div class="card"><h2>'+ico('trend')+' Cash flow &amp; savings rate <span class="sub">'+esc(r.label)+'</span></h2>'
+    +'<div class="kpis">'+kpi('Income',money(i),'pos')+kpi('Expenses',money(e),'neg')+kpi('Net saved',money(n),n<0?'neg':'pos')+kpi('Savings rate',rate==null?'—':Math.round(rate)+'%',rate!=null&&rate<0?'neg':'')+'</div>'
+    +'<div class="mgr-lb" style="margin-top:6px">Last 6 '+perWord()+'s · net saved (bar) and savings rate</div>'+bars+'</div>';
+}
+/* 7 — Fixed vs variable */
+function isFixed(t){return !!t.recur||(DB.fixedCats||[]).indexOf(t.category)>=0;}
+function repFixed(){
+  var r=perRange(),L=perTx(r).filter(function(t){return t.type==='Expense';}),fx=0,va=0,fm={},vm={};
+  L.forEach(function(t){if(isFixed(t)){fx+=t.amount;fm[t.category]=(fm[t.category]||0)+t.amount;}else{va+=t.amount;vm[t.category]=(vm[t.category]||0)+t.amount;}});
+  var tot=fx+va;
+  function lst(m){var ks=Object.keys(m).sort(function(a,b){return m[b]-m[a];});return ks.length?ks.slice(0,8).map(function(c){return '<div class="fline"><span>'+esc(c)+'</span><b>'+money(m[c])+'</b></div>';}).join(''):'<div class="help small" style="padding:6px 2px">None</div>';}
+  return '<div class="card"><h2>'+ico('repeat')+' Fixed vs variable <span class="sub">'+esc(r.label)+'</span></h2>'
+    +'<div class="kpis">'+kpi('Fixed',money(fx)+(tot?' · '+Math.round(fx/tot*100)+'%':''),'')+kpi('Variable',money(va)+(tot?' · '+Math.round(va/tot*100)+'%':''),'neg')+'</div>'
+    +(tot?'<div class="bbar"><i style="width:'+(fx/tot*100).toFixed(1)+'%;background:var(--accent)"></i></div>':'')
+    +'<div class="mgr-sec">Fixed costs</div>'+lst(fm)+'<div class="mgr-sec">Variable, where you can cut back</div>'+lst(vm)
+    +'<div class="help small" style="margin-top:8px">Fixed = recurring transactions and any category ticked “Fixed” in Settings → Budgets &amp; fixed costs.</div></div>';
+}
+/* 8 — Credit-card statement tracker */
+function repCC(){
+  var td=todayISO(),accs=DB.accounts.filter(function(a){return accTypeKind(a.type)==='liability'&&!isRecvAcc(a.name);});
+  if(!accs.length)return '<div class="card"><h2>'+ico('card')+' Card statements</h2><div class="help">No credit-card (liability) accounts yet. Create an account type with kind “Liability”, then set the statement day on the account.</div></div>';
+  var rows=accs.map(function(a){
+    var cyc=accCycleFor(a);
+    if(!cyc){var b=accountBalAsOf(a.name,'9999-12-31');return '<tr><td><b>'+esc(a.name)+'</b><br><span class="muted small">'+esc(a.owner||'—')+'</span></td><td class="r">'+money(b<0?-b:0)+'</td><td class="muted small">set statement day</td><td></td></tr>';}
+    var le=lastCycleEnd(cyc,td),st=accountBalAsOf(a.name,le),owed=st<0?-st:0,paid=0;
+    DB.txns.forEach(function(t){if(t.date>le&&t.date<=td&&((t.type==='Income'&&t.account===a.name)||(t.type==='Transfer'&&t.to===a.name)))paid+=t.amount;});
+    var due=addDaysISO(le,a.dueDays||20),dl=Math.round((Date.parse(due)-Date.parse(td))/864e5),stat;
+    if(owed<0.005)stat=sdot('var(--inc)')+' Nothing due';
+    else if(paid>=owed-0.004)stat=sdot('var(--inc)')+' Paid';
+    else if(dl<0)stat=sdot('var(--exp)')+' <b class="neg">Overdue</b>';
+    else stat=sdot('var(--warn)')+' Due in '+dl+' day'+(dl===1?'':'s')+(paid>0?' · '+money(owed-paid)+' left':'');
+    return '<tr><td><b>'+esc(a.name)+'</b><br><span class="muted small">'+esc(a.owner||'—')+' · stmt '+dLabel(le)+'</span></td><td class="r">'+money(owed)+'</td><td class="small">'+dLabelW(due)+'</td><td class="small">'+stat+'</td></tr>';
+  }).join('');
+  return '<div class="card"><h2>'+ico('card')+' Card statements <span class="sub">as at '+dLabelY(td)+'</span></h2>'
+    +'<div style="overflow-x:auto"><table class="rtab"><thead><tr><th>Card</th><th class="r">Statement</th><th>Due</th><th>Status</th></tr></thead><tbody>'+rows+'</tbody></table></div>'
+    +'<div class="help small" style="margin-top:8px">Due date = statement day + payment-due days (default 20), set per account in Settings → Accounts. This report always shows the latest statement.</div></div>';
+}
+/* 9 — Top merchants & subscription audit */
+function recurMonthly(r){var e=r.every||1,a=Math.abs(+r.tpl.amount||0);return r.freq==='month'?a/e:r.freq==='week'?a*52/12/e:r.freq==='day'?a*365/12/e:a/12/e;}
+function repMerch(){
+  var r=perRange(),m={};
+  perTx(r).forEach(function(t){if(t.type!=='Expense')return;var lb=String(t.note||t.subcategory||t.category||'—').trim(),k=lb.toLowerCase();if(!m[k])m[k]={lb:lb,v:0,n:0};m[k].v+=t.amount;m[k].n++;});
+  var top=Object.keys(m).map(function(k){return m[k];}).sort(function(a,b){return b.v-a.v;}).slice(0,10);
+  var subs=DB.recur.filter(function(x){return x.tpl&&x.tpl.type==='Expense';}).map(function(x){return {lb:x.tpl.note||x.tpl.subcategory||x.tpl.category,cat:x.tpl.category,who:x.tpl.person,m:recurMonthly(x),next:x.next};}).sort(function(a,b){return b.m-a.m;});
+  var sm=subs.reduce(function(a,x){return a+x.m;},0);
+  return '<div class="card"><h2>'+ico('bag')+' Top merchants <span class="sub">'+esc(r.label)+' · by note, else sub-category</span></h2><div class="rows">'
+    +(top.length?top.map(function(x,i){return trow({rank:'#'+(i+1),lb:esc(x.lb),sub:x.n+' purchase'+(x.n===1?'':'s'),amt:money(x.v),cls:'neg'});}).join(''):'<div class="help" style="padding:8px 2px">No spending in this period.</div>')+'</div></div>'
+    +'<div class="card"><h2>'+ico('repeat')+' Subscriptions &amp; recurring <span class="sub">'+money(sm)+' / month · '+money(sm*12)+' / year</span></h2><div class="rows">'
+    +(subs.length?subs.map(function(x){return trow({lb:esc(x.lb||'—'),sub:esc(x.cat||'')+' · '+esc(x.who||'—')+(x.next?' · next '+dLabel(x.next):''),amt:money(x.m)+'<span class="muted small"> /mo</span>'});}).join(''):'<div class="help" style="padding:8px 2px">No recurring expenses. Set Repeat on a transaction to track subscriptions.</div>')+'</div>'
+    +'<div class="help small" style="margin-top:8px">Check this list now and then for subscriptions you no longer use.</div></div>';
+}
+var DYNF={snapshot:repSnapshot,settle:repSettle,heat:repHeat,budget:repBudget,shared:repShared,cash:repCash,fixed:repFixed,cc:repCC,merch:repMerch};
+Object.assign(REP_TITLES,{snapshot:ico('users')+' Couple snapshot',settle:ico('scale')+' Who owes whom',heat:ico('calendar')+' Daily spending',budget:ico('wallet')+' Budget vs actual',shared:ico('users')+' Shared vs personal',cash:ico('trend')+' Cash flow & savings',fixed:ico('repeat')+' Fixed vs variable',cc:ico('card')+' Card statements',merch:ico('bag')+' Merchants & subscriptions'});
+var TILES=[['snapshot','users','Couple snapshot'],['settle','scale','Who owes whom'],['budget','wallet','Budget vs actual'],['cash','trend','Cash flow & savings'],['shared','users','Shared vs personal'],['heat','calendar','Daily spending'],['fixed','repeat','Fixed vs variable'],['cc','card','Card statements'],['merch','bag','Merchants & subscriptions']];
+var TILES2=[['breakdown','receipt','Spending breakdown','by category'],['monthly','chart','Monthly cash flow','12-month chart'],['top','trophy','Top 10 spending','categories & purchases'],['year','calendar','By year','yearly totals'],['person','users','By person','income & spend']];
+function tileFigs(){
+  var r=perRange(),L=perTx(r),e=sumT(L,'Expense'),i=sumT(L,'Income'),f={};
+  f.snapshot=money(e)+' spent';
+  var ls=ledgers().filter(function(l){return l.amt>=0.005;});
+  f.settle=ls.length?esc(ls[0].debtor)+' owes '+money(ls[0].amt):'All settled up';
+  var bt=budgetTotal();f.budget=bt?money(bt-e)+' left':'Set budgets';
+  f.cash=i>0?'Saved '+Math.round((i-e)/i*100)+'%':'Net '+money(i-e);
+  var sh=0;L.forEach(function(t){if(t.type==='Expense'&&t.group)sh+=t.amount;});f.shared=e?Math.round(sh/e*100)+'% shared':'—';
+  f.heat='avg '+money(e/r.n)+' / day';
+  var fx=0;L.forEach(function(t){if(t.type==='Expense'&&isFixed(t))fx+=t.amount;});f.fixed=e?Math.round(fx/e*100)+'% fixed':'—';
+  var nc=DB.accounts.filter(function(a){return accTypeKind(a.type)==='liability'&&!isRecvAcc(a.name);}).length;f.cc=nc?nc+' card'+(nc>1?'s':''):'No cards';
+  var m={};L.forEach(function(t){if(t.type!=='Expense')return;var k=String(t.note||t.subcategory||t.category||'').trim();m[k]=(m[k]||0)+t.amount;});
+  var tk=Object.keys(m).sort(function(a,b){return m[b]-m[a];})[0];f.merch=tk?'Top: '+esc(tk):'—';
+  return f;
+}
+function tileBtn(k,ic,t,fig){return '<button class="tile" data-act="rep" data-k="'+k+'"><span class="ti">'+ico(ic)+'</span><b>'+t+'</b><small>'+fig+'</small></button>';}
+function renderPeriodOV(){
+  var el=$('perBody');if(!el||!DB.txns.length)return;
+  var r=perRange(),L=perTx(r),i=sumT(L,'Income'),e=sumT(L,'Expense'),n=i-e;
+  var ls=ledgers().filter(function(l){return l.amt>=0.005;});
+  el.innerHTML=perCtrlHTML()+repSnapshot()
+    +'<div class="card"><h2>'+ico('trend')+' Cash flow <span class="sub">'+esc(r.label)+'</span></h2><div class="kpis" style="margin-bottom:0">'+kpi('Income',money(i),'pos')+kpi('Expenses',money(e),'neg')+kpi('Net saved',money(n),n<0?'neg':'pos')+kpi('Savings rate',i>0?Math.round(n/i*100)+'%':'—','')+'</div></div>'
+    +'<div class="card"><h2>'+ico('scale')+' Who owes whom</h2>'+(ls.length?ls.map(function(l){return '<div class="fline" style="align-items:center"><span>'+esc(l.debtor)+' owes '+esc(l.creditor)+'</span><span style="display:flex;gap:8px;align-items:center"><b class="neg">'+money(l.amt)+'</b><button class="ibtn" data-act="settle" data-n="'+esc(l.name)+'" style="color:var(--accent)">Settle</button></span></div>';}).join(''):'<div class="help">All settled up.</div>')+'</div>';
+  var f=tileFigs();
+  $('repTiles').innerHTML=TILES.map(function(x){return tileBtn(x[0],x[1],x[2],f[x[0]]);}).join('');
+  $('repTiles2').innerHTML=TILES2.map(function(x){return tileBtn(x[0],x[1],x[2],x[3]);}).join('');
+}
+var _rOV=renderOverview;renderOverview=function(){_rOV();renderPeriodOV();};
+/* budgets manager */
+function renderBudgetMgr(){
+  var cats=sortedAlpha(DB.categories.Expense||[]),fx=DB.fixedCats||[];
+  $('mgrBody').innerHTML='<div class="help small" style="margin-bottom:8px">Enter a <b>monthly</b> budget per expense category (weekly reports use × 12 ÷ 52). Tick <b>Fixed</b> for costs that stay the same each month. Recurring transactions always count as fixed.</div>'
+    +cats.map(function(c,i){return '<div class="mgr-row"><span class="lb">'+esc(c)+'</span><label class="small" style="display:flex;align-items:center;gap:5px;font-weight:700"><input type="checkbox" id="bgf'+i+'"'+(fx.indexOf(c)>=0?' checked':'')+' style="width:18px;height:18px;accent-color:var(--accent)"> Fixed</label><input class="fin" id="bgv'+i+'" inputmode="decimal" value="'+(((DB.budgets||{})[c])||'')+'" placeholder="0" style="width:100px;flex:none;padding:8px 10px;text-align:right" aria-label="monthly budget for '+esc(c)+'"></div>';}).join('')
+    +'<div class="sheet-foot" style="padding-bottom:4px"><button class="btn" data-act="bgsave">Save budgets</button></div>';
+}
+function saveBudgets(){
+  var cats=sortedAlpha(DB.categories.Expense||[]),b={},fx=[];
+  cats.forEach(function(c,i){var v=parseAmt(($('bgv'+i)||{}).value);if(v>0)b[c]=Math.round(v*100)/100;if(($('bgf'+i)||{}).checked)fx.push(c);});
+  DB.budgets=b;DB.fixedCats=fx;closeMgr();touch();toast('Budgets saved ✓');
+}
+/* breadcrumb root = where the drill was opened from */
+function drillFrom(){if(REPORT.open)return esc((($('repTitle')||{}).textContent||'Report').trim());var b=document.querySelector('.nbtn.on');return b?esc(b.textContent.trim()):'Back';}
+/* transactions: progressive rendering + long-press to select */
+var TXR={n:40,io:null};
+function txObserve(){
+  var el=$('txMore');if(!el)return;
+  if(typeof IntersectionObserver==='undefined'){TXR.n=1e9;setTimeout(renderTxns,0);return;}
+  if(!TXR.io)TXR.io=new IntersectionObserver(function(es){if(es.some(function(x){return x.isIntersecting;})){TXR.n+=40;renderTxns();}},{rootMargin:'600px'});
+  TXR.io.disconnect();TXR.io.observe(el);
+}
+var LP={h:0,fired:false};
+function startSel(id){if(BSEL.on)return;BSEL.on=true;BSEL.ids=[id];EXP.txn='';renderTxns();navSync();try{if(navigator.vibrate)navigator.vibrate(15);}catch(e){}}
+document.addEventListener('touchstart',function(e){var el=e.target.closest&&e.target.closest('#txList .txn');if(!el)return;LP.fired=false;clearTimeout(LP.h);LP.h=setTimeout(function(){LP.fired=true;startSel(el.dataset.id);},480);},{passive:true});
+['touchend','touchmove','touchcancel'].forEach(function(ev){document.addEventListener(ev,function(){clearTimeout(LP.h);},{passive:true});});
+document.addEventListener('contextmenu',function(e){var el=e.target.closest&&e.target.closest('#txList .txn');if(!el)return;e.preventDefault();startSel(el.dataset.id);});
+/* settings: Data & Sync status line + budgets count */
+var _rST=renderSettings;renderSettings=function(){
+  _rST();
+  var nb=Object.keys(DB.budgets||{}).length,cb=$('cntBudgets');if(cb)cb.textContent=(nb?nb+' categor'+(nb===1?'y':'ies')+' budgeted':'not set')+' · '+(DB.fixedCats||[]).length+' fixed';
+  var el=$('dsStatus');if(!el)return;
+  var on=!!(FB.user&&DB.meta.cloudSyncOn),lk=!!(Cloud.handle&&Cloud.perm==='granted');
+  var txt=on?'Synced to Google cloud'+fbSyncLabel():(lk?'Auto-saving to your linked Drive / OneDrive file':(Cloud.handle?'Linked file needs reconnecting. Tap Advanced below.':'Saved on this device only'));
+  el.innerHTML='<span class="dot" style="background:'+(on||lk?'var(--inc)':(Cloud.handle?'var(--warn)':'var(--muted)'))+'"></span><span>'+esc(txt)+' · '+BK.log.length+' auto-backup'+(BK.log.length===1?'':'s')+'</span>';
+};
+
 function renderAll(){
   renderOverview();
   renderTxns();
@@ -3620,6 +4000,7 @@ function boot(){
 }
 document.addEventListener('click',function(e){
   var el=e.target&&e.target.closest?e.target.closest('[data-act]'):null;
+  if(LP.fired){LP.fired=false;if(el&&el.closest&&el.closest('#txList')){e.preventDefault();e.stopPropagation();return;}}
   if(el)handleAct(el);
 },true);
 boot();
