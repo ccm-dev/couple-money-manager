@@ -368,6 +368,16 @@ details.more[open] summary{margin-bottom:10px}
 .mstack .mbal{font-size:14.5px;font-weight:800;color:var(--ink)}
 .mstack .mbal.neg{color:var(--exp)}
 .mstack .mmov{font-size:12px;font-weight:700}
+
+/* v1.40: split bill = one collapsible row */
+.txn.grp .gchev{flex:none;color:var(--muted);margin-left:2px}
+.txn.grp.open{background:var(--accent-soft)}
+.gbadge{display:inline-block;font-size:10.5px;font-weight:800;color:var(--accent);background:var(--accent-soft);border-radius:999px;padding:1px 7px;margin-left:4px;vertical-align:1px}
+.txn.grp.open .gbadge{background:var(--card)}
+.txkids{background:var(--bg);border-bottom:1px solid var(--line)}
+.dayg .txkids .txn.kid{padding:8px 12px 8px 30px;border-bottom:1px dashed var(--line)}
+.dayg .txkids .txn.kid:last-child{border-bottom:0}
+.txn.kid .mid b{font-size:12.5px}.txn.kid .amt{font-size:13px}
 </style>
 </head>
 <body>
@@ -525,7 +535,7 @@ details.more[open] summary{margin-bottom:10px}
       <div class="f-row"><label>Appearance</label><div class="segmini" id="modeSeg" style="margin-bottom:0"></div></div>
       <div class="f-row" style="margin-bottom:0"><label>Currency symbol</label><input class="fin" id="curSymbol" placeholder="RM, $, € …" onchange="DB.meta.currency=this.value.trim();touch();openSheetRefresh()"></div>
     </div>
-    <div class="card"><h2><svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><line x1="12" y1="10.5" x2="12" y2="16"/><line x1="12" y1="7.5" x2="12" y2="7.6"/></svg> About <span class="sub">v1.39</span></h2><div class="help"><b>Money Manager Mobile</b> is a single-file app that works offline. Your data lives on this device and cloud sync is opt-in.</div>
+    <div class="card"><h2><svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><line x1="12" y1="10.5" x2="12" y2="16"/><line x1="12" y1="7.5" x2="12" y2="7.6"/></svg> About <span class="sub">v1.40</span></h2><div class="help"><b>Money Manager Mobile</b> is a single-file app that works offline. Your data lives on this device and cloud sync is opt-in.</div>
       <details class="help" style="margin-top:10px"><summary>Help &amp; tips</summary><ol>
         <li><b>Add:</b> tap ＋, pick a category chip, then Save. Your last category is remembered.</li>
         <li><b>Edit:</b> tap a transaction. <b>Select several:</b> long-press one.</li>
@@ -2302,7 +2312,7 @@ function renderDrill(){
 var TX_SHOW=10; /* v1.35: kept only for legacy sims — the Show-more cap itself was removed */
 var TXF={month:'all',person:'all',account:'all',type:'all',cat:'all',q:'',open:false}; /* v1.28: open = the filter dropdowns are expanded */
 var BSEL={on:false,ids:[]};
-var EXP={txn:''}; /* v1.35: the transaction id whose detail card is expanded on the Transactions screen */
+var EXP={txn:'',grp:{}}; /* v1.35: the transaction id whose detail card is expanded on the Transactions screen */
 function setSel(id,val,fb){
   var s=$(id);
   var has=false,os=s.options,i;
@@ -2370,7 +2380,8 @@ function renderTxns(){
     if(t.type==='Transfer'){if(!shareMode)trf+=t.amount;return;}
     var v=vOf(t);if(t.type==='Income')inc+=v;else exp+=v;
   });
-  $('txSummary').textContent=l.length+' transactions · Net '+money(inc-exp); /* v1.28: slim summary — totals live on Overview, day headers give the rhythm */
+  var gsn={},nRow=0;l.forEach(function(t){var gk=t.group?(t.group+'|'+t.date):'';if(gk){if(!gsn[gk]){gsn[gk]=1;nRow++;}}else nRow++;}); /* v1.40: a split bill counts once */
+  $('txSummary').textContent=nRow+' transaction'+(nRow===1?'':'s')+' · Net '+money(inc-exp); /* v1.28: slim summary — totals live on Overview, day headers give the rhythm */
   var selMode=BSEL.on;
   $('txList').classList.toggle('selmode',selMode);
   $('txSelToggle').innerHTML=selMode?('Exit selection ('+BSEL.ids.length+')'):'Select'; /* v1.29: text-only */
@@ -2385,7 +2396,7 @@ function renderTxns(){
     var din=0,dexp=0;
     g[d].forEach(function(t){if(t.type==='Transfer')return;var v=vOf(t);if(t.type==='Income')din+=v;else dexp+=v;});
     /* v1.10: within a day the most recently entered transaction comes first */
-    var rows=g[d].slice().reverse().map(function(t){
+    function rowOf(t,child){
       var v=vOf(t);
       var isTrf=t.type==='Transfer';
       var redn=!isTrf&&t.type==='Expense'&&v<0; /* v1.24: negative expense = reduction in expenses */
@@ -2394,8 +2405,30 @@ function renderTxns(){
       var pre=isTrf?'':((t.type==='Income'||redn)?'+':'-'); /* the amount sign tells the type */
       var av=redn?-v:v;
       var openRow=!selMode&&EXP.txn===t.id;
-      return '<button class="txn'+(selMode&&BSEL.ids.indexOf(t.id)>=0?' sel':'')+(openRow?' open':'')+'" data-act="txn" data-id="'+t.id+'">'+(selMode?'<span class="ck">'+ico('check')+'</span>':'')+'<span class="mid"><b>'+esc(isTrf?'Transfer':t.category)+(t.subcategory?' · '+esc(t.subcategory):'')+'</b><small>'+sub+'</small></span><span class="amt '+cls+'">'+pre+(cur()?'<small class="cur2">'+esc(cur())+'</small> ':'')+fmt(av)+(shareMode&&!isTrf&&v!==t.amount?' <small style="font-weight:600;opacity:.65">/ '+fmt(t.amount)+'</small>':'')+'</span>'+''+'</button>'+(openRow?txDetailHTML(t):'');
+      return '<button class="txn'+(child?' kid':'')+(selMode&&BSEL.ids.indexOf(t.id)>=0?' sel':'')+(openRow?' open':'')+'" data-act="txn" data-id="'+t.id+'">'+(selMode?'<span class="ck">'+ico('check')+'</span>':'')+'<span class="mid"><b>'+esc(isTrf?'Transfer':t.category)+(t.subcategory?' · '+esc(t.subcategory):'')+'</b><small>'+sub+'</small></span><span class="amt '+cls+'">'+pre+(cur()?'<small class="cur2">'+esc(cur())+'</small> ':'')+fmt(av)+(shareMode&&!isTrf&&v!==t.amount?' <small style="font-weight:600;opacity:.65">/ '+fmt(t.amount)+'</small>':'')+'</span>'+''+'</button>'+(openRow?txDetailHTML(t):'');
+    }
+    /* v1.40: legs of one split bill collapse into a single row; tap it to expand the shares */
+    var seen={},rows=g[d].slice().reverse().map(function(t){
+      if(!t.group)return rowOf(t,false);
+      if(seen[t.group])return '';
+      var legs=g[d].filter(function(x){return x.group===t.group;});
+      if(legs.length<2)return rowOf(t,false);
+      seen[t.group]=1;
+      return grpRow(t.group,legs.slice().reverse());
     }).join('');
+    function grpRow(gid,legs){
+      var t0=legs[0],tot=0,ppl=[],allSel=selMode;
+      legs.forEach(function(x){tot+=vOf(x);if(ppl.indexOf(x.person)<0)ppl.push(x.person);if(BSEL.ids.indexOf(x.id)<0)allSel=false;});
+      tot=Math.round(tot*100)/100;
+      var redn=t0.type==='Expense'&&tot<0,cls=(t0.type==='Income'||redn)?'pos':'neg',pre=(t0.type==='Income'||redn)?'+':'-';
+      var open=!!EXP.grp[gid];
+      var sub=(t0.note?esc(t0.note)+' · ':'')+ico('users')+' Split · '+ppl.map(esc).join(' + ')+' · '+esc(t0.account)+(redn?' · <span style="color:var(--inc)">refund</span>':'');
+      var h='<button class="txn grp'+(open?' open':'')+(allSel?' sel':'')+'" data-act="txgrp" data-g="'+esc(gid)+'">'+(selMode?'<span class="ck">'+ico('check')+'</span>':'')
+        +'<span class="mid"><b>'+esc(t0.category)+(t0.subcategory?' · '+esc(t0.subcategory):'')+' <span class="gbadge">'+legs.length+' shares</span></b><small>'+sub+'</small></span>'
+        +'<span class="amt '+cls+'">'+pre+(cur()?'<small class="cur2">'+esc(cur())+'</small> ':'')+fmt(Math.abs(tot))+'</span>'
+        +'<span class="gchev">'+ico(open?'chevdown':'chevright')+'</span></button>';
+      return h+(open?'<div class="txkids">'+legs.map(function(x){return rowOf(x,true);}).join('')+'</div>':'');
+    }
     return '<div class="dayg"><div class="day-h"><span>'+dLabelYW(d)+'</span><span>net '+(din-dexp<0?'-':'+')+(cur()?cur()+' ':'')+fmt(Math.abs(din-dexp))+'</span></div>'+rows+'</div>';
   }).join(''):'<div class="empty"><b>No transactions</b><p>Adjust the filters above, or tap ＋ to add one.</p></div>';
   if(days.length>TXR.n){$('txList').insertAdjacentHTML('beforeend','<div id="txMore" class="help small" style="text-align:center;padding:12px">Loading older transactions…</div>');txObserve();}
@@ -3622,6 +3655,10 @@ function handleAct(el){
     case 'ovcat':ovCatTap(el.dataset.c);break;
     case 'txn':if(BSEL.on){var bi=BSEL.ids.indexOf(el.dataset.id);if(bi<0)BSEL.ids.push(el.dataset.id);else BSEL.ids.splice(bi,1);renderTxns();}
       else openSheet(el.dataset.id); /* drill/report rows keep tap-to-edit */break;
+    case 'txgrp':(function(){var gid=el.dataset.g,ids=DB.txns.filter(function(x){return x.group===gid;}).map(function(x){return x.id;});
+      if(BSEL.on){var all=ids.every(function(i){return BSEL.ids.indexOf(i)>=0;});ids.forEach(function(i){var k=BSEL.ids.indexOf(i);if(all&&k>=0)BSEL.ids.splice(k,1);else if(!all&&k<0)BSEL.ids.push(i);});}
+      else{if(EXP.grp[gid])delete EXP.grp[gid];else EXP.grp[gid]=1;}
+      renderTxns();})();break;
     case 'txnedit':openSheet(el.dataset.id);break; /* v1.35: Edit inside the expanded detail card */
     case 'acc':openAccount(el.dataset.n);break;
     case 'asum':asumToggle(el.dataset.k);break;
