@@ -675,7 +675,7 @@ body.learning52 main,body.learning52 .page{padding-bottom:300px}body.learning52 
       <div class="f-row"><label>Appearance</label><div class="segmini" id="modeSeg" style="margin-bottom:0"></div></div>
       <div class="f-row" style="margin-bottom:0"><label>Currency symbol</label><input class="fin" id="curSymbol" placeholder="RM, $, € …" onchange="DB.meta.currency=this.value.trim();touch();openSheetRefresh()"></div>
     </div>
-    <div class="card"><h2><svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><line x1="12" y1="10.5" x2="12" y2="16"/><line x1="12" y1="7.5" x2="12" y2="7.6"/></svg> About <span class="sub">v1.53</span></h2><div class="help"><b>Money Manager Mobile</b> is a single-file app that works offline. Your data lives on this device and cloud sync is opt-in.</div>
+    <div class="card"><h2><svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><line x1="12" y1="10.5" x2="12" y2="16"/><line x1="12" y1="7.5" x2="12" y2="7.6"/></svg> About <span class="sub">v1.52</span></h2><div class="help"><b>Money Manager Mobile</b> is a single-file app that works offline. Your data lives on this device and cloud sync is opt-in.</div>
       <details class="help" style="margin-top:10px"><summary>Help &amp; tips</summary><ol>
         <li><b>Add:</b> tap ＋, pick a category chip, then Save. Your last category is remembered.</li>
         <li><b>Edit:</b> tap a transaction. <b>Select several:</b> long-press one.</li>
@@ -2663,8 +2663,6 @@ function accSummaryHTML(rows){
     if(!openP)return ph;
     var tys=Object.keys(g.types).sort(alphasort); /* v1.16: types alphabetical */
     return ph+tys.map(function(ty){
-      /* v1.53: show debt accounts directly without the redundant type row. */
-      if(ty==='Receivable'||ty==='Money owed between people')return '<div class="asum-l2">'+g.types[ty].slice().sort(function(x,y){return alphasort(x.r.name,y.r.name);}).map(accRow).join('')+'</div>';
       var tk=pk+'|t:'+ty,openT=!!ASUM[tk],sub2=0,tl=false; /* v1.19: net the ledgers inside the type too */
       g.types[ty].forEach(function(e){sub2+=e.net;if(e.isl)tl=true;});
       var isL=accTypeKind(ty)==='liability';
@@ -5771,7 +5769,7 @@ var uxSplit51=updateSplitHint;updateSplitHint=function(){uxSplit51();var h=$('fS
 function uxAccounts51(){
  var rows=balances().rows,q=UX51.accountQuery.toLowerCase();
  rows=rows.filter(function(r){var a=DB.accounts.find(function(x){return x.name===r.name;})||{};return !q||(r.name+' '+a.owner+' '+a.type).toLowerCase().includes(q);});
- if(UX51.accountsFlat||q)$('accList').innerHTML=rows.length?rows.sort(function(a,b){return alphasort(a.name,b.name);}).map(function(r){var a=DB.accounts.find(function(x){return x.name===r.name;})||{},liab=accTypeKind(a.type)==='liability';return trow({act:'acc',attrs:'data-n="'+esc(r.name)+'"',lb:esc(r.name),sub:esc(a.owner||'No owner')+((a.type==='Receivable'||a.type==='Money owed between people')?'':' · '+esc(a.type||''))+' · '+(liab?(r.bal<0?'Amount owed':'Credit balance'):'Available balance'),amt:money(liab?Math.abs(r.bal):r.bal),cls:r.bal<0?'neg':''});}).join(''):'<div class="empty">No matching accounts.</div>';
+ if(UX51.accountsFlat||q)$('accList').innerHTML=rows.length?rows.sort(function(a,b){return alphasort(a.name,b.name);}).map(function(r){var a=DB.accounts.find(function(x){return x.name===r.name;})||{},liab=accTypeKind(a.type)==='liability';return trow({act:'acc',attrs:'data-n="'+esc(r.name)+'"',lb:esc(r.name),sub:esc(a.owner||'No owner')+' · '+esc(a.type||'')+' · '+(liab?(r.bal<0?'Amount owed':'Credit balance'):'Available balance'),amt:money(liab?Math.abs(r.bal):r.bal),cls:r.bal<0?'neg':''});}).join(''):'<div class="empty">No matching accounts.</div>';
 }
 var uxAcc51=renderAccounts;renderAccounts=function(){uxAcc51();uxAccounts51();};
 function uxOverview51(){
