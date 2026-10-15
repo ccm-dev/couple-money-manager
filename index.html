@@ -538,6 +538,25 @@ body.authon{overflow:hidden}
 #tourTip .tst{display:block;font-size:11px;font-weight:800;color:var(--accent);text-transform:uppercase;letter-spacing:.4px;margin-bottom:3px}
 #tourTip .tbt{display:flex;justify-content:space-between;align-items:center;margin-top:8px}
 #tourTip .tbt .aulink{margin:0}
+
+/* v1.52 */
+.splitcard{border:1.5px solid color-mix(in srgb,var(--accent) 40%,transparent);background:var(--accent-soft);border-radius:14px;padding:10px 12px}
+.splitcard>label{color:var(--accent)!important}
+.btn.splitgo{padding:11px;font-size:14px}
+.oauth{display:grid;gap:8px}
+.oabtn{background:var(--card);color:var(--ink);border:1.5px solid var(--line);display:flex;align-items:center;justify-content:center;gap:10px;padding:12px}
+.oabtn svg{flex:none}
+.audiv{display:flex;align-items:center;gap:10px;margin:16px 0 2px;color:var(--muted);font-size:12px;font-weight:700}
+.audiv:before,.audiv:after{content:'';flex:1;height:1px;background:var(--line)}
+.aucard{background:var(--card);border-radius:16px;padding:16px;margin:4px 0 14px;box-shadow:var(--shadow);text-align:center}
+.aucard b{display:block;font-size:16px;margin:6px 0}
+.aucard p{font-size:13.5px;color:var(--muted);line-height:1.55}
+.aucard-ic{width:48px;height:48px;border-radius:14px;background:var(--accent-soft);color:var(--accent);display:flex;align-items:center;justify-content:center;margin:0 auto}
+.aucard-ic svg{width:24px;height:24px}
+.jrhead{position:relative}
+.jrskip{font-size:12px;font-weight:800;color:var(--muted);background:var(--bg);border-radius:999px;padding:6px 12px;margin-left:auto;margin-right:6px}
+.lkdots{gap:12px}.lkdots i{width:13px;height:13px}
+#tourTip .tbt{gap:12px}#tourTip .tbt .btn{margin-left:auto}
 </style>
 </head>
 <body>
@@ -705,12 +724,12 @@ body.authon{overflow:hidden}
       <div class="f-row"><label>Appearance</label><div class="segmini" id="modeSeg" style="margin-bottom:0"></div></div>
       <div class="f-row" style="margin-bottom:0"><label>Currency symbol</label><input class="fin" id="curSymbol" placeholder="RM, $, € …" onchange="DB.meta.currency=this.value.trim();touch();openSheetRefresh()"></div>
     </div>
-    <div class="card"><h2><svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><line x1="12" y1="10.5" x2="12" y2="16"/><line x1="12" y1="7.5" x2="12" y2="7.6"/></svg> About <span class="sub">v1.51</span></h2><div class="help"><b>Couple Money Manager</b> is a single-file app for couples that that works offline. Your data lives on this device and cloud sync is opt-in.</div>
+    <div class="card"><h2><svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><line x1="12" y1="10.5" x2="12" y2="16"/><line x1="12" y1="7.5" x2="12" y2="7.6"/></svg> About <span class="sub">v1.52</span></h2><div class="help"><b>Couple Money Manager</b> is a single-file app for couples that works offline. Your data lives on this device and cloud sync is opt-in.</div>
       <details class="help" style="margin-top:10px"><summary>Help &amp; tips</summary><ol>
         <li><b>Add:</b> tap ＋, pick a category chip, then Save. Your last category is remembered.</li>
         <li><b>Edit:</b> tap a transaction. <b>Select several:</b> long-press one.</li>
         <li><b>Refunds:</b> tap “Refund” next to the amount to record a reduction in expenses.</li>
-        <li><b>Split a bill, refund or income:</b> More options → Split, and type each share as a positive amount. For a bill, the other person's share is added to the “X owes Y” ledger. For a refund, it is taken off. For income received into your account, their share is owed back to them. Settle it from Who owes whom.</li>
+        <li><b>Split a bill, refund or income:</b> use the “Split this bill” box on the form, and type each share as a positive amount. For a bill, the other person's share is added to the “X owes Y” ledger. For a refund, it is taken off. For income received into your account, their share is owed back to them. Settle it from Who owes whom.</li>
         <li><b>Credit cards:</b> set a statement day and payment-due days in Settings → Accounts.</li>
         <li><b>Budgets:</b> Settings → Budgets. Set fixed and variable amounts per category, as a couple budget or a personal one.</li>
         <li><b>Saving goals:</b> Settings → Saving goals. Link a goal to a savings account, or add money to it by hand.</li>
@@ -6141,6 +6160,245 @@ setTimeout(function(){
   else if(!(DB.meta.profile&&DB.meta.profile.name&&DB.people.indexOf(DB.meta.profile.name)>=0)){authShow('person');}
   renderJourney();
 },0);
+
+/* ===================== v1.52: who-owes-whom in Account Summary · 2D pie · 6-digit PIN · split bill up front · Google/Microsoft/Apple sign-in + sync prompt + skippable guide ===================== */
+ICONS.scale=ICONS.scale||'';
+/* ---------- 1. Account Summary: debts shown plainly as “A owes B” ---------- */
+var _asum52=accSummaryHTML;
+accSummaryHTML=function(rows){
+  var h=_asum52(rows),ls=ledgers();
+  if(!ls.length)return h;
+  return h+'<div class="mgr-sec" style="margin-top:14px">'+ico('scale')+' Who owes whom</div>'
+    +ls.map(function(l){
+      var pp=l.name.split(' owes '),done=l.amt<0.005;
+      return trow({act:'acc',attrs:'data-n="'+esc(l.name)+'"',lb:ico('users')+' '+(done?esc(pp[0])+' &amp; '+esc(pp[1]):esc(l.debtor)+' owes '+esc(l.creditor)),sub:done?'all settled up':'tap to see the history',amt:money(l.amt),cls:done?'pos':'neg'});
+    }).join('');
+};
+/* ---------- 2. spending pie back to flat 2D (bar charts stay 3D) ---------- */
+svgPie=function(items,tot,r){
+  var cx=120,cy=120,R=112,r0=60,a=-Math.PI/2,out='';
+  function pt(rr,ang){return (cx+rr*Math.cos(ang)).toFixed(2)+' '+(cy+rr*Math.sin(ang)).toFixed(2);}
+  if(!items.length||tot<=0)return '<svg viewBox="0 0 240 240"><circle cx="120" cy="120" r="86" fill="none" stroke="var(--line)" stroke-width="52"/><text x="120" y="125" text-anchor="middle" font-size="13" fill="var(--muted)">No spending</text></svg>';
+  items.forEach(function(it,i){
+    var fr=it.value/tot,a1=a+fr*2*Math.PI,col=PALETTE[i%PALETTE.length],at=tl(r.s,r.e,it.label+' · '+r.label,it.label,'Expense')+' style="cursor:pointer"';
+    if(fr>=0.9999)out+='<circle cx="120" cy="120" r="'+((R+r0)/2)+'" fill="none" stroke="'+col+'" stroke-width="'+(R-r0)+'"'+at+'/>';
+    else{var lg=fr>0.5?1:0;out+='<path d="M'+pt(R,a)+' A'+R+' '+R+' 0 '+lg+' 1 '+pt(R,a1)+' L'+pt(r0,a1)+' A'+r0+' '+r0+' 0 '+lg+' 0 '+pt(r0,a)+' Z" fill="'+col+'" stroke="var(--card)" stroke-width="1.5"'+at+'/>';}
+    if(fr>=0.04){var p=pt((R+r0)/2,(a+a1)/2).split(' ');out+='<text x="'+p[0]+'" y="'+p[1]+'" text-anchor="middle" dominant-baseline="central" font-size="12" font-weight="800" fill="#fff" pointer-events="none">'+Math.round(fr*100)+'%</text>';}
+    a=a1;
+  });
+  return '<svg viewBox="0 0 240 240">'+out+'<text x="120" y="117" text-anchor="middle" font-size="20" font-weight="800" fill="var(--ink)">'+cfmt(tot)+'</text><text x="120" y="137" text-anchor="middle" font-size="10.5" font-weight="700" fill="var(--muted)" letter-spacing=".5">SPENT</text></svg>';
+};
+/* ---------- 3. app lock: 6-digit PIN (an older 4-digit PIN keeps working until it is changed) ---------- */
+function pinLen(){return (LOCK.mode==='set1'||LOCK.mode==='set2')?6:(lockCfg().len||4);}
+lockShow=function(mode){
+  LOCK.mode=mode;LOCK.buf='';LOCK.first='';
+  var T={unlock:'Enter your PIN',set1:'Choose a 6-digit PIN',set2:'Enter the 6-digit PIN again',verify:'Enter your current PIN',verifyoff:'Enter your PIN to turn the lock off'};
+  $('lkTitle').textContent=T[mode]||'Enter PIN';$('lkMsg').textContent='';
+  $('lkCancel').style.visibility=mode==='unlock'?'hidden':'visible';
+  $('lockScr').hidden=false;document.body.classList.add('locked');lockDots();
+};
+lockDots=function(){var n=pinLen(),h='';for(var i=0;i<n;i++)h+='<i class="'+(i<LOCK.buf.length?'on':'')+'"></i>';$('lkDots').innerHTML=h;};
+lockKey=function(k){
+  if(k==='x'){if(LOCK.mode!=='unlock')lockHide();return;}
+  if(k==='bk'){LOCK.buf=LOCK.buf.slice(0,-1);lockDots();return;}
+  var n=pinLen();
+  if(LOCK.buf.length>=n)return;
+  LOCK.buf+=k;lockDots();
+  if(LOCK.buf.length<n)return;
+  var c=lockCfg(),b=LOCK.buf;
+  setTimeout(function(){
+    if(LOCK.mode==='unlock'||LOCK.mode==='verify'||LOCK.mode==='verifyoff'){
+      if(pinHash(b)!==c.h){LOCK.buf='';lockDots();$('lkMsg').textContent='Wrong PIN, try again';try{navigator.vibrate&&navigator.vibrate(120);}catch(e){}return;}
+      if(LOCK.mode==='unlock'){lockHide();return;}
+      if(LOCK.mode==='verifyoff'){lockSave({});lockHide();toast('App lock turned off');renderPriv();return;}
+      lockShow('set1');return;
+    }
+    if(LOCK.mode==='set1'){LOCK.first=b;LOCK.buf='';LOCK.mode='set2';$('lkTitle').textContent='Enter the 6-digit PIN again';$('lkMsg').textContent='';lockDots();return;}
+    if(LOCK.mode==='set2'){
+      if(b!==LOCK.first){LOCK.mode='set1';LOCK.buf='';LOCK.first='';$('lkTitle').textContent='Choose a 6-digit PIN';$('lkMsg').textContent='The PINs did not match. Start again.';lockDots();return;}
+      lockSave({h:pinHash(b),len:6,delay:(c.delay!=null?c.delay:60)});lockHide();toast('App lock is on ✓');renderPriv();
+    }
+  },120);
+};
+var _rPriv52=renderPriv;renderPriv=function(){
+  _rPriv52();var b=$('privBody');if(!b)return;var c=lockCfg();
+  b.innerHTML=b.innerHTML.replace('your 4-digit PIN','your '+(c.len||4)+'-digit PIN')+(c.h&&!c.len?'<div class="help small" style="margin:-4px 2px 8px;color:var(--warn)">Your PIN has 4 digits. Tap Change to switch to a safer 6-digit PIN.</div>':'');
+};
+if(!$('lockScr').hidden)lockDots();
+/* ---------- 4. split bill: its own section on the form, not inside More options ---------- */
+(function(){
+  var box=$('fSplitBox'),more=$('fMore');
+  if(box&&more&&more.parentNode){more.parentNode.insertBefore(box,more);box.classList.add('splitcard');}
+  var sm=more&&more.querySelector('summary');if(sm)sm.textContent='More options: repeat & privacy';
+  var lb=box&&box.querySelector('label');if(lb)lb.innerHTML=ico('users')+' Split this bill <span style="text-transform:none;font-weight:600;letter-spacing:0">· optional, share it with your partner</span>';
+})();
+var _rSR52=renderSplitRows;renderSplitRows=function(){
+  _rSR52();var bx=$('fSplitRows');if(!bx)return;
+  var b=bx.querySelector('[data-act=splitadd].btn');
+  if(b&&!SPLIT.rows.length){b.className='btn splitgo';b.innerHTML=ico('users')+' Split between people';}
+};
+TOURS.split=function(){var has=function(){return DB.txns.some(function(t){return !t.demo&&t.group;});};return [
+  {pre:function(){gotoView('overview');},sel:'.nadd button',tx:'Tap <b>+</b> to add the bill.',ok:function(){return sheetOpen()||has();}},
+  {sel:'#fAmount',tx:'Type the <b>total</b> of the bill.',ok:has,soft:function(){return parseAmt($('fAmount').value)>0&&document.activeElement!==$('fAmount');}},
+  {sel:'#fCatChips',tx:'Pick a category.',ok:has,soft:function(){return !!F.cat;}},
+  {sel:'#fSplitBox',tx:'In <b>Split this bill</b>, tap <b>Split between people</b>, add your partner, then <b>Split equally</b>.',ok:has,soft:function(){return SPLIT.rows.length>=2&&SPLIT.rows.every(function(r){return parseAmt(r.v)>0;});}},
+  {sel:'#sheet [data-act=savetxn]',tx:'Tap <b>Save transaction</b>. Your partner’s share goes to “Who owes whom”.',ok:function(){return has()&&!sheetOpen();}}];};
+/* ---------- 5. sign in with Google / Microsoft / Apple, then ask about cloud sync, then the guide ---------- */
+var OAUTH_NAME={google:'Google',ms:'Microsoft',apple:'Apple'};
+var OAUTH_ICO={
+  google:'<svg viewBox="0 0 24 24" width="18" height="18"><path fill="#4285F4" d="M22.6 12.2c0-.8-.1-1.5-.2-2.2H12v4.2h5.9a5 5 0 0 1-2.2 3.3v2.7h3.6c2.1-1.9 3.3-4.8 3.3-8z"/><path fill="#34A853" d="M12 23c3 0 5.5-1 7.3-2.7l-3.6-2.8c-1 .7-2.2 1.1-3.7 1.1-2.9 0-5.3-1.9-6.2-4.5H2.1v2.8A11 11 0 0 0 12 23z"/><path fill="#FBBC05" d="M5.8 14.1a6.6 6.6 0 0 1 0-4.2V7.1H2.1a11 11 0 0 0 0 9.8z"/><path fill="#EA4335" d="M12 5.4c1.6 0 3.1.6 4.2 1.7l3.2-3.2A11 11 0 0 0 2.1 7.1l3.7 2.8C6.7 7.3 9.1 5.4 12 5.4z"/></svg>',
+  ms:'<svg viewBox="0 0 24 24" width="18" height="18"><rect x="2" y="2" width="9.5" height="9.5" fill="#F25022"/><rect x="12.5" y="2" width="9.5" height="9.5" fill="#7FBA00"/><rect x="2" y="12.5" width="9.5" height="9.5" fill="#00A4EF"/><rect x="12.5" y="12.5" width="9.5" height="9.5" fill="#FFB900"/></svg>',
+  apple:'<svg viewBox="0 0 24 24" width="18" height="18"><path fill="currentColor" d="M16.4 12.6c0-2.6 2.1-3.8 2.2-3.9a4.8 4.8 0 0 0-3.8-2c-1.6-.2-3.1.9-3.9.9-.8 0-2-.9-3.4-.9a5 5 0 0 0-4.2 2.6c-1.8 3.1-.5 7.7 1.3 10.2.8 1.2 1.8 2.6 3.1 2.5 1.2 0 1.7-.8 3.2-.8s1.9.8 3.2.8c1.3 0 2.2-1.2 3-2.5a10 10 0 0 0 1.4-2.8c-.1 0-2.6-1-2.6-4.1zM13.9 5.1c.7-.8 1.1-1.9 1-3.1-1 0-2.2.7-2.9 1.5-.6.7-1.2 1.9-1 3 1.1.1 2.2-.6 2.9-1.4z"/></svg>'
+};
+function auNext(){
+  var s=sessGet()||{};
+  if(s.mode==='cloud'&&DB.meta.syncChoice===undefined){AU.mode='sync';AU.err='';renderAuth();return;}
+  if(!(DB.meta.profile&&DB.meta.profile.name&&DB.people.indexOf(DB.meta.profile.name)>=0)){AU.mode='person';AU.err='';renderAuth();return;}
+  authHide();afterLogin();
+}
+function auOAuthDone(email,kind){
+  try{localStorage.removeItem('mm_oauth');}catch(e){}
+  AU.busy=false;
+  if(!email){AU.err='That account did not share an email address. Try another option.';renderAuth();return;}
+  var em=String(email).toLowerCase(),m=acctMap();
+  if(!m[em])m[em]={mode:'oauth',prov:kind,created:Date.now()};else m[em].prov=kind;
+  acctSaveMap(m);
+  sessSet({email:em,mode:'cloud',prov:kind,at:Date.now()});DB.meta.acctEmail=em;save();
+  auNext();
+}
+function auOAuth(kind){
+  var nm=OAUTH_NAME[kind];
+  if(!fbLooksBrowser()||!fbOnSite()){AU.err=nm+' sign-in works when the app is opened from its website, not from a downloaded file. Use your email and password below instead.';renderAuth();return;}
+  if(navigator.onLine===false){AU.err='You are offline. Connect to the internet, or use your email and password below.';renderAuth();return;}
+  AU.busy=true;AU.err='';renderAuth();
+  try{localStorage.setItem('mm_oauth',kind);}catch(e){}
+  fbLoad().then(function(){return dynImport('https://www.gstatic.com/firebasejs/'+FBJS+'/firebase-auth.js');}).then(function(A){
+    var p;
+    if(kind==='google'){p=new A.GoogleAuthProvider();p.setCustomParameters({prompt:'select_account'});}
+    else{p=new A.OAuthProvider(kind==='ms'?'microsoft.com':'apple.com');p.addScope('email');if(kind==='ms')p.setCustomParameters({prompt:'select_account'});if(kind==='apple')p.addScope('name');}
+    if(fbIOSStandalone())return A.signInWithRedirect(FB.auth,p).then(function(){return null;});
+    return A.signInWithPopup(FB.auth,p).catch(function(e){var c=(e&&e.code)||'';if(c==='auth/popup-blocked'||c==='auth/operation-not-supported-in-this-environment')return A.signInWithRedirect(FB.auth,p).then(function(){return null;});throw e;});
+  }).then(function(res){if(res&&res.user)auOAuthDone(res.user.email||(res.user.providerData&&res.user.providerData[0]&&res.user.providerData[0].email),kind);})
+  .catch(function(e){
+    try{localStorage.removeItem('mm_oauth');}catch(x){}
+    AU.busy=false;var c=(e&&e.code)||'';
+    if(c==='auth/popup-closed-by-user'||c==='auth/cancelled-popup-request'){renderAuth();return;}
+    AU.err=c==='auth/operation-not-allowed'?nm+' sign-in has not been switched on for this app yet. Use your email and password below.'
+      :c==='auth/unauthorized-domain'?nm+' sign-in is not set up for this website yet. Use your email and password below.'
+      :c==='auth/account-exists-with-different-credential'?'This email already signs in with another option. Use that one instead.'
+      :'Could not sign in with '+nm+'. Check your connection and try again.';
+    renderAuth();
+  });
+}
+var _rAuth52=renderAuth;
+renderAuth=function(){
+  var m=AU.mode,b=$('auBody'),s=$('auSub');
+  if(m==='person'){var ss=sessGet()||{};if(ss.mode==='cloud'&&DB.meta.syncChoice===undefined){AU.mode='sync';m='sync';}}
+  var err=AU.err?'<div class="auerr">'+esc(AU.err)+'</div>':'';
+  if(m==='sync'){
+    var em=(sessGet()||{}).email||'';
+    s.textContent='Signed in. One quick question.';
+    b.innerHTML='<div class="austep">'+ico('check')+' Signed in as '+esc(em)+'</div>'
+      +'<div class="aucard"><div class="aucard-ic">'+ico('cloud')+'</div><b>Sync your money data to the cloud?</b>'
+      +'<p>Your data is backed up and kept the same on every phone where you sign in with this account. You can turn it off any time in Settings → Data &amp; Sync.</p></div>'
+      +'<button class="btn" data-act="ausync" data-v="yes">'+ico('cloud')+' Yes, sync to the cloud</button>'
+      +'<button class="btn ghost" style="margin-top:8px" data-act="ausync" data-v="no">Not now, keep it on this phone</button>';
+    return;
+  }
+  if(m==='guide'){
+    var nm=(DB.meta.profile||{}).name||'';
+    s.textContent='All set'+(nm?', '+nm:'')+'!';
+    b.innerHTML='<div class="aucard"><div class="aucard-ic">'+ico('flag')+'</div><b>Learn the app by using it</b>'
+      +'<p>A short guided tour shows you where to tap while you add your partner, an account, your first expense, a split bill, a budget and a saving goal. Each step waits for you, and you can skip at any time.</p></div>'
+      +'<button class="btn" data-act="auguide" data-v="go">'+ico('play')+' Start the guided tour</button>'
+      +'<button class="btn ghost" style="margin-top:8px" data-act="auguide" data-v="skip">Skip, I’ll explore on my own</button>'
+      +'<div class="help small" style="margin-top:10px;text-align:center">You can start the guide later in Settings → Your account.</div>';
+    return;
+  }
+  _rAuth52();
+  if(m==='signup'||m==='login'){
+    var bt=b.querySelector('.segmini');
+    var ob='<div class="oauth">'+['google','ms','apple'].map(function(k){return '<button class="btn oabtn" data-act="auoauth" data-k="'+k+'"'+(AU.busy?' disabled':'')+'>'+OAUTH_ICO[k]+' Continue with '+OAUTH_NAME[k]+'</button>';}).join('')+'</div>'
+      +'<div class="audiv"><span>or use your email</span></div>';
+    if(bt)bt.insertAdjacentHTML('afterend',ob);
+    var h=b.querySelector('.help.small');if(h)h.innerHTML=ico('shield')+' Google (Gmail), Microsoft (Outlook / Hotmail) and Apple sign-in need the app to be opened from its website. Email and password also work offline on this phone.';
+  }
+};
+var _auSub52=auSubmit;auSubmit=function(){
+  if(AU.mode==='login'){var em=(($('auEmail')||{}).value||'').trim().toLowerCase(),r=acctMap()[em];if(r&&r.mode==='oauth'){AU.err='This email signs in with '+(OAUTH_NAME[r.prov]||'Google')+'. Tap “Continue with '+(OAUTH_NAME[r.prov]||'Google')+'” above.';renderAuth();$('auEmail').value=em;return;}}
+  _auSub52();
+};
+auPerson=function(){
+  var sel=$('auMeSel'),me=(sel&&sel.value!=='__new')?sel.value:(($('auMe')||{}).value||'').trim(),pt=(($('auPartner')||{}).value||'').trim(),demo=!!($('auDemo')&&$('auDemo').checked);
+  if(!me){AU.err='Enter your name to continue.';renderAuth();return;}
+  if(pt&&pt.toLowerCase()===me.toLowerCase()){AU.err='Your partner needs a different name.';renderAuth();return;}
+  var meUsed=DB.txns.some(function(t){return t.person==='Me';});
+  if(DB.people.length===1&&DB.people[0]==='Me'&&!meUsed)DB.people=[];
+  if(DB.people.indexOf(me)<0)DB.people.push(me);
+  if(pt&&DB.people.indexOf(pt)<0)DB.people.push(pt);
+  DB.accounts.forEach(function(a){if(!a.owner&&!a.recv&&(a.name==='Cash'||a.name==='Bank'))a.owner=me;});
+  DB.meta.profile={name:me,partner:pt};
+  collabCfg().me=me;
+  if(demo)demoLoad(true);
+  touch();AU.mode='guide';AU.err='';renderAuth();
+};
+function guideStart(){
+  jrInit();var j=jr();j.hide=0;j.open=1;j.skipped=0;save();
+  authHide();afterLogin();
+  var nx=JR.filter(function(x){return !x.done()&&TOURS[x.k];})[0];
+  if(nx)setTimeout(function(){tourStart(nx.k);},450);
+}
+function guideSkip(){
+  jrInit();var j=jr();j.hide=1;j.skipped=1;save();
+  authHide();afterLogin();
+  toast('Guide skipped. Start it any time in Settings → Your account.');
+}
+/* sync choice is respected: signing in no longer turns sync on by itself */
+fbSetUser=function(u){
+  var was=FB.user;_fbSU50(u);
+  if(!u||(was&&was.uid===u.uid))return;
+  var pend='';try{pend=localStorage.getItem('mm_oauth')||'';}catch(e){}
+  if(pend&&!sessGet()&&u.email){auOAuthDone(u.email,pend);return;}
+  var ch=DB.meta.syncChoice;
+  if(ch==='yes'||(ch===undefined&&DB.meta.cloudSyncOn)){DB.meta.cloudSyncOn=true;save();renderCloudAcc();fbAutoSync();}
+  else{DB.meta.cloudSyncOn=false;save();renderCloudAcc();}
+};
+var _fbSI52=fbSignIn;fbSignIn=function(k){DB.meta.syncChoice='yes';save();return _fbSI52(k);};
+var _fbTg52=fbToggle;fbToggle=function(){_fbTg52();DB.meta.syncChoice=DB.meta.cloudSyncOn?'yes':'no';save();};
+setTimeout(function(){try{if(localStorage.getItem('mm_oauth')&&fbOnSite()&&fbLooksBrowser())fbLoad().catch(function(){});}catch(e){}},300);
+/* ---------- 6. skip the guided tour and the checklist ---------- */
+var _rJ52=renderJourney;renderJourney=function(){
+  _rJ52();var box=$('jrnBox');if(!box)return;
+  var f=box.querySelector('.jrfoot');if(f)f.innerHTML='<button class="btn ghost sm" data-act="jrhide" style="width:100%">Skip the checklist</button>';
+  var hd=box.querySelector('.jrhead');if(hd&&!hd.querySelector('.jrskip'))hd.insertAdjacentHTML('beforeend','<button class="jrskip" data-act="jrhide">Skip</button>');
+};
+var _tTick52=tourTick;tourTick=function(){
+  _tTick52();var tip=$('tourTip');if(!tip||tip.hidden)return;
+  var x=tip.querySelector('[data-act=tourx]');if(x&&x.textContent!=='Skip this step'){x.textContent='Skip this step';x.insertAdjacentHTML('afterend','<button class="aulink" data-act="tourskipall">Skip guide</button>');}
+};
+var _rMe52=renderMe;renderMe=function(){
+  _rMe52();var b=$('meBody');if(!b)return;
+  var s=b.querySelector('[data-act=jrshow]');if(s)s.innerHTML=ico('play')+' Start the guided tour';
+};
+/* ---------- 7. Fixed vs variable: say what the report is for ---------- */
+repFixed47=(function(prev){return function(){
+  var h=prev();
+  return h.replace('</h2>','</h2><div class="help small" style="margin:-4px 0 10px"><b>What this report is for:</b> it splits your actual spending into <b>fixed costs</b> (bills you are committed to, like rent, loans and subscriptions) and <b>variable costs</b> (day-to-day spending you control). The fixed total is roughly your monthly baseline; the variable list shows where you can cut back.</div>');
+};})(repFixed47);
+DYNF.fixed=repFixed47;
+var _hA52=handleAct;handleAct=function(el){
+  switch(el.dataset.act){
+    case 'auoauth':auOAuth(el.dataset.k);return;
+    case 'ausync':var y=el.dataset.v==='yes';DB.meta.syncChoice=y?'yes':'no';DB.meta.cloudSyncOn=y;save();
+      if(y){if(FB.user){renderCloudAcc();fbAutoSync();}toast('Cloud sync is on ✓');}else toast('Saved on this phone only. Turn on sync any time in Settings.');
+      auNext();return;
+    case 'auguide':if(el.dataset.v==='go')guideStart();else guideSkip();return;
+    case 'jrhide':var j=jr();j.hide=1;j.skipped=1;save();renderJourney();toast('Checklist skipped. Start the guide any time in Settings → Your account.');return;
+    case 'jrshow':guideStart();return;
+    case 'tourskipall':tourEnd(false);var j2=jr();j2.hide=1;j2.skipped=1;save();renderJourney();toast('Guide skipped. Start it any time in Settings → Your account.');return;
+  }
+  _hA52(el);
+};
 
 function renderAll(){
   renderOverview();
