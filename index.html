@@ -485,7 +485,6 @@ body.calc-on .sheet.on{padding-bottom:calc(330px + env(safe-area-inset-bottom))}
 .lkpad button{height:62px;border-radius:50%;background:var(--card);box-shadow:var(--shadow);font-size:24px;font-weight:700;text-align:center;width:62px;margin:0 auto}
 .lkpad .lkf{background:none;box-shadow:none;font-size:14px;color:var(--muted)}
 body.locked{overflow:hidden}
-body.hideamt .amt,body.hideamt .amt2,body.hideamt .kpi b,body.hideamt .bal-chip .amt,body.hideamt .mbal,body.hideamt .tbal,body.hideamt .fline b,body.hideamt .daybal,body.hideamt .dayg .day-h span:last-child,body.hideamt .mamt,body.hideamt .ccmid b,body.hideamt .goal small,body.hideamt .goal .gt span:last-child,body.hideamt .bvtop span:last-child,body.hideamt .bvsum,body.hideamt .rtab td.r,body.hideamt .tile small,body.hideamt #txSummary,body.hideamt .pie-wrap,body.hideamt .chart-scroll,body.hideamt .hcell b,body.hideamt .aim.a,body.hideamt .asum-r .amt2,body.hideamt .stat b{filter:blur(7px);user-select:none}
 
 /* v1.51 — iPhone */
 html{-webkit-text-size-adjust:100%}
@@ -557,6 +556,25 @@ body.authon{overflow:hidden}
 .jrskip{font-size:12px;font-weight:800;color:var(--muted);background:var(--bg);border-radius:999px;padding:6px 12px;margin-left:auto;margin-right:6px}
 .lkdots{gap:12px}.lkdots i{width:13px;height:13px}
 #tourTip .tbt{gap:12px}#tourTip .tbt .btn{margin-left:auto}
+
+/* v1.53 */
+.btnrow{display:flex;gap:8px}.btnrow .btn{flex:1;padding:11px 8px;font-size:13.5px;display:flex;align-items:center;justify-content:center;gap:6px}
+.btn[disabled]{opacity:.45}
+.aulink.inl{display:inline;margin:0;font-size:12.5px}
+.exgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.exbtn{display:flex;flex-direction:column;align-items:center;gap:3px;text-align:center;background:var(--bg);border:1px solid var(--line);border-radius:14px;padding:12px 6px}
+.exbtn svg{width:20px;height:20px;color:var(--accent);margin-bottom:2px}.exbtn b{font-size:13px}.exbtn small{font-size:11px;color:var(--muted);font-weight:600}
+#eyeBtn.on{color:var(--accent);background:var(--accent-soft)}
+
+/* v1.54 */
+.card.acc>h2{cursor:pointer;margin-bottom:0;-webkit-user-select:none;user-select:none}
+.card.acc.open>h2{margin-bottom:10px}
+.card.acc>.accb{display:none}.card.acc.open>.accb{display:block}
+.accch{display:inline-flex;margin-left:6px;color:var(--muted);transition:transform .15s}.card.acc.open .accch{transform:rotate(90deg)}
+#tourTip.nudge{animation:nudge .35s}
+@keyframes nudge{0%,100%{transform:none}25%{transform:translateX(-7px)}75%{transform:translateX(7px)}}
+#tourTip .tbt{flex-wrap:wrap}
+#txSelBar{gap:5px}
 </style>
 </head>
 <body>
@@ -576,7 +594,7 @@ body.authon{overflow:hidden}
       <div class="card"><div class="empty">
         <div class="big" style="color:var(--accent)"><svg class="icn" viewBox="0 0 24 24"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4Z"/></svg></div>
         <b>Welcome to Couple Money Manager</b>
-        <p>Track daily expenses for multiple people and multiple accounts — fully offline on your phone, with optional cloud-file sync via Google Drive or OneDrive.</p>
+        <p>Track daily expenses for multiple people and multiple accounts — fully offline on your phone, with live cloud sync for the two of you.</p>
         <button class="btn" data-act="add"><svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Add first transaction</button>
         <div style="height:8px"></div>
         <button class="btn ghost" data-act="import"><svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 8 5-5 5 5"/><line x1="12" y1="3" x2="12" y2="15"/></svg> Import files</button>
@@ -626,6 +644,7 @@ body.authon{overflow:hidden}
       <span class="sp"></span>
       <button class="ibtn" data-act="selall" style="flex:none">All</button>
       <button class="ibtn" data-act="selclear" style="flex:none">Clear</button>
+      <button class="ibtn" data-act="batchpriv" style="flex:none">Private</button>
       <button class="ibtn" data-act="batchedit" style="flex:none;color:var(--accent);font-weight:800">Edit</button> <!-- v1.29: text-only -->
       <button class="ibtn" data-act="batchdel" style="flex:none;color:var(--exp);font-weight:800">Delete</button> <!-- v1.29: text-only -->
     </div>
@@ -667,41 +686,29 @@ body.authon{overflow:hidden}
       <div class="ds-status" id="dsStatus"></div>
       <div class="mgr-sec">Cloud sync · <span id="fbSub" style="text-transform:none"></span></div>
       <div id="fbBody"></div>
-      <div class="mgr-sec" style="margin-top:16px">Backups · <span id="bkSub" style="text-transform:none"></span></div>
-      <div style="display:grid;gap:8px">
-        <button class="btn ghost" data-act="bklist"><svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/></svg> Backup history</button>
-        <button class="btn ghost" data-act="bkdown"><svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Download backup file (.json)</button>
-      </div>
-      <details class="help" style="margin-top:14px">
+      <div class="mgr-sec" style="margin-top:14px">Backups · <span id="bkSub" style="text-transform:none"></span></div>
+      <div class="btnrow"><button class="btn ghost" data-act="bklist"><svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/></svg> History</button><button class="btn ghost" data-act="bkdown"><svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Download</button></div>
+      <div class="help small" style="margin-top:6px">A backup is saved on this phone after every change. Download one to keep a copy in Google Drive or OneDrive.</div>
+      <details class="help" style="margin-top:12px">
         <summary>Advanced: sync through a Drive / OneDrive file</summary>
-        <div style="display:grid;gap:8px;margin-top:8px">
-          <button class="btn ghost" id="btnLink" data-act="cloudlink"><svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><path d="M17.5 19H9a7 7 0 1 1 6.7-9h1.8a4.5 4.5 0 1 1 0 9Z"/></svg> Link cloud file (auto-sync)</button>
-          <button class="btn ghost" id="btnOpenCloud" data-act="cloudopen" hidden><svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 14 1.5-2.9A2 2 0 0 1 9.2 10H20a2 2 0 0 1 1.9 2.5l-1.5 6a2 2 0 0 1-2 1.5H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h3.9a2 2 0 0 1 1.7.9l.8 1.2a2 2 0 0 0 1.7.9H18a2 2 0 0 1 2 2v2"/></svg> Re-open cloud file</button>
-        </div>
-        <ol>
-          <li><b>Android + Chrome:</b> tap “Link cloud file” and pick a file in your Drive / OneDrive folder. Changes are saved to it automatically.</li>
-          <li><b>iPhone:</b> download a backup file and save it to Files → Drive / OneDrive. Bring it back with Import files.</li>
-          <li><b>Sharing:</b> both of you link the same file in a shared folder. The last save wins.</li>
-        </ol>
-      </details>
-      <details class="help" style="margin-top:10px">
-        <summary>Privacy</summary>
-        <p style="margin:6px 0">By default, nothing leaves this device. If you turn on Google cloud sync, your email and data are stored in Google Cloud (Firebase, asia-southeast1), encrypted in transit and at rest, and only your account can read them. “Delete cloud data” removes the cloud copy. Anonymous app-open analytics never include transactions.</p>
+        <div class="btnrow" style="margin-top:8px"><button class="btn ghost" id="btnLink" data-act="cloudlink"><svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><path d="M17.5 19H9a7 7 0 1 1 6.7-9h1.8a4.5 4.5 0 1 1 0 9Z"/></svg> Link cloud file</button><button class="btn ghost" id="btnOpenCloud" data-act="cloudopen" hidden>Re-open file</button></div>
+        <p style="margin-top:8px">Android + Chrome only: pick a file in your Drive / OneDrive folder and changes are saved to it. On iPhone, use Download and Import instead.</p>
       </details>
     </div>
     <div class="card">
       <h2><svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 8 5-5 5 5"/><line x1="12" y1="3" x2="12" y2="15"/></svg> Import &amp; Export</h2>
+      <div class="mgr-sec" style="margin-top:2px">Bring data in</div>
       <div style="display:grid;gap:8px">
-        <button class="btn" data-act="import"><svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 8 5-5 5 5"/><line x1="12" y1="3" x2="12" y2="15"/></svg> Import files (JSON / CSV / XLSX)</button>
-        <button class="btn ghost" data-act="stmpick"><svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1Z"/><path d="M8 8h8"/><path d="M8 12h8"/><path d="M8 16h5"/></svg> Import bank / card statement (CSV, Excel, PDF)</button>
-        <button class="btn ghost" data-act="xlstpl"><svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Excel upload template</button>
-        <div style="display:flex;gap:8px">
-          <button class="btn ghost" style="flex:1" data-act="csv"><svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Export CSV</button>
-          <button class="btn ghost" style="flex:1" data-act="psum"><svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Per-person CSV</button>
-        </div>
-        <button class="btn ghost" data-act="snap"><svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Snapshot file (.json)</button>
+        <button class="btn" data-act="import"><svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 8 5-5 5 5"/><line x1="12" y1="3" x2="12" y2="15"/></svg> Import a file <span style="font-weight:600;opacity:.85">· JSON, CSV or Excel</span></button>
+        <button class="btn ghost" data-act="stmpick"><svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1Z"/><path d="M8 8h8"/><path d="M8 12h8"/><path d="M8 16h5"/></svg> Import a bank / card statement</button>
       </div>
-      <div class="help small" style="margin-top:8px">Imports are merged with your data. Nothing is overwritten and duplicates are skipped.</div>
+      <div class="help small" style="margin-top:6px">Imports are added to your data and duplicates are skipped. Statements open a review screen first. Need a format? <button class="aulink inl" data-act="xlstpl">Download the Excel template</button></div>
+      <div class="mgr-sec" style="margin-top:14px">Take data out</div>
+      <div class="exgrid">
+        <button class="exbtn" data-act="csv"><svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/><line x1="12" y1="15" x2="12" y2="3"/></svg><b>Transactions</b><small>CSV · Excel-ready</small></button>
+        <button class="exbtn" data-act="psum"><svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/><line x1="12" y1="15" x2="12" y2="3"/></svg><b>Per person</b><small>CSV · monthly totals</small></button>
+        <button class="exbtn" data-act="bkdown"><svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/><line x1="12" y1="15" x2="12" y2="3"/></svg><b>Full backup</b><small>JSON · re-importable</small></button>
+      </div>
       <input type="file" id="fileStmt" accept=".csv,.txt,.tsv,.xlsx,.xls,.pdf" hidden onchange="stmFile(this)">
       <input type="file" id="fileImport" accept=".json,.csv,.txt,.tsv,.xlsx,.xls" multiple hidden onchange="importFile(this)">
       <input type="file" id="fileReplace" accept=".json,.csv,.txt,.tsv,.xlsx,.xls" hidden onchange="replaceFile(this)">
@@ -724,7 +731,7 @@ body.authon{overflow:hidden}
       <div class="f-row"><label>Appearance</label><div class="segmini" id="modeSeg" style="margin-bottom:0"></div></div>
       <div class="f-row" style="margin-bottom:0"><label>Currency symbol</label><input class="fin" id="curSymbol" placeholder="RM, $, € …" onchange="DB.meta.currency=this.value.trim();touch();openSheetRefresh()"></div>
     </div>
-    <div class="card"><h2><svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><line x1="12" y1="10.5" x2="12" y2="16"/><line x1="12" y1="7.5" x2="12" y2="7.6"/></svg> About <span class="sub">v1.52</span></h2><div class="help"><b>Couple Money Manager</b> is a single-file app for couples that works offline. Your data lives on this device and cloud sync is opt-in.</div>
+    <div class="card"><h2><svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><line x1="12" y1="10.5" x2="12" y2="16"/><line x1="12" y1="7.5" x2="12" y2="7.6"/></svg> About <span class="sub">v1.54</span></h2><div class="help"><b>Couple Money Manager</b> is a single-file app for couples that works offline. Your data lives on this device and cloud sync is opt-in.</div>
       <details class="help" style="margin-top:10px"><summary>Help &amp; tips</summary><ol>
         <li><b>Add:</b> tap ＋, pick a category chip, then Save. Your last category is remembered.</li>
         <li><b>Edit:</b> tap a transaction. <b>Select several:</b> long-press one.</li>
@@ -737,8 +744,9 @@ body.authon{overflow:hidden}
         <li><b>Collaborate:</b> Settings → Collaborators → Invite. Choose which accounts they may manage, send the invite file, and import their changes file when they send it back.</li>
                 <li><b>Split bills:</b> open any share, then choose <b>This share only</b> or <b>Whole bill</b> to edit. Delete asks whether to remove one share or the whole bill.</li>
         <li><b>Money assistant:</b> tap <b>Ask</b> at the top. Answers come from your data on this device; you can optionally connect OpenAI or Gemini with your own key.</li>
-        <li><b>Privacy:</b> Settings → Privacy. Set a PIN, hide amounts, choose whether notes are shared. Mark any transaction Private under More options.</li>
-        <li><b>Cloud:</b> sign in with Google or Microsoft in Settings → Data &amp; Sync. Changes then sync automatically.</li>
+        <li><b>Privacy:</b> Settings → Privacy. Set a PIN, hide categories, notes and balances as ***, choose whether notes are shared. Mark any transaction Private under More options.</li>
+        <li><b>Household sync:</b> sign in with Google or email in Settings → Household &amp; sync, then invite your partner by email. You both see the same data, updated live.</li>
+        <li><b>Hide from your partner:</b> mark a transaction Private, or hide an account balance, in Settings → Privacy &amp; security.</li>
         <li><b>Statements:</b> Settings → Import bank / card statement. Review every line before it is added.</li>
         <li><b>Calculator:</b> tap the calculator icon inside an amount box.</li>
         <li><b>Getting started:</b> follow the checklist on the Overview. Each “Show me” guides you step by step while you do it yourself.</li>
@@ -815,7 +823,7 @@ body.authon{overflow:hidden}
     <div class="f-row" id="fNoteRow"><label>Note</label><input class="fin" id="fNote" placeholder="optional"></div>
   </div>
   <details class="more" id="fMore"><summary>More options: repeat, split &amp; privacy</summary>
-    <label class="mgr-row" style="cursor:pointer;border:0;padding:2px 0 10px"><span class="lb" style="white-space:normal"><svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg> Private<small>Collaborators and the online AI see only the date and amount.</small></span><input type="checkbox" class="tgl" id="fPriv"></label>
+    <label class="mgr-row" style="cursor:pointer;border:0;padding:2px 0 10px"><span class="lb" style="white-space:normal"><svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg> Private<small>Your partner sees only the date and amount and can’t open or edit it.</small></span><input type="checkbox" class="tgl" id="fPriv"></label>
     <div class="f-row" id="fRepRow"><label title="Auto-adds future transactions"><svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><path d="m17 2 4 4-4 4"/><path d="M3 11v-1a4 4 0 0 1 4-4h14"/><path d="m7 22-4-4 4-4"/><path d="M21 13v1a4 4 0 0 1-4 4H3"/></svg> Repeat</label><div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap"><select class="fin" id="fRep" style="flex:1;min-width:86px;padding-left:8px;padding-right:8px" onchange="repUI()"><option value="">No repeat</option><option value="day">Daily</option><option value="week">Weekly</option><option value="month">Monthly</option><option value="year">Yearly</option></select><input class="fin" id="fRepEvery" type="number" min="1" value="1" style="width:58px;flex:none" aria-label="repeat every N periods"><span class="small" id="fRepLbl" style="color:var(--muted);white-space:nowrap"></span></div></div>
     <div class="f-row" id="fSplitBox"><label><svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c0-3.6 2.9-6.5 6.5-6.5s6.5 2.9 6.5 6.5"/><path d="M16 4.6a3.5 3.5 0 0 1 0 6.8"/><path d="M18.5 13.9c1.8.9 3 2.8 3 5.1"/></svg> Split between people <span style="text-transform:none;font-weight:600">(works for bills, refunds and income — type each share as a positive amount)</span></label><div id="fSplitRows"></div><div class="small" id="fSplitHint" style="margin-top:2px;color:var(--muted)"></div></div>
   </details>
@@ -6398,6 +6406,563 @@ var _hA52=handleAct;handleAct=function(el){
     case 'tourskipall':tourEnd(false);var j2=jr();j2.hide=1;j2.skipped=1;save();renderJourney();toast('Guide skipped. Start it any time in Settings → Your account.');return;
   }
   _hA52(el);
+};
+
+/* ===================== v1.53: collapsible who-owes-whom · hide details as *** (no blur) · tidier Data & Sync and Import & Export ===================== */
+/* ---------- privacy: show categories, sub-categories, notes and account balances as *** ---------- */
+function mOn(k){return !!privCfg()[k];}
+function maskAny(){var c=privCfg();return !!(c.mCat||c.mNote||c.mBal);}
+var MK={d:0,pend:0};
+function mkMap(){var m={},n=0;return function(s){if(!s)return s;if(m[s]===undefined){n++;m[s]='***'+new Array(n+1).join('\u200b');}return m[s];};}
+function withMask(f){return function(){
+  var c=privCfg();
+  if(MK.d||!(c.mCat||c.mNote))return f.apply(this,arguments);
+  var mc=mkMap(),ms=mkMap(),mn=mkMap(),S={t:DB.txns,c:DB.categories,s:DB.subcats,b:DB.budgets2,r:DB.recur,f:DB.fixedCats};
+  DB.txns=S.t.map(function(t){var x=Object.assign({},t);if(c.mCat&&t.type!=='Transfer'){x.category=mc(t.category);x.subcategory=ms(t.subcategory);}if(c.mNote&&t.note)x.note=mn(t.note);return x;});
+  if(c.mCat){
+    DB.categories={};Object.keys(S.c).forEach(function(k){DB.categories[k]=(S.c[k]||[]).map(mc);});
+    DB.subcats={};Object.keys(S.s||{}).forEach(function(k){DB.subcats[mc(k)]=(S.s[k]||[]).map(ms);});
+    if(S.b){DB.budgets2={};Object.keys(S.b).forEach(function(w){var o={};Object.keys(S.b[w]||{}).forEach(function(k){o[mc(k)]=S.b[w][k];});DB.budgets2[w]=o;});}
+    DB.fixedCats=(S.f||[]).map(mc);
+  }
+  DB.recur=(S.r||[]).map(function(r){if(!r.tpl)return r;var x=Object.assign({},r);x.tpl=Object.assign({},r.tpl);if(c.mCat){x.tpl.category=mc(r.tpl.category);x.tpl.subcategory=ms(r.tpl.subcategory);}if(c.mNote&&r.tpl.note)x.tpl.note=mn(r.tpl.note);return x;});
+  MK.d++;
+  try{return f.apply(this,arguments);}
+  finally{MK.d--;if(DB.budgets2&&!S.b)S.b=null;DB.txns=S.t;DB.categories=S.c;DB.subcats=S.s;DB.budgets2=S.b||DB.budgets2;DB.recur=S.r;DB.fixedCats=S.f;if(MK.pend){MK.pend=0;save();}}
+};}
+var _save53=save;save=function(){if(MK.d){MK.pend=1;return;}_save53();};
+renderOverview=withMask(renderOverview);
+renderTxns=withMask(renderTxns);
+renderDrill=withMask(renderDrill);
+renderReport=withMask(renderReport);
+/* no more blur: the eye button switches the *** masking on and off */
+hideAmtApply=function(){document.body.classList.remove('hideamt');var on=maskAny(),b=$('eyeBtn');if(b){b.innerHTML=ico(on?'eyeoff':'eye');b.setAttribute('aria-label',on?'Show details':'Hide details');b.classList.toggle('on',on);}};
+hideAmtToggle=function(){var c=privCfg(),on=!maskAny();c.mCat=c.mNote=c.mBal=on;delete c.hide;privSave(c);hideAmtApply();renderAll();toast(on?'Categories, notes and balances hidden (***)':'Details shown');};
+function maskSet(k,v){var c=privCfg();c[k]=!!v;delete c.hide;privSave(c);hideAmtApply();renderAll();}
+renderPriv=function(){
+  var b=$('privBody');if(!b)return;
+  var lk=lockCfg(),pc=privCfg(),cfg=collabCfg(),own=!isCollabMode(),who=own?'collaborators':(cfg.owner||'the owner');
+  function tg(lbl,sub,on,fn){return '<label class="mgr-row" style="cursor:pointer;border:0;padding:8px 2px"><span class="lb" style="white-space:normal">'+lbl+'<small>'+sub+'</small></span><input type="checkbox" class="tgl"'+(on?' checked':'')+' onchange="'+fn+'"></label>';}
+  b.innerHTML='<div class="mgr-sec">On this device</div>'
+    +'<div class="mgr-row" style="border:0;padding:8px 2px"><span class="lb" style="white-space:normal">'+ico('lock')+' App lock<small>'+(lk.h?'On · asks for your '+(lk.len||4)+'-digit PIN when the app opens':'Off · anyone holding this phone can open the app')+'</small></span>'
+    +(lk.h?'<button class="ibtn" data-act="pinchg">Change</button><button class="ibtn" data-act="pinoff" style="color:var(--exp)">Turn off</button>':'<button class="ibtn" data-act="pinset" style="color:var(--accent);font-weight:800">Set PIN</button>')+'</div>'
+    +(lk.h&&!lk.len?'<div class="help small" style="margin:-4px 2px 8px;color:var(--warn)">Your PIN has 4 digits. Tap Change to switch to a safer 6-digit PIN.</div>':'')
+    +(lk.h?'<div class="f-row" style="margin:2px 0 8px"><label>Lock again after leaving the app</label><select class="fin" onchange="var c=lockCfg();c.delay=+this.value;lockSave(c);toast(\'Saved\')">'+[[0,'Immediately'],[60,'1 minute'],[300,'5 minutes'],[900,'15 minutes']].map(function(o){return '<option value="'+o[0]+'"'+((+lk.delay||0)===o[0]?' selected':'')+'>'+o[1]+'</option>';}).join('')+'</select></div>':'')
+    +'<div class="mgr-sec">Hide details on screen <span style="text-transform:none;font-weight:600">· shown as ***</span></div>'
+    +tg(ico('tag')+' Categories &amp; sub-categories','Totals and charts still work; only the names are hidden.',!!pc.mCat,'maskSet(\'mCat\',this.checked)')
+    +tg(ico('book')+' Notes','Transaction notes show as ***.',!!pc.mNote,'maskSet(\'mNote\',this.checked)')
+    +tg(ico('bank')+' Account balances','Balances in the Account Summary show as ***.',!!pc.mBal,'maskSet(\'mBal\',this.checked)')
+    +'<div class="help small" style="margin:0 2px 8px">The '+ico('eye')+' button at the top turns all three on or off. Opening a transaction to edit it still shows its real details.</div>'
+    +'<div class="mgr-sec">'+(own?'Sharing with collaborators':'Sharing with '+esc(cfg.owner||'the owner'))+'</div>'
+    +tg(ico('book')+' Share my notes','When off, '+who+' see your transactions without their notes.',shareNotes(),'collabCfg().shareNotes=this.checked;touch()')
+    +'<div class="help small" style="margin:2px 2px 8px">To keep one transaction private, open it and switch on <b>Private</b> under More options. '+(own?'Collaborators':esc(cfg.owner||'The owner'))+' then see only the date and amount.</div>'
+    +'<div class="mgr-sec">AI assistant</div>'
+    +tg(ico('spark')+' Send notes to the online AI','Only used when Gemini or OpenAI is connected. Private transactions are always sent as amount only.',!!pc.aiNotes,'var c=privCfg();c.aiNotes=this.checked;privSave(c)');
+};
+/* ---------- Account Summary: collapsible Who owes whom, balances can show as *** ---------- */
+accSummaryHTML=function(rows){
+  var mb=mOn('mBal'),M=money,FM=fmt;
+  if(mb){money=function(){return '***';};fmt=function(){return '***';};}
+  try{
+    var h=_asum51(rows.filter(function(r){return !isRecvAcc(r.name);})),ls=ledgers();
+    if(!ls.length)return h;
+    var open=!!ASUM.owe,due=ls.filter(function(l){return l.amt>=0.005;});
+    h+='<button class="asum-row asum-l1" data-act="asum" data-k="owe"><span class="lb">'+ico('scale')+' Who owes whom<small>'+(due.length?due.length+' open balance'+(due.length===1?'':'s'):'all settled up')+' · tap to '+(open?'collapse':'expand')+'</small></span>'
+      +'<span class="asum-r"><span class="amt2 '+(due.length?'neg':'pos')+'">'+(due.length===1?money(due[0].amt):(due.length?due.length+' open':'settled'))+'</span><span class="asum-ch" aria-hidden="true">'+(open?ico('chevdown'):ico('chevright'))+'</span></span></button>';
+    if(open)h+='<div class="asum-l3">'+ls.map(function(l){var pp=l.name.split(' owes '),done=l.amt<0.005;
+      return trow({act:'acc',attrs:'data-n="'+esc(l.name)+'"',lb:ico('users')+' '+(done?esc(pp[0])+' &amp; '+esc(pp[1]):esc(l.debtor)+' owes '+esc(l.creditor)),sub:done?'all settled up':'tap to see the history',amt:money(l.amt),cls:done?'pos':'neg'});}).join('')+'</div>';
+    return h;
+  }finally{money=M;fmt=FM;}
+};
+/* ---------- Data & Sync: one status line, compact cloud controls ---------- */
+renderCloudAcc=function(){
+  var b=$('fbBody');if(!b)return;
+  var u=FB.user,on=!!DB.meta.cloudSyncOn,sub=$('fbSub');
+  if(sub)sub.textContent=u?(on?'on':'paused'):'off';
+  if(!u){
+    b.innerHTML='<div class="btnrow"><button class="btn ghost" data-act="fbsignin">'+OAUTH_ICO.google+' Google</button><button class="btn ghost" data-act="fbsigninms">'+OAUTH_ICO.ms+' Microsoft</button></div>'
+      +'<div class="help small" style="margin-top:6px">Sign in to back up and sync across your phones. Works when the app is opened from its website. Your data is stored in Firebase (Google Cloud) and only your account can read it.</div>';
+    return;
+  }
+  var pv=fbProvName();
+  b.innerHTML='<label class="mgr-row" style="cursor:pointer;border:0;padding:4px 2px 8px"><span class="lb" style="white-space:normal">'+esc(u.email||u.uid)+(pv?' · '+pv:'')+'<small>'+(on?'Auto-sync on':'Auto-sync paused')+fbSyncLabel()+'</small></span><input type="checkbox" class="tgl"'+(on?' checked':'')+' onchange="fbToggle()"></label>'
+    +'<div class="btnrow"><button class="btn ghost" data-act="fbsync"'+(on?'':' disabled')+'>'+ico('refresh')+' Sync now</button><button class="btn ghost" data-act="fbrestore">'+ico('download')+' Restore</button></div>'
+    +'<details class="help" style="margin-top:8px"><summary>More cloud options</summary><div class="btnrow" style="margin-top:8px"><button class="btn ghost" data-act="fbsignout">'+ico('logout')+' Sign out</button><button class="btn red" data-act="fbdelcloud">'+ico('trash')+' Delete cloud copy</button></div></details>';
+  syncStatus();
+};
+var _rST53=renderSettings;renderSettings=function(){
+  _rST53();
+  var el=$('dsStatus');if(el){
+    var on=!!(FB.user&&DB.meta.cloudSyncOn),lk=!!(Cloud.handle&&Cloud.perm==='granted');
+    var txt=on?'Synced to the cloud'+fbSyncLabel():(lk?'Auto-saving to your linked Drive / OneDrive file':(Cloud.handle?'Linked file needs reconnecting (see Advanced)':'Saved on this phone only'));
+    el.innerHTML='<span class="dot" style="background:'+(on||lk?'var(--inc)':(Cloud.handle?'var(--warn)':'var(--muted)'))+'"></span><span>'+esc(txt)+'</span>';
+  }
+  var bk=$('bkSub');if(bk)bk.textContent=BK.log.length?BK.log.length+' kept · latest '+bkWhen(BK.log[0].at):'automatic';
+};
+
+/* ===================== v1.54: Google + email sign-in · shared household cloud sync · private transactions & hidden balances between partners · guided tour that locks the screen · simpler Settings ===================== */
+var DEVICE=(function(){try{var d=localStorage.getItem('mm_dev');if(!d){d=uid();localStorage.setItem('mm_dev',d);}return d;}catch(e){return uid();}})();
+function meName(){return (DB&&DB.meta&&DB.meta.profile&&DB.meta.profile.name)||collabCfg().me||'';}
+function fsErr(e){var c=(e&&e.code)||'';if(c==='permission-denied')return 'Cloud sync is not allowed yet. Publish the Firestore rules (firestore.rules) in Firebase, then try again.';if(c==='too-big')return 'Your data is too large to sync (over 1 MB).';if(c==='unavailable')return 'You are offline. Changes will sync when you are back online.';return 'Cloud sync failed. Check your connection and try again.';}
+
+/* ---------- 1. sign-in: Google + email & password only ---------- */
+var _rAuth54=renderAuth;renderAuth=function(){
+  _rAuth54();var b=$('auBody');if(!b)return;
+  b.querySelectorAll('[data-act=auoauth][data-k=ms],[data-act=auoauth][data-k=apple]').forEach(function(x){x.remove();});
+  var h=b.querySelector('.help.small');if(h&&(AU.mode==='signup'||AU.mode==='login'))h.innerHTML=ico('shield')+' Google sign-in works when the app is opened from its website. Email and password work everywhere; on the website they also sign you in to the cloud so you can share a household with your partner.';
+};
+var _ca54=cloudAuth;cloudAuth=function(kind,email,pw){
+  return _ca54(kind,email,pw).then(function(r){
+    if(r.ok&&kind==='up'){dynImport('https://www.gstatic.com/firebasejs/'+FBJS+'/firebase-auth.js').then(function(A){var cu=FB.auth&&FB.auth.currentUser;if(cu&&!cu.emailVerified)return A.sendEmailVerification(cu);}).catch(function(){});}
+    return r;
+  });
+};
+fbProvName=function(){try{var u=FB.auth&&FB.auth.currentUser,p=u&&u.providerData&&u.providerData[0]&&u.providerData[0].providerId;return p==='google.com'?'Google':(p==='password'?'Email':'');}catch(e){return '';}};
+
+/* ---------- 2. household cloud sync (one shared copy for the couple, live updates) ---------- */
+var HH={id:'',unsub:null,unsubP:null,info:null,busy:false,priv:null,lastPriv:'',emailForm:false,t:0};
+function fsMods(){return fbLoad().then(function(){return dynImport('https://www.gstatic.com/firebasejs/'+FBJS+'/firebase-firestore.js');});}
+function hhRef(F,id){return F.doc(FB.db,'households',id);}
+function hhPrivRef(F,id){return F.doc(FB.db,'households',id,'private',FB.user.uid);}
+function hhCode(){var c='ABCDEFGHJKLMNPQRSTUVWXYZ23456789',s='',i;for(i=0;i<8;i++)s+=c.charAt(Math.floor(Math.random()*c.length));return s;}
+/* change stamps: every edited transaction gets t.u, every deleted one a tombstone, so two phones merge instead of overwriting */
+var STP={map:null,rmap:null};
+function txKey(t){var c=Object.assign({},t);delete c.u;return JSON.stringify(c);}
+function stampInit(){if(!DB)return;STP.map={};STP.rmap={};DB.txns.forEach(function(t){STP.map[t.id]=txKey(t);});(DB.recur||[]).forEach(function(r){STP.rmap[r.id]=1;});}
+function stampChanges(){
+  if(!DB)return;if(!STP.map){stampInit();return;}
+  var now=Date.now(),seen={},del=DB.meta.del=DB.meta.del||{};
+  DB.txns.forEach(function(t){seen[t.id]=1;var k=txKey(t);if(STP.map[t.id]!==k){t.u=now;STP.map[t.id]=k;}});
+  Object.keys(STP.map).forEach(function(id){if(!seen[id]){del[id]=now;delete STP.map[id];}});
+  var rs={};(DB.recur||[]).forEach(function(r){rs[r.id]=1;STP.rmap[r.id]=1;});
+  Object.keys(STP.rmap).forEach(function(id){if(!rs[id]){del['r:'+id]=now;delete STP.rmap[id];}});
+  var cut=now-90*864e5;Object.keys(del).forEach(function(k){if(del[k]<cut)delete del[k];});
+}
+var _boot54=boot;boot=function(){_boot54();stampInit();};
+/* recurring transactions get the same id on every phone, so both phones never add the same one twice */
+materializeRecur=function(){
+  if(!Array.isArray(DB.recur)||!DB.recur.length)return 0;
+  var today=todayISO(),added=0,ids={},del=DB.meta.del||{};DB.txns.forEach(function(t){ids[t.id]=1;});
+  DB.recur.forEach(function(r){var g=0;
+    while(r.next&&r.next<=today&&g<1000){
+      var id='R'+r.id+'_'+((r.seq||0)+1);
+      if(!ids[id]&&!del[id]){var t=mkTxn({date:r.next,type:r.tpl.type,category:r.tpl.category,sub:r.tpl.subcategory,account:r.tpl.account,to:r.tpl.to,person:r.tpl.person,note:r.tpl.note,amount:r.tpl.amount,split:r.tpl.split,owedAcc:r.tpl.owedAcc,owedAmt:r.tpl.owedAmt});t.id=id;DB.txns.push(t);ids[id]=1;added++;}
+      r.seq=(r.seq||0)+1;r.next=advanceOcc(r.anchor,r.freq,r.every||1,r.seq+1);g++;
+    }});
+  return added;
+};
+/* what goes to the shared copy: my private transactions as date + amount only, no device settings */
+function sharedCopy(now){
+  var me=meName(),c=JSON.parse(JSON.stringify(DB));
+  c.txns=c.txns.filter(function(t){return !t.demo;}).map(function(t){
+    if(t.priv&&!t.masked&&(t.pby||me)===me){var m=maskTx(t);m.u=t.u||0;m.priv=1;m.pby=t.pby||me;return m;}
+    return t;});
+  delete c.collab;
+  c.meta={currency:DB.meta.currency,changedAt:now||Date.now(),del:DB.meta.del||{}};
+  return c;
+}
+function mergeShared(R){
+  var L=DB,del=Object.assign({},(R.meta&&R.meta.del)||{}),ld=L.meta.del||{};
+  Object.keys(ld).forEach(function(k){if(!del[k]||ld[k]>del[k])del[k]=ld[k];});
+  var map={};L.txns.forEach(function(t){map[t.id]=t;});
+  (R.txns||[]).forEach(function(r){var l=map[r.id];if(!l||(+r.u||0)>(+l.u||0))map[r.id]=r;});
+  L.txns=Object.keys(map).map(function(id){return map[id];}).filter(function(t){return !(del[t.id]&&del[t.id]>=(+t.u||0));});
+  L.meta.del=del;
+  var rAt=+(R.meta&&R.meta.changedAt)||0;
+  if(rAt>(+L.meta.changedAt||0)){
+    ['people','accTypes','accTypeMeta','accounts','categories','subcats','budgets','budgets2','fixedCats','goals'].forEach(function(k){if(R[k]!==undefined)L[k]=JSON.parse(JSON.stringify(R[k]));});
+    if(R.meta&&R.meta.currency)L.meta.currency=R.meta.currency;
+  }else{
+    (R.people||[]).forEach(function(p){if(L.people.indexOf(p)<0)L.people.push(p);});
+    (R.accTypes||[]).forEach(function(t){if(L.accTypes.indexOf(t)<0){L.accTypes.push(t);if(R.accTypeMeta&&R.accTypeMeta[t])L.accTypeMeta[t]=R.accTypeMeta[t];}});
+    (R.accounts||[]).forEach(function(a){if(!L.accounts.some(function(x){return x.name===a.name;}))L.accounts.push(a);});
+    Object.keys(R.categories||{}).forEach(function(ty){L.categories[ty]=L.categories[ty]||[];(R.categories[ty]||[]).forEach(function(c){if(L.categories[ty].indexOf(c)<0)L.categories[ty].push(c);});});
+    Object.keys(R.subcats||{}).forEach(function(c){(R.subcats[c]||[]).forEach(function(s){if(subList(c).indexOf(s)<0)subList(c).push(s);});});
+    var gl=goalsList();(R.goals||[]).forEach(function(g){if(!gl.some(function(x){return x.id===g.id;}))gl.push(g);});
+  }
+  var rm={};(L.recur||[]).forEach(function(r){rm[r.id]=r;});
+  (R.recur||[]).forEach(function(r){var l=rm[r.id];if(!l||(+r.seq||0)>(+l.seq||0))rm[r.id]=r;});
+  L.recur=Object.keys(rm).map(function(k){return rm[k];}).filter(function(r){return !del['r:'+r.id];});
+  normalizeDB();
+}
+function overlayPriv(){
+  if(!HH.priv||!HH.priv.length)return;var del=DB.meta.del||{};
+  HH.priv.forEach(function(p){
+    var i=-1;DB.txns.forEach(function(t,k){if(t.id===p.id)i=k;});
+    if(i<0){if(!(del[p.id]>=(+p.u||0)))DB.txns.push(p);return;}
+    var t=DB.txns[i];if(t.masked||(+p.u||0)>=(+t.u||0))DB.txns[i]=p;
+  });
+}
+function pushPrivate(){
+  if(!HH.id||!FB.user)return;var me=meName();
+  var s=JSON.stringify(DB.txns.filter(function(t){return t.priv&&!t.masked&&(t.pby||me)===me;}));
+  if(s===HH.lastPriv)return;HH.lastPriv=s;
+  fsMods().then(function(F){return F.setDoc(hhPrivRef(F,HH.id),{data:s,changedAt:Date.now()});}).catch(function(e){console.warn('hh-priv',e);});
+}
+function hhDetach(){if(HH.unsub)try{HH.unsub();}catch(e){}if(HH.unsubP)try{HH.unsubP();}catch(e){}HH.unsub=HH.unsubP=null;HH.id='';HH.info=null;HH.priv=null;HH.lastPriv='';}
+function hhGone(msg){hhDetach();if(DB){DB.meta.hh='';save();}renderCloudAcc();if(msg)toast(msg);}
+function hhAttach(id){
+  return fsMods().then(function(F){
+    hhDetach();HH.id=id;DB.meta.hh=id;save();var first=true;
+    HH.unsub=F.onSnapshot(hhRef(F,id),function(s){
+      if(!s.exists()){hhGone('The shared household was deleted. Your data is still on this phone.');return;}
+      var d=s.data();HH.info={owner:d.owner,ownerEmail:d.ownerEmail||'',members:d.members||[],memberEmails:d.memberEmails||{},invites:d.invites||[]};
+      if(d.data&&d.by!==DEVICE&&(+d.changedAt||0)>(+DB.meta.hhAt||0)){
+        try{mergeShared(JSON.parse(d.data));overlayPriv();DB.meta.hhAt=+d.changedAt;stampInit();save();renderAll();}catch(e){console.warn('hh-merge',e);}
+      }
+      if(first){first=false;clearTimeout(HH.t);HH.t=setTimeout(hhPush,400);}
+      renderCloudAccSafe();
+    },function(e){hhGone(fsErr(e));});
+    HH.unsubP=F.onSnapshot(hhPrivRef(F,id),function(s){
+      if(!s.exists())return;var raw=s.data().data||'[]';HH.lastPriv=raw;
+      try{HH.priv=JSON.parse(raw);}catch(e){HH.priv=[];}
+      overlayPriv();stampInit();save();renderAll();
+    },function(){});
+  });
+}
+function hhPush(){
+  if(!(FB.user&&DB.meta.cloudSyncOn&&HH.id))return Promise.resolve(false);
+  stampChanges();var id=HH.id,merged=false;
+  return fsMods().then(function(F){var ref=hhRef(F,id);
+    return F.runTransaction(FB.db,function(tx){return tx.get(ref).then(function(s){
+      if(!s.exists())throw {code:'not-found'};
+      var d=s.data();
+      if(d.data&&d.by!==DEVICE&&(+d.changedAt||0)>(+DB.meta.hhAt||0)){mergeShared(JSON.parse(d.data));overlayPriv();merged=true;}
+      var now=Date.now(),sh=JSON.stringify(sharedCopy(now));
+      if(sh.length>1000000)throw {code:'too-big'};
+      tx.update(ref,{data:sh,changedAt:now,by:DEVICE,updatedAt:new Date().toISOString()});
+      return now;
+    });});
+  }).then(function(now){DB.meta.hhAt=now;DB.meta.cloudPushedAt=Date.now();stampInit();save();pushPrivate();if(merged)renderAll();else renderCloudAccSafe();syncStatus();return true;})
+  .catch(function(e){console.warn('hh-push',e);syncUI('warn','Sync failed — tap');if(e&&(e.code==='too-big'||e.code==='permission-denied'))toast(fsErr(e));return false;});
+}
+function hhCreate(ud){
+  return fsMods().then(function(F){
+    var p=Promise.resolve(),ca=ud&&ud.data?(+ud.changedAt||Date.parse(ud.updatedAt)||0):0;
+    if(ca>(+DB.meta.changedAt||0)+1000){backupSnap('pre-cloud');p=adoptJSON(ud.data).then(function(){DB.meta.cloudSyncOn=true;DB.meta.syncChoice='yes';stampInit();});}
+    return p.then(function(){
+      var id=hhCode(),now=Date.now(),em=(FB.user.email||'').toLowerCase(),me={};me[FB.user.uid]=em;
+      return F.setDoc(hhRef(F,id),{owner:FB.user.uid,ownerEmail:em,members:[FB.user.uid],memberEmails:me,invites:[],data:JSON.stringify(sharedCopy(now)),changedAt:now,by:DEVICE,created:new Date().toISOString(),updatedAt:new Date().toISOString()})
+        .then(function(){DB.meta.hhAt=now;return F.setDoc(F.doc(FB.db,'users',FB.user.uid),{household:id,email:em},{merge:true});})
+        .then(function(){return hhAttach(id);})
+        .then(function(){toast('Cloud sync is on ✓ Invite your partner in Settings → Household & sync.');});
+    });
+  });
+}
+function waitFree(fn){if($('authScr').hidden&&$('lockScr').hidden&&!TOUR.steps)fn();else setTimeout(function(){waitFree(fn);},700);}
+function hhOfferJoin(id,d,manual,ud){
+  waitFree(function(){
+    askChoice((d.ownerEmail||'Your partner')+' invited you to share their household. Join it so you both see the same data? Your own transactions are added to it (sample transactions are left out).',[
+      {c:'btn',l:ico('users')+' Join the household',f:function(){hhJoin(id);}},
+      {c:'btn ghost',l:manual?'Not now':'Keep my data separate',f:function(){if(!manual)hhCreate(ud||{}).catch(function(e){toast(fsErr(e));});}}]);
+  });
+}
+function hhJoin(id){
+  var em=(FB.user.email||'').toLowerCase(),uid=FB.user.uid;
+  if(DB.meta.demo&&DB.meta.demo.on){DB.txns=DB.txns.filter(function(t){return !t.demo;});DB.meta.demo={on:0};}
+  fsMods().then(function(F){
+    var upd={members:F.arrayUnion(uid),invites:F.arrayRemove(em)};upd['memberEmails.'+uid]=em;
+    return F.updateDoc(hhRef(F,id),upd).then(function(){return F.setDoc(F.doc(FB.db,'users',uid),{household:id,email:em},{merge:true});})
+      .then(function(){DB.meta.hhAt=0;DB.meta.cloudSyncOn=true;DB.meta.syncChoice='yes';save();return hhAttach(id);})
+      .then(function(){toast('You joined the household ✓');});
+  }).catch(function(e){toast(fsErr(e));});
+}
+function hhStart(){
+  if(!FB.user||!DB.meta.cloudSyncOn||HH.busy||HH.id)return;
+  HH.busy=true;
+  fsMods().then(function(F){
+    return F.getDoc(F.doc(FB.db,'users',FB.user.uid)).then(function(us){
+      var ud=us.exists()?us.data():{};
+      if(ud.household)return F.getDoc(hhRef(F,ud.household)).then(function(s){if(s.exists())return hhAttach(ud.household);return hhFind(F,ud);},function(){return hhFind(F,ud);});
+      return hhFind(F,ud);
+    });
+  }).catch(function(e){console.warn('hh-start',e);toast(fsErr(e));}).then(function(){HH.busy=false;renderCloudAccSafe();});
+}
+function hhFind(F,ud){
+  var em=(FB.user.email||'').toLowerCase();if(!em)return hhCreate(ud);
+  return F.getDocs(F.query(F.collection(FB.db,'households'),F.where('invites','array-contains',em))).then(function(qs){
+    var d=qs.docs[0];if(d){hhOfferJoin(d.id,d.data(),false,ud);return;}
+    return hhCreate(ud);
+  },function(){return hhCreate(ud);});
+}
+function hhInvite(){
+  var em=(($('hhInvEmail')||{}).value||'').trim().toLowerCase();
+  if(!emailOK(em)){toast('Enter your partner’s email');return;}
+  if(em===(FB.user.email||'').toLowerCase()){toast('That is your own email');return;}
+  fsMods().then(function(F){return F.updateDoc(hhRef(F,HH.id),{invites:F.arrayUnion(em)});}).then(function(){toast('Invited '+em+' ✓');}).catch(function(e){toast(fsErr(e));});
+}
+function hhUninvite(em){fsMods().then(function(F){return F.updateDoc(hhRef(F,HH.id),{invites:F.arrayRemove(em)});}).catch(function(e){toast(fsErr(e));});}
+function hhJoinCode(){
+  var code=(($('hhCode')||{}).value||'').trim().toUpperCase();
+  if(!code){toast('Enter the household code');return;}
+  if(code===HH.id){toast('You are already in this household');return;}
+  var cu=FB.auth&&FB.auth.currentUser;
+  (cu?cu.reload().then(function(){return cu.getIdToken(true);}):Promise.resolve()).then(fsMods).then(function(F){return F.getDoc(hhRef(F,code));})
+    .then(function(s){if(!s.exists()){toast('No household with that code');return;}hhOfferJoin(code,s.data(),true);})
+    .catch(function(e){toast(e&&e.code==='permission-denied'?'No invitation for '+(FB.user.email||'this email')+' on that household. Ask your partner to invite this email, and verify it if you signed up with email.':fsErr(e));});
+}
+function hhLeave(){
+  askConfirm('Leave this household? Your partner keeps the shared copy. The data on this phone stays, and you get your own cloud copy again.','Leave',function(){
+    var uid=FB.user.uid,id=HH.id;
+    fsMods().then(function(F){var u={members:F.arrayRemove(uid)};u['memberEmails.'+uid]=F.deleteField();
+      return F.updateDoc(hhRef(F,id),u).then(function(){return F.setDoc(F.doc(FB.db,'users',uid),{household:F.deleteField()},{merge:true});});})
+    .then(function(){hhDetach();DB.meta.hh='';save();toast('You left the household');setTimeout(hhStart,600);})
+    .catch(function(e){toast(fsErr(e));});
+  });
+}
+fbDeleteCloud=function(){
+  if(!FB.user||!HH.id){toast('Nothing to delete');return;}
+  askConfirm('Delete the shared household from the cloud? Your partner loses the shared copy. The data on this phone stays.','Delete household',function(){
+    var id=HH.id,uid=FB.user.uid;
+    fsMods().then(function(F){return F.deleteDoc(hhPrivRef(F,id)).catch(function(){}).then(function(){return F.deleteDoc(hhRef(F,id));}).then(function(){return F.setDoc(F.doc(FB.db,'users',uid),{household:F.deleteField()},{merge:true});});})
+    .then(function(){hhDetach();DB.meta.hh='';DB.meta.cloudSyncOn=false;DB.meta.syncChoice='no';save();renderCloudAcc();syncStatus();toast('Household deleted from the cloud');})
+    .catch(function(e){toast(fsErr(e));});
+  });
+};
+fbAutoSync=hhStart;
+fbPushSoon=function(){stampChanges();if(!FB.user||!DB.meta.cloudSyncOn||!FB.ready||!HH.id)return;clearTimeout(HH.t);HH.t=setTimeout(hhPush,1500);};
+fbSyncNow=function(){if(!FB.user){toast('Sign in first');return Promise.resolve();}if(!DB.meta.cloudSyncOn){toast('Turn on cloud sync first');return Promise.resolve();}if(!HH.id){hhStart();return Promise.resolve();}return hhPush().then(function(ok){if(ok)toast('Synced ✓');});};
+var _fsu54=fbSetUser;fbSetUser=function(u){if(!u)hhDetach();_fsu54(u);};
+var _fbTg54=fbToggle;fbToggle=function(){_fbTg54();if(!DB.meta.cloudSyncOn)hhDetach();else hhStart();renderCloudAcc();};
+function renderCloudAccSafe(){var b=$('fbBody');if(b&&document.activeElement&&b.contains(document.activeElement)&&document.activeElement.tagName==='INPUT')return;renderCloudAcc();}
+renderCloudAcc=function(){
+  var b=$('fbBody');if(!b)return;
+  var u=FB.user,on=!!DB.meta.cloudSyncOn,sub=$('fbSub');
+  if(sub)sub.textContent=u?(on?(HH.id?'household '+HH.id:'connecting…'):'paused'):'off';
+  if(!u){
+    b.innerHTML='<div class="btnrow"><button class="btn ghost" data-act="fbsignin">'+OAUTH_ICO.google+' Google</button><button class="btn ghost" data-act="hhemail">'+ico('mail')+' Email</button></div>'
+      +(HH.emailForm?'<div style="display:grid;gap:7px;margin-top:8px"><input class="fin" id="hhEm" type="email" autocomplete="email" autocapitalize="off" placeholder="you@example.com"><input class="fin" id="hhPw" type="password" placeholder="Password (6+ characters)"><div class="btnrow"><button class="btn" data-act="hhemin">Sign in</button><button class="btn ghost" data-act="hhemup">Create account</button></div></div>':'')
+      +'<div class="help small" style="margin-top:6px">Sign in so you and your partner share one household that updates live on both phones. Works when the app is opened from its website.</div>';
+    return;
+  }
+  var pv=fbProvName(),cu=FB.auth&&FB.auth.currentUser,unver=!!(cu&&pv==='Email'&&!cu.emailVerified);
+  var I=HH.info||{},mine=(u.email||'').toLowerCase(),owner=I.owner===u.uid,mem=(I.members||[]).map(function(x){return (I.memberEmails||{})[x]||'member';}),inv=I.invites||[];
+  var h='<label class="mgr-row" style="cursor:pointer;border:0;padding:4px 2px 8px"><span class="lb" style="white-space:normal">'+esc(u.email||u.uid)+(pv?' · '+pv:'')+'<small>'+(on?'Live sync on':'Sync paused')+fbSyncLabel()+'</small></span><input type="checkbox" class="tgl"'+(on?' checked':'')+' onchange="fbToggle()"></label>'
+    +(unver?'<div class="help small" style="color:var(--warn);margin-bottom:8px">'+ico('warn')+' Verify your email (check your inbox) so a partner can invite you. <button class="aulink inl" data-act="hhverify">Resend email</button></div>':'');
+  if(on&&HH.id){
+    h+='<div class="dayg"><div class="day-h"><span>'+ico('users')+' Household</span><span>code '+esc(HH.id)+'</span></div>'
+      +mem.map(function(e){return '<div class="mgr-row" style="padding:8px 12px"><span class="lb">'+esc(e)+'<small>'+(e===mine?'you':'member')+(I.ownerEmail===e?' · created the household':'')+'</small></span><span class="pos">'+ico('check')+'</span></div>';}).join('')
+      +inv.map(function(e){return '<div class="mgr-row" style="padding:8px 12px"><span class="lb">'+esc(e)+'<small>invited · waiting to join</small></span><button class="ibtn" data-act="hhuninv" data-e="'+esc(e)+'" aria-label="cancel invite">'+ico('x')+'</button></div>';}).join('')
+      +(mem.length<2?'<div style="display:flex;gap:7px;padding:8px 12px"><input class="fin" id="hhInvEmail" type="email" autocapitalize="off" placeholder="Partner’s email"><button class="ibtn" data-act="hhinvite" style="color:var(--accent);font-weight:800">Invite</button></div>':'')
+      +'</div>'
+      +(mem.length<2?'<div class="help small" style="margin-bottom:8px">Your partner opens the app, signs in with that email and turns on cloud sync. The app asks them to join. They can also use code <b>'+esc(HH.id)+'</b> under More → Join with a code.</div>':'');
+  }else if(on){h+='<div class="help small" style="margin-bottom:8px">Connecting to your household…</div>';}
+  h+='<div class="btnrow"><button class="btn ghost" data-act="fbsync"'+(on?'':' disabled')+'>'+ico('refresh')+' Sync now</button></div>'
+    +'<details class="help" style="margin-top:8px"><summary>More</summary><div style="display:grid;gap:8px;margin-top:8px">'
+    +(on?'<div style="display:flex;gap:7px"><input class="fin" id="hhCode" placeholder="Join with a code" autocapitalize="characters"><button class="ibtn" data-act="hhjoincode" style="color:var(--accent);font-weight:800">Join</button></div>':'')
+    +(HH.id&&!owner?'<button class="btn ghost" data-act="hhleave">Leave household</button>':'')
+    +'<button class="btn ghost" data-act="fbsignout">'+ico('logout')+' Sign out</button>'
+    +(HH.id&&owner?'<button class="btn red" data-act="fbdelcloud">'+ico('trash')+' Delete household from the cloud</button>':'')
+    +'</div></details>';
+  b.innerHTML=h;syncStatus();
+};
+function hhEmailAuth(kind){
+  var em=(($('hhEm')||{}).value||'').trim().toLowerCase(),pw=($('hhPw')||{}).value||'';
+  if(!emailOK(em)){toast('Enter a valid email');return;}if(pw.length<6){toast('Password must be at least 6 characters');return;}
+  DB.meta.syncChoice='yes';DB.meta.cloudSyncOn=true;save();
+  cloudAuth(kind,em,pw).then(function(r){
+    if(r.ok){HH.emailForm=false;toast('Signed in as '+em);return;}
+    var c=r.why||'';
+    toast(c==='offline'?'Email sign-in works when the app is opened from its website.':c==='auth/operation-not-allowed'?'Email sign-in is not switched on in Firebase yet.':c==='auth/weak-password'?'Use a stronger password.':c==='timeout'?'Sign-in timed out. Check your connection.':'Wrong email or password.');
+  });
+}
+
+/* ---------- 3. partner privacy: private transactions & hidden balances ---------- */
+function isHiddenFor(t){if(!t)return false;if(t.masked)return true;var me=meName();return !!(t.priv&&t.pby&&me&&t.pby!==me);}
+var VW={d:0,pend:0};
+var _save54=save;save=function(){if(VW.d){VW.pend=1;return;}_save54();};
+function withView(f){return function(){
+  var me=meName();
+  if(VW.d||!DB||!me||!DB.txns.some(function(t){return t.priv&&t.pby&&t.pby!==me&&!t.masked;}))return f.apply(this,arguments);
+  var S=DB.txns;DB.txns=S.map(function(t){if(t.priv&&t.pby&&t.pby!==me&&!t.masked){var m=maskTx(t);m.priv=1;m.pby=t.pby;m.u=t.u;return m;}return t;});
+  VW.d++;
+  try{return f.apply(this,arguments);}finally{VW.d--;DB.txns=S;if(VW.pend){VW.pend=0;save();}}
+};}
+renderOverview=withView(renderOverview);renderTxns=withView(renderTxns);renderDrill=withView(renderDrill);renderReport=withView(renderReport);
+var _os54=openSheet;openSheet=function(id){
+  var t=id?DB.txns.find(function(x){return x.id===id;}):null;
+  if(t&&isHiddenFor(t)){toast(ico?('Private · '+(t.pby||t.person||'your partner')+' has hidden this transaction. You can’t view or edit it.'):'');return;}
+  _os54(id);
+};
+var _sv54=saveTxn;saveTxn=function(){_sv54();var me=meName(),ch=0;DB.txns.forEach(function(t){if(t.priv&&!t.pby&&!t.masked){t.pby=me||t.person;ch++;}});if(ch){save();fbPushSoon();}};
+function selOwn(){return BSEL.ids.map(function(id){return DB.txns.find(function(t){return t.id===id;});}).filter(function(t){return t&&!isHiddenFor(t);});}
+var _bd54=batchDel;batchDel=function(){var n=BSEL.ids.length;BSEL.ids=selOwn().map(function(t){return t.id;});if(BSEL.ids.length<n)toast((n-BSEL.ids.length)+' private transaction(s) of your partner were left out');_bd54();};
+var _ba54=batchApply;batchApply=function(){BSEL.ids=selOwn().map(function(t){return t.id;});_ba54();};
+function batchPriv(){
+  var l=selOwn();if(!l.length){toast('Tick your own transactions first');return;}
+  var me=meName(),allOn=l.every(function(t){return t.priv;});
+  l.forEach(function(t){if(allOn){delete t.priv;delete t.pby;}else{t.priv=1;t.pby=me||t.person;}});
+  BSEL.on=false;BSEL.ids=[];navSync();touch();
+  toast(allOn?l.length+' transaction(s) shown to your partner again':l.length+' transaction(s) are now private: your partner sees only date and amount');
+}
+function isBalHidden(n){var a=DB.accounts.find(function(x){return x.name===n;}),me=meName();return !!(a&&a.hideBal&&me&&(a.hby||a.owner)!==me);}
+function accHideBal(n,on){var a=DB.accounts.find(function(x){return x.name===n;});if(!a)return;if(on){a.hideBal=1;a.hby=meName()||a.owner;}else{delete a.hideBal;delete a.hby;}touch();toast(on?n+' balance is now hidden from your partner':n+' balance is visible to your partner');}
+var _fmt54=fmt;fmt=function(n){return (typeof n==='number'&&!isFinite(n))?'***':_fmt54(n);};
+var _bal54=balances;balances=function(){var r=_bal54();r.rows.forEach(function(x){if(isBalHidden(x.name))x.bal=NaN;});return r;};
+var _abao54=accountBalAsOf;accountBalAsOf=function(n,c){return isBalHidden(n)?NaN:_abao54(n,c);};
+var _arb54=accRunningBals;accRunningBals=function(acc){var r=_arb54(acc);if(isBalHidden(acc))[r.tx,r.day,r.mo].forEach(function(m){Object.keys(m).forEach(function(k){m[k]=NaN;});});return r;};
+var _repCC54=repCC;repCC=function(){
+  var keep=DB.accounts,hid=keep.filter(function(a){return isBalHidden(a.name)&&accTypeKind(a.type)==='liability';});
+  if(!hid.length)return _repCC54();
+  DB.accounts=keep.filter(function(a){return hid.indexOf(a)<0;});
+  try{return _repCC54()+'<div class="help small" style="margin:-4px 2px 12px">'+ico('lock')+' '+hid.length+' card'+(hid.length>1?'s are':' is')+' hidden by your partner.</div>';}finally{DB.accounts=keep;}
+};
+DYNF.cc=repCC;
+var _gh54=goalHTML;goalHTML=function(g){if(!isFinite(goalSaved(g)))return '<div class="goal"><div class="gt"><span>'+esc(g.name)+'</span><span class="muted">'+ico('lock')+'</span></div><small>Target '+money(g.target)+' · linked account balance is hidden</small></div>';return _gh54(g);};
+var _rDr54=renderDrill;renderDrill=function(){
+  _rDr54();
+  if(DRILL.open&&DRILL.acc&&isBalHidden(DRILL.acc)&&/^(accmonth|cyc|month)$/.test(DRILL.level)){
+    var body=$('drillBody'),a=DB.accounts.find(function(x){return x.name===DRILL.acc;})||{};
+    body.querySelectorAll('.fline > b:last-child').forEach(function(x){x.textContent='***';});
+    var sb=body.querySelector('h2 .sub b');if(sb)sb.textContent='***';
+    body.querySelectorAll('.paybar').forEach(function(x){x.remove();});
+    body.insertAdjacentHTML('afterbegin','<div class="card help small">'+ico('lock')+' '+esc(a.hby||a.owner||'Your partner')+' has hidden this account’s balance. You can still see the transactions.</div>');
+  }
+};
+var _rPriv54=renderPriv;renderPriv=function(){
+  _rPriv54();var b=$('privBody');if(!b)return;
+  var me=meName(),mine=DB.accounts.filter(function(a){return !a.locked&&!a.recv&&!/^.+ owes .+$/.test(a.name)&&me&&a.owner===me;});
+  function tg(lbl,sub,on,attrs){return '<label class="mgr-row" style="cursor:pointer;border:0;padding:8px 2px"><span class="lb" style="white-space:normal">'+lbl+'<small>'+sub+'</small></span><input type="checkbox" class="tgl"'+(on?' checked':'')+' '+attrs+'></label>';}
+  b.insertAdjacentHTML('beforeend','<div class="mgr-sec">Hide from my partner</div>'
+    +'<div class="help small" style="margin:0 2px 6px"><b>Transactions:</b> switch on <b>Private</b> in a transaction’s More options, or on Transactions tap <b>Select</b>, tick several and tap <b>Private</b>. Your partner sees only the date and amount and can’t open or edit it.</div>'
+    +'<div class="help small" style="margin:0 2px 2px"><b>Account balances:</b> your partner sees *** instead of the balance on every screen.</div>'
+    +(mine.length?mine.map(function(a){return tg(ico('card')+' '+esc(a.name),esc(a.type||''),!!a.hideBal,'data-act="hidebal" data-n="'+esc(a.name)+'"');}).join(''):'<div class="help small" style="margin:4px 2px 8px">'+(me?'You don’t own any accounts yet. Set yourself as the owner in Lists → Accounts.':'Set who you are in Your account first.')+'</div>'));
+};
+
+/* ---------- 4. guided tour: skip a step moves on, the rest of the screen is locked ---------- */
+var GUIDE={on:false,skipped:{}};
+var TOUR_GO={
+  partner:[function(){gotoView('settings');openMgr('people');},null,null,function(){closeMgr();}],
+  account:[function(){gotoView('accounts');openMgr('accs');},null,null,null,null,function(){closeMgr();}],
+  txn:[function(){openSheet();},null,null,null,function(){closeSheet();}],
+  split:[function(){openSheet();},null,null,null,function(){closeSheet();}],
+  budget:[function(){BG.work=null;BG.scope=whoOK();openMgr('budgets');},null,function(){closeMgr();}],
+  goal:[function(){openMgr('goals');},null,null,null,function(){closeMgr();}],
+  report:[function(){openReport('snapshot');},null,function(){closeReport();}],
+  ask:[function(){aiOpen();},null,function(){aiClose();}]
+};
+Object.keys(TOUR_GO).forEach(function(k){var f=TOURS[k];if(!f)return;TOURS[k]=function(){var st=f();(TOUR_GO[k]||[]).forEach(function(g,i){if(g&&st[i])st[i].go=g;});return st;};});
+var _ts54=tourStart;tourStart=function(k){if(k==='partner'||k==='budget'||k==='goal'){SETACC.lists=1;setAccApply();}_ts54(k);};
+function guideNextTask(){
+  if(!GUIDE.on)return;
+  if($('chmodal').classList.contains('on')||$('cmodal').classList.contains('on')){setTimeout(guideNextTask,800);return;}
+  var nx=JR.filter(function(x){return !x.done()&&TOURS[x.k]&&!GUIDE.skipped[x.k];})[0];
+  if(!nx){GUIDE.on=false;renderOverview();toast('Guide finished. The checklist on the Overview shows anything left to try.');return;}
+  tourStart(nx.k);
+}
+guideStart=function(){
+  jrInit();var j=jr();j.hide=0;j.open=1;j.skipped=0;save();
+  authHide();afterLogin();
+  GUIDE.on=true;GUIDE.skipped={};setTimeout(guideNextTask,450);
+};
+var _te54=tourEnd;tourEnd=function(ok){var k=TOUR.k;$('tourTip').dataset.h='';_te54(ok);if(GUIDE.on){GUIDE.skipped[k]=1;setTimeout(guideNextTask,600);}};
+function tourSkipStep(){
+  if(!TOUR.steps)return;var s=TOUR.steps[TOUR.i];
+  if(s&&s.go)try{s.go();}catch(e){}
+  if(TOUR.i>=TOUR.steps.length-1){tourEnd(false);return;}
+  setTimeout(tourNext,120);
+}
+tourTick=function(){
+  if(!TOUR.steps)return;
+  var s=TOUR.steps[TOUR.i];if(!s){tourEnd(true);return;}
+  var last=TOUR.i===TOUR.steps.length-1;
+  if(s.ok&&s.ok()&&(!s.next||last)){if(last){tourEnd(true);return;}tourNext();return;}
+  if(s.soft&&s.soft()){tourNext();return;}
+  var el=document.querySelector(s.sel),ring=$('tourRing'),tip=$('tourTip');
+  if(el&&!vis(el))el=null;
+  if(el&&el!==TOUR.el){try{el.scrollIntoView({block:'center',behavior:'smooth'});}catch(e){}}
+  TOUR.el=el;
+  var task='';if(GUIDE.on){var lst=JR.filter(function(x){return TOURS[x.k];}),ix=0;lst.forEach(function(x,i){if(x.k===TOUR.k)ix=i;});task='Task '+(ix+1)+' of '+lst.length+' · ';}
+  var html='<div class="ttx"><span class="tst">'+task+'Step '+(TOUR.i+1)+' of '+TOUR.steps.length+'</span>'+s.tx+'</div><div class="tbt"><button class="aulink" data-act="tourx">Skip this step</button><button class="aulink" data-act="tourskipall">'+(GUIDE.on?'Skip guide':'Exit')+'</button>'+(s.next?'<button class="btn sm" data-act="tournext">Next</button>':'')+'</div>';
+  if(tip.dataset.h!==html){tip.innerHTML=html;tip.dataset.h=html;}
+  tip.hidden=false;
+  if(!el){ring.hidden=true;tip.style.top='';tip.style.bottom='calc(96px + env(safe-area-inset-bottom))';tip.classList.add('center');return;}
+  tip.classList.remove('center');
+  var r=el.getBoundingClientRect(),p=6,vh=window.innerHeight;
+  ring.hidden=false;ring.style.left=(r.left-p)+'px';ring.style.top=(r.top-p)+'px';ring.style.width=(r.width+2*p)+'px';ring.style.height=(r.height+2*p)+'px';
+  var th=tip.offsetHeight||90,mid=(r.top+r.bottom)/2;
+  if(mid>vh*0.5){tip.style.top='calc(12px + env(safe-area-inset-top))';tip.style.bottom='';if(r.top<th+24){tip.style.top='';tip.style.bottom='calc(96px + env(safe-area-inset-bottom))';}}
+  else{tip.style.top='';tip.style.bottom='calc(96px + env(safe-area-inset-bottom))';if(r.bottom>vh-th-110){tip.style.bottom='';tip.style.top='calc(12px + env(safe-area-inset-top))';}}
+};
+function tourAllowed(t){
+  if(!t||!t.closest)return true;
+  if(t.closest('#tourTip,#calcPad,#cmodal,#chmodal,#toast,#lockScr,#authScr'))return true;
+  var el=TOUR.el;if(el&&(el===t||el.contains(t)))return true;
+  var w=el&&el.closest&&el.closest('.amt-wrap,.calcw');if(w&&w.contains(t))return true;
+  if($('mgrSheet').classList.contains('on')&&(MGR.kind==='pickcat'||MGR.kind==='picksub')&&t.closest('#mgrSheet'))return true;
+  return false;
+}
+function tourNudge(){var tip=$('tourTip');if(!tip)return;tip.classList.remove('nudge');void tip.offsetWidth;tip.classList.add('nudge');}
+['click','mousedown','pointerdown','touchend'].forEach(function(ev){
+  window.addEventListener(ev,function(e){
+    if(!TOUR.steps||tourAllowed(e.target))return;
+    e.preventDefault();e.stopImmediatePropagation();
+    if(ev==='click'||ev==='touchend')tourNudge();
+  },{capture:true,passive:false});
+});
+window.addEventListener('focusin',function(e){if(TOUR.steps&&!tourAllowed(e.target)&&e.target&&e.target.blur)e.target.blur();},true);
+
+/* ---------- 5. simpler Settings: grouped, collapsible sections ---------- */
+var SETACC={};
+function setAccApply(){document.querySelectorAll('#view-settings .card.acc').forEach(function(c){c.classList.toggle('open',!!SETACC[c.dataset.sk]);});}
+function setupSettings(){
+  var v=$('view-settings');if(!v||v.dataset.acc)return;v.dataset.acc='1';
+  function card(sel){var e=v.querySelector(sel);return e?e.closest('.card'):null;}
+  var C={me:card('#meBody'),sync:card('#dsStatus'),collab:card('#collabBody'),lists:card('#cntPeople'),priv:card('#privBody'),io:card('#fileImport'),danger:v.querySelector('.card.danger'),rem:card('#remBody'),disp:card('#accentSw'),about:null};
+  v.querySelectorAll('.card').forEach(function(c){var h=c.querySelector('h2');if(h&&/About/.test(h.textContent))C.about=c;});
+  var adv=C.sync&&C.sync.querySelector('details');if(adv)adv.hidden=true;
+  if(C.danger&&C.io){
+    var d=document.createElement('details');d.className='help';d.style.marginTop='14px';
+    d.innerHTML='<summary style="color:var(--exp)">'+ico('warn')+' Danger zone</summary>';
+    var box=document.createElement('div');box.style.marginTop='8px';
+    [].slice.call(C.danger.children,1).forEach(function(k){box.appendChild(k);});
+    d.appendChild(box);C.io.appendChild(d);C.danger.remove();
+  }
+  var T={sync:['cloud','Household & sync'],collab:['users','Share by file (no cloud)'],lists:['book','Lists'],priv:['lock','Privacy & security'],io:['upload','Import & export'],rem:['bell','Reminders'],disp:['sliders','Display'],about:['book','About & help']};
+  [C.me,C.sync,C.collab,C.lists,C.priv,C.io,C.rem,C.disp,C.about].forEach(function(c){if(c)v.appendChild(c);});
+  Object.keys(T).forEach(function(k){
+    var c=C[k];if(!c)return;var h=c.querySelector('h2'),sub=h.querySelector('.sub');
+    h.innerHTML=ico(T[k][0])+' '+T[k][1]+' '+(sub?sub.outerHTML:'<span class="sub" id="sum_'+k+'"></span>')+'<span class="accch">'+ico('chevright')+'</span>';
+    c.classList.add('acc');c.dataset.sk=k;
+    var body=document.createElement('div');body.className='accb';while(h.nextSibling)body.appendChild(h.nextSibling);c.appendChild(body);
+    h.setAttribute('data-act','setacc');h.dataset.k=k;
+  });
+  setAccApply();
+}
+setupSettings();
+var _rST54=renderSettings;renderSettings=function(){
+  _rST54();
+  function s(k,t){var e=$('sum_'+k);if(e)e.textContent=t;}
+  s('sync',FB.user?(DB.meta.cloudSyncOn?(HH.id?'household on':'on'):'paused'):'this phone only');
+  s('lists',DB.people.length+' people · '+DB.accounts.filter(function(a){return !a.locked&&!a.recv;}).length+' accounts');
+  s('priv',lockCfg().h?'PIN on':'PIN off');
+  s('io','files & statements');
+  s('rem',remCfg().on?'on':'off');
+  s('disp',(DB.meta.accent||'blue')+' · '+(DB.meta.mode||'auto'));
+  var fs=$('fbSub');if(fs)fs.textContent=FB.user?(DB.meta.cloudSyncOn?(HH.id?'household '+HH.id:'connecting…'):'paused'):'off';
+  setAccApply();
+};
+(function(){var p=document.querySelector('#ovEmpty .empty p');if(p)p.textContent='Track money together: who spent what, shared bills and who owes whom. Works offline on your phone, with live cloud sync for the two of you when you sign in.';})();
+
+/* ---------- actions ---------- */
+var _hA54=handleAct;handleAct=function(el){
+  switch(el.dataset.act){
+    case 'tourx':tourSkipStep();return;
+    case 'tourskipall':if($('mgrSheet').classList.contains('on'))closeMgr();if($('sheet').classList.contains('on'))closeSheet();if($('aiSheet').classList.contains('on'))aiClose();if(REPORT.open)closeReport();if(GUIDE.on){GUIDE.on=false;tourEnd(false);var j=jr();j.hide=1;j.skipped=1;save();renderJourney();toast('Guide skipped. Start it any time in Settings → Your account.');}else tourEnd(false);return;
+    case 'setacc':SETACC[el.dataset.k]=!SETACC[el.dataset.k];setAccApply();return;
+    case 'hidebal':accHideBal(el.dataset.n,el.checked);return;
+    case 'batchpriv':batchPriv();return;
+    case 'hhemail':HH.emailForm=!HH.emailForm;renderCloudAcc();return;
+    case 'hhemin':hhEmailAuth('in');return;
+    case 'hhemup':hhEmailAuth('up');return;
+    case 'hhinvite':hhInvite();return;
+    case 'hhuninv':hhUninvite(el.dataset.e);return;
+    case 'hhjoincode':hhJoinCode();return;
+    case 'hhleave':hhLeave();return;
+    case 'hhverify':dynImport('https://www.gstatic.com/firebasejs/'+FBJS+'/firebase-auth.js').then(function(A){return A.sendEmailVerification(FB.auth.currentUser);}).then(function(){toast('Verification email sent');}).catch(function(){toast('Could not send the email. Try again later.');});return;
+    case 'fbsignin':DB.meta.syncChoice='yes';DB.meta.cloudSyncOn=true;save();fbSignIn('google');return;
+  }
+  _hA54(el);
 };
 
 function renderAll(){
