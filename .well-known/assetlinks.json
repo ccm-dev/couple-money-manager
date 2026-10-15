@@ -1,0 +1,8 @@
+[{
+      "relation": ["delegate_permission/common.handle_all_urls"],
+      "target": {
+        "namespace": "android_app",
+        "package_name": "com.ccm.couplemoneymanager",
+        "sha256_cert_fingerprints": ["2E:04:BD:2E:AB:D9:4A:80:0A:1C:40:E6:4C:E0:2F:B8:E7:A0:FD:C2:04:E3:59:63:67:CE:88:A8:D7:A3:7F:2E"]
+      }
+    }]
