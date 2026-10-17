@@ -1151,6 +1151,34 @@ label.pv-row{cursor:pointer}
 #modeBodyB3 .m6grid{margin-bottom:10px}
 #pageSet .pv-grp{margin-bottom:6px}
 </style>
+<style id="v160b4css">
+/* v1.60 beta 4 — modification-report fixes */
+.migrow{border:1px solid var(--line);border-radius:14px;padding:12px;margin:8px 0;background:var(--card)}
+.migrow>b{display:block;font-size:14px}
+.migrow>small{display:block;color:var(--muted);margin-top:3px;line-height:1.45}
+.migrow select.fin{margin-bottom:0}
+.pdhsolo{margin-top:8px}
+</style>
+<style id="v160b5css">
+/* v1.60 beta 5 — consistent transaction rows & details + transparent toolbar */
+
+/* 1 · transparent toolbar: app header and page back-bars vanish at rest,
+      pick up a frosted tint + hairline only when content scrolls beneath */
+.hdr{background:transparent!important;border-bottom-color:transparent!important;box-shadow:none!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important;transition:background .18s ease,border-color .18s ease}
+.hdrrow{background:transparent!important;border-bottom-color:transparent!important;box-shadow:none!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important;transition:background .18s ease,border-color .18s ease}
+body.hdrscrolled .hdr{background:color-mix(in srgb,var(--card) 78%,transparent)!important;-webkit-backdrop-filter:saturate(1.6) blur(16px)!important;backdrop-filter:saturate(1.6) blur(16px)!important;border-bottom-color:var(--hair)!important}
+.page.scrolled .hdrrow{background:color-mix(in srgb,var(--card) 84%,transparent)!important;-webkit-backdrop-filter:saturate(1.6) blur(16px)!important;backdrop-filter:saturate(1.6) blur(16px)!important;border-bottom-color:var(--hair)!important}
+
+/* 2 · letter tiles — same tile shape, first letter of the category when no icon matches */
+.tic5.lt{background:var(--accent-soft);color:var(--accent);font-weight:700;font-size:13.5px;letter-spacing:.3px}
+
+/* 3 · the read-only detail renders identically in every list (not just #txList) */
+.txdetail{background:color-mix(in srgb,var(--bg) 55%,var(--card));border:1px solid var(--hair);border-radius:16px;box-shadow:none}
+.txn.open{background:linear-gradient(90deg,color-mix(in srgb,var(--accent) 7%,transparent),transparent)}
+
+/* 4 · dashboard "Recent activity" rows share the transaction tile anatomy */
+.dr .di{width:36px;height:36px;border-radius:12px}
+</style>
 </head>
 <body>
 <header class="hdr">
@@ -1303,18 +1331,18 @@ label.pv-row{cursor:pointer}
         <li><b>Refunds:</b> tap “Refund” next to the amount to record a reduction in expenses.</li>
         <li><b>Split a bill, refund or income:</b> use the “Split this bill” box on the form, and type each share as a positive amount. For a bill, the other person's share is added to the “X owes Y” ledger. For a refund, it is taken off. For income received into your account, their share is owed back to them. Settle it from Between Us.</li>
         <li><b>Credit cards:</b> set a statement day and payment-due days in Settings → Accounts.</li>
-        <li><b>Budgets:</b> Settings → Budgets. Set fixed and variable amounts per category, as a couple budget or a personal one.</li>
-        <li><b>Saving goals:</b> Settings → Saving goals. Link a goal to a savings account, or add money to it by hand.</li>
+        <li><b>Budgets:</b> Settings → Preferences → Budgets. Set fixed and variable amounts per category, as a couple budget or a personal one.</li>
+        <li><b>Saving goals:</b> Settings → Preferences → Saving goals. Link a goal to a savings account, or add money to it by hand.</li>
         <li><b>Reports:</b> every report has Week / Month / Year and Couple / individual options.</li>
                 <li><b>Split bills:</b> open any share, then choose <b>This share only</b> or <b>Whole bill</b> to edit. Delete asks whether to remove one share or the whole bill.</li>
         <li><b>Money assistant:</b> tap <b>Ask</b> at the top. Answers come from your data on this device; you can optionally connect OpenAI or Gemini with your own key.</li>
-        <li><b>Privacy:</b> Settings → Privacy. Set a PIN, hide categories, notes and balances as ***, choose whether notes are shared. Mark any transaction Private under More options.</li>
-        <li><b>Household sync:</b> sign in with Google or email in Settings → Household &amp; sync, then invite your partner by email. You both see the same data, updated live.</li>
-        <li><b>Hide from your partner:</b> mark a transaction Private, or hide an account balance, in Settings → Privacy &amp; security.</li>
-        <li><b>Statements:</b> Settings → Import bank / card statement. Review every line before it is added.</li>
+        <li><b>Privacy:</b> Settings → Privacy &amp; Security. Set a PIN, choose what the Privacy Screen hides and how the device is protected. Mark any transaction Private under More options.</li>
+        <li><b>Household sync:</b> sign in with Google or email in Settings → Mode &amp; Partner Access, then invite your partner by email. You both see the same data, updated live.</li>
+        <li><b>Hide from your partner:</b> mark a transaction Private, or hide an account balance, in Settings → Mode &amp; Partner Access.</li>
+        <li><b>Statements:</b> Settings → Data &amp; Sync → Import a bank / card statement. Review every line before it is added.</li>
         <li><b>Calculator:</b> tap the calculator icon inside an amount box.</li>
         <li><b>Getting started:</b> follow the checklist on the Dashboard. Each “Show me” guides you step by step while you do it yourself.</li>
-        <li><b>Sample data:</b> Settings → Your account → Add or Remove sample transactions.</li>
+        <li><b>Sample data:</b> Settings → Your Profile → Add or Remove sample transactions.</li>
         <li><b>Back:</b> the phone Back button or Esc closes the top screen.</li>
       </ol></details></div>
   </section>
@@ -2284,7 +2312,7 @@ function importFile(inp){
         tot+=r.added;dup+=r.dup;
         DB.meta.changedAt=Date.now();save();
       });
-    }).catch(function(e){console.warn('import '+f.name,e);if(e&&e.message==='collab')toast('That is a collaborator file — open it from Settings → Collaborators');bad.push(f.name);});
+    }).catch(function(e){console.warn('import '+f.name,e);if(e&&e.message==='collab')toast('That is a collaborator file — open it from Settings → Mode &amp; Partner Access');bad.push(f.name);});
   });
   p.then(function(){
     save();backupSnap('import');cloudPushSoon();renderAll();
@@ -3046,7 +3074,7 @@ function renderSettings(){
 }
 /* ============ list manager modal (v1.3: pop-out for people/categories/subs/accounts) ============ */
 var MGR={kind:'',edit:null};
-var MGR_TITLE={people:ico('users')+' People',cats:ico('tag')+' Categories',subs:ico('list')+' Sub-categories',accs:ico('card')+' Accounts',acctype:ico('folder')+' Account Types',recur:ico('repeat')+' Recurring transactions',backups:ico('clock')+' Backup history',pickcat:ico('tag')+' Choose category',picksub:ico('list')+' Choose sub-category',batchedit:ico('pencil')+' Batch edit',budgets:ico('wallet')+' Budgets & fixed costs',collabinv:ico('users')+' Invite collaborator',collabedit:ico('users')+' Collaborator access'};
+var MGR_TITLE={people:ico('users')+' People',cats:ico('tag')+' Categories',subs:ico('list')+' Sub-categories',accs:ico('card')+' Accounts',acctype:ico('folder')+' Classify legacy account types',recur:ico('repeat')+' Recurring transactions',backups:ico('clock')+' Backup history',pickcat:ico('tag')+' Choose category',picksub:ico('list')+' Choose sub-category',batchedit:ico('pencil')+' Batch edit',budgets:ico('wallet')+' Budgets & fixed costs',collabinv:ico('users')+' Invite collaborator',collabedit:ico('users')+' Collaborator access'};
 function subList(c){if(!DB.subcats||typeof DB.subcats!=='object')DB.subcats={};if(!DB.subcats[c])DB.subcats[c]=[];return DB.subcats[c];}
 function openMgr(kind){MGR.kind=kind;MGR.edit=null;$('mgrTitle').innerHTML=MGR_TITLE[kind]||'Manage';renderMgr();$('mgrOvl').classList.add('on');$('mgrSheet').classList.add('on');navSync();}
 function closeMgr(){$('mgrOvl').classList.remove('on');$('mgrSheet').classList.remove('on');navSync();}
@@ -3154,7 +3182,7 @@ function renderMgr(){
           +'<div><div class="mgr-lb">Name</div><input class="fin" id="mgrEName" value="'+esc(a.name)+'" placeholder="Name"></div>'
           +'<div><div class="mgr-lb">Start'+(cur()?' ('+esc(cur())+')':'')+'</div><input class="fin" id="mgrEStart" inputmode="decimal" value="'+(a.start||0)+'" placeholder="0"></div>'
           +'</div>'
-          +'<div class="mgr-lb">Type</div><select class="fin" id="mgrEType" style="margin-bottom:7px" onchange="var w=document.getElementById(\'cycAWrap\');if(w)w.style.display=typeHasCycle(this.value)?\'\':\'none\'">'+sortedAlpha(DB.accTypes).map(function(ty){return '<option'+(ty===a.type?' selected':'')+'>'+esc(ty)+'</option>';}).join('')+'</select>'
+          +'<div class="mgr-lb">Type</div><select class="fin" id="mgrEType" style="margin-bottom:7px" onchange="var w=document.getElementById(\'cycAWrap\');if(w)w.style.display=typeHasCycle(this.value)?\'\':\'none\'">'+(window.B4?B4.accTypeOpts(a.type):sortedAlpha(DB.accTypes).map(function(ty){return '<option'+(ty===a.type?' selected':'')+'>'+esc(ty)+'</option>';}).join(''))+'</select>'
           +'<div class="mgr-lb">Owner</div><select class="fin" id="mgrEOwner" style="margin-bottom:7px">'+ownerOptions(a.owner)+'</select>'
           +'<div id="cycAWrap" style="display:'+(typeHasCycle(a.type)?'':'none')+';margin-bottom:7px"><div class="mgr-lb">Billing cycle day (statement day)</div><input class="fin" id="mgrECycA" inputmode="numeric" value="'+(a.cycle||accTypeCycle(a.type)||'')+'" placeholder="1–31"><div class="mgr-lb" style="margin-top:7px">Payment due (days after statement)</div><input class="fin" id="mgrEDue" inputmode="numeric" value="'+(a.dueDays||20)+'" placeholder="20"></div>'
           +'<div class="help small" style="margin-bottom:7px">The statement day (1–31) splits this account\'s balance into statement vs new cycle — shown for <b>credit-card</b> accounts.</div>'
@@ -3166,8 +3194,8 @@ function renderMgr(){
       var bal=BALM[a.name]||0;
       return mgrRow(ico('card')+' '+esc(a.name),ico('tag')+' '+esc(a.type||'—')+' · '+((a.owner)?ownerIco(a.owner)+' '+esc(a.owner):'<i>no owner</i>')+' · '+n+' txn'+(n===1?'':'s')+cyTxt+((a.access&&a.access.length)?' · '+ico('users')+' shared with '+esc(a.access.join(', ')):''),'data-k="'+esc(a.name)+'"','data-k="'+esc(a.name)+'"','<span class="'+(bal<0?'neg':'')+'">'+money(bal)+'</span>');
     }).join('');
-    var defTy=sortedAlpha(DB.accTypes)[0]||'';
-    h+='<div class="mgr-add"><div class="mgr-lb">Add a new account</div><input class="fin" id="mgrNewName" placeholder="Account name" style="margin-bottom:7px"><div style="display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:7px"><input class="fin" id="mgrNewStart" inputmode="decimal" placeholder="Start balance'+(cur()?' ('+esc(cur())+')':'')+'"><select class="fin" id="mgrNewOwner">'+ownerOptions('')+'</select></div><div class="mgr-lb">Type</div><select class="fin" id="mgrNewAType" style="margin-bottom:7px" onchange="var w=document.getElementById(\'cycNWrap\');if(w)w.style.display=typeHasCycle(this.value)?\'\':\'none\'">'+sortedAlpha(DB.accTypes).map(function(ty){return '<option>'+esc(ty)+'</option>';}).join('')+'</select><div id="cycNWrap" style="display:'+(typeHasCycle(defTy)?'':'none')+';margin-bottom:7px"><input class="fin" id="mgrNewCyc" inputmode="numeric" placeholder="Billing cycle day 1–31 (optional)"></div><button class="ibtn" data-act="mgradd" style="width:100%;color:var(--accent)">'+ico('plus')+' Add account</button></div>';
+    var defTy=(window.B4?'Bank':sortedAlpha(DB.accTypes)[0]||'');
+    h+='<div class="mgr-add"><div class="mgr-lb">Add a new account</div><input class="fin" id="mgrNewName" placeholder="Account name" style="margin-bottom:7px"><div style="display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:7px"><input class="fin" id="mgrNewStart" inputmode="decimal" placeholder="Start balance'+(cur()?' ('+esc(cur())+')':'')+'"><select class="fin" id="mgrNewOwner">'+ownerOptions('')+'</select></div><div class="mgr-lb">Type</div><select class="fin" id="mgrNewAType" style="margin-bottom:7px" onchange="var w=document.getElementById(\'cycNWrap\');if(w)w.style.display=typeHasCycle(this.value)?\'\':\'none\'">'+(window.B4?B4.accTypeOpts(''):sortedAlpha(DB.accTypes).map(function(ty){return '<option>'+esc(ty)+'</option>';}).join(''))+'</select><div id="cycNWrap" style="display:'+(typeHasCycle(defTy)?'':'none')+';margin-bottom:7px"><input class="fin" id="mgrNewCyc" inputmode="numeric" placeholder="Billing cycle day 1–31 (optional)"></div><button class="ibtn" data-act="mgradd" style="width:100%;color:var(--accent)">'+ico('plus')+' Add account</button></div>';
   }
   $('mgrBody').innerHTML=h;
 }
@@ -3699,7 +3727,7 @@ function nextSplitPerson(){
 }
 function renderSplitRows(){
   var box=$('fSplitRows');
-  if(!DB.people||DB.people.length<2){box.innerHTML='<div class="help small">Add at least 2 people in Settings → People to split a transaction between them.</div>';updateSplitHint();return;}
+  if(!DB.people||DB.people.length<2){box.innerHTML='<div class="help small">Add at least 2 people in Settings → Your Profile to split a transaction between them.</div>';updateSplitHint();return;}
   if(!SPLIT.rows.length){
     box.innerHTML='<button class="btn ghost" style="padding:10px;font-size:13px" data-act="splitadd">'+ico('users')+' Split between people</button>';
     updateSplitHint();return;
@@ -5727,7 +5755,7 @@ function renderMe(){
 var JR=[
   {k:'acct',t:'Create your account',d:'Sign up with your email',done:function(){return !!sessGet();}},
   {k:'me',t:'Add yourself',d:'So the app knows who is who',done:function(){var p=(DB.meta.profile||{}).name;return !!p&&DB.people.indexOf(p)>=0;}},
-  {k:'partner',t:'Add your partner',d:'Settings → People',done:function(){var dp=demoPeople();return DB.people.filter(function(p){return dp.indexOf(p)<0;}).length>=2;}},
+  {k:'partner',t:'Add your partner',d:'Settings → Mode &amp; Partner Access',done:function(){var dp=demoPeople();return DB.people.filter(function(p){return dp.indexOf(p)<0;}).length>=2;}},
   {k:'account',t:'Add your own account',d:'A bank, card or e-wallet with an owner',done:function(){var j=jr(),base=j.baseAcc||[],dA=demoAccs();return DB.accounts.some(function(a){return !a.recv&&base.indexOf(a.name)<0&&dA.indexOf(a.name)<0;});}},
   {k:'txn',t:'Record your first expense',d:'Tap + and save one',done:function(){return DB.txns.some(function(t){return !t.demo&&t.type!=='Transfer';});}},
   {k:'split',t:'Split a bill',d:'Share a bill with your partner',done:function(){return DB.txns.some(function(t){return !t.demo&&t.group;});}},
@@ -5895,7 +5923,7 @@ var _hA51=handleAct;handleAct=function(el){
     case 'auperson':auPerson();return;
     case 'aulogout':auLogout();return;
     case 'jrtoggle':var j=jr();j.open=j.open===0?1:0;save();renderJourney();return;
-    case 'jrhide':jr().hide=1;save();renderJourney();toast('Checklist hidden. Bring it back in Settings → Your account.');return;
+    case 'jrhide':jr().hide=1;save();renderJourney();toast('Checklist hidden. Bring it back in Settings → Your Profile.');return;
     case 'jrshow':var j2=jr();j2.hide=0;j2.open=1;if(!j2.start)jrInit();save();gotoView('overview');return;
     case 'tour':tourStart(el.dataset.k);return;
     case 'tourx':tourEnd(false);return;
@@ -6047,7 +6075,7 @@ renderAuth=function(){
       +'<p>A short guided tour shows you where to tap while you add your partner, an account, your first expense, a split bill, a budget and a saving goal. Each step waits for you, and you can skip at any time.</p></div>'
       +'<button class="btn" data-act="auguide" data-v="go">'+ico('play')+' Start the guided tour</button>'
       +'<button class="btn ghost" style="margin-top:8px" data-act="auguide" data-v="skip">Skip, I’ll explore on my own</button>'
-      +'<div class="help small" style="margin-top:10px;text-align:center">You can start the guide later in Settings → Your account.</div>';
+      +'<div class="help small" style="margin-top:10px;text-align:center">You can start the guide later in Settings → Your Profile.</div>';
     return;
   }
   _rAuth52();
@@ -6066,7 +6094,7 @@ var _auSub52=auSubmit;auSubmit=function(){
 function guideSkip(){
   jrInit();var j=jr();j.hide=1;j.skipped=1;save();
   authHide();afterLogin();
-  toast('Guide skipped. Start it any time in Settings → Your account.');
+  toast('Guide skipped. Start it any time in Settings → Your Profile.');
 }
 /* sync choice is respected: signing in no longer turns sync on by itself */
 fbSetUser=function(u){
@@ -6105,9 +6133,9 @@ var _hA52=handleAct;handleAct=function(el){
       if(y){if(FB.user){renderCloudAcc();fbAutoSync();}toast('Cloud sync is on ✓');}else toast('Saved on this phone only. Turn on sync any time in Settings.');
       auNext();return;
     case 'auguide':if(el.dataset.v==='go')guideStart();else guideSkip();return;
-    case 'jrhide':var j=jr();j.hide=1;j.skipped=1;save();renderJourney();toast('Checklist skipped. Start the guide any time in Settings → Your account.');return;
+    case 'jrhide':var j=jr();j.hide=1;j.skipped=1;save();renderJourney();toast('Checklist skipped. Start the guide any time in Settings → Your Profile.');return;
     case 'jrshow':guideStart();return;
-    case 'tourskipall':tourEnd(false);var j2=jr();j2.hide=1;j2.skipped=1;save();renderJourney();toast('Guide skipped. Start it any time in Settings → Your account.');return;
+    case 'tourskipall':tourEnd(false);var j2=jr();j2.hide=1;j2.skipped=1;save();renderJourney();toast('Guide skipped. Start it any time in Settings → Your Profile.');return;
   }
   _hA52(el);
 };
@@ -6541,7 +6569,7 @@ var _rST54=renderSettings;renderSettings=function(){
 var _hA54=handleAct;handleAct=function(el){
   switch(el.dataset.act){
     case 'tourx':tourSkipStep();return;
-    case 'tourskipall':if($('mgrSheet').classList.contains('on'))closeMgr();if($('sheet').classList.contains('on'))closeSheet();if($('aiSheet').classList.contains('on'))aiClose();if(REPORT.open)closeReport();if(GUIDE.on){GUIDE.on=false;tourEnd(false);var j=jr();j.hide=1;j.skipped=1;save();renderJourney();toast('Guide skipped. Start it any time in Settings → Your account.');}else tourEnd(false);return;
+    case 'tourskipall':if($('mgrSheet').classList.contains('on'))closeMgr();if($('sheet').classList.contains('on'))closeSheet();if($('aiSheet').classList.contains('on'))aiClose();if(REPORT.open)closeReport();if(GUIDE.on){GUIDE.on=false;tourEnd(false);var j=jr();j.hide=1;j.skipped=1;save();renderJourney();toast('Guide skipped. Start it any time in Settings → Your Profile.');}else tourEnd(false);return;
     case 'setacc':SETACC[el.dataset.k]=!SETACC[el.dataset.k];setAccApply();return;
     case 'hidebal':accHideBal(el.dataset.n,el.checked);return;
     case 'batchpriv':batchPriv();return;
@@ -6910,7 +6938,7 @@ function renderPriv(){
     var mine=DB.txns.filter(function(t){return t.priv&&!t.masked&&!t.pvx&&(!me||(t.pby||t.person)===me);}).sort(function(a,b){return a.date<b.date?1:-1;});
     var pa=myPrivAccs();
     h+='<div class="mgr-sec">Hide from '+P+'</div>'
-      +'<div class="help small" style="margin:0 2px 6px"><b>Personal accounts:</b> set <b>Who can see this account</b> to <b>Only me</b> in Lists → Accounts. '+P+' won’t see the account, its transactions or its balance. Transfers to or from a shared account show as “your personal account”.</div>'
+      +'<div class="help small" style="margin:0 2px 6px"><b>Personal accounts:</b> set <b>Who can see this account</b> to <b>Only me</b> in Settings → Accounts. '+P+' won’t see the account, its transactions or its balance. Transfers to or from a shared account show as “your personal account”.</div>'
       +'<div class="mgr-row" style="border:0;padding:6px 2px"><span class="lb">'+ico('lock')+' Personal accounts<small>'+(pa.length?pa.map(function(a){return esc(a.name);}).join(', '):'None yet')+'</small></span><button class="ibtn" data-act="mgr" data-k="accs">Manage</button></div>'
       +'<div class="help small" style="margin:6px 2px 6px"><b>Single transactions:</b> choose <b>Hide details</b> ('+P+' sees only the date and amount) or <b>Fully private</b> ('+P+' doesn’t see it at all, and balances that include it show as ***) under Privacy when you add or edit it. Split bills and amounts owed can only hide details.</div>'
       +'<details class="help" style="margin:4px 2px 8px"><summary>Private from '+P+' ('+mine.length+')</summary>'
@@ -6934,7 +6962,7 @@ var JR56={
   budget:{k:'budget',t:'Set a monthly budget',d:'Per category, personal or shared',done:function(){return jrFind('budget').done();}},
   lock:{k:'lock',t:'Turn on app lock',d:'A 6-digit PIN for this phone',done:function(){return !!lockCfg().h;}},
   ps:{k:'ps',t:'Try Privacy Screen',d:'Hide amounts with the eye at the top',done:function(){return !!jr().ps;}},
-  invite:{k:'invite',t:'Invite your partner',d:'Settings → Household & sync',done:jrInviteDone},
+  invite:{k:'invite',t:'Invite your partner',d:'Settings → Mode & Partner Access',done:jrInviteDone},
   share:{k:'share',t:'Choose accounts to share',d:'Everything stays private until you do',done:function(){return !!jr().shared;}}
 };
 function jrList(){return isCouple()?[JR56.txn,JR56.account,JR56.budget,JR56.lock,JR56.invite,JR56.share]:[JR56.txn,JR56.account,JR56.budget,JR56.lock,JR56.ps];}
@@ -7280,8 +7308,8 @@ MGR_TITLE.stmpre=ico('receipt')+' Import a statement';
 V56.mgr.stmpre=function(){
   var acs=stmAccs();
   $('mgrBody').innerHTML='<div class="help small" style="margin-bottom:10px">Which account is the statement for? Pick it, then choose the file (CSV, Excel or PDF from your bank). Password-protected PDFs work too: the password is used once and not saved.</div>'
-    +(acs.length?'<div class="dayg">'+acs.map(function(n){var a=DB.accounts.find(function(x){return x.name===n;})||{};return '<button class="txn" data-act="stmpick2" data-n="'+esc(n)+'"><span class="mid"><b>'+esc(n)+(a.vis==='me'&&isCouple()?' <span class="pvpill">'+ico('lock')+' Only me</span>':'')+'</b><small>'+esc(a.type||'')+(a.l4?' · ending '+esc(a.l4):'')+'</small></span><span class="muted">'+ico('chevright')+'</span></button>';}).join('')+'</div>':'<div class="help">Add an account first in Lists → Accounts.</div>')
-    +'<div class="help small" style="margin-top:6px">Tip: add the last 4 digits to an account (Lists → Accounts) and the app spots which account a statement belongs to. You can also start from an account’s own page.</div>';
+    +(acs.length?'<div class="dayg">'+acs.map(function(n){var a=DB.accounts.find(function(x){return x.name===n;})||{};return '<button class="txn" data-act="stmpick2" data-n="'+esc(n)+'"><span class="mid"><b>'+esc(n)+(a.vis==='me'&&isCouple()?' <span class="pvpill">'+ico('lock')+' Only me</span>':'')+'</b><small>'+esc(a.type||'')+(a.l4?' · ending '+esc(a.l4):'')+'</small></span><span class="muted">'+ico('chevright')+'</span></button>';}).join('')+'</div>':'<div class="help">Add an account first in Settings → Accounts.</div>')
+    +'<div class="help small" style="margin-top:6px">Tip: add the last 4 digits to an account (Settings → Accounts) and the app spots which account a statement belongs to. You can also start from an account’s own page.</div>';
 };
 MGR_TITLE.stmmap=ico('list')+' Match the columns';
 function stmGuess(g,hi){
@@ -7638,7 +7666,7 @@ var _dl56=demoLoad;demoLoad=function(q){_dl56(q);if(!q){gotoView('overview');}};
   var ol=document.querySelector('#view-settings details.help ol');if(!ol)return;
   ol.querySelectorAll('li').forEach(function(li){var t=li.textContent;
     if(/^Privacy:/.test(t))li.innerHTML='<b>Privacy Screen:</b> tap the eye at the top to hide every amount. Press and hold an amount to peek.';
-    else if(/^Hide from your partner:/.test(t))li.innerHTML='<b>Private from your partner:</b> set an account to <b>Only me</b> in Lists → Accounts, or choose <b>Hide details</b> / <b>Fully private</b> under Privacy when adding a transaction.';
+    else if(/^Hide from your partner:/.test(t))li.innerHTML='<b>Private from your partner:</b> set an account to <b>Only me</b> in Settings → Accounts, or choose <b>Hide details</b> / <b>Fully private</b> under Privacy when adding a transaction.';
     else if(/^Statements:/.test(t))li.innerHTML='<b>Statements:</b> Settings → Import → Import a statement, or open an account and tap Import a statement. Review every line before it is added; undo a whole import from Recent imports.';
     else if(/^Sample data:/.test(t))li.innerHTML='<b>Sample data:</b> tap Explore with sample data on an empty Dashboard; Exit demo removes it.';
   });
@@ -7925,7 +7953,7 @@ function hhCreate(ud){
       return F.setDoc(hhRef(F,id),{owner:FB.user.uid,ownerEmail:em,members:[FB.user.uid],memberEmails:me,invites:[],schema:2,meta:'',metaH:'',changedAt:Date.now(),by:DEVICE,created:new Date().toISOString(),updatedAt:new Date().toISOString()})
         .then(function(){return F.setDoc(F.doc(FB.db,'users',FB.user.uid),{household:id,email:em},{merge:true});})
         .then(function(){return hhAttach(id);})
-        .then(function(){toast('Cloud sync is on ✓ Invite your partner in Settings → Household & sync.');});
+        .then(function(){toast('Cloud sync is on ✓ Invite your partner in Settings → Mode & Partner Access.');});
     });
   });
 };
@@ -8809,7 +8837,7 @@ MGR_TITLE.pvmove=ico('lock')+' Move to a Private account';
 V56.mgr.pvmove=function(){
   var m=V59.mv||{},pa=myPrivAccs().filter(function(a){return a.name!==m.from;});
   $('mgrBody').innerHTML='<div class="help small" style="margin-bottom:10px">Move the '+m.n+' transaction'+(m.n===1?'':'s')+' of “'+esc(m.from)+'” into one of your Private accounts. Balances move with them. Then “'+esc(m.from)+'” can be shared without exposing your private history.</div>'
-    +(pa.length?'<div class="dayg">'+pa.map(function(a){return '<button class="txn" data-act="pvmvpick" data-n="'+esc(a.name)+'"><span class="mid"><b>'+esc(a.name)+'</b><small>'+esc(a.type||'')+'</small></span><span class="muted">'+ico('chevright')+'</span></button>';}).join('')+'</div>':'<div class="help">You don’t have another Private account. Create one in Lists → Accounts (set “Only me”), then try again.</div>');
+    +(pa.length?'<div class="dayg">'+pa.map(function(a){return '<button class="txn" data-act="pvmvpick" data-n="'+esc(a.name)+'"><span class="mid"><b>'+esc(a.name)+'</b><small>'+esc(a.type||'')+'</small></span><span class="muted">'+ico('chevright')+'</span></button>';}).join('')+'</div>':'<div class="help">You don’t have another Private account. Create one in Settings → Accounts (set “Only me”), then try again.</div>');
 };
 var _accDel59=accDel;accDel=function(n){
   var p=permFor59(n);if(p!=='owner'){toast('Only the account owner can permanently delete an account.');return;}
@@ -8935,7 +8963,7 @@ function xFields59(p,type,a){
   return h;
 }
 function paHTML59(a){
-  return '<div id="edPA59"'+(a.vis==='me'?' hidden':'')+'><div class="mgr-lb">'+esc(partnerName())+'’s access to this account</div><select class="fin" id="x59e_PA" style="margin-bottom:4px">'+['view','add','full','admin'].map(function(k){return '<option value="'+k+'"'+((a.partnerAccess||'add')===k?' selected':'')+'>'+PERM_L[k]+'</option>';}).join('')+'</select><div class="help small" style="margin-bottom:7px">Add transactions (default): add entries and change only their own. Full access: change anyone’s entries. Administrator: also account settings. Only you can transfer ownership, delete the account or change it from Shared to Private.</div></div>';
+  return '<div id="edPA59"'+(a.vis==='me'?' hidden':'')+'><div class="help small" style="margin-bottom:7px">'+esc(partnerName())+'’s access — View only, Add transactions, Full transaction access or Account administrator — is configured in <b>Settings → Mode &amp; Partner Access</b>.</div></div>';
 }
 function xInject59(){
   if(!$('mgrSheet').classList.contains('on')||MGR.kind!=='accs')return;
@@ -9126,7 +9154,7 @@ V56.mgr.usagerev=function(){
   $('mgrBody').innerHTML='<div class="help small" style="margin-bottom:10px"><b>Review before you switch.</b> Nothing is deleted, and shared records are never silently turned into personal ones.</div>'
     +'<div class="mgr-sec" style="margin-top:2px">Shared accounts ('+sh.length+')</div>'+(sh.length?'<div class="dayg">'+sh.map(function(a){return '<div class="mgr-row" style="padding:8px 12px"><span class="lb">'+esc(a.name)+'<small>'+esc(a.owner||'no owner')+' · partner access: '+PERM_L[a.partnerAccess||'add']+'</small></span></div>';}).join('')+'</div>':'<div class="help small">None.</div>')
     +'<div class="mgr-sec">Between Us</div>'+(ls.length?ls.map(function(l){return '<div class="fline"><span>'+oweTxt(l.name,l.bal)+'</span></div>';}).join('')+'<div class="help small" style="margin-top:4px;color:var(--warn)">'+ico('warn')+' Open balances stay on record but won’t be shown in Personal mode. Consider settling up first.</div>':'<div class="help small">All settled up. ✓</div>')
-    +(mem>1?'<div class="mgr-sec">Partner access</div><div class="help small">Your partner is still a member of your household and keeps access to the accounts you share until you remove them in Settings → Household &amp; sync.</div>':'')
+    +(mem>1?'<div class="mgr-sec">Partner access</div><div class="help small">Your partner is still a member of your household and keeps access to the accounts you share until you remove them in Settings → Mode &amp; Partner Access.</div>':'')
     +'<div class="help small" style="margin:12px 0">Couple screens are hidden. Shared accounts keep their full history, and you can switch back any time. A safety backup is created first.</div>'
     +'<div style="display:grid;gap:8px">'+(ls.length?'<button class="btn ghost" data-act="usgsettle">'+ico('scale')+' Settle up first</button>':'')+'<button class="btn" data-act="usgdo">Switch to Personal mode</button><button class="btn ghost" data-act="mgrclose">Cancel</button></div>';
 };
@@ -9214,8 +9242,8 @@ function renderStore59(){
   }
   if(cp){
     var f=v.folder||{},ok=f.shared&&f.accepted;
-    h+='<details class="help" style="margin-top:12px"><summary>Personal-drive household · planned for v1.60</summary><div style="margin-top:8px">'
-      +'<div class="help small" style="margin-bottom:8px">Shared household sync through one partner’s Google Drive or OneDrive arrives in v1.60. Its rules are fixed now: the Household Owner creates the folder and shares it with the collaborator with <b>read/write</b> access; shared editing stays <b>Pending</b> until the collaborator accepts and access is confirmed; if access is revoked, editing is suspended and the cached household becomes read-only; the app never creates a replacement folder. Nothing is synced through your Drive yet. This checklist records progress only.</div>'
+    h+='<details class="help" style="margin-top:12px"><summary>Personal-drive household folder · preview — not connected in this beta</summary><div style="margin-top:8px">'
+      +'<div class="help small" style="margin-bottom:8px">Live shared household sync through one partner’s Google Drive or OneDrive is not available in this beta. Its rules are fixed now: the Household Owner creates the folder and shares it with the collaborator with <b>read/write</b> access; shared editing stays <b>Pending</b> until the collaborator accepts and access is confirmed; if access is revoked, editing is suspended and the cached household becomes read-only; the app never creates a replacement folder. Nothing is synced through your Drive yet. This checklist records progress only.</div>'
       +'<div class="f-row"><label>Collaborator email</label><input class="fin" id="fldEm" type="email" autocapitalize="off" placeholder="partner@example.com" value="'+esc(f.email||'')+'" onchange="fld59(\'email\',this.value.trim())"></div>'
       +[['created','Household Owner created the folder'],['shared','Folder shared with read/write access'],['accepted','Collaborator accepted the invitation']].map(function(x){return '<label class="mgr-row" style="cursor:pointer;border:0;padding:6px 2px"><span class="lb">'+x[1]+'</span><input type="checkbox" class="tgl"'+(f[x[0]]?' checked':'')+' onchange="fld59(\''+x[0]+'\',this.checked)"></label>';}).join('')
       +'<div class="fline"><span>Shared editing</span><b class="'+(ok&&f.created?'pos':'neg')+'">'+(ok&&f.created?'Access confirmed':'Pending')+'</b></div></div></details>';
@@ -9321,7 +9349,7 @@ var _rAuth59=renderAuth;renderAuth=function(){
   var hd='<div class="austep">'+ico('check')+' Signed in as '+esc(em)+'</div>';
   if(m==='storage'){
     s.textContent='Where should your money data live?';
-    b.innerHTML=hd+stgCards59(DB.meta.storageAsked?storageMode():'','austore')+'<div class="help small" style="text-align:center">No option is better for everyone. You can change this any time in Settings → Mode &amp; storage.</div>';
+    b.innerHTML=hd+stgCards59(DB.meta.storageAsked?storageMode():'','austore')+'<div class="help small" style="text-align:center">No option is better for everyone. You can change this any time in Settings → Data &amp; Sync.</div>';
   }else if(m==='provider'){
     var pn=v.storage==='drive'?'Google Drive':'OneDrive';
     s.textContent='Set up your '+pn+' backup';
@@ -9347,8 +9375,8 @@ function stgPick59(k){
 (function(){
   document.querySelectorAll('#view-settings .sub').forEach(function(e){if(/v1\.58 beta 1/.test(e.textContent))e.textContent='v1.59 beta 2';});
   var ol=document.querySelector('#view-settings details.help ol');
-  if(ol)ol.querySelectorAll('li').forEach(function(li){if(/^Private from your partner:/.test(li.textContent))li.innerHTML='<b>Private from your partner:</b> set an account to <b>Only me</b> in Lists → Accounts. A Shared account holds Shared transactions only, and split bills are always Shared.';});
-  if(ol)ol.insertAdjacentHTML('beforeend','<li><b>Mode &amp; storage:</b> Settings → Mode &amp; storage. Choose Personal or Couple, then Device only, an encrypted Google Drive / OneDrive backup, or Couple Money Cloud. Switching always makes a safety backup first.</li><li><b>Net Worth, assets &amp; loans:</b> add Property, Vehicle or loan accounts in Lists → Accounts. Assets use the purchase price unless you add a dated adjusted value. Record loan repayments from the loan’s page.</li><li><b>Shared accounts:</b> a Shared account holds Shared transactions only. Set your partner’s access (View only, Add transactions, Full or Administrator) when you edit the account.</li>');
+  if(ol)ol.querySelectorAll('li').forEach(function(li){if(/^Private from your partner:/.test(li.textContent))li.innerHTML='<b>Private from your partner:</b> set an account to <b>Only me</b> in Settings → Accounts. A Shared account holds Shared transactions only, and split bills are always Shared.';});
+  if(ol)ol.insertAdjacentHTML('beforeend','<li><b>Modes &amp; storage:</b> choose Personal, Couple or Advanced Couple in Settings → Mode &amp; Partner Access; storage and sync live in Settings → Data &amp; Sync. Switching always makes a safety backup first.</li><li><b>Net Worth, assets &amp; loans:</b> add Property, Vehicle or loan accounts in Settings → Accounts. Assets use the purchase price unless you add a dated adjusted value. Record loan repayments from the loan’s page.</li><li><b>Shared accounts:</b> a Shared account holds Shared transactions only. Set your partner’s access (View only, Add transactions, Full or Administrator) in Settings → Mode &amp; Partner Access.</li>');
 })();
 
 /* Device only and personal-backup modes make no Firebase connection at all (plan: nothing leaves the device) */
@@ -9402,7 +9430,7 @@ var _rPriv59=renderPriv;renderPriv=function(){
     var p=permFor59(a.name);
     return '<div class="mgr-row" style="padding:9px 12px;flex-wrap:wrap"><span class="lb">'+esc(a.name)+'<small>'+esc(a.owner||'no owner')+(p==='owner'?' · you are the owner':' · your access: '+PERM_L[p])+'</small></span>'
       +(p==='owner'?'<select class="fin" style="width:auto;padding:7px 8px;font-size:12.5px" onchange="pa59(\''+esc(a.name).replace(/'/g,"\\'")+'\',this.value)">'+['view','add','full','admin'].map(function(k){return '<option value="'+k+'"'+((a.partnerAccess||'add')===k?' selected':'')+'>'+P+': '+PERM_L[k]+'</option>';}).join('')+'</select>':'<span class="pvpill">'+PERM_L[p]+'</span>')+'</div>';
-  }).join('')+'</div>':'<div class="help small">You have no Shared accounts yet. Share an account in Lists → Accounts.</div>';
+  }).join('')+'</div>':'<div class="help small">You have no Shared accounts yet. Share an account in Settings → Accounts.</div>';
   /* older per-transaction privacy options no longer exist: rewrite their explanation, retire the hide-balance toggles */
   b.querySelectorAll('.help.small').forEach(function(d){
     if(/^Single transactions:/.test(d.textContent))d.innerHTML='<b>Shared accounts hold Shared transactions only.</b> To record something private, use a Private account. Older Private transactions that sit in a Shared account are listed under Privacy conflicts below.';
@@ -9573,7 +9601,7 @@ function pdhGuide59(p){
   var steps=p.provider==='onedrive'
     ?['Open OneDrive (app or onedrive.live.com) and find the “'+esc(p.folder||'Couple Money Manager')+'” folder.','Tap <b>Share</b> and add '+em+'.','Choose <b>Can edit</b> — storage access is read/write.','Send the invitation.']
     :['Open Google Drive (app or drive.google.com) and find the “'+esc(p.folder||'Couple Money Manager')+'” folder.','Tap <b>Share</b> and add '+em+'.','Choose <b>Editor</b> — storage access is read/write.','Send the invitation.'];
-  return '<details class="help small" style="margin:8px 0 2px"><summary>How to share the folder</summary><ol style="margin-top:6px">'+steps.map(function(s){return '<li>'+s+'</li>';}).join('')+'</ol><div style="margin-top:6px">In this beta the folder is shared in your provider’s app and the state is recorded here. In v1.60 the app shares and verifies the folder for you.</div></details>';
+  return '<details class="help small" style="margin:8px 0 2px"><summary>How to share the folder</summary><ol style="margin-top:6px">'+steps.map(function(s){return '<li>'+s+'</li>';}).join('')+'</ol><div style="margin-top:6px">In this beta the folder is shared in your provider’s app and the state is recorded here — the app does not connect to the provider itself.</div></details>';
 }
 function pdhStep59(n,title,body,done){
   return '<div class="pdhstep"><span class="n'+(done?' dn':'')+'">'+(done?'✓':n)+'</span><div class="b"><b>'+title+(done?' <small>done</small>':'')+'</b>'+body+'</div></div>';
@@ -9585,15 +9613,15 @@ function pdhPanel59(){
   var p=pdh59(),st=pdhState59(),own=pdhIsOwner59(),me=meName(),P=esc(partnerName());
   if(V59B3.open===null)V59B3.open=st.k!=='none';
   var dot=st.cls==='ok'?'var(--inc)':(st.cls==='bad'?'var(--exp)':(st.cls==='warn'?'var(--warn)':'var(--muted)'));
-  var h='<details class="help pdhdet" data-pdh'+(V59B3.open?' open':'')+' ontoggle="V59B3.open=this.open"><summary>'+ico('folderopen')+' Personal-drive household · planned for v1.60'+pdhPill59()+'</summary><div style="margin-top:10px">'
-    +'<div class="help small" style="margin-bottom:10px">Stores the encrypted household in one partner’s <b>'+pdhProvName59(p)+'</b>. The <b>Household Storage Owner</b> creates the household folder and grants the collaborator <b>read/write</b> access. Shared household sync stays <b>Pending</b> until the collaborator accepts the invitation and access is confirmed. If access is later revoked, editing is suspended and the cached household becomes read-only. The app never creates a replacement folder. Nothing is synced through your Drive yet — this prepares the v1.60 foundation.</div>'
+  var h='<details class="help pdhdet" data-pdh'+(V59B3.open?' open':'')+' ontoggle="V59B3.open=this.open"><summary>'+ico('folderopen')+' Personal-drive household folder · preview — not connected in this beta'+pdhPill59()+'</summary><div style="margin-top:10px">'
+    +'<div class="help small" style="margin-bottom:10px">Stores the encrypted household in one partner’s <b>'+pdhProvName59(p)+'</b>. The <b>Household Storage Owner</b> creates the household folder and grants the collaborator <b>read/write</b> access. Shared household sync stays <b>Pending</b> until the collaborator accepts the invitation and access is confirmed. If access is later revoked, editing is suspended and the cached household becomes read-only. The app never creates a replacement folder. Live sync through the provider is not available in this beta — this panel records and verifies the folder prerequisite only.</div>'
     +'<div class="ds-status"><span class="dot" style="background:'+dot+'"></span><span><b>'+st.t+'</b><br><small class="muted" style="font-weight:600">'+st.why+'</small></span></div>'
     +'<div class="fline"><span>Household Storage Owner</span><b>'+esc(p.owner||me||'You')+(own?' · you':'')+'</b></div>';
   if(st.k==='suspended')h+='<div class="plwarn" style="margin:10px 0 2px">'+ico('warn')+' <b>Editing suspended.</b> The cached household is read-only until access is restored. Reconnect the existing “'+esc(p.folder||'Couple Money Manager')+'” folder in '+pdhProvName59(p)+' — the app never creates a replacement household.</div>';
   if(own){
     if(!p.createdAt){
       h+=pdhStep59(1,'Choose the household storage provider','<div class="segmini" style="margin-top:6px"><button class="'+(p.provider!=='onedrive'?'on':'')+'" data-act="pdhprov" data-v="drive">'+ico('folder')+' Google Drive</button><button class="'+(p.provider==='onedrive'?'on':'')+'" data-act="pdhprov" data-v="onedrive">'+ico('folder')+' OneDrive</button></div><div class="help small" style="margin-top:6px">The household lives in the owner’s own cloud account — a different choice from Couple Money Cloud.</div>',false)
-        +pdhStep59(2,'Create the household folder','<button class="btn" data-act="pdhcreate">'+ico('folder')+' Create household folder</button><div class="help small" style="margin-top:6px">Creates “Couple Money Manager” in your '+pdhProvName59(p)+'. In this beta the folder and its household code are recorded here; in v1.60 the app creates both through the provider.</div>',false);
+        +pdhStep59(2,'Create the household folder','<button class="btn" data-act="pdhcreate">'+ico('folder')+' Create household folder</button><div class="help small" style="margin-top:6px">Creates “Couple Money Manager” in your '+pdhProvName59(p)+'. In this beta the folder and its household code are recorded here — nothing is created in your provider account.</div>',false);
     }else{
       h+=pdhStep59(1,'Household folder created','<div class="dayg" style="margin-top:6px;margin-bottom:0"><div class="mgr-row" style="padding:9px 12px"><span class="lb">'+ico('folderopen')+' '+esc(p.folder||'Couple Money Manager')+'<small>'+esc(pdhProvName59(p))+' · created '+pdhDay59(p.createdAt)+'</small></span><span class="pvpill">Owner folder</span></div><div class="mgr-row" style="padding:9px 12px"><span class="lb">'+ico('key')+' Household code<small>'+P+' reads this code from cmm-household.json inside the shared folder (or asks you) to confirm access.</small></span><span class="pdhcode">'+esc(p.code||'')+'</span></div></div>',true);
       if(p.missingAt){
@@ -9605,12 +9633,12 @@ function pdhPanel59(){
         h+=pdhStep59(2,'Folder shared · read/write','<div class="fline"><span>Shared with</span><b>'+esc(p.email||P)+' · '+pdhDay59(p.sharedAt)+'</b></div>',true);
       }
       if(!p.acceptedAt){
-        h+=pdhStep59(3,'Collaborator accepts the invitation','<button class="btn ghost" data-act="pdhaccept">'+ico('check')+' '+P+' accepted the invitation</button><div class="help small" style="margin-top:6px">Confirm once '+P+' accepts the invite in their email or provider app. In this beta both sides can be rehearsed here; in v1.60 the collaborator accepts on their own device.</div>',false);
+        h+=pdhStep59(3,'Collaborator accepts the invitation','<button class="btn ghost" data-act="pdhaccept">'+ico('check')+' '+P+' accepted the invitation</button><div class="help small" style="margin-top:6px">Confirm once '+P+' accepts the invite in their email or provider app. In this beta both sides can be rehearsed here on this device.</div>',false);
       }else{
         h+=pdhStep59(3,'Collaborator accepted','<div class="fline"><span>Invitation accepted</span><b>'+pdhDay59(p.acceptedAt)+'</b></div>',true);
       }
       if(!p.verifiedAt){
-        h+=pdhStep59(4,'Confirm access to activate shared editing','<div class="mgr-lb">Household code</div><input class="fin" id="pdhCodeIn" autocapitalize="characters" autocomplete="off" autocorrect="off" placeholder="XXXX-XXXX" style="text-transform:uppercase;letter-spacing:2px;font-weight:800"><button class="btn" data-act="pdhverify" data-f="pdhCodeIn">'+ico('shield')+' Confirm access</button><div class="help small" style="margin-top:6px">Shared editing activates only after access is confirmed. Until then this household stays <b>Pending</b>. In v1.60 the app reads the code from the shared folder automatically.</div>',false)
+        h+=pdhStep59(4,'Confirm access to activate shared editing','<div class="mgr-lb">Household code</div><input class="fin" id="pdhCodeIn" autocapitalize="characters" autocomplete="off" autocorrect="off" placeholder="XXXX-XXXX" style="text-transform:uppercase;letter-spacing:2px;font-weight:800"><button class="btn" data-act="pdhverify" data-f="pdhCodeIn">'+ico('shield')+' Confirm access</button><div class="help small" style="margin-top:6px">Shared editing activates only after access is confirmed. Until then this household stays <b>Pending</b>. Automatic verification through the provider is not available in this beta.</div>',false)
           +'<div class="btnrow"><button class="btn sm ghost" data-act="pdhmissing">'+ico('cloudoff')+' Folder access lost or revoked</button></div>';
       }else{
         h+=pdhStep59(4,'Access confirmed','<div class="fline"><span style="color:var(--inc)"><b>Shared editing active</b></span><b class="pos">'+pdhDay59(p.verifiedAt)+'</b></div>',true)
@@ -9625,8 +9653,8 @@ function pdhPanel59(){
     if(p.missingAt)h+='<div class="plwarn" style="margin:10px 0 2px">'+ico('warn')+' <b>Editing suspended.</b> The household folder is not reachable, so the cached household is read-only until access is restored.</div>';
     if(pdhActive59())h+='<div class="fline"><span style="color:var(--inc)"><b>Shared editing active</b></span><b class="pos">'+pdhDay59(p.verifiedAt)+'</b></div>';
   }
-  h+='<div class="help small" style="margin-top:12px">'+ico('shield')+' <b>Storage access stays simple:</b> the collaborator needs read/write access to the household folder. What they may view, add, edit or administer inside the app is controlled separately — View only, Add transactions, Full transaction access or Account administrator (Settings → Privacy).</div>'
-    +'<div class="help small" style="margin-top:8px">'+ico('lock')+' <b>Financial files stay encrypted and version-controlled</b> even though both of you can reach the shared folder. Data is kept in small chunks — household metadata, shared lists, monthly transactions, attachments and a revision manifest — so two people never overwrite each other. Conflict review arrives with v1.60, together with storage-owner transfer and provider-disconnection recovery.</div>'
+  h+='<div class="help small" style="margin-top:12px">'+ico('shield')+' <b>Storage access stays simple:</b> the collaborator needs read/write access to the household folder. What they may view, add, edit or administer inside the app is controlled separately — View only, Add transactions, Full transaction access or Account administrator (Settings → Mode &amp; Partner Access).</div>'
+    +'<div class="help small" style="margin-top:8px">'+ico('lock')+' <b>Financial files stay encrypted and version-controlled</b> even though both of you can reach the shared folder. Data is kept in small chunks — household metadata, shared lists, monthly transactions, attachments and a revision manifest — so two people never overwrite each other. Chunked conflict review, storage-owner transfer and provider-disconnection recovery are not part of this beta.</div>'
     +'</div></details>';
   b.insertAdjacentHTML('beforeend',h);
 }
@@ -9638,7 +9666,7 @@ function rAuthHHF59(){
   if(s)s.textContent='Household folder · optional (v1.60 preview)';
   var h='<div class="austep">'+ico('check')+' Signed in as '+esc(em)+'</div>'
     +'<div class="aucard"><div class="aucard-ic">'+ico('folder')+'</div><b>Prepare the household folder</b>'
-    +'<p>For later: one partner’s Google Drive or OneDrive can hold the encrypted household. As the <b>Household Storage Owner</b> you create the folder and share it with '+P+' using <b>read/write</b> access. Shared editing stays <b>Pending</b> until '+P+' accepts and access is confirmed. You can finish this any time in Settings → Mode &amp; storage.</p></div>';
+    +'<p>For later: one partner’s Google Drive or OneDrive can hold the encrypted household. As the <b>Household Storage Owner</b> you create the folder and share it with '+P+' using <b>read/write</b> access. Shared editing stays <b>Pending</b> until '+P+' accepts and access is confirmed. You can finish this any time in Settings → Data &amp; Sync.</p></div>';
   if(own){
     if(!p.createdAt){
       h+='<div class="mgr-lb">Household storage provider</div><div class="segmini"><button class="'+(p.provider!=='onedrive'?'on':'')+'" data-act="pdhprov" data-v="drive">'+ico('folder')+' Google Drive</button><button class="'+(p.provider==='onedrive'?'on':'')+'" data-act="pdhprov" data-v="onedrive">'+ico('folder')+' OneDrive</button></div>'
@@ -9649,13 +9677,13 @@ function rAuthHHF59(){
         h+='<div class="mgr-lb" style="margin-top:10px">Collaborator email</div><input class="fin" id="auPdhEm" type="email" autocapitalize="off" placeholder="partner@example.com" value="'+esc(p.email||DB.meta.pendingInvite||'')+'" onchange="pdhEmail59(this.value)">'
           +'<button class="btn" style="margin-top:12px" data-act="pdhshare">'+ico('users')+' Folder shared · read/write</button>';
       }else{
-        h+='<div class="fline"><span>Shared with</span><b>'+esc(p.email||P)+' · read/write</b></div><div class="help small" style="margin-top:6px">Household sync stays <b>Pending</b> until '+P+' accepts the invitation and access is confirmed. Finish any time in Settings → Mode &amp; storage.</div>';
+        h+='<div class="fline"><span>Shared with</span><b>'+esc(p.email||P)+' · read/write</b></div><div class="help small" style="margin-top:6px">Household sync stays <b>Pending</b> until '+P+' accepts the invitation and access is confirmed. Finish any time in Settings → Data &amp; Sync.</div>';
       }
     }
   }else{
     h+='<div class="help small">'+esc(p.owner||'Your partner')+' is the Household Storage Owner and sets up the folder. You will confirm access with a household code.</div>';
   }
-  h+='<div class="help small" style="margin-top:10px;text-align:center">Couple Money Cloud already syncs your household today. This folder is the personal-drive option planned for v1.60.</div>'
+  h+='<div class="help small" style="margin-top:10px;text-align:center">Couple Money Cloud already syncs your household today. The personal-drive folder is a preview — its live sync is not available in this beta.</div>'
     +'<button class="btn" style="margin-top:8px" data-act="auhhf">Continue</button>';
   b.innerHTML=h;
 }
@@ -9663,7 +9691,7 @@ function rAuthHHF59(){
 /* ---------------- layering: storage cards, store panel, onboarding, actions, version ---------------- */
 var _scB3=stgCards59;
 stgCards59=function(sel,act){
-  var card='<div class="usecard pdhcard"'+(act==='austore'?'':' role="button" tabindex="0" data-act="pdhopen"')+'><span class="aucard-ic">'+ico('folder')+'</span><span style="flex:1;min-width:0"><b>Partner’s Drive or OneDrive</b><small>Shared household storage in one partner’s own cloud. Planned for v1.60 — set up the folder prerequisite early.</small></span><span class="pvpill" style="background:var(--bg);color:var(--muted)">v1.60</span></div>';
+  var card='<div class="usecard pdhcard"'+(act==='austore'?'':' role="button" tabindex="0" data-act="pdhopen"')+'><span class="aucard-ic">'+ico('folder')+'</span><span style="flex:1;min-width:0"><b>Partner’s Drive or OneDrive</b><small>Shared household storage in one partner’s own cloud. Preview — records the folder prerequisite only; live sync is not in this beta.</small></span><span class="pvpill" style="background:var(--bg);color:var(--muted)">Preview</span></div>';
   return _scB3(sel,act)+card;
 };
 var _rsB3=renderStore59;
@@ -9703,7 +9731,7 @@ handleAct=function(el){
   V59.ver='1.59 beta 3';
   document.querySelectorAll('.sub').forEach(function(e){if(/v1\.59 beta 2/.test(e.textContent))e.textContent='v1.59 beta 3';});
   var ol=document.querySelector('#view-settings details.help ol');
-  if(ol)ol.insertAdjacentHTML('beforeend','<li><b>Household folder sharing (v1.60 preview):</b> Settings → Mode &amp; storage. As the Household Storage Owner you create the household folder and share it with your partner using read/write access. Shared editing activates only after they accept the invitation and access is confirmed. If access is later revoked, editing is suspended read-only — the app never creates a replacement household folder.</li>');
+  if(ol)ol.insertAdjacentHTML('beforeend','<li><b>Household folder sharing (v1.60 preview):</b> Settings → Data &amp; Sync. As the Household Storage Owner you create the household folder and share it with your partner using read/write access. Shared editing activates only after they accept the invitation and access is confirmed. If access is later revoked, editing is suspended read-only — the app never creates a replacement household folder.</li>');
 })();
 </script>
 <script id="v159b4">
@@ -9987,7 +10015,7 @@ stgCards59=function(sel,act){
     ['household','users','Couple Money Cloud',m==='solo'?'Live sync across your own signed-in devices (personal multi-device).':'Live household sync between authorised devices. Private accounts stay on their owner’s device.']
   ];
   return L.map(function(x){return '<button class="usecard'+(sel===x[0]?' on':'')+'" data-act="'+act+'" data-v="'+x[0]+'"><span class="aucard-ic">'+ico(x[1])+'</span><span style="flex:1"><b>'+x[2]+'</b><small>'+x[3]+'</small></span>'+(sel===x[0]?'<span class="pvpill">Current</span>':(rec===x[0]?'<span class="pvpill" style="background:var(--bg);color:var(--muted)">Suggested</span>':''))+'</button>';}).join('')
-    +'<div class="usecard pdhcard"'+(act==='austore'?'':' role="button" tabindex="0" data-act="pdhopen"')+'><span class="aucard-ic">'+ico('folder')+'</span><span style="flex:1;min-width:0"><b>Partner’s Drive or OneDrive</b><small>Shared household storage in one partner’s own cloud. Planned for v1.60 — set up the folder prerequisite early.</small></span><span class="pvpill" style="background:var(--bg);color:var(--muted)">v1.60</span></div>';
+    +'<div class="usecard pdhcard"'+(act==='austore'?'':' role="button" tabindex="0" data-act="pdhopen"')+'><span class="aucard-ic">'+ico('folder')+'</span><span style="flex:1;min-width:0"><b>Partner’s Drive or OneDrive</b><small>Shared household storage in one partner’s own cloud. Preview — records the folder prerequisite only; live sync is not in this beta.</small></span><span class="pvpill" style="background:var(--bg);color:var(--muted)">Preview</span></div>';
 };
 
 /* ---------- 5. mode switching engine (plan 9.1–9.5, M-08) ---------- */
@@ -10061,7 +10089,7 @@ V56.mgr.share6=function(){
   V6.share={};
   l.forEach(function(a){if(a.vis!=='me')V6.share[a.name]=1;});
   $('mgrBody').innerHTML='<div class="help small" style="margin-bottom:10px">Tick the accounts '+P+' may see, then tap Save. <b>Unticked accounts stay on this device</b> — '+P+' never sees them, their transactions or their balances. Nothing is shared until you tick it.</div>'
-    +(l.length?'<div class="dayg">'+l.sort(function(x,y){return alphasort(x.name,y.name);}).map(function(a){return '<label class="mgr-row" style="padding:10px 12px;cursor:pointer"><span class="lb">'+esc(a.name)+'<small>'+esc(a.type||'')+(a.vis==='me'?' · private now':'')+'</small></span><input type="checkbox" class="tgl pv6ck" data-n="'+esc(a.name)+'"'+(V6.share[a.name]?' checked':'')+' onchange="share6Cnt6()"></label>';}).join('')+'</div>':'<div class="help">You don’t have any accounts yet. You can choose sharing later in Lists → Accounts.</div>')
+    +(l.length?'<div class="dayg">'+l.sort(function(x,y){return alphasort(x.name,y.name);}).map(function(a){return '<label class="mgr-row" style="padding:10px 12px;cursor:pointer"><span class="lb">'+esc(a.name)+'<small>'+esc(a.type||'')+(a.vis==='me'?' · private now':'')+'</small></span><input type="checkbox" class="tgl pv6ck" data-n="'+esc(a.name)+'"'+(V6.share[a.name]?' checked':'')+' onchange="share6Cnt6()"></label>';}).join('')+'</div>':'<div class="help">You don’t have any accounts yet. You can choose sharing later in Settings → Accounts.</div>')
     +'<div class="help small" id="share6prev" style="margin:10px 2px 4px"></div>'
     +(nowMode6()==='couple'?'<div class="help small" style="margin:2px 2px 8px">'+ico('shield')+' Want to keep some accounts private inside the household? <button type="button" class="aulink inl" data-act="modecmp">Compare with Advanced Couple</button>.</div>':'')
     +'<div class="sheet-foot" style="padding-bottom:4px"><button class="btn" data-act="share6go">Save</button></div>';
@@ -10412,7 +10440,7 @@ if(ol)ol.insertAdjacentHTML('beforeend','<li><b>Dashboard (v1.60 design):</b> Th
       +(lockOn?'<span class="pv-pill '+(enc?'ok':'warn')+'">'+(enc?'Encrypted':'Not encrypted yet')+'</span>':'')
       +'<span class="pv-pill '+(psOn?'ok':'')+'">Privacy Screen '+(psOn?'on':'off')+'</span></div></div></div>';
     /* 1. lock */
-    h+=sec('Lock this phone')+'<div class="pv-grp">'
+    h+=sec('Protect this device')+'<div class="pv-grp">'
       +pr('lock','App lock',lockOn?'Asks for your '+(lk.len||4)+'-digit PIN when the app opens':'Anyone holding this phone can open the app',
         lockOn?'<button class="ibtn" data-act="pinchg">Change</button><button class="ibtn" data-act="pinoff" style="color:var(--exp)">Turn off</button>':'<button class="ibtn" data-act="pinset" style="color:var(--accent);font-weight:800">Set PIN</button>');
     if(lockOn){
@@ -10446,7 +10474,7 @@ if(ol)ol.insertAdjacentHTML('beforeend','<li><b>Dashboard (v1.60 design):</b> Th
         var p=permFor59(a.name);
         return pr('card',esc(a.name),esc(a.owner||'no owner')+(p==='owner'?' · you own this':' · your access: '+PERM_L[p]),
           p==='owner'?'<select class="fin" onchange="pa59(\''+esc(a.name).replace(/'/g,"\\'")+'\',this.value)">'+['view','add','full','admin'].map(function(k){return '<option value="'+k+'"'+((a.partnerAccess||'add')===k?' selected':'')+'>'+PERM_L[k]+'</option>';}).join('')+'</select>':'<span class="pvpill">'+PERM_L[p]+'</span>');
-      }).join('')+'</div><div class="pv-note">Shared accounts hold Shared transactions only. Split bills are always Shared. For something private, use a Private account.</div>':'<div class="pv-note">No Shared accounts yet. Share one in Lists → Accounts.</div>');
+      }).join('')+'</div><div class="pv-note">Shared accounts hold Shared transactions only. Split bills are always Shared. For something private, use a Private account.</div>':'<div class="pv-note">No Shared accounts yet. Share one in Settings → Accounts.</div>');
     }
     /* 4. AI */
     h+=sec('AI assistant')+'<div class="pv-grp">'+pr('spark','Send notes to the online AI','Only used when Gemini or OpenAI is connected. Private transactions go as amount only; anything hidden from you is never sent.',tgl(!!pc.aiNotes,'var c=privCfg();c.aiNotes=this.checked;privSave(c)'),true)+'</div>';
@@ -11479,6 +11507,500 @@ if(olB3)olB3.insertAdjacentHTML('beforeend',
   +'<li><b>Transactions refined:</b> the screen opens on the latest 20 with a Load more button, rows lead with the category (Account \u00b7 who \u00b7 Split beneath), tapping opens a read-only detail with Copy and Edit, and split details show participants and allocations only. On the form, Repeat is visible in the main flow and Note is the final full-width multi-line field.</li>'
   +'<li><b>Loan &amp; Hire Purchase accounting:</b> repayments reduce the balance by the full amount paid; interest or finance charges are recorded separately and increase the Loan balance as a finance cost. Hire Purchase never asks for interest. Fixed instalments quietly prefill the repayment, with optional due-date reminders.</li>'
   +'<li><b>Controlled account types &amp; ownership:</b> Assets \u2014 Property, Vehicle, Investment, Bank, Cash, e-Wallet; Liabilities \u2014 Loan, Hire Purchase, Card. Ownership is Hubby, Wifey or Joint, and Joint balances are counted once. Delete profile and data lives in Danger zone with a typed-DELETE confirmation, per-step outcomes and retry.</li>');
+})();
+</script>
+<script id="v160b4">
+/* ===================== v1.60 beta 4 · Modification & Execution Report fixes =====================
+   Additive layer on v1.60 beta 3 closing the report's items:
+   · M01  Privacy & Security keeps exactly two top-level choices (Protect this device / Privacy Screen);
+          4-digit PIN upgrade hint nests under Protect this device; no partner/storage/AI settings there.
+   · M02  ALL partner visibility & permission configuration lives in Mode & Partner Access:
+          per-account access list, share-notes, personal accounts, hidden balances, older private
+          transactions and conflicts review; the account editor only points there ("Settings → Privacy"
+          references replaced app-wide).
+   · U01  "Protect this device" wording kept consistent.
+   · E02  Controlled account model completed: guided legacy-type classification manager with preview,
+          automatic safety backup and balance reconciliation; new accounts use only controlled types.
+   · E01  Personal-drive household folder re-homed into Data & Sync and explicitly marked as a
+          preview — live provider sync is not available in this beta (future-tense claims removed).
+   Version bump to v1.60 beta 4 + in-app release notes. */
+(function(){
+'use strict';
+
+var B4=window.B4={};
+
+/* ---------- 1. controlled type options for the account editor (E02 — no free-form types) ---------- */
+B4.accTypeOpts=function(cur){
+  var out=[],has={};
+  function opt(t){if(has[t])return;has[t]=1;var kd=accTypeKind(t);
+    return '<option value="'+esc(t)+'"'+(t===cur?' selected':'')+'>'+esc(t)+(kd==='liability'?' \u00b7 liability':'')+'</option>';}
+  B3.ASSETS.forEach(function(t){var s=opt(t);if(s)out.push(s);});
+  B3.LIABS.forEach(function(t){var s=opt(t);if(s)out.push(s);});
+  if(cur&&B3.ASSETS.indexOf(cur)<0&&B3.LIABS.indexOf(cur)<0){var s2=opt(cur);if(s2)out.push(s2);} /* a legacy account keeps its own type until classified */
+  return out.join('');
+};
+
+/* ---------- 2. guided legacy-type classification (E02 — required, previewed, backed up) ---------- */
+MGR_TITLE.acctype=ico('folder')+' Classify legacy account types';
+B4.guess=function(ty){
+  var n=String(ty||'').toLowerCase();
+  if(/hire|car loan/.test(n))return 'Hire Purchase';
+  if(/loan/.test(n))return 'Loan';
+  if(/credit|card/.test(n))return 'Card';
+  if(/wallet/.test(n))return 'e-Wallet';
+  if(/invest|unit|trust|stock|share|fund|epf|kwsp/.test(n))return 'Investment';
+  if(/car|vehicle|motor/.test(n))return 'Vehicle';
+  if(/house|property|land/.test(n))return 'Property';
+  if(/cash/.test(n))return 'Cash';
+  if(/save|bank|account/.test(n))return 'Bank';
+  return accTypeKind(ty)==='liability'?'Card':'Bank';
+};
+var _rmB4=renderMgr;
+renderMgr=function(){
+  if(MGR.kind!=='acctype'){_rmB4.apply(this,arguments);return;}
+  B3.ensureTypes();
+  var lt=B3.legacyTypes(),h='';
+  h+='<div class="help small" style="margin-bottom:10px">'+ico('shield')+' <b>Account types are a controlled list.</b> Assets: '+esc(B3.ASSETS.join(', '))+'. Liabilities: '+esc(B3.LIABS.join(', '))+'. New accounts only use these types. Legacy or custom types that still hold accounts are classified here — records stay readable and nothing changes until you re-type them.</div>';
+  if(!lt.length){
+    h+='<div class="pv-note" style="color:var(--inc);font-weight:700">'+ico('check')+' Every account is already on the controlled type list — nothing to classify.</div>'
+      +'<div class="mgr-sec" style="margin-top:12px">Controlled types</div><div class="pv-grp">'
+      +B3.ASSETS.concat(B3.LIABS).map(function(t){var n=0;(DB.accounts||[]).forEach(function(a){if(a.type===t)n++;});
+        return '<div class="pv-row"><span class="pv-ic">'+ico(accTypeKind(t)==='liability'?'bank':'card')+'</span><span class="pv-tx"><b>'+esc(t)+'</b><small>'+(accTypeKind(t)==='liability'?'Liability':'Asset')+' \u00b7 '+n+' account'+(n===1?'':'s')+'</small></span></div>';}).join('')
+      +'</div>';
+  }else{
+    var td=todayISO();
+    lt.forEach(function(ty){
+      var accs=(DB.accounts||[]).filter(function(a){return a.type===ty&&!a.recv;});
+      var tot=0;accs.forEach(function(a){var b=accountBalAsOf(a.name,td);if(isFinite(b))tot+=b;});
+      h+='<div class="migrow"><b>'+esc(ty)+' <span class="legpill">legacy</span></b>'
+        +'<small>'+accs.length+' account'+(accs.length===1?'':'s')+' \u00b7 '+esc(accs.map(function(a){return a.name;}).join(', '))+' \u00b7 balances '+esc(money(Math.abs(tot)))+(tot<0?' owed':'')+'</small>'
+        +'<div class="mgr-lb" style="margin-top:8px">Classify as</div>'
+        +'<select class="fin" data-migsel="'+esc(ty)+'">'+B4.accTypeOpts(B4.guess(ty))+'</select>'
+        +'<button class="btn sm" data-act="migapply" data-ty="'+esc(ty)+'" style="margin-top:8px;width:100%">'+ico('check')+' Classify '+accs.length+' account'+(accs.length===1?'':'s')+' as selected</button>'
+        +'</div>';
+    });
+    h+='<div class="help small" style="margin-top:10px">'+ico('clock')+' A safety snapshot is saved to Backup history before each classification. Balances and transaction history are unchanged — only the type moves to the controlled list, and each account keeps its original type shown as \u201cwas \u2026\u201d.</div>';
+  }
+  $('mgrBody').innerHTML=h;
+};
+B4.applyType=function(ty){
+  var sel=null;
+  document.querySelectorAll('[data-migsel]').forEach(function(s){if(s.dataset.migsel===ty)sel=s;});
+  if(!sel)return;
+  var to=sel.value;
+  if(!B3.isCtrl(to)){toast('Choose one of the controlled types');return;}
+  var accs=(DB.accounts||[]).filter(function(a){return a.type===ty&&!a.recv;});
+  if(!accs.length){renderMgr();return;}
+  var td=todayISO(),before=0;
+  accs.forEach(function(a){var b=accountBalAsOf(a.name,td);if(isFinite(b))before+=b;});
+  backupSnap('before type classification');
+  accs.forEach(function(a){if(!a.legacyType)a.legacyType=a.type;a.type=to;});
+  var still=(DB.accounts||[]).some(function(a){return a.type===ty;});
+  if(!still&&!B3.isCtrl(ty)){DB.accTypes=DB.accTypes.filter(function(x){return x!==ty;});}
+  save();
+  var after=0;
+  accs.forEach(function(a){var b=accountBalAsOf(a.name,td);if(isFinite(b))after+=b;});
+  try{renderSettings();}catch(e){}
+  renderMgr();
+  toast(accs.length+' account'+(accs.length===1?'':'s')+' classified as '+to+' \u00b7 balances '+(Math.abs(before-after)<0.005?'unchanged':'reconciled'));
+};
+
+/* ---------- 3. M01 — 4-digit PIN upgrade hint nests under Protect this device ---------- */
+var _rpB4=B3.renderPrivSub;
+B3.renderPrivSub=function(){
+  _rpB4.apply(this,arguments);
+  try{
+    var lk=lockCfg();
+    if(lk&&lk.h&&(+lk.len||4)===4){
+      var el=$('pvLockB3'),note=el&&el.querySelector('.pv-note');
+      if(note)note.insertAdjacentHTML('beforebegin','<div class="pv-note warn">Your PIN has 4 digits \u2014 tap <b>Change</b> above to switch to a safer 6-digit PIN.</div>');
+    }
+  }catch(e){console.warn('pin4',e);}
+};
+
+/* ---------- 4. M02 — partner visibility & permissions live only in Mode & Partner Access ---------- */
+var _rm6B4=B3.renderModeSub;
+B3.renderModeSub=function(){
+  _rm6B4.apply(this,arguments);
+  try{
+    if(!isCouple())return;
+    var card=$('paCardB3');if(!card)return;
+    var P=esc(partnerName()),me=meName(),extra='';
+    /* conflicts first — older Private transactions sitting in Shared accounts */
+    var cf=privConflicts59();
+    if(cf.length)extra+='<div class="pv-alert">'+ico('warn')+'<div>'+cf.length+' older Private transaction'+(cf.length===1?' sits':'s sit')+' in a Shared account or split bill. '+P+' still can\u2019t see '+(cf.length===1?'it':'them')+'. <button class="aulink inl" data-act="privrev">Review</button></div></div>';
+    /* personal (private-from-partner) accounts */
+    var pa=myPrivAccs();
+    extra+='<div class="mgr-sec" style="text-align:left;margin-top:14px">Private from '+P+'</div><div class="pv-grp">'
+      +'<div class="pv-row"><span class="pv-ic">'+ico('user')+'</span><span class="pv-tx"><b>Personal accounts</b><small>'+(pa.length?pa.map(function(a){return esc(a.name);}).join(', '):'None yet \u2014 set an account to \u201cOnly me\u201d in Accounts')+'</small></span><span class="pv-ct"><button class="ibtn" data-act="setopen" data-k="accounts">Review</button></span></div>'
+      +'</div>';
+    /* hidden balances (older setting) */
+    var hb=(DB.accounts||[]).filter(function(a){return a.hideBal&&permFor59(a.name)==='owner';});
+    if(hb.length)extra+='<div class="mgr-sec" style="text-align:left;margin-top:12px">Hidden balances</div><div class="pv-grp">'
+      +hb.map(function(a){return '<div class="pv-row"><span class="pv-ic">'+ico('card')+'</span><span class="pv-tx"><b>'+esc(a.name)+'</b><small>'+P+' sees *** instead of the balance</small></span><span class="pv-ct"><button class="ibtn" data-act="hidebal2" data-n="'+esc(a.name)+'">Show balance</button></span></div>';}).join('')
+      +'</div>';
+    /* older private transactions */
+    var mine=(DB.txns||[]).filter(function(t){return t.priv&&!t.masked&&!t.pvx&&(!me||(t.pby||t.person)===me);}).sort(function(a,b){return a.date<b.date?1:-1;});
+    if(mine.length)extra+='<details class="pv-det"><summary>Older private transactions ('+mine.length+')</summary><div class="dayg">'
+      +mine.slice(0,60).map(function(t){return '<button class="txn" data-act="txnedit" data-id="'+t.id+'"><span class="mid"><b>'+ico('lock')+' '+esc(t.type==='Transfer'?'Transfer':t.category)+(t.note?' \u00b7 '+esc(t.note):'')+'</b><small>'+dLabelYW(t.date)+' \u00b7 '+(privLevel(t)==='full'?'Fully private':'Details hidden')+'</small></span><span class="amt">'+money(t.amount)+'</span></button>';}).join('')
+      +'</div></details>';
+    var anchor=$('paNotesB3');
+    if(anchor){
+      var oldX=document.getElementById('paExtraB4');if(oldX)oldX.remove(); /* replace the previous injection instead of duplicating it */
+      if(extra){var dx=document.createElement('div');dx.id='paExtraB4';dx.innerHTML=extra;anchor.insertAdjacentElement('afterend',dx);}
+    }
+  }catch(e){console.warn('m02 mode',e);}
+};
+
+/* ---------- 5. E01 — personal-drive household folder renders in Data & Sync, marked as preview ---------- */
+var _rdsB4=B3.renderDataSub;
+B3.renderDataSub=function(){
+  _rdsB4.apply(this,arguments);
+  try{
+    var sec=document.querySelector('#view-settings .setsub[data-sub="data"]');
+    if(!sec)return;
+    var b=$('storeBody');
+    if(!b){
+      b=document.createElement('div');b.id='storeBody';b.style.marginTop='10px';
+      var stg=$('stgBodyB3');
+      if(stg&&stg.parentNode===sec.querySelector('.card'))stg.insertAdjacentElement('afterend',b);
+      else{var c=sec.querySelector('.card');if(c)c.appendChild(b);}
+    }
+    if(!b)return;
+    var old=b.querySelector('details.pdhdet');if(old)old.remove();
+    if(!isCouple()){
+      b.innerHTML='<div class="help small pdhsolo">The personal-drive household folder is a Couple mode feature \u2014 switch modes in <b>Mode &amp; Partner Access</b>.</div>';
+      return;
+    }
+    pdhPanel59();
+  }catch(e){console.warn('pdh rehome',e);}
+};
+
+/* ---------- 6. actions ---------- */
+var _haB4=handleAct;
+handleAct=function(el){
+  var a=el.dataset.act;
+  if(a==='migapply'){B4.applyType(el.dataset.ty);return;}
+  if(a==='hidebal2'){accHideBal(el.dataset.n,false);toast('Balance visible to your partner again');if(B3.cur==='mode')B3.renderModeSub();else renderPriv();return;}
+  return _haB4(el);
+};
+
+/* ---------- 7. version + in-app release notes ---------- */
+V59.ver='1.60 beta 4';
+document.querySelectorAll('.sub').forEach(function(e){
+  if(/1\.60 beta 3/.test(e.textContent))e.textContent='v1.60 beta 4';
+});
+document.title='v1.60 beta 4 \u00b7 Couple Money Manager';
+var olB4=document.querySelector('#view-settings details.help ol');
+if(olB4)olB4.insertAdjacentHTML('beforeend',
+  '<li><b>Modification-report fixes (M01/M02):</b> Privacy &amp; Security shows exactly two top-level choices \u2014 Protect this device and Privacy Screen. Every partner visibility and permission control (per-account access, share-notes, personal accounts, hidden balances, older private transactions, conflicts review) now lives only in Mode &amp; Partner Access, and every \u201cSettings \u2192 Privacy\u201d pointer was repointed.</li>'
+  +'<li><b>Legacy account types (M-E02):</b> classification is now a guided manager \u2014 it previews the affected accounts, saves a safety snapshot first, re-types them into the controlled Asset / Liability list and confirms balances and history are unchanged. New accounts use only the controlled type list.</li>'
+  +'<li><b>Personal-drive household folder (M-E01):</b> explicitly a preview \u2014 the folder prerequisite (provider choice, folder and household code, share / accept / confirm, suspension and restore) is recorded in Data &amp; Sync. Live sync through Google Drive or OneDrive is not available in this beta.</li>');
+})();
+</script>
+<script id="v160b5">
+/* ===================== v1.60 beta 5 · Consistent transaction rows & details =====================
+   Additive layer on v1.60 beta 4:
+   · R1  one row anatomy everywhere — every transaction row in every list (account drill-down,
+         card billing periods, report drill-downs) carries the same pastel category tile the
+         Transactions screen uses; a letter tile (first letter of the category) renders when
+         no icon matches, so tiles never fall back to a generic glyph.
+   · R2  one detail view everywhere — tapping a transaction row in ANY list expands the same
+         read-only detail (Date / Type / Account / Category / Paid by / Split / Note / Amount
+         with Copy · Edit · Delete) instead of jumping straight into the edit sheet. Edit opens
+         the sheet; selection mode keeps its behaviour; the Transactions screen keeps the
+         canonical handler.
+   · R3  transparent toolbar — app header and page back-bars are transparent at rest and pick
+         up a frosted tint + hairline as soon as content scrolls beneath them.
+   Version bump to v1.60 beta 5 + in-app release notes. */
+(function(){ 'use strict';
+  var B5=window.B5x={};
+  if(!window.V59)window.V59={};
+  V59.ver='1.60 beta 5';
+
+  /* ---------- 1. transparent toolbar: scroll-aware frost ---------- */
+  (function(){
+    var ticking=false;
+    function upd(){
+      ticking=false;
+      var y=window.scrollY||document.documentElement.scrollTop||0;
+      document.body.classList.toggle('hdrscrolled', y>6);
+      var pages=document.querySelectorAll('.page.on');
+      for(var i=0;i<pages.length;i++)pages[i].classList.toggle('scrolled', pages[i].scrollTop>6);
+    }
+    function req(){ if(!ticking){ ticking=true; requestAnimationFrame(upd); } }
+    document.addEventListener('scroll', req, true);
+    window.addEventListener('resize', req);
+    upd();
+  })();
+
+  /* ---------- 2. one tile system for every transaction row ---------- */
+  /* category → icon matcher (same table as the beta5 polish, kept local on purpose) */
+  var CATB=[
+    [/grocer|supermarket|wet market|pasar|mart/, 'bag'],
+    [/food|dining|restaurant|cafe|coffee|meal|snack|lunch|dinner/, 'receipt'],
+    [/bill|utilit|electric|water|internet|mobile|phone|unifi|astro/, 'receipt'],
+    [/transport|grab|fuel|petrol|ride|taxi|parking|toll|bus|train/, 'swap'],
+    [/rent|mortgage|housing|condo/, 'bank'],
+    [/health|pharmacy|clinic|medical|doctor|hospital|medicine/, 'shield'],
+    [/entertainment|streaming|movie|cinema|game|music|netflix|spotify/, 'trophy'],
+    [/education|tuition|school|course|class/, 'book'],
+    [/salar|bonus|freelance|interest|invest|dividend|paycheck/, 'trend'],
+    [/business/, 'briefcase'],
+    [/reimburs|refund/, 'undog'],
+    [/gift|ang ?pau/, 'trophy'],
+    [/personal care|haircut|salon|grooming|spa/, 'user'],
+    [/shopping|clothes|mall|shopee|lazada|amazon/, 'tag'],
+    [/travel|flight|hotel|trip|holiday/, 'calendar'],
+    [/charity|donat/, 'users']
+  ];
+  function matchCat(t){
+    if(!t||t.type==='Transfer')return t?'swap':null;
+    var s=((t.category||'')+' '+(t.subcategory||'')).toLowerCase(),i;
+    for(i=0;i<CATB.length;i++){if(CATB[i][0].test(s))return CATB[i][1];}
+    return null; /* no icon match → letter tile */
+  }
+  function icoForB(t){
+    if(!t)return 'list';
+    var m=matchCat(t);
+    if(m)return m;
+    return t.type==='Income'?'trend':'bag';
+  }
+  function tileFor(t,isGrp){
+    if(!isGrp){
+      var m=matchCat(t);
+      if(m&&window.ICONS&&ICONS[m]){
+        var cls=t.type==='Income'?'in':(t.type==='Transfer'?'tr':'');
+        return '<span class="tic5 '+cls+'" aria-hidden="true">'+ico(m)+'</span>';
+      }
+      /* letter tile — a category with no icon match never shows a generic glyph */
+      var src=(t.category||t.subcategory||t.type||'T')+'';
+      return '<span class="tic5 lt" aria-hidden="true">'+esc(src.charAt(0).toUpperCase())+'</span>';
+    }
+    return '<span class="tic5" aria-hidden="true">'+ico('users')+'</span>';
+  }
+  var byIdB=null,grpB=null,mapDirty=true;
+  function maps(){
+    if(!mapDirty&&byIdB)return;
+    byIdB={};grpB={};mapDirty=false;
+    DB.txns.forEach(function(t){byIdB[t.id]=t;if(t.group&&!grpB[t.group])grpB[t.group]=t;});
+  }
+  function polish(){
+    if(!DB||!DB.txns)return;
+    maps();
+    var rows=document.querySelectorAll('button.txn[data-id],button.txn[data-g]');
+    for(var i=0;i<rows.length;i++){
+      var el=rows[i];
+      if(el.classList.contains('kid'))continue;
+      if(el.closest('.sheet,.modal,#auBody,.pk'))continue;
+      var t=el.dataset.id?byIdB[el.dataset.id]:(el.dataset.g?grpB[el.dataset.g]:null);
+      if(!t)continue;
+      var mid=el.querySelector('.mid');if(!mid)continue;
+      var isGrp=el.classList.contains('grp');
+      var existing=el.querySelector('.tic5');
+      /* letter-tile rule: a category with no icon match never shows a generic glyph —
+         replace a previously injected fallback tile with the letter tile (any list) */
+      if(existing){
+        if(isGrp||matchCat(t)||existing.classList.contains('lt'))continue;
+        existing.remove();
+      }
+      mid.insertAdjacentHTML('beforebegin',tileFor(t,isGrp));
+    }
+    B5.injectOpen(EXP.txn);
+  }
+  var polishTimer=null;
+  function schedule(){ if(polishTimer)clearTimeout(polishTimer); polishTimer=setTimeout(polish,60); }
+  if(window.MutationObserver){
+    new MutationObserver(schedule).observe(document.body,{childList:true,subtree:true});
+  }
+  B5.polish=polish;
+
+  /* ---------- 3. one read-only detail for every list ---------- */
+  B5.injectOpen=function(tid){
+    if(!tid||EXP.txn!==tid||!DB||!DB.txns)return;
+    var t=byIdB?byIdB[tid]:null;
+    if(!t){maps();t=byIdB[tid];}
+    if(!t)return;
+    var rows=document.querySelectorAll('button.txn[data-id="'+tid+'"]');
+    for(var i=0;i<rows.length;i++){
+      var el=rows[i];
+      if(el.closest('.sheet,.modal,#auBody,.pk'))continue;
+      if(!el.offsetParent)continue; /* hidden view */
+      el.classList.add('open');
+      var nx=el.nextElementSibling;
+      if(!(nx&&nx.classList&&nx.classList.contains('txdetail'))){
+        el.insertAdjacentHTML('afterend',txDetailHTML(t));
+      }
+    }
+  };
+  /* window-capture runs BEFORE the app's document-capture dispatcher, so drill/report rows
+     can be expanded without the base handler first opening the edit sheet */
+  window.addEventListener('click',function(e){
+    if(e.defaultPrevented)return;
+    var el=e.target&&e.target.closest?e.target.closest('button.txn[data-act="txn"][data-id]'):null;
+    if(!el)return;
+    if(el.closest('#txList'))return;                    /* Transactions screen: canonical handler */
+    if(BSEL&&BSEL.on)return;                            /* selection mode: base handler */
+    if(el.closest('.sheet,.modal,#auBody,.pk,form'))return;
+    e.preventDefault();e.stopImmediatePropagation();
+    var tid=el.dataset.id;
+    EXP.txn=(EXP.txn===tid)?'':tid;
+    var page=el.closest('.page'),pid=page?page.id:'';
+    if(pid==='pageDrill'&&typeof renderDrill==='function')renderDrill();
+    else if(pid==='pageReport'&&typeof renderReport==='function')renderReport();
+    else if(typeof renderAll==='function')renderAll();
+    requestAnimationFrame(function(){B5.injectOpen(tid);});
+  },true);
+  /* keep the id→txn map fresh after edits */
+  var _saveB=save;save=function(){mapDirty=true;_saveB.apply(this,arguments);};
+
+  /* ---------- 4. version bump + release notes ---------- */
+  document.querySelectorAll('.sub').forEach(function(e){
+    if(/1\.60 beta 4/.test(e.textContent))e.textContent='v1.60 beta 5';
+  });
+  document.title='v1.60 beta 5 \u00b7 Couple Money Manager';
+  var olB5=document.querySelector('#view-settings details.help ol');
+  if(olB5)olB5.insertAdjacentHTML('beforeend',
+    '<li><b>Consistent transaction rows:</b> every list that shows transactions \u2014 account drill-downs, card billing periods, report drill-downs \u2014 now uses the same row as the Transactions screen: pastel category tile, category-led title, note-first subline and signed amount. When a category has no matching icon the tile shows its first letter instead of a generic glyph.</li>'
+    +'<li><b>Consistent read-only detail:</b> tapping a transaction in any list expands the same read-only detail (Date, Type, Account, Category, Paid by, Split, Note, Amount) with Copy \u00b7 Edit \u00b7 Delete \u2014 Edit opens the editor. Before, only the Transactions screen behaved this way; drill and report rows jumped straight into the edit sheet.</li>'
+    +'<li><b>Transparent toolbar:</b> the app header and every page back-bar are transparent at rest and pick up a frosted tint with a hairline as soon as content scrolls beneath them.</li>');
+  setTimeout(schedule,300);
+})();
+</script>
+<script id="v160b6">
+/* v1.60 beta 6 - dashboard Balances + Reports cards repopulated.
+   beta 3 replaced the whole renderOverview chain with dashB3, which renders perBody only;
+   the static Balances (#accStrip) and Reports (#repTiles) cards below it stayed empty ever since. */
+(function(){
+  function fillB6(){
+    var has=DB.txns.length>0;if(!has)return;
+    /* Balances strip - same fill as the pre-beta3 renderOverview, now inside the same privacy scope */
+    var bl=balances(),as=document.getElementById('accStrip');
+    if(as)as.innerHTML=bl.rows.slice().sort(function(a,b){return alphasort(a.name,b.name);}).map(function(r){
+      return '<button class="bal-chip" data-act="acc" data-n="'+esc(r.name)+'"><span class="nm">'+ico('card')+' '+esc(r.name)+'</span><span class="amt'+(r.bal<0?' neg':'')+'" style="display:block">'+money(r.bal)+'</span></button>';
+    }).join('')||'<span class="muted small">No accounts yet</span>';
+    var bo=document.getElementById('balAsOf');if(bo)bo.textContent=bl.latest?('as at '+dLabelYW(bl.latest)):'';
+    /* Reports tiles - v1.60 rule kept: tiles duplicating Dashboard cards are dropped or filed under More reports */
+    var t=document.getElementById('repTiles');
+    if(t){
+      var f={};try{f=tileFigs();}catch(e){}
+      t.innerHTML=TILES.map(function(x){return tileBtn(x[0],x[1],x[2],f[x[0]]);}).join('');
+      var pb=document.getElementById('perBody'),pbt=pb?pb.textContent:'';
+      ['snapshot','cash','networth'].concat(/Between Us/i.test(pbt)?['settle']:[]).forEach(function(k){var x=t.querySelector('.tile[data-k="'+k+'"]');if(x)x.remove();});
+      var pri=['breakdown','budget','fixed','goals'],more=0;
+      var all=[].slice.call(t.querySelectorAll('.tile[data-k]'));
+      all.forEach(function(x){var isP=pri.indexOf(x.dataset.k)>=0;if(!isP)more++;x.hidden=!isP&&!V57.moreRep;});
+      all.sort(function(a,b){var xi=pri.indexOf(a.dataset.k),yi=pri.indexOf(b.dataset.k);return (xi<0?99:xi)-(yi<0?99:yi);}).forEach(function(x){t.appendChild(x);});
+      var mt=t.querySelector('.moretile');if(mt)mt.remove();
+      if(more)t.insertAdjacentHTML('beforeend','<button class="tile moretile" data-act="morerep" style="grid-column:1/-1;min-height:0;flex-direction:row;justify-content:center;align-items:center">'+(V57.moreRep?ico('chevdown')+' Fewer reports':ico('chevright')+' More reports ('+more+')')+'</button>');
+    }
+  }
+  var _b6=renderOverview; /* == dashB3 (beta 3 wholesale replacement), kept intact */
+  renderOverview=withPV(function(){_b6();try{fillB6();}catch(e){console.warn('b6dash',e);}},pvSpace);
+  V59.ver='1.60 beta 6';
+  document.title=String(document.title).replace(/1\.60 beta 5/,'1.60 beta 6');
+  document.querySelectorAll('.sub').forEach(function(e){if(/1\.60 beta 5/.test(e.textContent))e.textContent='v1.60 beta 6';});
+  var ol=document.querySelector('#view-settings details.help ol');
+  if(ol)ol.insertAdjacentHTML('beforeend','<li><b>Dashboard Balances &amp; Reports (v1.60 beta 6):</b> the two Dashboard cards are populated again \u2014 account balance chips and report tiles (Spending breakdown, Budget, Fixed vs variable, Saving goals up front; the rest behind More reports). They had been left empty since the beta 3 dashboard rebuild.</li>');
+})();
+</script>
+<script id="v160b7">
+/* v1.60 beta 7 - finance metrics redefined:
+   Spending excludes interest charges and loan repayments; Savings = income - spending;
+   Net cash flow = movement of bank / cash / e-Wallet balances over the period. */
+(function(){
+  var B7={};window.B7=B7; /* global: tests and future layers can reach the metric helpers */
+  /* ---------- classification helpers ---------- */
+  function hay(t){return ((t.category||'')+' '+(t.subcategory||'')+' '+(t.note||'')).toLowerCase();}
+  B7.excl=function(t){
+    if(!t||t.type!=='Expense')return false;
+    var s=hay(t);
+    if(/interest|finance charge/.test(s))return true;                          /* interest charges are not spending */
+    return /\bloan\b|\bloans\b|repayment|hire purchase|instal?lment/.test(s); /* loan repayments are not spending */
+  };
+  B7.isLiquidTy=function(ty){return ty==='Bank'||ty==='Cash'||ty==='e-Wallet'||ty==='eWallet';};
+  B7.liquidNames=function(who){
+    var out=[];(DB.accounts||[]).forEach(function(a){
+      if(a.locked||a.recv||/^.+ owes .+$/.test(a.name)||LBL_RE.test(a.name))return;
+      if(!B7.isLiquidTy(a.type))return;
+      if(!ownerHas(a.owner,who))return;
+      out.push(a.name);
+    });return out;
+  };
+  function dayBefore(d){var t=new Date(+d.slice(0,4),+d.slice(5,7)-1,+d.slice(8,10)-1,12);return t.getFullYear()+'-'+('0'+(t.getMonth()+1)).slice(-2)+'-'+('0'+t.getDate()).slice(-2);}
+  /* Net cash flow: liquid balances at min(period end, today) minus the day before the period starts */
+  B7.netCF=function(r){
+    var who=whoOK(),names=B7.liquidNames(who);
+    var eD=r.e<todayISO()?r.e:todayISO(),sD=dayBefore(r.s),end=0,start=0;
+    names.forEach(function(n){
+      var b1=accountBalAsOf(n,eD),b0=accountBalAsOf(n,sD);
+      if(isFinite(b1))end+=b1;if(isFinite(b0))start+=b0;
+    });
+    return {d:Math.round((end-start)*100)/100,end:Math.round(end*100)/100,start:Math.round(start*100)/100,names:names};
+  };
+  /* ---------- Spending redefinition: two hooks re-scope every total in the app ---------- */
+  var _sumT7=sumT;
+  sumT=function(list,ty){
+    if(ty!=='Expense')return _sumT7(list,ty);
+    return _sumT7(list.filter(function(t){return !B7.excl(t);}),'Expense');
+  };
+  var _cb7=catBreakdown;
+  catBreakdown=function(list,type){
+    if(type!=='Expense')return _cb7(list,type);
+    return _cb7(list.filter(function(t){return !B7.excl(t);}),type);
+  };
+  /* Top 10 single purchases: keep interest/loan items out of the purchase list too */
+  var _repTop7=repTop;
+  DYNF.top=function(){
+    var r=perRange(),L=perTx(r),h;
+    if(TOP.mode==='cat'){h=_repTop7();}
+    else{var tx=L.filter(function(t){return t.type==='Expense'&&t.amount>0&&!B7.excl(t);}).sort(function(a,b){return b.amount-a.amount;}).slice(0,10);
+      h=tx.length?tx.map(function(t,i){return '<button class="trow" data-act="txn" data-id="'+t.id+'"><span class="rk">#'+(i+1)+'</span><span class="lb">'+esc(t.category)+(t.note?' \u00b7 '+esc(t.note):'')+'<small>'+dLabelW(t.date)+' \u00b7 '+whoStr(t)+' \u00b7 '+esc(t.account)+'</small></span><span class="amt2 neg">'+money(t.amount)+'</span></button>';}).join(''):'<div class="help" style="padding:8px 2px">No purchases in this period.</div>';}
+    return h.replace('<div class="rows">','<div class="rows">').replace(/<\/div><\/div>$/,'</div></div>');
+  };
+  /* ---------- Cash Flow report, redefined ---------- */
+  function sgn(v){return (v<0?'\u2212':'+')+money(Math.abs(v));}
+  B7.repCash=function(){
+    var r=perRange(),L=perTx(r),i=sumT(L,'Income'),e=sumT(L,'Expense'),sav=i-e,cf=B7.netCF(r),tr=periodsBack(6);
+    var eD=r.e<todayISO()?r.e:todayISO();
+    var rows=cf.names.map(function(n){
+      var b1=accountBalAsOf(n,eD),b0=accountBalAsOf(n,dayBefore(r.s)),d=Math.round((b1-b0)*100)/100;
+      if(!isFinite(d))return '';
+      return '<div class="fline"><span>'+ico('card')+' '+esc(n)+'</span><b class="'+(d<0?'neg':'pos')+'">'+sgn(d)+'</b></div>';
+    }).join('');
+    return '<div class="card"><h2>'+ico('trend')+' Cash flow <span class="sub">'+esc(r.label)+'</span></h2>'
+      +'<div class="kpis">'+kpi('Income',money(i),'pos')+kpi('Spending',money(e),'neg')+kpi('Savings',sgn(sav),sav<0?'neg':'pos')+kpi('Net cash flow',sgn(cf.d),cf.d<0?'neg':'pos')+'</div>'
+      +(rows?'<div class="mgr-lb" style="margin-top:2px">Net cash flow by account \u00b7 '+esc(whoLabel())+'</div>'+rows:'')
+      +'<div class="mgr-lb" style="margin-top:8px">Savings \u00b7 last 6 '+perWord()+'s \u00b7 above the line = saved, below = overspent</div><div class="chart-scroll">'+svgNet(tr)+'</div>'
+      +'<div class="help small" style="margin-top:6px">Savings = income \u2212 spending. Spending excludes interest charges and loan repayments. Net cash flow is the movement of your bank, cash and e-Wallet balances \u2014 card purchases do not move it until you settle the card.</div>'
+      +'<div class="help small" style="margin-top:4px">Tap a bar to see its transactions.</div></div>';
+  };
+  DYNF.cash=B7.repCash;
+  /* ---------- Dashboard period card: Income \u00b7 Spending \u00b7 Savings \u00b7 Net cash flow (2\u00d72) ---------- */
+  B7.dashCard=function(r){
+    var el=document.querySelector('#perBody .dh-row.dmon');if(!el)return;
+    var card=el.closest('.card');if(!card)return;
+    var L=perTx(r),i=sumT(L,'Income'),e=sumT(L,'Expense'),sav=i-e,cf=B7.netCF(r);
+    var dbud=card.querySelector('.dbud');
+    card.innerHTML='<h2>'+ico('trend')+' '+esc(r.label)+'</h2>'
+      +'<div class="dh-row dmon b7x">'
+      +'<button data-act="rep" data-k="cash"><small>Income</small><b class="pos">'+money(i)+'</b></button>'
+      +'<button data-act="rep" data-k="cash"><small>Spending</small><b>'+money(e)+'</b></button>'
+      +'<button data-act="rep" data-k="cash"><small>Savings</small><b class="'+(sav<0?'neg':'pos')+'">'+sgn(sav)+'</b></button>'
+      +'<button data-act="rep" data-k="cash"><small>Net cash flow</small><b class="'+(cf.d<0?'neg':'pos')+'">'+sgn(cf.d)+'</b></button>'
+      +'</div>'+(dbud?dbud.outerHTML:'');
+  };
+  var _r7=renderOverview;
+  renderOverview=withPV(function(){_r7();try{B7.dashCard(perRange());}catch(e){console.warn('b7dash',e);}},pvSpace);
+  /* ---------- version + notes + 2x2 metric row ---------- */
+  V59.ver='1.60 beta 7';
+  document.title=String(document.title).replace(/1\.60 beta 6/,'1.60 beta 7');
+  document.querySelectorAll('.sub').forEach(function(e){if(/1\.60 beta 6/.test(e.textContent))e.textContent='v1.60 beta 7';});
+  var ol=document.querySelector('#view-settings details.help ol');
+  if(ol)ol.insertAdjacentHTML('beforeend','<li><b>Finance metrics redefined (v1.60 beta 7):</b> Spending excludes interest charges and loan repayments; Savings = income \u2212 spending; Net cash flow is the movement of your bank, cash and e-Wallet balances over the period \u2014 card purchases do not move it until you settle the card.</li>');
+  var st=document.createElement('style');st.id='v160b7css';
+  st.textContent='#perBody .dh-row.b7x{grid-template-columns:repeat(2,1fr);row-gap:12px}#perBody .dh-row.b7x button:nth-child(odd){border-left:0;padding-left:0}';
+  document.head.appendChild(st);
 })();
 </script>
 </body>
