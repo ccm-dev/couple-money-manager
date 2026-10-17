@@ -662,6 +662,91 @@ body.sheeton .toast.on{transform:translateX(-50%)}
 .nbtn{font-size:11.5px}
 .asum-liab,.gbadge,.pvpill,.autochip{padding:2px 7px}
 .card h2{font-size:13px}
+/* v1.60 clean transactions screen — scoped to #view-txns */
+#view-txns>.card{background:transparent;box-shadow:none;border:0;padding:2px 0 6px}
+#view-txns .srchw .fin{border-radius:12px;background:var(--card);border:1px solid var(--line)}
+#view-txns #txSummary{font-size:12px;color:var(--muted);font-weight:600}
+#view-txns .ibtn{border-radius:999px;background:var(--card);padding:6px 14px}
+#txList .dayg{background:transparent;border:0;box-shadow:none;border-radius:0;overflow:visible;margin-bottom:14px}
+#txList .dayg .day-h{background:transparent;border:0;padding:6px 4px 6px;font-size:12px;font-weight:700;color:var(--muted);letter-spacing:.1px}
+#txList .dayg .day-h span:first-child{color:var(--ink)}
+#txList .dayg .day-h span:last-child{font-weight:600;font-size:11.5px}
+#txList .dayg .rowsw{background:var(--card);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);overflow:hidden}
+#txList .txn{gap:12px;padding:12px 14px;border-bottom:1px solid var(--line)}
+#txList .txn:last-child{border-bottom:0}
+#txList .txn .av{flex:none;width:36px;height:36px;border-radius:12px;background:var(--accent-soft);color:var(--accent);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px}
+#txList .txn .av.inc{background:var(--inc-soft);color:var(--inc)}
+#txList .txn .av.trf{background:var(--bg);color:var(--muted)}
+#txList .txn .av svg{width:18px;height:18px}
+#txList .txn .mid b{font-size:14.5px;font-weight:650}
+#txList .txn .mid small{font-size:12px;margin-top:2px}
+#txList .txn .amt{font-size:14.5px;font-weight:700;font-variant-numeric:tabular-nums}
+#txList .txn .amt.neg{color:var(--ink)}
+#txList .txn .amt .cur2{display:none}
+#txList .txn .gbadge{font-size:10px;padding:0 6px}
+#txList .txn.open{background:var(--accent-soft)}
+#txList .txkids{background:var(--bg)}
+#txList .txn.kid{padding:9px 14px 9px 24px}
+#txList .txn.kid .av{display:none}
+#txList .dayg .txdetail{margin:0;border:0;border-top:1px solid var(--line);border-radius:0;box-shadow:none;background:var(--bg);padding:8px 16px 12px}
+#txList .txdetail .kvr{border-bottom:0;padding:4px 0;font-size:12.5px}
+
+/* ===== v1.60 Dashboard ===== */
+#perBody .dash{padding:16px 16px 14px;background:linear-gradient(160deg,var(--card),color-mix(in srgb,var(--accent-soft) 55%,var(--card)))}
+.dash .dh-top{display:block;width:100%;text-align:left;padding:0 0 12px}
+.dash .dh-lb{display:block;font-size:12.5px;font-weight:700;color:var(--muted)}
+.dash .dh-big{display:block;font-size:30px;font-weight:800;letter-spacing:-.4px;margin:2px 0 3px;font-variant-numeric:tabular-nums}
+.dash .dh-chg{display:block;font-size:12.5px;font-weight:700}
+.dash .dh-row{display:grid;grid-template-columns:repeat(3,1fr);border-top:1px solid var(--line);padding-top:12px}
+.dash .dh-row button{display:flex;flex-direction:column;justify-content:flex-start;align-items:flex-start;text-align:left;padding:0 10px;border-left:1px solid var(--line);min-width:0}
+.dash .dh-row button:first-child{padding-left:0;border-left:0}
+.dash .dh-row small{display:block;font-size:11.5px;font-weight:700;color:var(--muted)}
+.dash .dh-row b{display:block;font-size:14.5px;font-weight:800;margin-top:2px;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.dash .dh-row i{display:block;font-style:normal;font-size:11.5px;font-weight:700;margin-top:1px;color:var(--muted)}
+.dash .dh-foot{margin-top:12px;font-size:11.5px;color:var(--muted)}
+.dins{padding:4px 14px}
+.dins .dr{display:flex;align-items:center;gap:12px;width:100%;text-align:left;padding:12px 0;border-bottom:1px solid var(--line)}
+.dins .dr:last-child{border-bottom:0}
+.dins .di{flex:none;width:34px;height:34px;border-radius:11px;display:flex;align-items:center;justify-content:center;background:var(--accent-soft);color:var(--accent)}
+.dins .di.pos{background:var(--inc-soft);color:var(--inc)}.dins .di.neg{background:var(--exp-soft);color:var(--exp)}
+.dins .di svg{width:17px;height:17px}
+.dins .dt{flex:1;min-width:0}
+.dins .dt b{display:block;font-size:14px;font-weight:700;line-height:1.3}
+.dins .dt small{display:block;font-size:12px;color:var(--muted);margin-top:2px;line-height:1.35}
+.dins .dbar{height:6px;border-radius:99px;background:var(--line);overflow:hidden;margin-top:7px;display:flex}
+.dins .dbar i{display:block;height:100%;background:var(--accent)}
+.dins .dbar i.neg{background:var(--exp)}.dins .dbar i.pos{background:var(--inc)}.dins .dbar i.alt{background:var(--accent-2)}
+.dins .dgo{flex:none;font-size:12px;font-weight:800;color:var(--accent);background:var(--accent-soft);border-radius:999px;padding:6px 12px}
+.dins .dch{flex:none;color:var(--muted);opacity:.6}.dins .dch svg{width:14px;height:14px}
+
+/* ===== v1.60 Privacy ===== */
+.pv-hero{display:flex;gap:12px;align-items:center;padding:14px;border-radius:16px;background:var(--accent-soft);margin-bottom:6px}
+.pv-hero .sh{flex:none;width:42px;height:42px;border-radius:13px;background:var(--card);color:var(--accent);display:flex;align-items:center;justify-content:center}
+.pv-hero .sh svg{width:22px;height:22px}
+.pv-hero b{display:block;font-size:14.5px;font-weight:800}
+.pv-pills{display:flex;gap:6px;flex-wrap:wrap;margin-top:7px}
+.pv-pill{font-size:11.5px;font-weight:700;border-radius:999px;padding:3px 10px;background:var(--card);color:var(--muted)}
+.pv-pill.ok{background:var(--inc-soft);color:var(--inc)}.pv-pill.warn{background:color-mix(in srgb,var(--warn) 16%,var(--card));color:var(--warn)}
+.pv-h{font-size:13px;font-weight:800;margin:18px 4px 8px;display:flex;align-items:center;gap:6px}
+.pv-h small{font-weight:600;color:var(--muted);font-size:12px}
+.pv-grp{background:var(--bg);border-radius:16px;overflow:hidden}
+.pv-row{display:flex;align-items:center;gap:12px;padding:12px 12px;border-bottom:1px solid var(--line);width:100%;text-align:left}
+.pv-row:last-child{border-bottom:0}
+label.pv-row{cursor:pointer}
+.pv-ic{flex:none;width:34px;height:34px;border-radius:11px;background:var(--card);color:var(--accent);display:flex;align-items:center;justify-content:center}
+.pv-ic svg{width:17px;height:17px}
+.pv-tx{flex:1;min-width:0}
+.pv-tx b{display:block;font-size:14px;font-weight:700;line-height:1.3}
+.pv-tx small{display:block;font-size:12px;color:var(--muted);margin-top:2px;line-height:1.4;white-space:normal}
+.pv-ct{flex:none;display:flex;gap:6px;align-items:center}
+.pv-ct select.fin{width:auto;max-width:140px;margin:0;padding:7px 8px;font-size:12.5px}
+.pv-note{font-size:12px;color:var(--muted);margin:8px 6px 0;line-height:1.45}
+.pv-note.warn{color:var(--warn)}
+.pv-alert{display:flex;gap:10px;align-items:flex-start;padding:12px;border-radius:14px;margin-top:10px;font-size:12.5px;line-height:1.45;background:color-mix(in srgb,var(--warn) 12%,var(--card));border:1px solid color-mix(in srgb,var(--warn) 40%,transparent)}
+.pv-alert svg{flex:none;width:17px;height:17px;color:var(--warn);margin-top:1px}
+.pv-det{margin-top:10px;border-radius:16px;background:var(--bg);overflow:hidden}
+.pv-det summary{padding:12px;font-size:13.5px;font-weight:700;cursor:pointer}
+.pv-det .dayg{margin:0 0 4px;border:0;box-shadow:none;background:transparent}
 </style>
 <style id="v159css">
 /* v1.59 beta 2 */
@@ -1016,7 +1101,7 @@ body.sheeton .toast{border-radius:16px}
         <li><b>Hide from your partner:</b> mark a transaction Private, or hide an account balance, in Settings → Privacy &amp; security.</li>
         <li><b>Statements:</b> Settings → Import bank / card statement. Review every line before it is added.</li>
         <li><b>Calculator:</b> tap the calculator icon inside an amount box.</li>
-        <li><b>Getting started:</b> follow the checklist on the Overview. Each “Show me” guides you step by step while you do it yourself.</li>
+        <li><b>Getting started:</b> follow the checklist on the Dashboard. Each “Show me” guides you step by step while you do it yourself.</li>
         <li><b>Sample data:</b> Settings → Your account → Add or Remove sample transactions.</li>
         <li><b>Back:</b> the phone Back button or Esc closes the top screen.</li>
       </ol></details></div>
@@ -1047,7 +1132,7 @@ body.sheeton .toast{border-radius:16px}
 </div>
 
 <nav class="nav">
-  <button class="nbtn on" data-v="overview" data-act="nav"> <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>Overview</button>
+  <button class="nbtn on" data-v="overview" data-act="nav"> <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>Dashboard</button>
   <button class="nbtn" data-v="txns" data-act="nav"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h10"/></svg>Transactions</button>
   <div class="nadd"><button data-act="add" aria-label="Add transaction"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button></div>
   <button class="nbtn" data-v="accounts" data-act="nav"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12V7a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-3"/><path d="M16 12h6"/><circle cx="16" cy="12" r="1" fill="currentColor"/></svg>Accounts</button>
@@ -2562,12 +2647,18 @@ function renderTxns(){
       var v=vOf(t);
       var isTrf=t.type==='Transfer';
       var redn=!isTrf&&t.type==='Expense'&&v<0; /* v1.24: negative expense = reduction in expenses */
-      var sub=isTrf?(esc(t.account)+' → '+esc(t.to||'?')+(t.owedAcc?' · '+esc(t.owedAcc):'')+(t.note?' · '+esc(t.note):'')):((t.note?esc(t.note)+' · ':'')+(whoStr(t)+' · '+esc(t.account))+(t.to?' · '+esc(t.to):'')+(redn?' · <span style="color:var(--inc)">expense reduction</span>':'')); /* v1.28: note reads first */
+      /* v1.60: title = note (or category); subtitle = account (+ category when a note is the title) */
+      var catL=esc(t.category)+(t.subcategory?' \u00b7 '+esc(t.subcategory):'');
+      var multiP=DB.people.length>1, who=(!isTrf&&multiP)?whoStr(t):'';
+      var rf=redn?'<span style="color:var(--inc)">refund</span>':'';
+      var sub=isTrf?(esc(t.account)+' \u2192 '+esc(t.to||'?')):[(t.note?catL:''),esc(t.account),who,rf].filter(Boolean).join(' \u00b7 ');
+      var title=isTrf?(t.note?esc(t.note):'Transfer'):(t.note?esc(t.note):catL);
+      var avIc=isTrf?'<span class="av trf">'+ico('repeat')+'</span>':'<span class="av'+((t.type==='Income'||redn)?' inc':'')+'">'+esc(((t.category||'?').trim().charAt(0)||'?').toUpperCase())+'</span>';
       var cls=isTrf?'':((t.type==='Income'||redn)?'pos':'neg');
       var pre=isTrf?'':((t.type==='Income'||redn)?'+':'-'); /* the amount sign tells the type */
       var av=redn?-v:v;
       var openRow=!selMode&&EXP.txn===t.id;
-      return '<button class="txn'+(child?' kid':'')+(selMode&&BSEL.ids.indexOf(t.id)>=0?' sel':'')+(openRow?' open':'')+'" data-act="txn" data-id="'+t.id+'">'+(selMode?'<span class="ck">'+ico('check')+'</span>':'')+'<span class="mid"><b>'+esc(isTrf?'Transfer':t.category)+(t.subcategory?' · '+esc(t.subcategory):'')+'</b><small>'+sub+'</small></span><span class="amt '+cls+'">'+pre+(cur()?'<small class="cur2">'+esc(cur())+'</small> ':'')+fmt(av)+(shareMode&&!isTrf&&v!==t.amount?' <small style="font-weight:600;opacity:.65">/ '+fmt(t.amount)+'</small>':'')+'</span>'+''+'</button>'+(openRow?txDetailHTML(t):'');
+      return '<button class="txn'+(child?' kid':'')+(selMode&&BSEL.ids.indexOf(t.id)>=0?' sel':'')+(openRow?' open':'')+'" data-act="txn" data-id="'+t.id+'">'+(selMode?'<span class="ck">'+ico('check')+'</span>':'')+(child?'':avIc)+'<span class="mid"><b>'+title+'</b><small>'+sub+'</small></span><span class="amt '+cls+'">'+pre+(cur()?'<small class="cur2">'+esc(cur())+'</small> ':'')+fmt(av)+(shareMode&&!isTrf&&v!==t.amount?' <small style="font-weight:600;opacity:.65">/ '+fmt(t.amount)+'</small>':'')+'</span>'+''+'</button>'+(openRow?txDetailHTML(t):'');
     }
     /* v1.40: legs of one split bill collapse into a single row; tap it to expand the shares */
     var seen={},rows=g[d].slice().reverse().map(function(t){
@@ -2586,12 +2677,12 @@ function renderTxns(){
       var open=!!EXP.grp[gid];
       var sub=(t0.note?esc(t0.note)+' · ':'')+ico('users')+' Split · '+ppl.map(esc).join(' + ')+' · '+esc(t0.account)+(redn?' · <span style="color:var(--inc)">refund</span>':'');
       var h='<button class="txn grp'+(open?' open':'')+(allSel?' sel':'')+'" data-act="txgrp" data-g="'+esc(gid)+'">'+(selMode?'<span class="ck">'+ico('check')+'</span>':'')
-        +'<span class="mid"><b><span class="gchev'+(open?' on':'')+'" aria-hidden="true"></span>'+esc(t0.category)+(t0.subcategory?' · '+esc(t0.subcategory):'')+' <span class="gbadge">'+legs.length+' shares</span></b><small>'+sub+'</small></span>'
+        +'<span class="av">'+ico('users')+'</span><span class="mid"><b><span class="gchev'+(open?' on':'')+'" aria-hidden="true"></span>'+esc(t0.category)+(t0.subcategory?' · '+esc(t0.subcategory):'')+' <span class="gbadge">'+legs.length+' shares</span></b><small>'+sub+'</small></span>'
         +'<span class="amt '+cls+'">'+pre+(cur()?'<small class="cur2">'+esc(cur())+'</small> ':'')+fmt(Math.abs(tot))+'</span>'
         +'</button>';
       return h+(open?'<div class="txkids">'+legs.map(function(x){return rowOf(x,true);}).join('')+'</div>':'');
     }
-    return '<div class="dayg"><div class="day-h"><span>'+dLabelYW(d)+'</span><span>net '+(din-dexp<0?'-':'+')+(cur()?cur()+' ':'')+fmt(Math.abs(din-dexp))+'</span></div>'+rows+'</div>';
+    return '<div class="dayg"><div class="day-h"><span>'+dLabelYW(d)+'</span><span>net '+(din-dexp<0?'-':'+')+(cur()?cur()+' ':'')+fmt(Math.abs(din-dexp))+'</span></div><div class="rowsw">'+rows+'</div></div>';
   }).join(''):'<div class="empty"><b>No transactions</b><p>Adjust the filters above, or tap ＋ to add one.</p></div>';
   if(days.length>TXR.n){$('txList').insertAdjacentHTML('beforeend','<div id="txMore" class="help small" style="text-align:center;padding:12px">Loading older transactions…</div>');txObserve();}
 }
@@ -5405,7 +5496,7 @@ function auPerson(){
   jrInit(pt);
   if(demo)demoLoad(true);
   touch();authHide();afterLogin();
-  toast('Welcome, '+me+'! Your getting-started checklist is on the Overview.');
+  toast('Welcome, '+me+'! Your getting-started checklist is on the Dashboard.');
 }
 function afterLogin(){gotoView('overview');renderAll();}
 function auLogout(){
@@ -5499,7 +5590,7 @@ var TOURS={
     {sel:'#gaN',tx:'Name your goal, e.g. <b>Japan trip</b>.',ok:function(){return goalsList().length>0;},soft:function(){return (($('gaN')||{}).value||'').trim().length>1&&document.activeElement!==$('gaN');}},
     {sel:'#gaT',tx:'Set the target amount.',ok:function(){return goalsList().length>0;},soft:function(){return parseAmt(($('gaT')||{}).value)>0&&document.activeElement!==$('gaT');}},
     {sel:'[data-act=goalnew]',tx:'Tap <b>Add goal</b>.',ok:function(){return goalsList().length>0;}},
-    {sel:'#mgrSheet [data-act=mgrclose]',tx:'Close this list. Goals also show on the Overview.',ok:function(){return !$('mgrSheet').classList.contains('on');}}];},
+    {sel:'#mgrSheet [data-act=mgrclose]',tx:'Close this list. Goals also show on the Dashboard.',ok:function(){return !$('mgrSheet').classList.contains('on');}}];},
   report:function(){return [
     {pre:function(){gotoView('overview');var t=$('repTiles');if(t)t.scrollIntoView({block:'center'});},sel:'#repTiles .tile',tx:'Tap any report.',ok:function(){return REPORT.open;}},
     {sel:'#repDyn .perchip',tx:'Tap here to switch between <b>week</b>, <b>month</b> and <b>year</b>, or choose whose money to show.',ok:function(){return !REPORT.open;},next:1},
@@ -6143,7 +6234,7 @@ function guideNextTask(){
   if(!GUIDE.on)return;
   if($('chmodal').classList.contains('on')||$('cmodal').classList.contains('on')){setTimeout(guideNextTask,800);return;}
   var nx=JR.filter(function(x){return !x.done()&&TOURS[x.k]&&!GUIDE.skipped[x.k];})[0];
-  if(!nx){GUIDE.on=false;renderOverview();toast('Guide finished. The checklist on the Overview shows anything left to try.');return;}
+  if(!nx){GUIDE.on=false;renderOverview();toast('Guide finished. The checklist on the Dashboard shows anything left to try.');return;}
   tourStart(nx.k);
 }
 function guideStart(){
@@ -6661,7 +6752,7 @@ function authFinish(){
   authHide();afterLogin();
   var j=jr();if(!j.start){jrInit();save();}
   var nm=(DB.meta.profile||{}).name;
-  toast(nm?'Welcome, '+nm+'! Your checklist is on the Overview.':'Welcome!');
+  toast(nm?'Welcome, '+nm+'! Your checklist is on the Dashboard.':'Welcome!');
   if(AU.invite&&FB.user&&DB.meta.cloudSyncOn)setTimeout(hhStart,500);
   if(V56.lockNext){V56.lockNext=0;setTimeout(function(){lockShow('set1');},350);}
 }
@@ -7343,7 +7434,7 @@ var _dl56=demoLoad;demoLoad=function(q){_dl56(q);if(!q){gotoView('overview');}};
     if(/^Privacy:/.test(t))li.innerHTML='<b>Privacy Screen:</b> tap the eye at the top to hide every amount. Press and hold an amount to peek.';
     else if(/^Hide from your partner:/.test(t))li.innerHTML='<b>Private from your partner:</b> set an account to <b>Only me</b> in Lists → Accounts, or choose <b>Hide details</b> / <b>Fully private</b> under Privacy when adding a transaction.';
     else if(/^Statements:/.test(t))li.innerHTML='<b>Statements:</b> Settings → Import → Import a statement, or open an account and tap Import a statement. Review every line before it is added; undo a whole import from Recent imports.';
-    else if(/^Sample data:/.test(t))li.innerHTML='<b>Sample data:</b> tap Explore with sample data on an empty Overview; Exit demo removes it.';
+    else if(/^Sample data:/.test(t))li.innerHTML='<b>Sample data:</b> tap Explore with sample data on an empty Dashboard; Exit demo removes it.';
   });
   ol.insertAdjacentHTML('beforeend','<li><b>Export:</b> Settings → Export. Excel, a monthly PDF report, a settle-up statement or CSV, for any period.</li><li><b>Backup:</b> Settings → Backup &amp; restore. Download a password-protected backup file and restore it on any phone.</li>');
 })();
@@ -9456,6 +9547,145 @@ handleAct=function(el){
   document.addEventListener('visibilitychange',function(){
     if(!document.hidden&&h1&&typeof applyTitle==='function')applyTitle();
   });
+})();
+</script>
+<script>
+/* ===================== v1.60: Dashboard + Privacy redesign ===================== */
+(function(){
+  function dDiff(a,b){return Math.round((Date.parse(b+'T12:00:00Z')-Date.parse(a+'T12:00:00Z'))/864e5);}
+  function row(ic,tone,title,sub,extra,act,k,go){
+    var tag=act?'button':'div';
+    return '<'+tag+' class="dr"'+(act?' data-act="'+act+'"'+(k?' data-k="'+k+'"':''):'')+'><span class="di '+(tone||'')+'">'+ico(ic)+'</span><span class="dt"><b>'+title+'</b>'+(sub?'<small>'+sub+'</small>':'')+(extra||'')+'</span>'
+      +(go?'<span class="dgo">'+go+'</span>':(act?'<span class="dch">'+ico('chevright')+'</span>':''))+'</'+tag+'>';
+  }
+  var dashHTML=withPV(function(){
+    var r=perRange(),pr=perRange(PER.off-1),L=perTx(r),Pv=perTx(pr),who=whoOK(),cp=isCouple();
+    var inc=sumT(L,'Income'),exp=sumT(L,'Expense'),net=inc-exp,pexp=sumT(Pv,'Expense');
+    var asd=nwAsAt(r),pd=nwAsAt(pr),N=nwAt(asd,who),P0=nwAt(pd,who),ch=nwChg(N.net,P0.net);
+    var W=perWord();
+    /* hero */
+    var rate=inc>0?Math.round(net/inc*100):null;
+    var hero='<div class="card dash"><button class="dh-top" data-act="rep" data-k="networth"><span class="dh-lb">Net worth</span>'
+      +'<span class="dh-big'+(N.net<0?' neg':'')+'">'+money(N.net)+'</span>'
+      +'<span class="dh-chg '+ch.c+'">'+ch.t+' <span class="muted" style="font-weight:600">since '+esc(dLabelY(pd))+'</span></span></button>'
+      +'<div class="dh-row">'
+      +'<button data-act="rep" data-k="cash"><small>Income</small><b class="pos">'+money(inc)+'</b></button>'
+      +'<button data-act="rep" data-k="cash"><small>Spent</small><b>'+money(exp)+'</b></button>'
+      +'<button data-act="rep" data-k="cash"><small>Net</small><b class="'+(net<0?'neg':'pos')+'">'+(net<0?'-':'+')+money(Math.abs(net))+'</b>'+(rate!==null?'<i>'+rate+'% of income</i>':'')+'</button>'
+      +'</div><div class="dh-foot">Assets '+money(N.assets)+' · Liabilities '+money(N.liabs)+'</div></div>';
+    /* targeted insights */
+    var rows=[],td=todayISO(),end=r.e<td?r.e:td,days=Math.max(1,end<r.s?1:dDiff(r.s,end)+1);
+    var avg=exp>0?' · avg '+money(exp/days)+'/day':'';
+    if(exp<=0&&!pexp){rows.push(row('trend','','No spending recorded',esc(r.label)));}
+    else if(pexp>0){
+      var pc=Math.round((exp-pexp)/pexp*100);
+      rows.push(row('trend',pc<=0?'pos':'neg','Spending '+(pc<=0?'down ':'up ')+Math.abs(pc)+'% vs last '+W,money(exp)+' vs '+money(pexp)+avg,'','rep','cash'));
+    } else rows.push(row('trend','','Spent '+money(exp)+' this '+W,'Nothing recorded last '+W+avg,'','rep','cash'));
+    var bc=expBy(L,function(t){return t.category||'Other';}),cats=Object.keys(bc).filter(function(c){return bc[c]>0;}).sort(function(a,b){return bc[b]-bc[a];});
+    if(cats.length){
+      var tc=cats[0],sh=exp>0?Math.round(bc[tc]/exp*100):0;
+      rows.push(row('tag','',esc(tc)+' is your biggest category',money(bc[tc])+' · '+sh+'% of spending'+(cats[1]?' · then '+esc(cats[1])+' '+money(bc[cats[1]]):''),'','rep','breakdown'));
+    }
+    var bud=budgetTotal();
+    if(bud>0){
+      var left=bud-exp,used=Math.min(100,Math.max(0,Math.round(exp/bud*100)));
+      rows.push(row('wallet',left<0?'neg':(used>=85?'':'pos'),left<0?'Over budget by '+money(-left):money(left)+' left of '+money(bud),used+'% used',(psCh()?'':'<div class="dbar"><i class="'+(left<0||used>=85?'neg':'pos')+'" style="width:'+used+'%"></i></div>'),'rep','budget'));
+    } else rows.push(row('wallet','','No budget set','Set one to see what is left to spend','','mgr','budgets','Set up'));
+    var kf=function(t){return t.person||'No owner';},by=expBy(L,kf),ppl=Object.keys(by).filter(function(p){return by[p]>0;}).sort(function(a,b){return by[b]-by[a];});
+    if(cp&&who==='couple'&&ppl.length>1&&exp>0){
+      var cl=['','alt'],bar='<div class="dbar">'+ppl.slice(0,2).map(function(p,i){return '<i class="'+cl[i]+'" style="width:'+(by[p]/exp*100).toFixed(1)+'%"></i>';}).join('')+'</div>';
+      rows.push(row('users','',ppl.slice(0,2).map(function(p){return esc(p)+' '+Math.round(by[p]/exp*100)+'%';}).join(' · '),'Who spent what this '+W,psCh()?'':bar,'rep','person'));
+    } else {
+      var big=null;L.forEach(function(t){if(t.type==='Expense'&&t.amount>0&&(!big||t.amount>big.amount))big=t;});
+      if(big)rows.push(row('trophy','','Biggest purchase: '+money(big.amount),esc(big.note||big.category)+' · '+dLabelW(big.date)));
+    }
+    var ins='<div class="card dins">'+rows.join('')+'</div>';
+    return hero+ins;
+  },pvSpace);
+
+  function dashPolish(){
+    var pb=$('perBody');if(!pb||!DB.txns.length||!pb.children.length||pb.querySelector('.dash'))return;
+    var cards=[].slice.call(pb.querySelectorAll(':scope > .card'));
+    function byH(re){return cards.filter(function(c){var h=c.querySelector('h2');return h&&re.test(h.textContent);})[0];}
+    [pb.querySelector('.nwcard'),byH(/snapshot/i),byH(/^\s*Cash flow/i)].forEach(function(c){if(c)c.remove();});
+    var due=byH(/Card payments due/i),bar=pb.querySelector('.perbar'),anchor=(due&&due.parentNode)?due:bar;
+    if(anchor)anchor.insertAdjacentHTML('afterend',dashHTML());
+    var ic=pb.querySelector('.card.insight'),dins=pb.querySelector('.dins');
+    if(ic&&/on track/i.test(ic.textContent))ic.remove();
+    else if(ic&&dins)dins.insertAdjacentElement('afterend',ic);
+    /* reports: drop tiles that duplicate cards already on the Dashboard */
+    var tiles=$('repTiles');
+    if(tiles){
+      var hasBetw=!!byH(/Between Us/i);
+      ['snapshot','cash','networth'].concat(hasBetw?['settle']:[]).forEach(function(k){var t=tiles.querySelector('.tile[data-k="'+k+'"]');if(t)t.remove();});
+      var pri=['breakdown','budget','fixed','goals'],more=0;
+      tiles.querySelectorAll('.moretile').forEach(function(m){m.remove();});
+      var all=[].slice.call(tiles.querySelectorAll('.tile[data-k]'));
+      all.forEach(function(t){var isP=pri.indexOf(t.dataset.k)>=0;if(!isP)more++;t.hidden=!isP&&!V57.moreRep;});
+      all.sort(function(a,b){var x=pri.indexOf(a.dataset.k),y=pri.indexOf(b.dataset.k);return (x<0?99:x)-(y<0?99:y);}).forEach(function(t){tiles.appendChild(t);});
+      if(more)tiles.insertAdjacentHTML('beforeend','<button class="tile moretile" data-act="morerep" style="grid-column:1/-1;min-height:0;flex-direction:row;justify-content:center;align-items:center">'+(V57.moreRep?ico('chevdown')+' Fewer reports':ico('chevright')+' More reports ('+more+')')+'</button>');
+    }
+  }
+  /* the Dashboard already shows settle-up and spending-vs-last-period, so the insight card skips those two */
+  var _il60=insList59;insList59=function(){return _il60().filter(function(x){return x.title!=='Time to settle up'&&x.title!=='Spending is down';});};
+  var _rOV60=renderOverview;
+  renderOverview=function(){_rOV60();try{dashPolish();}catch(e){console.warn('dash60',e);}};
+
+  /* ---------------- Privacy ---------------- */
+  function privRender60(){
+    var b=$('privBody');if(!b)return;
+    var lk=lockCfg(),pc=privCfg(),cp=isCouple(),me=meName(),P=esc(partnerName());
+    var lockOn=!!lk.h,enc=lockOn&&lk.v===2&&V57.key,psOn=!!PS.cfg.on;
+    function tgl(on,fn,attrs){return '<input type="checkbox" class="tgl"'+(on?' checked':'')+(fn?' onchange="'+fn+'"':'')+(attrs?' '+attrs:'')+'>';}
+    function pr(ic,t,sub,ctrl,isLabel){var tag=isLabel?'label':'div';return '<'+tag+' class="pv-row"><span class="pv-ic">'+ico(ic)+'</span><span class="pv-tx"><b>'+t+'</b>'+(sub?'<small>'+sub+'</small>':'')+'</span><span class="pv-ct">'+ctrl+'</span></'+tag+'>';}
+    function sec(t,sub){return '<div class="pv-h">'+t+(sub?' <small>'+sub+'</small>':'')+'</div>';}
+    var h='<div class="pv-hero"><span class="sh">'+ico('shield')+'</span><div><b>'+(enc?'Locked and encrypted':lockOn?'App lock is on':'Add a PIN to protect this phone')+'</b>'
+      +'<div class="pv-pills"><span class="pv-pill '+(lockOn?'ok':'warn')+'">App lock '+(lockOn?'on':'off')+'</span>'
+      +(lockOn?'<span class="pv-pill '+(enc?'ok':'warn')+'">'+(enc?'Encrypted':'Not encrypted yet')+'</span>':'')
+      +'<span class="pv-pill '+(psOn?'ok':'')+'">Privacy Screen '+(psOn?'on':'off')+'</span></div></div></div>';
+    /* 1. lock */
+    h+=sec('Lock this phone')+'<div class="pv-grp">'
+      +pr('lock','App lock',lockOn?'Asks for your '+(lk.len||4)+'-digit PIN when the app opens':'Anyone holding this phone can open the app',
+        lockOn?'<button class="ibtn" data-act="pinchg">Change</button><button class="ibtn" data-act="pinoff" style="color:var(--exp)">Turn off</button>':'<button class="ibtn" data-act="pinset" style="color:var(--accent);font-weight:800">Set PIN</button>');
+    if(lockOn){
+      h+=pr('clock','Lock again after leaving','Time away before the PIN is needed','<select class="fin" onchange="var c=lockCfg();c.delay=+this.value;lockSave(c);toast(\'Saved\')">'+[[0,'Immediately'],[60,'1 minute'],[300,'5 minutes'],[900,'15 minutes']].map(function(o){return '<option value="'+o[0]+'"'+((+lk.delay||0)===o[0]?' selected':'')+'>'+o[1]+'</option>';}).join('')+'</select>')
+        +pr('trash','Erase after 10 wrong PINs','Protects your data if the phone is lost. Keep a backup or cloud sync.',tgl(!!lk.wipe,'var c=lockCfg();c.wipe=this.checked;lockSave(c);toast(this.checked?\'On\':\'Off\')'),true);
+    }
+    h+='</div>';
+    if(lockOn&&!lk.len)h+='<div class="pv-note warn">Your PIN has 4 digits. Tap Change to switch to a safer 6-digit PIN.</div>';
+    if(lockOn)h+='<div class="pv-note">'+(enc?'Data on this phone is encrypted with your PIN. If you forget it, restore from the cloud or a backup file.':'Enter your PIN once to switch on encryption.')+'</div>';
+    /* 2. hide amounts */
+    h+=sec('Hide amounts','for when others can see your screen')+'<div class="pv-grp">'
+      +pr('eye','Privacy Screen','Hides balances, totals, budgets and who owes whom. Tap the eye at the top; press and hold an amount to peek.',tgl(psOn,'',' data-act="pstog"'),true)
+      +pr('chart','Hide charts too','Pie, bar and heat-map charts are hidden so proportions can’t be read.',tgl(!!PS.cfg.charts,'PS.cfg.charts=this.checked;psSave();renderAll()'),true)
+      +pr('clock','Turn on when I leave the app','Amounts are hidden again every time you come back.',tgl(!!PS.cfg.auto,'PS.cfg.auto=this.checked;psSave()'),true)
+      +pr('lock','Ask for my PIN to show amounts',lockOn?'Needed to switch Privacy Screen off or to peek.':'Works once App lock is on.',tgl(!!PS.cfg.pin,'PS.cfg.pin=this.checked;psSave()'),true)
+      +'</div>';
+    /* 3. partner */
+    if(cp){
+      var pa=myPrivAccs(),cf=privConflicts59();
+      h+=sec('Private from '+P)+'<div class="pv-grp">'
+        +pr('user','Personal accounts',pa.length?pa.map(function(a){return esc(a.name);}).join(', '):'None yet. Set an account to “Only me” to hide it.','<button class="ibtn" data-act="mgr" data-k="accs">Manage</button>')
+        +pr('book','Share my notes','When off, '+P+' sees your shared transactions without notes.',tgl(shareNotes(),'collabCfg().shareNotes=this.checked;touch()'),true)
+        +'</div>';
+      if(cf.length)h+='<div class="pv-alert">'+ico('warn')+'<div>'+cf.length+' older Private transaction'+(cf.length===1?'':'s')+' sit'+(cf.length===1?'s':'')+' in a Shared account or split bill. '+P+' still can’t see '+(cf.length===1?'it':'them')+'. <button class="aulink inl" data-act="privrev">Review</button></div></div>';
+      var mine=DB.txns.filter(function(t){return t.priv&&!t.masked&&!t.pvx&&(!me||(t.pby||t.person)===me);}).sort(function(a,b){return a.date<b.date?1:-1;});
+      if(mine.length)h+='<details class="pv-det"><summary>Older private transactions ('+mine.length+')</summary><div class="dayg">'+mine.slice(0,60).map(function(t){return '<button class="txn" data-act="txnedit" data-id="'+t.id+'"><span class="mid"><b>'+ico('lock')+' '+esc(t.type==='Transfer'?'Transfer':t.category)+(t.note?' · '+esc(t.note):'')+'</b><small>'+dLabelYW(t.date)+' · '+(privLevel(t)==='full'?'Fully private':'Details hidden')+'</small></span><span class="amt">'+money(t.amount)+'</span></button>';}).join('')+'</div></details>';
+      var hb=DB.accounts.filter(function(a){return a.hideBal&&permFor59(a.name)==='owner';});
+      if(hb.length)h+=sec('Hidden balances','older setting')+'<div class="pv-grp">'+hb.map(function(a){return pr('card',esc(a.name),P+' sees *** instead of the balance','<button class="ibtn" data-act="hidebal2" data-n="'+esc(a.name)+'">Show balance</button>');}).join('')+'</div>';
+      var accs=DB.accounts.filter(function(a){return !a.recv&&!a.locked&&!/^.+ owes .+$/.test(a.name)&&a.vis!=='me'&&!LBL_RE.test(a.name);}).sort(function(x,y){return alphasort(x.name,y.name);});
+      h+=sec('Shared accounts','what '+P+' can do')+(accs.length?'<div class="pv-grp">'+accs.map(function(a){
+        var p=permFor59(a.name);
+        return pr('card',esc(a.name),esc(a.owner||'no owner')+(p==='owner'?' · you own this':' · your access: '+PERM_L[p]),
+          p==='owner'?'<select class="fin" onchange="pa59(\''+esc(a.name).replace(/'/g,"\\'")+'\',this.value)">'+['view','add','full','admin'].map(function(k){return '<option value="'+k+'"'+((a.partnerAccess||'add')===k?' selected':'')+'>'+PERM_L[k]+'</option>';}).join('')+'</select>':'<span class="pvpill">'+PERM_L[p]+'</span>');
+      }).join('')+'</div><div class="pv-note">Shared accounts hold Shared transactions only. Split bills are always Shared. For something private, use a Private account.</div>':'<div class="pv-note">No Shared accounts yet. Share one in Lists → Accounts.</div>');
+    }
+    /* 4. AI */
+    h+=sec('AI assistant')+'<div class="pv-grp">'+pr('spark','Send notes to the online AI','Only used when Gemini or OpenAI is connected. Private transactions go as amount only; anything hidden from you is never sent.',tgl(!!pc.aiNotes,'var c=privCfg();c.aiNotes=this.checked;privSave(c)'),true)+'</div>';
+    b.innerHTML=h;
+  }
+  var _rPriv60=renderPriv;
+  renderPriv=function(){try{privRender60();}catch(e){console.warn('priv60',e);_rPriv60();}};
 })();
 </script>
 </body>
