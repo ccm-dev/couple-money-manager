@@ -662,91 +662,6 @@ body.sheeton .toast.on{transform:translateX(-50%)}
 .nbtn{font-size:11.5px}
 .asum-liab,.gbadge,.pvpill,.autochip{padding:2px 7px}
 .card h2{font-size:13px}
-/* v1.60 clean transactions screen — scoped to #view-txns */
-#view-txns>.card{background:transparent;box-shadow:none;border:0;padding:2px 0 6px}
-#view-txns .srchw .fin{border-radius:12px;background:var(--card);border:1px solid var(--line)}
-#view-txns #txSummary{font-size:12px;color:var(--muted);font-weight:600}
-#view-txns .ibtn{border-radius:999px;background:var(--card);padding:6px 14px}
-#txList .dayg{background:transparent;border:0;box-shadow:none;border-radius:0;overflow:visible;margin-bottom:14px}
-#txList .dayg .day-h{background:transparent;border:0;padding:6px 4px 6px;font-size:12px;font-weight:700;color:var(--muted);letter-spacing:.1px}
-#txList .dayg .day-h span:first-child{color:var(--ink)}
-#txList .dayg .day-h span:last-child{font-weight:600;font-size:11.5px}
-#txList .dayg .rowsw{background:var(--card);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);overflow:hidden}
-#txList .txn{gap:12px;padding:12px 14px;border-bottom:1px solid var(--line)}
-#txList .txn:last-child{border-bottom:0}
-#txList .txn .av{flex:none;width:36px;height:36px;border-radius:12px;background:var(--accent-soft);color:var(--accent);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px}
-#txList .txn .av.inc{background:var(--inc-soft);color:var(--inc)}
-#txList .txn .av.trf{background:var(--bg);color:var(--muted)}
-#txList .txn .av svg{width:18px;height:18px}
-#txList .txn .mid b{font-size:14.5px;font-weight:650}
-#txList .txn .mid small{font-size:12px;margin-top:2px}
-#txList .txn .amt{font-size:14.5px;font-weight:700;font-variant-numeric:tabular-nums}
-#txList .txn .amt.neg{color:var(--ink)}
-#txList .txn .amt .cur2{display:none}
-#txList .txn .gbadge{font-size:10px;padding:0 6px}
-#txList .txn.open{background:var(--accent-soft)}
-#txList .txkids{background:var(--bg)}
-#txList .txn.kid{padding:9px 14px 9px 24px}
-#txList .txn.kid .av{display:none}
-#txList .dayg .txdetail{margin:0;border:0;border-top:1px solid var(--line);border-radius:0;box-shadow:none;background:var(--bg);padding:8px 16px 12px}
-#txList .txdetail .kvr{border-bottom:0;padding:4px 0;font-size:12.5px}
-
-/* ===== v1.60 Dashboard ===== */
-#perBody .dash{padding:16px 16px 14px;background:linear-gradient(160deg,var(--card),color-mix(in srgb,var(--accent-soft) 55%,var(--card)))}
-.dash .dh-top{display:block;width:100%;text-align:left;padding:0 0 12px}
-.dash .dh-lb{display:block;font-size:12.5px;font-weight:700;color:var(--muted)}
-.dash .dh-big{display:block;font-size:30px;font-weight:800;letter-spacing:-.4px;margin:2px 0 3px;font-variant-numeric:tabular-nums}
-.dash .dh-chg{display:block;font-size:12.5px;font-weight:700}
-.dash .dh-row{display:grid;grid-template-columns:repeat(3,1fr);border-top:1px solid var(--line);padding-top:12px}
-.dash .dh-row button{display:flex;flex-direction:column;justify-content:flex-start;align-items:flex-start;text-align:left;padding:0 10px;border-left:1px solid var(--line);min-width:0}
-.dash .dh-row button:first-child{padding-left:0;border-left:0}
-.dash .dh-row small{display:block;font-size:11.5px;font-weight:700;color:var(--muted)}
-.dash .dh-row b{display:block;font-size:14.5px;font-weight:800;margin-top:2px;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
-.dash .dh-row i{display:block;font-style:normal;font-size:11.5px;font-weight:700;margin-top:1px;color:var(--muted)}
-.dash .dh-foot{margin-top:12px;font-size:11.5px;color:var(--muted)}
-.dins{padding:4px 14px}
-.dins .dr{display:flex;align-items:center;gap:12px;width:100%;text-align:left;padding:12px 0;border-bottom:1px solid var(--line)}
-.dins .dr:last-child{border-bottom:0}
-.dins .di{flex:none;width:34px;height:34px;border-radius:11px;display:flex;align-items:center;justify-content:center;background:var(--accent-soft);color:var(--accent)}
-.dins .di.pos{background:var(--inc-soft);color:var(--inc)}.dins .di.neg{background:var(--exp-soft);color:var(--exp)}
-.dins .di svg{width:17px;height:17px}
-.dins .dt{flex:1;min-width:0}
-.dins .dt b{display:block;font-size:14px;font-weight:700;line-height:1.3}
-.dins .dt small{display:block;font-size:12px;color:var(--muted);margin-top:2px;line-height:1.35}
-.dins .dbar{height:6px;border-radius:99px;background:var(--line);overflow:hidden;margin-top:7px;display:flex}
-.dins .dbar i{display:block;height:100%;background:var(--accent)}
-.dins .dbar i.neg{background:var(--exp)}.dins .dbar i.pos{background:var(--inc)}.dins .dbar i.alt{background:var(--accent-2)}
-.dins .dgo{flex:none;font-size:12px;font-weight:800;color:var(--accent);background:var(--accent-soft);border-radius:999px;padding:6px 12px}
-.dins .dch{flex:none;color:var(--muted);opacity:.6}.dins .dch svg{width:14px;height:14px}
-
-/* ===== v1.60 Privacy ===== */
-.pv-hero{display:flex;gap:12px;align-items:center;padding:14px;border-radius:16px;background:var(--accent-soft);margin-bottom:6px}
-.pv-hero .sh{flex:none;width:42px;height:42px;border-radius:13px;background:var(--card);color:var(--accent);display:flex;align-items:center;justify-content:center}
-.pv-hero .sh svg{width:22px;height:22px}
-.pv-hero b{display:block;font-size:14.5px;font-weight:800}
-.pv-pills{display:flex;gap:6px;flex-wrap:wrap;margin-top:7px}
-.pv-pill{font-size:11.5px;font-weight:700;border-radius:999px;padding:3px 10px;background:var(--card);color:var(--muted)}
-.pv-pill.ok{background:var(--inc-soft);color:var(--inc)}.pv-pill.warn{background:color-mix(in srgb,var(--warn) 16%,var(--card));color:var(--warn)}
-.pv-h{font-size:13px;font-weight:800;margin:18px 4px 8px;display:flex;align-items:center;gap:6px}
-.pv-h small{font-weight:600;color:var(--muted);font-size:12px}
-.pv-grp{background:var(--bg);border-radius:16px;overflow:hidden}
-.pv-row{display:flex;align-items:center;gap:12px;padding:12px 12px;border-bottom:1px solid var(--line);width:100%;text-align:left}
-.pv-row:last-child{border-bottom:0}
-label.pv-row{cursor:pointer}
-.pv-ic{flex:none;width:34px;height:34px;border-radius:11px;background:var(--card);color:var(--accent);display:flex;align-items:center;justify-content:center}
-.pv-ic svg{width:17px;height:17px}
-.pv-tx{flex:1;min-width:0}
-.pv-tx b{display:block;font-size:14px;font-weight:700;line-height:1.3}
-.pv-tx small{display:block;font-size:12px;color:var(--muted);margin-top:2px;line-height:1.4;white-space:normal}
-.pv-ct{flex:none;display:flex;gap:6px;align-items:center}
-.pv-ct select.fin{width:auto;max-width:140px;margin:0;padding:7px 8px;font-size:12.5px}
-.pv-note{font-size:12px;color:var(--muted);margin:8px 6px 0;line-height:1.45}
-.pv-note.warn{color:var(--warn)}
-.pv-alert{display:flex;gap:10px;align-items:flex-start;padding:12px;border-radius:14px;margin-top:10px;font-size:12.5px;line-height:1.45;background:color-mix(in srgb,var(--warn) 12%,var(--card));border:1px solid color-mix(in srgb,var(--warn) 40%,transparent)}
-.pv-alert svg{flex:none;width:17px;height:17px;color:var(--warn);margin-top:1px}
-.pv-det{margin-top:10px;border-radius:16px;background:var(--bg);overflow:hidden}
-.pv-det summary{padding:12px;font-size:13.5px;font-weight:700;cursor:pointer}
-.pv-det .dayg{margin:0 0 4px;border:0;box-shadow:none;background:transparent}
 </style>
 <style id="v159css">
 /* v1.59 beta 2 */
@@ -939,6 +854,101 @@ body.sheeton .toast{border-radius:16px}
 .page:not(.on){visibility:hidden;transition:transform .22s ease,visibility 0s linear .22s}
 .page.on{visibility:visible}
 </style>
+<style id="v159b5css">
+/* ================= v1.59 beta 5 — Transactions screen: calm & slick =================
+   Scope: the Transactions view only (#view-txns / #txList). Everything else
+   (drills, collab view, reports) keeps the beta 4 look. Pure additive layer. */
+
+/* ---------- 1. toolbar: one slim row (search + 2 icon buttons) ---------- */
+#view-txns>.card{padding:12px 12px 10px}
+#view-txns .srchw .fin{border-radius:999px;background:var(--bg);border-color:transparent;box-shadow:none;padding:11px 42px 11px 16px;font-size:13.5px}
+#view-txns .srchw .fin:focus{background:var(--card);border-color:var(--accent);box-shadow:var(--ring)}
+#view-txns .srchw .srchx{background:transparent}
+#txFilterBtn,#txSelToggle.ic{width:42px;min-width:42px;padding:0;justify-content:center;border-radius:13px;white-space:nowrap}
+#txFilterBtn{position:relative}
+#txFilterBtn .fbadge{position:absolute;top:-4px;right:-4px;min-width:18px;height:18px;border-radius:10px;box-shadow:0 0 0 2px var(--card);padding:0 4px}
+#txSummary{font-size:12px;letter-spacing:.1px}
+
+/* ---------- 2. day flow: flat list + sticky frosted date captions ---------- */
+#txList{padding-top:2px}
+#txList .dayg{background:transparent;border:0;box-shadow:none;border-radius:0;margin:0;overflow:visible;transition:none}
+#txList .dayg>.day-h{position:sticky;top:calc(63px + env(safe-area-inset-top));z-index:6;align-items:baseline;margin:0;padding:15px 6px 7px;background:color-mix(in srgb,var(--bg) 88%,transparent);-webkit-backdrop-filter:blur(10px) saturate(1.4);backdrop-filter:blur(10px) saturate(1.4);font-size:10.5px;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:var(--muted);border-bottom:0}
+#txList .dayg>.day-h span:last-child{font-weight:700;letter-spacing:.3px;text-transform:none;font-size:11px;opacity:.9}
+
+/* ---------- 3. rows: category icon tile + calm colours ---------- */
+#txList .txn{padding:10px 6px;border-bottom:1px solid var(--hair);border-radius:12px;transition:var(--press-t),background .12s ease}
+#txList .txn:active{background:color-mix(in srgb,var(--line) 42%,transparent)}
+#txList .txn.sel{background:var(--accent-soft)}
+#txList .txn.open{background:color-mix(in srgb,var(--accent) 5%,transparent);border-radius:12px}
+.tic5{width:34px;height:34px;border-radius:11px;flex:none;display:inline-flex;align-items:center;justify-content:center;background:var(--bg);color:var(--muted);box-shadow:inset 0 0 0 1px var(--hair)}
+.tic5 svg{width:17px;height:17px}
+.tic5.in{background:var(--inc-soft);color:var(--inc);box-shadow:none}
+.tic5.tr{background:var(--accent-soft);color:var(--accent);box-shadow:none}
+#txList .txn .mid{padding-left:3px}
+#txList .txn .mid b{font-size:13.5px;letter-spacing:-.1px}
+#txList .txn .mid small{opacity:.85}
+#txList .txn:not(.grp) .gchev2{display:none}
+#txList .txn .amt{font-weight:800;letter-spacing:-.2px}
+#txList .txn .amt.neg{color:var(--ink)}
+#txList .txn .amt.pos{color:var(--inc)}
+#txList .txn .amt .cur2{opacity:.72;font-weight:700}
+#txList .txn.kid{border-bottom:1px dashed var(--hair)}
+
+/* ---------- 4. expanded detail card ---------- */
+#txList .txdetail{background:color-mix(in srgb,var(--bg) 55%,var(--card));border-radius:16px;border-color:var(--hair);box-shadow:none;margin-bottom:10px}
+#txList .txdetail .kvr{border-bottom:1px solid var(--hair)}
+#txList .txkids{background:color-mix(in srgb,var(--bg) 62%,var(--card));border-bottom:0;border-radius:12px;margin-bottom:2px}
+</style>
+<style id="v159b6css">
+/* ================= v1.59 beta 6 — Three-Mode design (Personal · Couple · Advanced Couple) =================
+   Scope: Mode & storage panel, mode-compare sheet, onboarding decision step.
+   Everything else keeps the beta 5 look. Pure additive layer. */
+
+/* ---------- 1. mode cards (plan 7: three large cards, not a dropdown) ---------- */
+.m6grid{display:grid;gap:8px;margin:2px 0 4px}
+.usecard.mode6{align-items:flex-start;padding:12px 14px;text-align:left}
+.usecard.mode6 .aucard-ic{margin-top:1px}
+.usecard.mode6 b{font-size:14px;letter-spacing:-.1px}
+.m6sub{display:block;font-weight:700;font-size:12px;color:var(--text);opacity:.8;margin:1px 0 4px}
+.m6pts{display:block;font-size:11.5px;line-height:1.55;color:var(--muted);font-weight:600}
+.usecard.mode6.on{border-color:var(--accent);box-shadow:0 0 0 2px color-mix(in srgb,var(--accent) 16%,transparent)}
+.usecard.mode6.on .pvpill{background:var(--accent);color:#fff}
+.m6go{background:var(--bg);color:var(--muted)}
+.m6rec{display:inline-block;margin-left:6px;padding:2px 8px;border-radius:999px;background:var(--accent-soft);color:var(--accent);font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.5px;vertical-align:1px}
+.m6note{font-size:11.5px;line-height:1.55;color:var(--muted);margin:8px 2px 0}
+.m6link{margin:10px 2px 0}
+
+/* ---------- 2. second (Private space) sync-status row ---------- */
+.ds-status.m6p{margin-top:6px}
+
+/* ---------- 3. Compare-modes tables (plan 5 / 6 / 10) ---------- */
+.m6cmp{overflow-x:auto;margin:2px 0 6px}
+.m6cmp table{width:100%;border-collapse:collapse;font-size:12px}
+.m6cmp th,.m6cmp td{padding:7px 8px;border-bottom:1px solid var(--hair);text-align:left;vertical-align:top}
+.m6cmp th{font-size:10px;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);font-weight:800}
+.m6cmp td:first-child{font-weight:600;min-width:118px}
+.m6cmp th:not(:first-child),.m6cmp td:not(:first-child){text-align:center;min-width:64px}
+.m6cmp .yes{color:var(--inc);font-weight:800}
+.m6cmp .no{color:var(--muted);font-weight:600}
+.m6cmp .sug{color:var(--accent);font-weight:700}
+.m6cmp tr:last-child td{border-bottom:0}
+.m6h{margin:14px 2px 6px}
+
+/* ---------- 4. migration / blocker rows (adv→couple destinations) ---------- */
+.m6dest{display:grid;gap:5px;margin:7px 0 3px}
+.m6dest label{display:flex;gap:8px;align-items:flex-start;font-size:12px;font-weight:600;color:var(--text);cursor:pointer;line-height:1.45}
+.m6dest input{margin-top:2px;accent-color:var(--accent)}
+.m6dest small{display:block;font-weight:600;color:var(--muted);font-size:11px}
+.m6acc{padding:10px 12px;border:1px solid var(--hair);border-radius:12px;margin-bottom:8px;background:var(--bg)}
+
+/* ---------- 5. onboarding decision cards reuse .usecard; keep them tappable-wide ---------- */
+#auBody .usecard{width:100%;text-align:left}
+@media (max-width:430px){
+  .m6cmp table{font-size:11.5px}
+  .m6cmp th,.m6cmp td{padding:6px}
+  .m6cmp td:first-child{min-width:104px}
+}
+</style>
 </head>
 <body>
 <header class="hdr">
@@ -1101,7 +1111,7 @@ body.sheeton .toast{border-radius:16px}
         <li><b>Hide from your partner:</b> mark a transaction Private, or hide an account balance, in Settings → Privacy &amp; security.</li>
         <li><b>Statements:</b> Settings → Import bank / card statement. Review every line before it is added.</li>
         <li><b>Calculator:</b> tap the calculator icon inside an amount box.</li>
-        <li><b>Getting started:</b> follow the checklist on the Dashboard. Each “Show me” guides you step by step while you do it yourself.</li>
+        <li><b>Getting started:</b> follow the checklist on the Overview. Each “Show me” guides you step by step while you do it yourself.</li>
         <li><b>Sample data:</b> Settings → Your account → Add or Remove sample transactions.</li>
         <li><b>Back:</b> the phone Back button or Esc closes the top screen.</li>
       </ol></details></div>
@@ -1132,7 +1142,7 @@ body.sheeton .toast{border-radius:16px}
 </div>
 
 <nav class="nav">
-  <button class="nbtn on" data-v="overview" data-act="nav"> <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>Dashboard</button>
+  <button class="nbtn on" data-v="overview" data-act="nav"> <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>Overview</button>
   <button class="nbtn" data-v="txns" data-act="nav"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h10"/></svg>Transactions</button>
   <div class="nadd"><button data-act="add" aria-label="Add transaction"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button></div>
   <button class="nbtn" data-v="accounts" data-act="nav"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12V7a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-3"/><path d="M16 12h6"/><circle cx="16" cy="12" r="1" fill="currentColor"/></svg>Accounts</button>
@@ -2647,18 +2657,12 @@ function renderTxns(){
       var v=vOf(t);
       var isTrf=t.type==='Transfer';
       var redn=!isTrf&&t.type==='Expense'&&v<0; /* v1.24: negative expense = reduction in expenses */
-      /* v1.60: title = note (or category); subtitle = account (+ category when a note is the title) */
-      var catL=esc(t.category)+(t.subcategory?' \u00b7 '+esc(t.subcategory):'');
-      var multiP=DB.people.length>1, who=(!isTrf&&multiP)?whoStr(t):'';
-      var rf=redn?'<span style="color:var(--inc)">refund</span>':'';
-      var sub=isTrf?(esc(t.account)+' \u2192 '+esc(t.to||'?')):[(t.note?catL:''),esc(t.account),who,rf].filter(Boolean).join(' \u00b7 ');
-      var title=isTrf?(t.note?esc(t.note):'Transfer'):(t.note?esc(t.note):catL);
-      var avIc=isTrf?'<span class="av trf">'+ico('repeat')+'</span>':'<span class="av'+((t.type==='Income'||redn)?' inc':'')+'">'+esc(((t.category||'?').trim().charAt(0)||'?').toUpperCase())+'</span>';
+      var sub=isTrf?(esc(t.account)+' → '+esc(t.to||'?')+(t.owedAcc?' · '+esc(t.owedAcc):'')+(t.note?' · '+esc(t.note):'')):((t.note?esc(t.note)+' · ':'')+(whoStr(t)+' · '+esc(t.account))+(t.to?' · '+esc(t.to):'')+(redn?' · <span style="color:var(--inc)">expense reduction</span>':'')); /* v1.28: note reads first */
       var cls=isTrf?'':((t.type==='Income'||redn)?'pos':'neg');
       var pre=isTrf?'':((t.type==='Income'||redn)?'+':'-'); /* the amount sign tells the type */
       var av=redn?-v:v;
       var openRow=!selMode&&EXP.txn===t.id;
-      return '<button class="txn'+(child?' kid':'')+(selMode&&BSEL.ids.indexOf(t.id)>=0?' sel':'')+(openRow?' open':'')+'" data-act="txn" data-id="'+t.id+'">'+(selMode?'<span class="ck">'+ico('check')+'</span>':'')+(child?'':avIc)+'<span class="mid"><b>'+title+'</b><small>'+sub+'</small></span><span class="amt '+cls+'">'+pre+(cur()?'<small class="cur2">'+esc(cur())+'</small> ':'')+fmt(av)+(shareMode&&!isTrf&&v!==t.amount?' <small style="font-weight:600;opacity:.65">/ '+fmt(t.amount)+'</small>':'')+'</span>'+''+'</button>'+(openRow?txDetailHTML(t):'');
+      return '<button class="txn'+(child?' kid':'')+(selMode&&BSEL.ids.indexOf(t.id)>=0?' sel':'')+(openRow?' open':'')+'" data-act="txn" data-id="'+t.id+'">'+(selMode?'<span class="ck">'+ico('check')+'</span>':'')+'<span class="mid"><b>'+esc(isTrf?'Transfer':t.category)+(t.subcategory?' · '+esc(t.subcategory):'')+'</b><small>'+sub+'</small></span><span class="amt '+cls+'">'+pre+(cur()?'<small class="cur2">'+esc(cur())+'</small> ':'')+fmt(av)+(shareMode&&!isTrf&&v!==t.amount?' <small style="font-weight:600;opacity:.65">/ '+fmt(t.amount)+'</small>':'')+'</span>'+''+'</button>'+(openRow?txDetailHTML(t):'');
     }
     /* v1.40: legs of one split bill collapse into a single row; tap it to expand the shares */
     var seen={},rows=g[d].slice().reverse().map(function(t){
@@ -2677,12 +2681,12 @@ function renderTxns(){
       var open=!!EXP.grp[gid];
       var sub=(t0.note?esc(t0.note)+' · ':'')+ico('users')+' Split · '+ppl.map(esc).join(' + ')+' · '+esc(t0.account)+(redn?' · <span style="color:var(--inc)">refund</span>':'');
       var h='<button class="txn grp'+(open?' open':'')+(allSel?' sel':'')+'" data-act="txgrp" data-g="'+esc(gid)+'">'+(selMode?'<span class="ck">'+ico('check')+'</span>':'')
-        +'<span class="av">'+ico('users')+'</span><span class="mid"><b><span class="gchev'+(open?' on':'')+'" aria-hidden="true"></span>'+esc(t0.category)+(t0.subcategory?' · '+esc(t0.subcategory):'')+' <span class="gbadge">'+legs.length+' shares</span></b><small>'+sub+'</small></span>'
+        +'<span class="mid"><b><span class="gchev'+(open?' on':'')+'" aria-hidden="true"></span>'+esc(t0.category)+(t0.subcategory?' · '+esc(t0.subcategory):'')+' <span class="gbadge">'+legs.length+' shares</span></b><small>'+sub+'</small></span>'
         +'<span class="amt '+cls+'">'+pre+(cur()?'<small class="cur2">'+esc(cur())+'</small> ':'')+fmt(Math.abs(tot))+'</span>'
         +'</button>';
       return h+(open?'<div class="txkids">'+legs.map(function(x){return rowOf(x,true);}).join('')+'</div>':'');
     }
-    return '<div class="dayg"><div class="day-h"><span>'+dLabelYW(d)+'</span><span>net '+(din-dexp<0?'-':'+')+(cur()?cur()+' ':'')+fmt(Math.abs(din-dexp))+'</span></div><div class="rowsw">'+rows+'</div></div>';
+    return '<div class="dayg"><div class="day-h"><span>'+dLabelYW(d)+'</span><span>net '+(din-dexp<0?'-':'+')+(cur()?cur()+' ':'')+fmt(Math.abs(din-dexp))+'</span></div>'+rows+'</div>';
   }).join(''):'<div class="empty"><b>No transactions</b><p>Adjust the filters above, or tap ＋ to add one.</p></div>';
   if(days.length>TXR.n){$('txList').insertAdjacentHTML('beforeend','<div id="txMore" class="help small" style="text-align:center;padding:12px">Loading older transactions…</div>');txObserve();}
 }
@@ -5496,7 +5500,7 @@ function auPerson(){
   jrInit(pt);
   if(demo)demoLoad(true);
   touch();authHide();afterLogin();
-  toast('Welcome, '+me+'! Your getting-started checklist is on the Dashboard.');
+  toast('Welcome, '+me+'! Your getting-started checklist is on the Overview.');
 }
 function afterLogin(){gotoView('overview');renderAll();}
 function auLogout(){
@@ -5590,7 +5594,7 @@ var TOURS={
     {sel:'#gaN',tx:'Name your goal, e.g. <b>Japan trip</b>.',ok:function(){return goalsList().length>0;},soft:function(){return (($('gaN')||{}).value||'').trim().length>1&&document.activeElement!==$('gaN');}},
     {sel:'#gaT',tx:'Set the target amount.',ok:function(){return goalsList().length>0;},soft:function(){return parseAmt(($('gaT')||{}).value)>0&&document.activeElement!==$('gaT');}},
     {sel:'[data-act=goalnew]',tx:'Tap <b>Add goal</b>.',ok:function(){return goalsList().length>0;}},
-    {sel:'#mgrSheet [data-act=mgrclose]',tx:'Close this list. Goals also show on the Dashboard.',ok:function(){return !$('mgrSheet').classList.contains('on');}}];},
+    {sel:'#mgrSheet [data-act=mgrclose]',tx:'Close this list. Goals also show on the Overview.',ok:function(){return !$('mgrSheet').classList.contains('on');}}];},
   report:function(){return [
     {pre:function(){gotoView('overview');var t=$('repTiles');if(t)t.scrollIntoView({block:'center'});},sel:'#repTiles .tile',tx:'Tap any report.',ok:function(){return REPORT.open;}},
     {sel:'#repDyn .perchip',tx:'Tap here to switch between <b>week</b>, <b>month</b> and <b>year</b>, or choose whose money to show.',ok:function(){return !REPORT.open;},next:1},
@@ -6234,7 +6238,7 @@ function guideNextTask(){
   if(!GUIDE.on)return;
   if($('chmodal').classList.contains('on')||$('cmodal').classList.contains('on')){setTimeout(guideNextTask,800);return;}
   var nx=JR.filter(function(x){return !x.done()&&TOURS[x.k]&&!GUIDE.skipped[x.k];})[0];
-  if(!nx){GUIDE.on=false;renderOverview();toast('Guide finished. The checklist on the Dashboard shows anything left to try.');return;}
+  if(!nx){GUIDE.on=false;renderOverview();toast('Guide finished. The checklist on the Overview shows anything left to try.');return;}
   tourStart(nx.k);
 }
 function guideStart(){
@@ -6752,7 +6756,7 @@ function authFinish(){
   authHide();afterLogin();
   var j=jr();if(!j.start){jrInit();save();}
   var nm=(DB.meta.profile||{}).name;
-  toast(nm?'Welcome, '+nm+'! Your checklist is on the Dashboard.':'Welcome!');
+  toast(nm?'Welcome, '+nm+'! Your checklist is on the Overview.':'Welcome!');
   if(AU.invite&&FB.user&&DB.meta.cloudSyncOn)setTimeout(hhStart,500);
   if(V56.lockNext){V56.lockNext=0;setTimeout(function(){lockShow('set1');},350);}
 }
@@ -7434,7 +7438,7 @@ var _dl56=demoLoad;demoLoad=function(q){_dl56(q);if(!q){gotoView('overview');}};
     if(/^Privacy:/.test(t))li.innerHTML='<b>Privacy Screen:</b> tap the eye at the top to hide every amount. Press and hold an amount to peek.';
     else if(/^Hide from your partner:/.test(t))li.innerHTML='<b>Private from your partner:</b> set an account to <b>Only me</b> in Lists → Accounts, or choose <b>Hide details</b> / <b>Fully private</b> under Privacy when adding a transaction.';
     else if(/^Statements:/.test(t))li.innerHTML='<b>Statements:</b> Settings → Import → Import a statement, or open an account and tap Import a statement. Review every line before it is added; undo a whole import from Recent imports.';
-    else if(/^Sample data:/.test(t))li.innerHTML='<b>Sample data:</b> tap Explore with sample data on an empty Dashboard; Exit demo removes it.';
+    else if(/^Sample data:/.test(t))li.innerHTML='<b>Sample data:</b> tap Explore with sample data on an empty Overview; Exit demo removes it.';
   });
   ol.insertAdjacentHTML('beforeend','<li><b>Export:</b> Settings → Export. Excel, a monthly PDF report, a settle-up statement or CSV, for any period.</li><li><b>Backup:</b> Settings → Backup &amp; restore. Download a password-protected backup file and restore it on any phone.</li>');
 })();
@@ -9549,143 +9553,551 @@ handleAct=function(el){
   });
 })();
 </script>
-<script>
-/* ===================== v1.60: Dashboard + Privacy redesign ===================== */
+<script id="v159b5">
+/* ===================== v1.59 beta 5 · Transactions screen: calm & slick =====================
+   Additive layer on top of beta 4: version bump + a renderTxns post-pass that
+   slims the toolbar to one row (icon-only Filters/Select), flattens day headers
+   (drops the "net" word and the current year), and adds a colour-coded category
+   icon tile to every row. Visual rules live in #v159b5css. */
 (function(){
-  function dDiff(a,b){return Math.round((Date.parse(b+'T12:00:00Z')-Date.parse(a+'T12:00:00Z'))/864e5);}
-  function row(ic,tone,title,sub,extra,act,k,go){
-    var tag=act?'button':'div';
-    return '<'+tag+' class="dr"'+(act?' data-act="'+act+'"'+(k?' data-k="'+k+'"':''):'')+'><span class="di '+(tone||'')+'">'+ico(ic)+'</span><span class="dt"><b>'+title+'</b>'+(sub?'<small>'+sub+'</small>':'')+(extra||'')+'</span>'
-      +(go?'<span class="dgo">'+go+'</span>':(act?'<span class="dch">'+ico('chevright')+'</span>':''))+'</'+tag+'>';
-  }
-  var dashHTML=withPV(function(){
-    var r=perRange(),pr=perRange(PER.off-1),L=perTx(r),Pv=perTx(pr),who=whoOK(),cp=isCouple();
-    var inc=sumT(L,'Income'),exp=sumT(L,'Expense'),net=inc-exp,pexp=sumT(Pv,'Expense');
-    var asd=nwAsAt(r),pd=nwAsAt(pr),N=nwAt(asd,who),P0=nwAt(pd,who),ch=nwChg(N.net,P0.net);
-    var W=perWord();
-    /* hero */
-    var rate=inc>0?Math.round(net/inc*100):null;
-    var hero='<div class="card dash"><button class="dh-top" data-act="rep" data-k="networth"><span class="dh-lb">Net worth</span>'
-      +'<span class="dh-big'+(N.net<0?' neg':'')+'">'+money(N.net)+'</span>'
-      +'<span class="dh-chg '+ch.c+'">'+ch.t+' <span class="muted" style="font-weight:600">since '+esc(dLabelY(pd))+'</span></span></button>'
-      +'<div class="dh-row">'
-      +'<button data-act="rep" data-k="cash"><small>Income</small><b class="pos">'+money(inc)+'</b></button>'
-      +'<button data-act="rep" data-k="cash"><small>Spent</small><b>'+money(exp)+'</b></button>'
-      +'<button data-act="rep" data-k="cash"><small>Net</small><b class="'+(net<0?'neg':'pos')+'">'+(net<0?'-':'+')+money(Math.abs(net))+'</b>'+(rate!==null?'<i>'+rate+'% of income</i>':'')+'</button>'
-      +'</div><div class="dh-foot">Assets '+money(N.assets)+' · Liabilities '+money(N.liabs)+'</div></div>';
-    /* targeted insights */
-    var rows=[],td=todayISO(),end=r.e<td?r.e:td,days=Math.max(1,end<r.s?1:dDiff(r.s,end)+1);
-    var avg=exp>0?' · avg '+money(exp/days)+'/day':'';
-    if(exp<=0&&!pexp){rows.push(row('trend','','No spending recorded',esc(r.label)));}
-    else if(pexp>0){
-      var pc=Math.round((exp-pexp)/pexp*100);
-      rows.push(row('trend',pc<=0?'pos':'neg','Spending '+(pc<=0?'down ':'up ')+Math.abs(pc)+'% vs last '+W,money(exp)+' vs '+money(pexp)+avg,'','rep','cash'));
-    } else rows.push(row('trend','','Spent '+money(exp)+' this '+W,'Nothing recorded last '+W+avg,'','rep','cash'));
-    var bc=expBy(L,function(t){return t.category||'Other';}),cats=Object.keys(bc).filter(function(c){return bc[c]>0;}).sort(function(a,b){return bc[b]-bc[a];});
-    if(cats.length){
-      var tc=cats[0],sh=exp>0?Math.round(bc[tc]/exp*100):0;
-      rows.push(row('tag','',esc(tc)+' is your biggest category',money(bc[tc])+' · '+sh+'% of spending'+(cats[1]?' · then '+esc(cats[1])+' '+money(bc[cats[1]]):''),'','rep','breakdown'));
-    }
-    var bud=budgetTotal();
-    if(bud>0){
-      var left=bud-exp,used=Math.min(100,Math.max(0,Math.round(exp/bud*100)));
-      rows.push(row('wallet',left<0?'neg':(used>=85?'':'pos'),left<0?'Over budget by '+money(-left):money(left)+' left of '+money(bud),used+'% used',(psCh()?'':'<div class="dbar"><i class="'+(left<0||used>=85?'neg':'pos')+'" style="width:'+used+'%"></i></div>'),'rep','budget'));
-    } else rows.push(row('wallet','','No budget set','Set one to see what is left to spend','','mgr','budgets','Set up'));
-    var kf=function(t){return t.person||'No owner';},by=expBy(L,kf),ppl=Object.keys(by).filter(function(p){return by[p]>0;}).sort(function(a,b){return by[b]-by[a];});
-    if(cp&&who==='couple'&&ppl.length>1&&exp>0){
-      var cl=['','alt'],bar='<div class="dbar">'+ppl.slice(0,2).map(function(p,i){return '<i class="'+cl[i]+'" style="width:'+(by[p]/exp*100).toFixed(1)+'%"></i>';}).join('')+'</div>';
-      rows.push(row('users','',ppl.slice(0,2).map(function(p){return esc(p)+' '+Math.round(by[p]/exp*100)+'%';}).join(' · '),'Who spent what this '+W,psCh()?'':bar,'rep','person'));
-    } else {
-      var big=null;L.forEach(function(t){if(t.type==='Expense'&&t.amount>0&&(!big||t.amount>big.amount))big=t;});
-      if(big)rows.push(row('trophy','','Biggest purchase: '+money(big.amount),esc(big.note||big.category)+' · '+dLabelW(big.date)));
-    }
-    var ins='<div class="card dins">'+rows.join('')+'</div>';
-    return hero+ins;
-  },pvSpace);
+  'use strict';
 
-  function dashPolish(){
-    var pb=$('perBody');if(!pb||!DB.txns.length||!pb.children.length||pb.querySelector('.dash'))return;
-    var cards=[].slice.call(pb.querySelectorAll(':scope > .card'));
-    function byH(re){return cards.filter(function(c){var h=c.querySelector('h2');return h&&re.test(h.textContent);})[0];}
-    [pb.querySelector('.nwcard'),byH(/snapshot/i),byH(/^\s*Cash flow/i)].forEach(function(c){if(c)c.remove();});
-    var due=byH(/Card payments due/i),bar=pb.querySelector('.perbar'),anchor=(due&&due.parentNode)?due:bar;
-    if(anchor)anchor.insertAdjacentHTML('afterend',dashHTML());
-    var ic=pb.querySelector('.card.insight'),dins=pb.querySelector('.dins');
-    if(ic&&/on track/i.test(ic.textContent))ic.remove();
-    else if(ic&&dins)dins.insertAdjacentElement('afterend',ic);
-    /* reports: drop tiles that duplicate cards already on the Dashboard */
-    var tiles=$('repTiles');
-    if(tiles){
-      var hasBetw=!!byH(/Between Us/i);
-      ['snapshot','cash','networth'].concat(hasBetw?['settle']:[]).forEach(function(k){var t=tiles.querySelector('.tile[data-k="'+k+'"]');if(t)t.remove();});
-      var pri=['breakdown','budget','fixed','goals'],more=0;
-      tiles.querySelectorAll('.moretile').forEach(function(m){m.remove();});
-      var all=[].slice.call(tiles.querySelectorAll('.tile[data-k]'));
-      all.forEach(function(t){var isP=pri.indexOf(t.dataset.k)>=0;if(!isP)more++;t.hidden=!isP&&!V57.moreRep;});
-      all.sort(function(a,b){var x=pri.indexOf(a.dataset.k),y=pri.indexOf(b.dataset.k);return (x<0?99:x)-(y<0?99:y);}).forEach(function(t){tiles.appendChild(t);});
-      if(more)tiles.insertAdjacentHTML('beforeend','<button class="tile moretile" data-act="morerep" style="grid-column:1/-1;min-height:0;flex-direction:row;justify-content:center;align-items:center">'+(V57.moreRep?ico('chevdown')+' Fewer reports':ico('chevright')+' More reports ('+more+')')+'</button>');
-    }
-  }
-  /* the Dashboard already shows settle-up and spending-vs-last-period, so the insight card skips those two */
-  var _il60=insList59;insList59=function(){return _il60().filter(function(x){return x.title!=='Time to settle up'&&x.title!=='Spending is down';});};
-  var _rOV60=renderOverview;
-  renderOverview=function(){_rOV60();try{dashPolish();}catch(e){console.warn('dash60',e);}};
+  /* ---------- 1. version bump + in-app release notes ---------- */
+  V59.ver='1.59 beta 5';
+  document.querySelectorAll('.sub').forEach(function(e){
+    if(/v1\.59 beta 4/.test(e.textContent))e.textContent='v1.59 beta 5';
+  });
+  var ol=document.querySelector('#view-settings details.help ol');
+  if(ol)ol.insertAdjacentHTML('beforeend','<li><b>Cleaner Transactions screen:</b> one slim search row, lighter day dividers with sticky date captions, a colour-coded icon for every category and calmer amount colours — only income stays green. Tap a row to expand its details as before.</li>');
 
-  /* ---------------- Privacy ---------------- */
-  function privRender60(){
-    var b=$('privBody');if(!b)return;
-    var lk=lockCfg(),pc=privCfg(),cp=isCouple(),me=meName(),P=esc(partnerName());
-    var lockOn=!!lk.h,enc=lockOn&&lk.v===2&&V57.key,psOn=!!PS.cfg.on;
-    function tgl(on,fn,attrs){return '<input type="checkbox" class="tgl"'+(on?' checked':'')+(fn?' onchange="'+fn+'"':'')+(attrs?' '+attrs:'')+'>';}
-    function pr(ic,t,sub,ctrl,isLabel){var tag=isLabel?'label':'div';return '<'+tag+' class="pv-row"><span class="pv-ic">'+ico(ic)+'</span><span class="pv-tx"><b>'+t+'</b>'+(sub?'<small>'+sub+'</small>':'')+'</span><span class="pv-ct">'+ctrl+'</span></'+tag+'>';}
-    function sec(t,sub){return '<div class="pv-h">'+t+(sub?' <small>'+sub+'</small>':'')+'</div>';}
-    var h='<div class="pv-hero"><span class="sh">'+ico('shield')+'</span><div><b>'+(enc?'Locked and encrypted':lockOn?'App lock is on':'Add a PIN to protect this phone')+'</b>'
-      +'<div class="pv-pills"><span class="pv-pill '+(lockOn?'ok':'warn')+'">App lock '+(lockOn?'on':'off')+'</span>'
-      +(lockOn?'<span class="pv-pill '+(enc?'ok':'warn')+'">'+(enc?'Encrypted':'Not encrypted yet')+'</span>':'')
-      +'<span class="pv-pill '+(psOn?'ok':'')+'">Privacy Screen '+(psOn?'on':'off')+'</span></div></div></div>';
-    /* 1. lock */
-    h+=sec('Lock this phone')+'<div class="pv-grp">'
-      +pr('lock','App lock',lockOn?'Asks for your '+(lk.len||4)+'-digit PIN when the app opens':'Anyone holding this phone can open the app',
-        lockOn?'<button class="ibtn" data-act="pinchg">Change</button><button class="ibtn" data-act="pinoff" style="color:var(--exp)">Turn off</button>':'<button class="ibtn" data-act="pinset" style="color:var(--accent);font-weight:800">Set PIN</button>');
-    if(lockOn){
-      h+=pr('clock','Lock again after leaving','Time away before the PIN is needed','<select class="fin" onchange="var c=lockCfg();c.delay=+this.value;lockSave(c);toast(\'Saved\')">'+[[0,'Immediately'],[60,'1 minute'],[300,'5 minutes'],[900,'15 minutes']].map(function(o){return '<option value="'+o[0]+'"'+((+lk.delay||0)===o[0]?' selected':'')+'>'+o[1]+'</option>';}).join('')+'</select>')
-        +pr('trash','Erase after 10 wrong PINs','Protects your data if the phone is lost. Keep a backup or cloud sync.',tgl(!!lk.wipe,'var c=lockCfg();c.wipe=this.checked;lockSave(c);toast(this.checked?\'On\':\'Off\')'),true);
-    }
-    h+='</div>';
-    if(lockOn&&!lk.len)h+='<div class="pv-note warn">Your PIN has 4 digits. Tap Change to switch to a safer 6-digit PIN.</div>';
-    if(lockOn)h+='<div class="pv-note">'+(enc?'Data on this phone is encrypted with your PIN. If you forget it, restore from the cloud or a backup file.':'Enter your PIN once to switch on encryption.')+'</div>';
-    /* 2. hide amounts */
-    h+=sec('Hide amounts','for when others can see your screen')+'<div class="pv-grp">'
-      +pr('eye','Privacy Screen','Hides balances, totals, budgets and who owes whom. Tap the eye at the top; press and hold an amount to peek.',tgl(psOn,'',' data-act="pstog"'),true)
-      +pr('chart','Hide charts too','Pie, bar and heat-map charts are hidden so proportions can’t be read.',tgl(!!PS.cfg.charts,'PS.cfg.charts=this.checked;psSave();renderAll()'),true)
-      +pr('clock','Turn on when I leave the app','Amounts are hidden again every time you come back.',tgl(!!PS.cfg.auto,'PS.cfg.auto=this.checked;psSave()'),true)
-      +pr('lock','Ask for my PIN to show amounts',lockOn?'Needed to switch Privacy Screen off or to peek.':'Works once App lock is on.',tgl(!!PS.cfg.pin,'PS.cfg.pin=this.checked;psSave()'),true)
-      +'</div>';
-    /* 3. partner */
-    if(cp){
-      var pa=myPrivAccs(),cf=privConflicts59();
-      h+=sec('Private from '+P)+'<div class="pv-grp">'
-        +pr('user','Personal accounts',pa.length?pa.map(function(a){return esc(a.name);}).join(', '):'None yet. Set an account to “Only me” to hide it.','<button class="ibtn" data-act="mgr" data-k="accs">Manage</button>')
-        +pr('book','Share my notes','When off, '+P+' sees your shared transactions without notes.',tgl(shareNotes(),'collabCfg().shareNotes=this.checked;touch()'),true)
-        +'</div>';
-      if(cf.length)h+='<div class="pv-alert">'+ico('warn')+'<div>'+cf.length+' older Private transaction'+(cf.length===1?'':'s')+' sit'+(cf.length===1?'s':'')+' in a Shared account or split bill. '+P+' still can’t see '+(cf.length===1?'it':'them')+'. <button class="aulink inl" data-act="privrev">Review</button></div></div>';
-      var mine=DB.txns.filter(function(t){return t.priv&&!t.masked&&!t.pvx&&(!me||(t.pby||t.person)===me);}).sort(function(a,b){return a.date<b.date?1:-1;});
-      if(mine.length)h+='<details class="pv-det"><summary>Older private transactions ('+mine.length+')</summary><div class="dayg">'+mine.slice(0,60).map(function(t){return '<button class="txn" data-act="txnedit" data-id="'+t.id+'"><span class="mid"><b>'+ico('lock')+' '+esc(t.type==='Transfer'?'Transfer':t.category)+(t.note?' · '+esc(t.note):'')+'</b><small>'+dLabelYW(t.date)+' · '+(privLevel(t)==='full'?'Fully private':'Details hidden')+'</small></span><span class="amt">'+money(t.amount)+'</span></button>';}).join('')+'</div></details>';
-      var hb=DB.accounts.filter(function(a){return a.hideBal&&permFor59(a.name)==='owner';});
-      if(hb.length)h+=sec('Hidden balances','older setting')+'<div class="pv-grp">'+hb.map(function(a){return pr('card',esc(a.name),P+' sees *** instead of the balance','<button class="ibtn" data-act="hidebal2" data-n="'+esc(a.name)+'">Show balance</button>');}).join('')+'</div>';
-      var accs=DB.accounts.filter(function(a){return !a.recv&&!a.locked&&!/^.+ owes .+$/.test(a.name)&&a.vis!=='me'&&!LBL_RE.test(a.name);}).sort(function(x,y){return alphasort(x.name,y.name);});
-      h+=sec('Shared accounts','what '+P+' can do')+(accs.length?'<div class="pv-grp">'+accs.map(function(a){
-        var p=permFor59(a.name);
-        return pr('card',esc(a.name),esc(a.owner||'no owner')+(p==='owner'?' · you own this':' · your access: '+PERM_L[p]),
-          p==='owner'?'<select class="fin" onchange="pa59(\''+esc(a.name).replace(/'/g,"\\'")+'\',this.value)">'+['view','add','full','admin'].map(function(k){return '<option value="'+k+'"'+((a.partnerAccess||'add')===k?' selected':'')+'>'+PERM_L[k]+'</option>';}).join('')+'</select>':'<span class="pvpill">'+PERM_L[p]+'</span>');
-      }).join('')+'</div><div class="pv-note">Shared accounts hold Shared transactions only. Split bills are always Shared. For something private, use a Private account.</div>':'<div class="pv-note">No Shared accounts yet. Share one in Lists → Accounts.</div>');
-    }
-    /* 4. AI */
-    h+=sec('AI assistant')+'<div class="pv-grp">'+pr('spark','Send notes to the online AI','Only used when Gemini or OpenAI is connected. Private transactions go as amount only; anything hidden from you is never sent.',tgl(!!pc.aiNotes,'var c=privCfg();c.aiNotes=this.checked;privSave(c)'),true)+'</div>';
-    b.innerHTML=h;
+  /* ---------- 2. category → icon matcher ---------- */
+  var CAT5=[
+    [/grocer|supermarket|wet market|pasar|mart/, 'bag'],
+    [/food|dining|restaurant|cafe|coffee|meal|snack|lunch|dinner/, 'receipt'],
+    [/bill|utilit|electric|water|internet|mobile|phone|unifi|astro/, 'receipt'],
+    [/transport|grab|fuel|petrol|ride|taxi|parking|toll|bus|train/, 'swap'],
+    [/rent|mortgage|housing|condo/, 'bank'],
+    [/health|pharmacy|clinic|medical|doctor|hospital|medicine/, 'shield'],
+    [/entertainment|streaming|movie|cinema|game|music|netflix|spotify/, 'trophy'],
+    [/education|tuition|school|course|class/, 'book'],
+    [/salar|bonus|freelance|interest|invest|dividend|paycheck/, 'trend'],
+    [/business/, 'briefcase'],
+    [/reimburs|refund/, 'undog'],
+    [/gift|ang ?pau/, 'trophy'],
+    [/personal care|haircut|salon|grooming|spa/, 'user'],
+    [/shopping|clothes|mall|shopee|lazada|amazon/, 'tag'],
+    [/travel|flight|hotel|trip|holiday/, 'calendar'],
+    [/charity|donat/, 'users']
+  ];
+  function icoFor5(t){
+    if(!t)return 'list';
+    if(t.type==='Transfer')return 'swap';
+    var s=((t.category||'')+' '+(t.subcategory||'')).toLowerCase(),i;
+    for(i=0;i<CAT5.length;i++){if(CAT5[i][0].test(s))return CAT5[i][1];}
+    return t.type==='Income'?'trend':'bag';
   }
-  var _rPriv60=renderPriv;
-  renderPriv=function(){try{privRender60();}catch(e){console.warn('priv60',e);_rPriv60();}};
+
+  /* ---------- 3. move the Select button into the search row (once) ---------- */
+  var st0=$('txSelToggle'),fb0=$('txFilterBtn');
+  if(st0&&fb0&&st0.parentElement!==fb0.parentElement)fb0.parentElement.appendChild(st0);
+
+  /* ---------- 4. renderTxns post-pass (runs after beta 3's wrapper) ---------- */
+  var _rt5=renderTxns;
+  renderTxns=function(){
+    _rt5.apply(this,arguments);
+    try{
+      /* 4a. toolbar: icon-only Filters (keep badge state) + Select */
+      var fb=$('txFilterBtn');
+      if(fb&&!fb.querySelector('.fbi5')){
+        var ob=$('txFilterN'),on=ob?ob.hidden:true,ot=ob?ob.textContent:'';
+        fb.innerHTML='<span class="fbi5" style="display:inline-flex">'+ico('filter')+'</span><span class="fbadge" id="txFilterN" hidden></span>';
+        var nb=$('txFilterN');nb.hidden=on;nb.textContent=ot;
+        fb.title='Filters';fb.setAttribute('aria-label','Filters');
+      }
+      var st=$('txSelToggle');
+      if(st&&!BSEL.on){st.classList.add('ic');st.innerHTML=ico('check');st.title='Select transactions';st.setAttribute('aria-label','Select transactions');}
+      else if(st){st.classList.remove('ic');st.removeAttribute('title');st.setAttribute('aria-label',st.textContent);if(BSEL.on)st.textContent='Exit ('+BSEL.ids.length+')';}
+      /* 4b. summary caption only when it adds information (filter / search / selection) */
+      var sm=$('txSummary');
+      if(sm){
+        var filtered=(TXF.month!=='all')||(TXF.person!=='all')||(TXF.account!=='all')||(TXF.type!=='all')||(TXF.cat!=='all')||!!TXF.q;
+        sm.parentElement.style.display=(filtered||BSEL.on)?'':'none';
+      }
+      /* 4c. day captions: "Thu, 15 Oct 2026 · net +RM 414.41" → "THU, 15 OCT  +RM 414.41" */
+      var yy=String(new Date().getFullYear());
+      document.querySelectorAll('#txList .dayg>.day-h').forEach(function(h){
+        var sp=h.querySelectorAll('span');
+        if(sp[0]){var m=sp[0].textContent.match(/^(\w+), (\d+) (\w+) (\d{4})$/);
+          if(m)sp[0].textContent=m[1]+', '+m[2]+' '+m[3]+(m[4]!==yy?' '+m[4]:'');}
+        if(sp[1])sp[1].textContent=sp[1].textContent.replace(/^net /,'');
+      });
+      /* 4d. category icon tiles (split groups get the users icon) */
+      var byId={},byGrp={};
+      DB.txns.forEach(function(t){byId[t.id]=t;if(t.group&&!byGrp[t.group])byGrp[t.group]=t;});
+      document.querySelectorAll('#txList button.txn').forEach(function(el){
+        if(el.classList.contains('kid')||el.querySelector('.tic5'))return;
+        var mid=el.querySelector('.mid');if(!mid)return;
+        var cls='',name;
+        if(el.classList.contains('grp')){name='users';}
+        else{
+          var t=el.dataset.id?byId[el.dataset.id]:(el.dataset.g?byGrp[el.dataset.g]:null);
+          if(!t)return;
+          name=icoFor5(t);cls=t.type==='Income'?'in':(t.type==='Transfer'?'tr':'');
+        }
+        mid.insertAdjacentHTML('beforebegin','<span class="tic5 '+cls+'" aria-hidden="true">'+ico(name)+'</span>');
+      });
+    }catch(e){console.warn('b5 polish',e);}
+  };
+})();
+</script>
+<script id="v159b6">
+/* ===================== v1.59 beta 6 · Three-Mode design (plan: v1.60 mode architecture) =====================
+   Additive layer on top of beta 5 implementing the Three-Mode Design plan:
+   · M-01  One authoritative mode value: Personal · Couple · Advanced Couple (isCouple covers couple+adv)
+   · M-03  Onboarding decision flow: "do both partners need accounts the other cannot see?"
+   · M-05  Couple simplification: household accounts are shared; no new Private accounts; legacy review
+   · M-06  Advanced privacy: private space per partner, separate Household/Private sync status
+   · M-08  Mode migration engine: previews, safety backup, never shares without explicit confirmation
+   · M-09  Exports/backups never include the other partner's Private data
+   · plan 7 mode cards + Compare modes · plan 13 naming subtitles · version → beta 6 */
+(function(){
+'use strict';
+
+/* ---------- 1. mode state (M-01): one authoritative value ---------- */
+var V6={d2c:{},d2n:[],share:{}};
+function curMode6(){return (DB&&DB.meta&&DB.meta.usage==='adv')?'adv':null;}
+var _um6=usageMode;
+usageMode=function(){return curMode6()||_um6();};
+var _ic6=isCouple;
+isCouple=function(){var m=usageMode();return m==='couple'||m==='adv';};
+function ADV6(){return usageMode()==='adv';}
+function nowMode6(){if(curMode6())return 'adv';return isCouple()?'couple':'solo';}
+function modeLabel6(m){return m==='adv'?'Advanced Couple':(m==='couple'?'Couple':'Personal');}
+function modeSub6(m){return m==='adv'?'Private + Shared finances':(m==='couple'?'Shared household finances':'Your own finances');}
+
+/* ---------- 2. Mode & storage panel: three large cards + Compare modes (plan 7) ---------- */
+function modeCards6(){
+  var cur=nowMode6();
+  function card(id,ic,name,sub,pts){
+    var on=cur===id;
+    return '<button class="usecard mode6'+(on?' on':'')+'" data-act="usg6" data-v="'+id+'">'
+      +'<span class="aucard-ic">'+ico(ic)+'</span><span style="flex:1;min-width:0"><b>'+name+'</b>'
+      +'<span class="m6sub">'+modeSub6(id)+'</span><span class="m6pts">'+pts+'</span></span>'
+      +(on?'<span class="pvpill">Current</span>':'<span class="pvpill m6go">Switch</span>')+'</button>';
+  }
+  return '<div class="m6grid">'
+    +card('solo','user','Personal','Your own finances','No partner connection · local storage or personal backup · App lock &amp; Privacy Screen')
+    +card('couple','users','Couple','Shared household finances','Shared accounts · partner permissions · household sync · Between Us balance')
+    +card('adv','shield','Advanced Couple','Private + Shared finances','Private and Shared accounts · separate data spaces · advanced permissions · partner-view preview')
+    +'</div><button class="aulink m6link" data-act="modecmp">Compare modes</button>';
+}
+function privStatus6(){
+  var m=storageMode();
+  if(m==='household')return {cls:'ok',text:'Private space · on this device',why:'Private accounts never upload to the household cloud. Optional: keep an encrypted personal backup for recovery.'};
+  if(m==='drive'||m==='onedrive'){
+    var s=bkState59();
+    return s==='ok'?{cls:'ok',text:'Private space · in your personal backup',why:'Your latest encrypted personal backup includes your private space.'}
+      :{cls:'warn',text:'Private space · backup due',why:'Your private space has changes that are not in your last personal backup yet.'};
+  }
+  return {cls:'warn',text:'Private space · device only',why:'No automatic copy exists. If this device is lost, your private space is lost — download an encrypted backup.'};
+}
+var _rsB6=renderStore59;
+renderStore59=function(){
+  _rsB6();
+  try{modePanel6();}catch(e){console.warn('mode6 panel',e);}
+};
+function modePanel6(){
+  var b=$('storeBody');if(!b||!DB||!DB.meta)return;
+  var seg=b.querySelector('.segmini');if(!seg)return;
+  var wrap=document.createElement('div');wrap.id='mode6wrap';
+  wrap.innerHTML=modeCards6()
+    +'<div class="m6note">'+ico('shield')+' Switching keeps your history and creates a safety backup first. Nothing becomes shared without your confirmation. Usage and storage are separate choices.</div>';
+  seg.parentNode.replaceChild(wrap,seg);
+  var hx=wrap.nextElementSibling;
+  if(hx&&hx.classList&&hx.classList.contains('help'))hx.parentNode.removeChild(hx);
+  if(ADV6()){
+    var hs=b.querySelector('.ds-status');
+    if(hs){
+      var hb=hs.querySelector('b');
+      if(hb&&!/^Household/.test(hb.textContent))hb.textContent='Household data · '+hb.textContent;
+      var ps=privStatus6();
+      hs.insertAdjacentHTML('afterend','<div class="ds-status m6p"><span class="dot" style="background:'+(ps.cls==='ok'?'var(--inc)':(ps.cls==='bad'?'var(--exp)':'var(--warn)'))+'"></span><span><b>'+ps.text+'</b><br><small class="muted" style="font-weight:600">'+esc(ps.why)+'</small></span></div>');
+    }
+  }
+  var sm=$('sum_store');if(sm)sm.textContent=modeLabel6(nowMode6())+' · '+STG_L[storageMode()];
+}
+var _rst6=renderSettings;
+renderSettings=function(){
+  _rst6();
+  var sm=$('sum_store');
+  if(sm&&DB&&DB.meta)sm.textContent=modeLabel6(nowMode6())+' · '+STG_L[storageMode()];
+};
+
+/* ---------- 3. Compare modes (plan 5 / 6 / 10) ---------- */
+MGR_TITLE.modecmp=ico('sliders')+' Compare modes';
+V56.mgr.modecmp=function(){
+  function cell(v){if(v==='Y')return '<span class="yes">Yes</span>';if(v==='—')return '<span class="no">—</span>';return v;}
+  function tbl(head,rows){
+    return '<div class="m6cmp"><table><tr>'+head.map(function(h){return '<th>'+h+'</th>';}).join('')+'</tr>'
+      +rows.map(function(r){return '<tr><td>'+r[0]+'</td>'+r.slice(1).map(function(v){return '<td>'+cell(v)+'</td>';}).join('')+'</tr>';}).join('')+'</table></div>';
+  }
+  var H=['Feature','Personal','Couple','Advanced'];
+  $('mgrBody').innerHTML='<div class="help small" style="margin-bottom:10px"><b>Not sure?</b> Ask: <i>do both partners need accounts the other cannot see?</i> No → Couple. Yes → Advanced Couple.</div>'
+    +'<div class="mgr-sec" style="margin-top:2px">What each mode does</div>'
+    +tbl(H,[
+      ['Household workspace','—','Yes','Yes'],
+      ['Shared accounts','—','Yes','Yes'],
+      ['Private accounts inside the household','—','No','Yes'],
+      ['Partner permissions','—','Yes','Yes'],
+      ['Between Us net balance · partial settlements','—','Yes','Yes'],
+      ['Household cloud sync','—','Recommended','Recommended'],
+      ['Separate private space per partner','—','—','Yes'],
+      ['Personal encrypted backup','Yes','Household backup','Yes, per owner'],
+      ['Privacy Screen &amp; App lock','Yes','Yes','Yes'],
+      ['Partner-view preview','—','Optional','Yes'],
+      ['Privacy migration','—','Limited','Full']
+    ])
+    +'<div class="mgr-sec m6h">Default storage by mode</div>'
+    +tbl(['Mode','Default','Also good'],[
+      ['Personal','Device only','Personal encrypted backup'],
+      ['Couple','Household cloud sync','Shared device only'],
+      ['Advanced Couple','Household cloud + private spaces','Household cloud + private on device']
+    ])
+    +'<div class="mgr-sec m6h">Storage &amp; privacy rules</div>'
+    +tbl(['Rule','Personal','Couple','Advanced'],[
+      ['Default visibility of new accounts','Personal','Shared','Private'],
+      ['Backup owner','You','Household owner','Household + each owner'],
+      ['Sync status','Personal','Household','Household &amp; Private, separate'],
+      ['Export permission','You','Household role','Private data stays with its owner'],
+      ['Partner removal','—','Remove access','Access removed · private space stays']
+    ])
+    +'<div class="help small" style="margin-top:10px">Switching modes keeps your history and creates a safety backup first. Nothing becomes shared without your confirmation.</div>';
+};
+
+/* ---------- 4. storage cards per mode (plan 2.4 / 3.5 / 4.6 / 6) ---------- */
+var _scB6=stgCards59;
+stgCards59=function(sel,act){
+  var m=nowMode6(),rec=(m==='solo')?'device':'household';
+  var L=[
+    ['device','phone','This device only',m==='solo'?'Financial data stays on this device. Local-only personal storage — add an encrypted backup for device-loss safety.':'Both partners use this one device. No automatic multi-device collaboration.'],
+    ['drive','cloud','My Google Drive','Encrypted personal backup in your own Google Drive. Backup and restore — not live sync.'],
+    ['onedrive','cloud','My OneDrive','Encrypted personal backup in your own OneDrive. Backup and restore — not live sync.'],
+    ['household','users','Couple Money Cloud',m==='solo'?'Live sync across your own signed-in devices (personal multi-device).':'Live household sync between authorised devices. Private accounts stay on their owner’s device.']
+  ];
+  return L.map(function(x){return '<button class="usecard'+(sel===x[0]?' on':'')+'" data-act="'+act+'" data-v="'+x[0]+'"><span class="aucard-ic">'+ico(x[1])+'</span><span style="flex:1"><b>'+x[2]+'</b><small>'+x[3]+'</small></span>'+(sel===x[0]?'<span class="pvpill">Current</span>':(rec===x[0]?'<span class="pvpill" style="background:var(--bg);color:var(--muted)">Suggested</span>':''))+'</button>';}).join('')
+    +'<div class="usecard pdhcard"'+(act==='austore'?'':' role="button" tabindex="0" data-act="pdhopen"')+'><span class="aucard-ic">'+ico('folder')+'</span><span style="flex:1;min-width:0"><b>Partner’s Drive or OneDrive</b><small>Shared household storage in one partner’s own cloud. Planned for v1.60 — set up the folder prerequisite early.</small></span><span class="pvpill" style="background:var(--bg);color:var(--muted)">v1.60</span></div>';
+};
+
+/* ---------- 5. mode switching engine (plan 9.1–9.5, M-08) ---------- */
+function usgSwitch6(to){
+  var from=nowMode6();if(to===from)return;
+  if(to==='solo'){usgSwitch59('solo');return;} /* review manager (enhanced below) */
+  if(from==='solo'&&to==='couple'){
+    askChoice('Switch to Couple mode? You get one shared household workspace: shared accounts, partner permissions and Between Us. A safety backup is created first, and nothing is shared until you choose the accounts in the next step.',
+      [{c:'btn',l:ico('users')+' Switch to Couple mode',f:function(){usgApply6('couple');}}]);
+    return;
+  }
+  if(from==='solo'&&to==='adv'){
+    askChoice('Switch to Advanced Couple? Your accounts stay Private by default and you get a private space of your own inside the household. Next, you choose which accounts become Shared. A safety backup is created first.',
+      [{c:'btn',l:ico('shield')+' Switch to Advanced Couple',f:function(){usgApply6('adv');}}]);
+    return;
+  }
+  if(from==='couple'&&to==='adv'){
+    askChoice('Switch to Advanced Couple? Household accounts stay Shared, Between Us stays exactly as it is, and nothing already shared becomes private. Each partner gets a private space, and new personal accounts are Private by default. A safety backup is created first.',
+      [{c:'btn',l:ico('shield')+' Switch to Advanced Couple',f:function(){usgApply6('adv',{fromCouple:1});}}]);
+    return;
+  }
+  if(from==='adv'&&to==='couple'){
+    var priv=DB.accounts.filter(function(a){return a.vis==='me'&&!a.recv&&!a.locked&&!/^.+ owes .+$/.test(a.name)&&!LBL_RE.test(a.name);});
+    if(priv.length)openMgr('adv2cp');
+    else askChoice('Switch to Couple mode? Household accounts stay shared and your private space is empty, so nothing has to move. A safety backup is created first.',
+      [{c:'btn',l:ico('users')+' Switch to Couple mode',f:function(){usgApply6('couple',{quiet:1});}}]);
+    return;
+  }
+}
+function usgApply6(to,o){
+  o=o||{};
+  backupSnap('pre-mode-switch');
+  var v=m59();(v.modes=v.modes||[]).unshift({at:Date.now(),from:nowMode6(),to:to});v.modes=v.modes.slice(0,20);
+  DB.meta.usage=to;touch();closeMgr();
+  if(to==='adv'&&!(v.adv&&v.adv.since))v.adv={since:Date.now(),spaces:[meName()||'Me',partnerName()]};
+  if((to==='couple'||to==='adv')&&storageMode()==='household'&&FB.user&&!HH.id)hhStart();
+  var openedShare=false;
+  if(to==='solo'){
+    toast('Personal mode is on. Nothing was deleted or reclassified.');
+  }else if(realPeople().length<2){
+    toast(modeLabel6(to)+' mode is on. Add your partner next.');
+    openMgr('people');
+  }else if(!o.quiet&&!o.fromCouple){
+    openMgr('share6');openedShare=true;
+  }else if(to==='adv'){
+    toast('Advanced Couple is on. Your private space is ready — new personal accounts are Private by default.');
+  }else{
+    toast('Couple mode is on. Household accounts stay shared.');
+  }
+  renderAll();renderStore59();
+  if(to==='couple'&&!openedShare)setTimeout(migPrompt6,400);
+}
+/* legacy privacy review after entering Couple (plan 9.1 last bullet + 4.7) */
+function migPrompt6(){
+  if(nowMode6()!=='couple')return;
+  var conf=privConflicts59().length;
+  var pa=myPrivAccs().filter(function(a){return !a.recv&&!a.locked&&!/^.+ owes .+$/.test(a.name);}).length;
+  if(!conf&&!pa)return;
+  var what=(conf?conf+' older entr'+(conf===1?'y':'ies')+' still hidden':'')+((conf&&pa)?' and ':'')+(pa?pa+' private account'+(pa===1?' is':'s are')+' on this device':'');
+  waitFree(function(){
+    askChoice('Couple mode shares one household workspace. '+what+'. Review what '+esc(partnerName())+' should see, or keep them and use Advanced Couple.',[
+      {c:'btn',l:ico('lock')+' Review private items',f:function(){openMgr('privrev');}},
+      {c:'btn ghost',l:'Keep for now',f:function(){toast('Tip: Advanced Couple keeps private accounts inside the household.');}}]);
+  });
+}
+/* ---------- 5b. choose-accounts step with live exposure preview (plan 9.1 / 9.2) ---------- */
+MGR_TITLE.share6=ico('users')+' Choose accounts to share';
+V56.mgr.share6=function(){
+  var me=meName(),P=esc(partnerName());
+  var l=DB.accounts.filter(function(a){return !a.recv&&!a.locked&&!/^.+ owes .+$/.test(a.name)&&!LBL_RE.test(a.name)&&(!me||!a.owner||a.owner===me||String(a.owner).split(' & ').indexOf(me)>=0)&&!(DB.meta.demo&&DB.meta.demo.on&&(DB.meta.demo.accounts||[]).indexOf(a.name)>=0);});
+  V6.share={};
+  l.forEach(function(a){if(a.vis!=='me')V6.share[a.name]=1;});
+  $('mgrBody').innerHTML='<div class="help small" style="margin-bottom:10px">Tick the accounts '+P+' may see, then tap Save. <b>Unticked accounts stay on this device</b> — '+P+' never sees them, their transactions or their balances. Nothing is shared until you tick it.</div>'
+    +(l.length?'<div class="dayg">'+l.sort(function(x,y){return alphasort(x.name,y.name);}).map(function(a){return '<label class="mgr-row" style="padding:10px 12px;cursor:pointer"><span class="lb">'+esc(a.name)+'<small>'+esc(a.type||'')+(a.vis==='me'?' · private now':'')+'</small></span><input type="checkbox" class="tgl pv6ck" data-n="'+esc(a.name)+'"'+(V6.share[a.name]?' checked':'')+' onchange="share6Cnt6()"></label>';}).join('')+'</div>':'<div class="help">You don’t have any accounts yet. You can choose sharing later in Lists → Accounts.</div>')
+    +'<div class="help small" id="share6prev" style="margin:10px 2px 4px"></div>'
+    +(nowMode6()==='couple'?'<div class="help small" style="margin:2px 2px 8px">'+ico('shield')+' Want to keep some accounts private inside the household? <button type="button" class="aulink inl" data-act="modecmp">Compare with Advanced Couple</button>.</div>':'')
+    +'<div class="sheet-foot" style="padding-bottom:4px"><button class="btn" data-act="share6go">Save</button></div>';
+  setTimeout(share6Cnt6,0);
+};
+window.share6Cnt6=function(){
+  var n=document.querySelectorAll('#mgrBody .pv6ck:checked').length,el=$('share6prev');
+  if(el)el.innerHTML='<b>Preview:</b> '+esc(partnerName())+' will see <b>'+n+'</b> account'+(n===1?'':'s')+'.'+(n?' You choose what history they get on the next step.':'');
+};
+function share6Go(){
+  var me=meName(),news=[],moved=0;
+  document.querySelectorAll('#mgrBody .pv6ck').forEach(function(c){
+    var a=DB.accounts.find(function(x){return x.name===c.dataset.n;});if(!a)return;
+    if(c.checked){
+      if(a.vis==='me'){delete a.vis;delete a.pvby;delete a.shareFrom;delete a.retract;news.push(a.name);}
+    }else if(a.vis!=='me'){a.vis='me';a.pvby=me||a.owner;delete a.shareFrom;moved++;}
+  });
+  var j=jr();j.shared=1;save();
+  var done=function(){
+    closeMgr();touch();renderAll();renderStore59();
+    if(news.length)toast(news.length+' account'+(news.length===1?' is':'s are')+' now shared with '+esc(partnerName())+'.');
+    else if(moved)toast(moved+' account'+(moved===1?'':'s')+' moved to your private space.');
+    else toast('Sharing saved. Nothing was changed.');
+  };
+  if(news.length){
+    askChoice('For the account'+(news.length===1?'':'s')+' you just shared — what history does '+esc(partnerName())+' get?',[
+      {c:'btn',l:'Share all history',f:function(){news.forEach(function(nm){var a=a59(nm);if(a){delete a.shareFrom;delete a.retract;}});save();done();}},
+      {c:'btn ghost',l:'Keep the past private · share from today',f:function(){var t=todayISO();news.forEach(function(nm){var a=a59(nm);if(a)a.shareFrom=t;});save();done();}}]);
+  }else done();
+}
+/* ---------- 5c. Advanced → Couple: every Private account needs a destination (plan 9.4) ---------- */
+MGR_TITLE.adv2cp=ico('users')+' Switch to Couple mode';
+window.d2cSet6=function(el){V6.d2c[el.dataset.i]=el.value;};
+V56.mgr.adv2cp=function(){
+  var me=meName();
+  var priv=DB.accounts.filter(function(a){return a.vis==='me'&&!a.recv&&!a.locked&&!/^.+ owes .+$/.test(a.name)&&!LBL_RE.test(a.name)&&(!me||!a.owner||a.owner===me);});
+  if(!priv.length){usgApply6('couple',{quiet:1});return;}
+  V6.d2c={};V6.d2n=priv.map(function(a){return a.name;});
+  priv.forEach(function(a,i){V6.d2c[i]='device';});
+  function dest(i,a){
+    var on=V6.d2c[i],own=a.owner&&a.owner!==me;
+    return '<div class="m6dest">'
+      +'<label><input type="radio" name="d2c'+i+'" data-i="'+i+'" value="device"'+(on==='device'?' checked':'')+' onchange="d2cSet6(this)"><span>Keep on this device only<small>Stays yours: excluded from the household and from household sync. Visible only to you.</small></span></label>'
+      +'<label><input type="radio" name="d2c'+i+'" data-i="'+i+'" value="shared"'+(on==='shared'?' checked':'')+' onchange="d2cSet6(this)"><span>Make it Shared<small>'+(own?'You own it, so you choose the history. ':'')+'Your partner will see this account.</small></span></label>'
+      +'<label><input type="radio" name="d2c'+i+'" data-i="'+i+'" value="remove"'+(on==='remove'?' checked':'')+' onchange="d2cSet6(this)"><span>Back up, then remove<small>A full backup file downloads first, then the account and its transactions are removed from this device.</small></span></label></div>';
+  }
+  var h='<div class="help small" style="margin-bottom:10px">Couple mode keeps <b>one shared household workspace</b> and cannot hold Private accounts. Choose a destination for every Private account before switching. Nothing is made Shared without your say-so.</div>';
+  priv.forEach(function(a,i){var nc=hiddenCount59(a.name);h+='<div class="m6acc"><span class="lb" style="font-weight:800">'+esc(a.name)+' <small>'+esc(a.type||'')+' · '+nc+' transaction'+(nc===1?'':'s')+'</small></span>'+dest(i,a)+'</div>';});
+  h+='<div class="help small" style="margin:2px 2px 10px">'+ico('shield')+' Want to keep Private accounts after all? <button type="button" class="aulink inl" data-act="mgrclose">Stay in Advanced Couple</button>.</div>'
+    +'<div class="sheet-foot" style="padding-bottom:4px"><button class="btn" data-act="adv2go">Continue</button></div>';
+  $('mgrBody').innerHTML=h;
+};
+function accRemove6(n){
+  DB.accounts=DB.accounts.filter(function(a){return a.name!==n;});
+  DB.txns=DB.txns.filter(function(t){return t.account!==n&&t.to!==n;});
+}
+function adv2Go(){
+  var shared=[],rm=[];
+  (V6.d2n||[]).forEach(function(n,i){var d=V6.d2c[i]||'device';if(d==='shared')shared.push(n);else if(d==='remove')rm.push(n);});
+  var fin2=function(){
+    if(rm.length){
+      askConfirm('A full backup file downloads first, then '+rm.length+' account'+(rm.length===1?'':'s')+' and their transactions are removed from this device.','Back up & remove',function(){
+        backupDownload(-1);
+        setTimeout(function(){rm.forEach(accRemove6);usgApply6('couple',{quiet:1});},600);
+      });
+    }else usgApply6('couple',{quiet:1});
+  };
+  if(shared.length){
+    askChoice('For the account'+(shared.length===1?'':'s')+' you are making Shared — what history does '+esc(partnerName())+' get? Private accounts are never made Shared automatically; you chose each one.',[
+      {c:'btn',l:'Share all history',f:function(){shared.forEach(function(n){var a=a59(n);if(a){delete a.vis;delete a.pvby;delete a.shareFrom;delete a.retract;}});save();fin2();}},
+      {c:'btn ghost',l:'Keep the past private · share from today',f:function(){var t=todayISO();shared.forEach(function(n){var a=a59(n);if(a){delete a.vis;delete a.pvby;delete a.retract;a.shareFrom=t;}});save();fin2();}}]);
+  }else fin2();
+}
+/* ---------- 5d. Personal switch review: household + private-space notes (plan 9.5) ---------- */
+var _ur6=V56.mgr.usagerev;
+V56.mgr.usagerev=function(){
+  _ur6();
+  var b=$('mgrBody');if(!b)return;
+  var h='';
+  if(HH.id&&FB.user){
+    h+='<div class="mgr-sec">Household cloud</div>'
+      +'<div class="help small" style="margin:0 2px 8px">You are still in a household with '+esc(partnerName())+'. Leaving keeps the data on this phone and gives you your own cloud copy again.</div>'
+      +'<button class="btn ghost" data-act="usgleave" style="margin-bottom:10px">'+ico('cloudoff')+' Leave the household</button>';
+  }
+  h+='<div class="help small" style="margin:0 2px">'+ico('shield')+' Your private space stays on this device and stays private. Information already synced may remain in authorised backups or on your partner’s device.</div>';
+  b.insertAdjacentHTML('beforeend',h);
+};
+
+/* ---------- 6. Couple simplification (M-05): household accounts are shared ---------- */
+var _rm6=renderMgr;
+renderMgr=function(){
+  _rm6();
+  try{mode6MgrPost();}catch(e){console.warn('m6mgr',e);}
+};
+function mode6MgrPost(){
+  if(nowMode6()!=='couple')return;
+  var P=esc(partnerName());
+  var ed=$('mgrEVis');
+  if(ed){
+    var a=MGR.edit?DB.accounts.find(function(x){return x.name===MGR.edit;}):null;
+    if(a&&a.vis==='me'){
+      /* legacy private account: sharing stays possible (safe direction); relabel for clarity */
+      ed.value='me';
+      var mo=ed.querySelector('option[value=me]');if(mo)mo.textContent='Only me (kept on this device)';
+    }else{
+      var note=document.createElement('div');
+      note.className='help small';note.style.margin='-3px 2px 8px';
+      note.innerHTML=ico('users')+' <b>Shared with '+P+'.</b> Couple mode keeps one shared workspace: household accounts are shared. For a private account inside the household, switch to Advanced Couple.';
+      ed.parentNode.replaceChild(note,ed);
+    }
+  }
+  var nw=$('mgrNewVis');
+  if(nw){
+    var nn=document.createElement('div');
+    nn.className='help small';nn.style.margin='-3px 2px 8px';
+    nn.innerHTML=ico('users')+' <b>Shared with '+P+'.</b> New household accounts are shared in Couple mode. For a private account inside the household, switch to Advanced Couple.';
+    nw.parentNode.replaceChild(nn,nw);
+  }
+}
+var _aam6=addAccountMgr;
+addAccountMgr=function(){
+  var nm=(($('mgrNewName')||{}).value||'').trim(),had=DB.accounts.some(function(a){return a.name===nm;}),cp6=nowMode6();
+  _aam6();
+  if(cp6==='couple'){
+    var a=!had?DB.accounts.find(function(x){return x.name===nm;}):null;
+    if(a){delete a.vis;delete a.pvby;delete a.shareFrom;save();scheduleRender();}
+  }
+};
+
+/* ---------- 7. export & backup scope (M-09 / acceptance: household exports exclude partner private data) ---------- */
+function exportScope6(){
+  var m6=nowMode6();if(m6==='solo')return DB;
+  var me=meName();
+  var pp=DB.accounts.filter(function(a){return a.vis==='me'&&((a.pvby||a.owner||'')!==me);}).map(function(a){return a.name;});
+  var hidTx=DB.txns.some(function(t){return t.priv&&t.pby&&t.pby!==me;});
+  if(!pp.length&&!hidTx)return DB;
+  var d=JSON.parse(JSON.stringify(DB)),set={};
+  pp.forEach(function(n){set[n]=1;});
+  d.accounts=(d.accounts||[]).filter(function(a){return !set[a.name];});
+  d.txns=(d.txns||[]).filter(function(t){return !set[t.account]&&!(t.to&&set[t.to])&&!(t.priv&&t.pby&&t.pby!==me);});
+  return d;
+}
+bkFileGo=function(){
+  var pw=(($('bkPw')||{}).value||''),pw2=(($('bkPw2')||{}).value||'');
+  if(pw&&pw!==pw2){toast('The passwords don’t match');return;}
+  if(pw&&pw.length<6){toast('Use at least 6 characters');return;}
+  var json=JSON.stringify(exportScope6()),name=backupFname(Date.now())+(pw?'-protected':'')+'.json';
+  (pw?bkEnc(json,pw):Promise.resolve(backupWrapText(json))).then(function(txt){
+    shareFile(name,new Blob([txt],{type:'application/json'}));
+    DB.meta.lastBkDl=Date.now();save();closeMgr();renderSettings();renderOverview();
+    toast(pw?'Password-protected backup ready':'Backup ready · keep it in Google Drive or OneDrive');
+  }).catch(function(){toast('Could not create the backup');});
+};
+var _bfm6=V56.mgr.bkfile;
+V56.mgr.bkfile=function(){
+  _bfm6();
+  var b=$('mgrBody');
+  if(b&&curMode6()!=='solo')b.insertAdjacentHTML('beforeend','<div class="help small" style="margin-top:10px">'+ico('lock')+' <b>Scope:</b> household backups never include your partner’s Private accounts or their hidden entries — those stay on their device.</div>');
+};
+
+/* ---------- 8. onboarding decision flow (plan 8 / M-03) ---------- */
+function rAuthUsage6(){
+  var b=$('auBody'),s=$('auSub');if(!b)return;
+  if(s)s.textContent='How will you use Couple Money Manager?';
+  b.innerHTML='<div class="austep">'+ico('check')+' Signed in as '+esc((sessGet()||{}).email||'')+'</div>'
+    +'<button class="usecard" data-act="auusage" data-v="solo"><span class="aucard-ic">'+ico('user')+'</span><span><b>Just me</b><small>Your own finances. No partner connection. Local storage or a personal backup. App lock and Privacy Screen stay available.</small></span></button>'
+    +'<button class="usecard" data-act="auusage" data-v="couple"><span class="aucard-ic">'+ico('users')+'</span><span><b>With my partner</b><small>A shared household workspace. I can invite my partner and choose how we handle private money next.</small></span></button>'
+    +'<div class="help small" style="text-align:center">You can change this later. Your data stays.</div>';
+}
+function rAuthPriv6(){
+  var b=$('auBody'),s=$('auSub');if(!b)return;
+  if(s)s.textContent='One privacy question';
+  b.innerHTML='<div class="aucard"><b>Do both partners need accounts the other cannot see?</b><p>This picks your mode. Couple shares one household workspace; Advanced Couple also gives each partner a private space. You can change it later — switching keeps your data.</p></div>'
+    +'<button class="usecard" data-act="aupriv6" data-v="couple"><span class="aucard-ic">'+ico('users')+'</span><span><b>No — use Couple</b><span class="m6rec">Recommended</span><small>Shared household finances. All household accounts are shared; permissions control what your partner can do.</small></span></button>'
+    +'<button class="usecard" data-act="aupriv6" data-v="adv"><span class="aucard-ic">'+ico('shield')+'</span><span><b>Yes — use Advanced Couple</b><small>Private + Shared finances. Each partner also gets a private space; Private and Shared accounts coexist.</small></span></button>';
+}
+var _rA6=renderAuth;
+renderAuth=function(){
+  var advp=AU.mode==='person'&&DB.meta&&DB.meta.usage==='adv';
+  if(advp)DB.meta.usage='couple'; /* person step reads usage==='couple' for the partner field */
+  try{
+    /* pre-empt the beta wrappers' redirect so our steps render (incl. beta 2's storage/provider/invite) */
+    if(sessGet()&&['person','sync','guide','usage','lock','storage','provider','invite'].indexOf(AU.mode)>=0){
+      var nm=authNextMode();
+      if(!nm){if(advp){DB.meta.usage='adv';}authFinish();return;}
+      AU.mode=nm;
+    }
+    if(AU.mode==='usage'){rAuthUsage6();return;}
+    if(AU.mode==='privneed'){rAuthPriv6();return;}
+    _rA6();
+  }finally{if(advp){DB.meta.usage='adv';save();}}
+  if(AU.mode==='person'){
+    var hb=$('auBody');
+    if(hb){var hs=hb.querySelector('.help.small');
+      if(hs&&/private until you choose/.test(hs.textContent))hs.innerHTML=(DB.meta.usage==='adv'?'New personal accounts are <b>Private</b> in Advanced Couple. Choose Shared only for joint accounts.':'Household accounts are <b>shared</b> in Couple mode. Permissions control what your partner can do.');
+    }
+  }
+};
+var _anm6=authNextMode;
+authNextMode=function(){
+  var r=_anm6();
+  if((r==='storage'||r==='person')&&!AU.invite&&!AU.privneed&&DB.meta&&DB.meta.usage==='couple'&&!DB.meta.onb)return 'privneed';
+  return r;
+};
+var _ap6=auPerson;
+auPerson=function(){
+  _ap6();
+  if(DB.meta&&DB.meta.usage==='adv'){
+    if(AU.mmode==='adv'||AU.privneed)DB.meta.usage='adv';
+    var v6=m59();
+    if(!(v6.adv&&v6.adv.since))v6.adv={since:Date.now(),spaces:[meName()||'Me',partnerName()]};
+    save();
+  }
+};
+
+/* ---------- 9. action routing ---------- */
+var _hA6=handleAct;
+handleAct=function(el){
+  switch(el.dataset.act){
+    case 'usg6':usgSwitch6(el.dataset.v);return;
+    case 'modecmp':openMgr('modecmp');return;
+    case 'auusage':DB.meta.usage=el.dataset.v;AU.avis=(el.dataset.v==='couple'?'shared':'me');save();auNext();return;
+    case 'aupriv6':DB.meta.usage=el.dataset.v;AU.mmode=el.dataset.v;AU.privneed=1;AU.avis=(el.dataset.v==='adv'?'me':'shared');save();auNext();return;
+    case 'share6go':share6Go();return;
+    case 'adv2go':adv2Go();return;
+    case 'usgleave':closeMgr();hhLeave();return;
+  }
+  _hA6(el);
+};
+
+/* ---------- 10. version + in-app release notes ---------- */
+window.B6={mode:nowMode6,scope:exportScope6,label:modeLabel6}; /* support/debug handle */
+V59.ver='1.59 beta 6';
+document.querySelectorAll('.sub').forEach(function(e){
+  if(/v1\.59 beta 5/.test(e.textContent))e.textContent='v1.59 beta 6';
+});
+var ol=document.querySelector('#view-settings details.help ol');
+if(ol)ol.insertAdjacentHTML('beforeend','<li><b>Three-Mode design (v1.60 architecture):</b> Personal, Couple and Advanced Couple are now three full modes. Mode &amp; storage shows three large cards plus a Compare modes table; onboarding asks “do both partners need accounts the other cannot see?”; switching between any two modes previews the effect, keeps a safety backup and never shares anything without your confirmation. Couple mode keeps one shared workspace — household accounts are shared and new hidden entries are off. Advanced Couple adds a private space per partner with separate Household/Private sync status, and household exports never include your partner’s private data.</li>');
 })();
 </script>
 </body>
