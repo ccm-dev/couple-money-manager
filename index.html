@@ -1470,8 +1470,8 @@ details.adv{border-style:dashed}
         <li><b>Refunds:</b> tap “Refund” next to the amount to record a reduction in expenses.</li>
         <li><b>Split a bill, refund or income:</b> use the “Split this bill” box on the form, and type each share as a positive amount. For a bill, the other person's share is added to the “X owes Y” ledger. For a refund, it is taken off. For income received into your account, their share is owed back to them. Settle it from Between Us.</li>
         <li><b>Credit cards:</b> set a statement day and payment-due days in Settings → Accounts.</li>
-        <li><b>Budgets:</b> Settings → Preferences → Budgets. Set fixed and variable amounts per category, as a couple budget or a personal one.</li>
-        <li><b>Saving goals:</b> Settings → Preferences → Saving goals. Link a goal to a savings account, or add money to it by hand.</li>
+        <li><b>Budgets:</b> Settings → App Preference → Budgets. Set fixed and variable amounts per category, as a couple budget or a personal one.</li>
+        <li><b>Saving goals:</b> Settings → App Preference → Saving goals. Link a goal to a savings account, or add money to it by hand.</li>
         <li><b>Reports:</b> every report has Week / Month / Year and Couple / individual options.</li>
                 <li><b>Split bills:</b> open any share, then choose <b>This share only</b> or <b>Whole bill</b> to edit. Delete asks whether to remove one share or the whole bill.</li>
         <li><b>Money assistant:</b> tap <b>Ask</b> at the top. Answers come from your data on this device; you can optionally connect OpenAI or Gemini with your own key.</li>
@@ -10928,16 +10928,16 @@ var SET_HTML=''
     +srow('mode','users','Mode &amp; Partner Access','sum_modeB3')
     +srow('privacy','shield','Privacy &amp; Security','sum_privB3')
     +srow('data','cloud','Data &amp; Sync','sum_dataB3')
-    +srow('prefs','contrast','Preferences','sum_prefsB3')
+    +srow('prefs','contrast','App Preference','sum_prefsB3')
     +srow('about','book','Help &amp; About','sum_aboutB3')
     +srow('danger','warn','Danger zone','sum_dzB3',true)
     +'<div hidden><span id="cntPeople"></span><span id="cntCats"></span><span id="cntSubs"></span><span id="cntAccs"></span><span id="cntAccTypes"></span><span id="cntRecur"></span><span id="cntBudgets"></span><span id="cntGoals"></span><span id="bkSub"></span></div>'
   +'</div>'
   /* Your Profile (plan §10) */
   +'<section class="setsub" data-sub="profile" hidden><div class="card"><h2>Your Profile</h2>'
-    +'<div class="f-row"><label>Your name</label><input class="fin" id="profNameB3" placeholder="e.g. Hubby"></div>'
-    +'<div class="f-row" id="profPartRowB3"><label>Your partner</label><input class="fin" id="profPartB3" placeholder="e.g. Wifey"></div>'
-    +'<div class="help small" style="margin-bottom:10px">These names are who you and your partner are inside the app — on transactions, splits and the household.</div>'
+    +'<div class="f-row"><label>Your name</label><input class="fin" id="profNameB3" placeholder="e.g. Hubby"></div><div class="b19role" id="b19RoleMe" hidden></div>'
+    +'<div class="f-row" id="profPartRowB3"><label>Your partner</label><input class="fin" id="profPartB3" placeholder="e.g. Wifey"></div><div class="b19role" id="b19RolePart" hidden></div>'
+    +'<div class="help small" style="margin-bottom:10px">These names are who you and your partner are inside the app — on transactions, splits and the household. Your name is the <b>Owner</b>; your partner is the <b>Collaborator</b> — every role in the app follows these names, and saving a new name updates it everywhere.</div>'+'<div class="b19roles" id="b19Roles"></div>'
     +'<button class="btn" data-act="profsaveB3">Save profile</button>'
     +'<div id="meBody" style="margin-top:14px"></div>'
     +'<div class="help small" id="profModeB3" style="margin-top:10px"></div>'
@@ -11035,7 +11035,7 @@ if(!pageSet){
   pageSet.innerHTML='<div class="hdrrow"><button class="backbtn" data-act="setback">‹</button><b id="setTitle">Settings</b></div><div id="setBodyB3"></div>';
   document.body.appendChild(pageSet);
 }
-var SET_TITLES={profile:'Your Profile',accounts:'Accounts',mode:'Mode & Partner Access',privacy:'Privacy & Security',data:'Data & Sync',prefs:'Preferences',about:'Help & About',danger:'Danger zone'};
+var SET_TITLES={profile:'Your Profile',accounts:'Accounts',mode:'Mode & Partner Access',privacy:'Privacy & Security',data:'Data & Sync',prefs:'App Preference',about:'Help & About',danger:'Danger zone'};
 B3.setGo=function(k){
   var src=document.querySelector('#view-settings .setsub[data-sub="'+k+'"]');
   if(!src)return;
@@ -11580,7 +11580,7 @@ openSheet=function(id){
 };
 
 /* ---------- 8. tours repointed to the new IA ---------- */
-JR.forEach(function(x){if(x.k==='partner')x.d='Invite from Settings → Mode & Partner Access';if(x.k==='me')x.d='Your Profile → Save profile';if(x.k==='account')x.d='Accounts → Add account';if(x.k==='budget')x.d='Settings → Preferences → Budgets';if(x.k==='goal')x.d='Settings → Preferences → Saving goals';});
+JR.forEach(function(x){if(x.k==='partner')x.d='Invite from Settings → Mode & Partner Access';if(x.k==='me')x.d='Your Profile → Save profile';if(x.k==='account')x.d='Accounts → Add account';if(x.k==='budget')x.d='Settings → App Preference → Budgets';if(x.k==='goal')x.d='Settings → App Preference → Saving goals';});
 TOURS.lock=function(){return [{pre:function(){gotoView('settings');setTimeout(function(){B3.setGo('privacy');},80);},sel:'#pvLockB3 [data-act=pinset]',tx:'Tap <b>Set PIN</b> and choose a 6-digit PIN.',ok:function(){return !!lockCfg().h;}}];};
 TOURS.invite=function(){return [{pre:function(){gotoView('settings');setTimeout(function(){B3.setGo('mode');},80);},sel:'#fbBody',tx:FB.user?'Type your partner\u2019s email and tap <b>Invite</b>.':'Sign in with <b>Google</b> or <b>Email</b>, then invite your partner by email.',ok:jrInviteDone}];};
 
@@ -15211,7 +15211,7 @@ V56.mgr.v63remctr=function(){
   });
   if(done)h+='<div class="remgrp"><div class="day-h"><span>Completed</span></div>'+done+'</div>';
   if(!h)h='<div class="help" style="padding:10px 2px">No payments due in the next 90 days. Nothing overdue.</div>';
-  h+='<div class="help small" style="margin-top:10px">Reminders are configured on each card, loan and hire-purchase account — open the account and tap <b>Payment details</b>. Global notification behaviour lives in Settings → Preferences → Payment reminders.</div>';
+  h+='<div class="help small" style="margin-top:10px">Reminders are configured on each card, loan and hire-purchase account — open the account and tap <b>Payment details</b>. Global notification behaviour lives in Settings → App Preference → Payment reminders.</div>';
   $('mgrBody').innerHTML=h;
 };
 /* Record payment — cards (prefilled by the reminder amount basis) */
@@ -16094,7 +16094,7 @@ openReport=function(k){
   try{if(X63.isSimple())setTimeout(function(){X63.terminology($('reportBody'));},30);}catch(e){}
 };
 
-/* ---------------- EX-05 · settings: App preferences card + switch flow ---------------- */
+/* ---------------- EX-05 · settings: App Preference card + switch flow ---------------- */
 function prefSync(){
   var v=X63.viewer(),lv=X63.levelOf(v);
   var sub=$('x63expSub');
@@ -16110,7 +16110,7 @@ X63.prefCard=function(){
   var vs=$('view-settings');if(!vs||$('x63prefCard'))return;
   var first=vs.querySelector('.card');if(!first)return;
   var d=document.createElement('div');d.className='card';d.id='x63prefCard';
-  d.innerHTML='<h2>'+ico('shield')+' App preferences</h2><div class="rows">'
+  d.innerHTML='<h2>'+ico('shield')+' App Preference</h2><div class="rows">'
     +'<button class="trow" data-act="x63exp"><span class="lb">Experience Level<small id="x63expSub"></small></span><span class="amt2 muted">'+ico('chevright')+'</span></button>'
     +'<button class="trow" data-act="x63wv" id="x63wvRow"><span class="lb">Wealth features<small id="x63wvSub"></small></span><span class="amt2 muted">'+ico('chevright')+'</span></button>'
     +'<button class="trow" data-act="x63redo"><span class="lb">Redo the experience questions<small>Answer a few short questions again</small></span><span class="amt2 muted">'+ico('chevright')+'</span></button>'
@@ -16293,7 +16293,7 @@ X63.obSkip=function(){
   if(!DB.meta.expLevel[v])DB.meta.expLevel[v]='full';
   DB.meta.expOnboarded=true;DB.meta.expSelectionSource='skipped';
   X63.save();X63.obClose();
-  toast('No problem — Experience Level is in Settings → App preferences');
+  toast('No problem — Experience Level is in Settings → App Preference');
 };
 
 /* ---------------- actions ---------------- */
@@ -16365,7 +16365,331 @@ qa('.sub').forEach(function(e){
   if(/1\.60 beta 17/.test(t)||/^v1\.\d+ beta \d+$/.test(t))e.textContent='v1.60 beta 18';
 });
 var olB=document.querySelector('#view-settings details.help ol');
-if(olB)olB.insertAdjacentHTML('beforeend','<li><b>Simple &amp; Full Experience (v1.60 beta 18):</b> every partner now has an Experience Level. New users answer two short questions and get a neutral recommendation; existing households are asked once on first open. Simple shows a Money tab with Money Available, This Month, payments, Top Spending and one plain-language insight, hides the Wealth tab, narrows Reports to the essentials with a “Show more reports” option and uses plain terms (Money In, Money Spent, Money Left, Change in Cash). Full keeps Wealth, the full Cash Flow analysis and the complete report catalogue. Switch it in Settings → App preferences → Experience Level — the switch shows a preview first and never changes, moves or reclassifies any financial record. Simple users can optionally add one Overall Position card (Settings → Wealth features), and unfamiliar numbers carry an explanation sheet. Account summaries became tap-able tiles: tap All, Money, Vehicles, Between Us and more to see the accounts arranged by person, type and account, with Collapse all inside. Toasts now contrast with the theme — near-black in light mode, near-white in dark mode.</li>');
+if(olB)olB.insertAdjacentHTML('beforeend','<li><b>Simple &amp; Full Experience (v1.60 beta 18):</b> every partner now has an Experience Level. New users answer two short questions and get a neutral recommendation; existing households are asked once on first open. Simple shows a Money tab with Money Available, This Month, payments, Top Spending and one plain-language insight, hides the Wealth tab, narrows Reports to the essentials with a “Show more reports” option and uses plain terms (Money In, Money Spent, Money Left, Change in Cash). Full keeps Wealth, the full Cash Flow analysis and the complete report catalogue. Switch it in Settings → App Preference → Experience Level — the switch shows a preview first and never changes, moves or reclassifies any financial record. Simple users can optionally add one Overall Position card (Settings → App Preference → Wealth features), and unfamiliar numbers carry an explanation sheet. Account summaries became tap-able tiles: tap All, Money, Vehicles, Between Us and more to see the accounts arranged by person, type and account, with Collapse all inside. Toasts now contrast with the theme — near-black in light mode, near-white in dark mode.</li>');
+})();
+</script>
+<script id="v160b19">
+/* ===================== v1.60 beta 19 · Experience Level is personal · App Preference · names drive roles =====================
+   Additive layer on v1.60 beta 18 (user request, four items):
+   1. "Experience level - user choose for himself or herself, no option to choose for partner,
+      user need not to know the experience level for the partner"
+      -> the Experience sheet is SELF-ONLY: the "Set the level for" person chips are gone,
+         the level shown and changed is always the viewer's own, and the copy says the
+         partner chooses privately on their own side (their level is never displayed here).
+   2. "Setting > Preference - change to Setting > App Preference"
+      -> static patch in make_v160b19.py: Settings row label + subpage title + every
+         "Settings → Preferences" help reference now read "App Preference".
+   3. "Experience level to move to Setting > App Preference"
+      -> the beta18 root "App preferences" card is retired (X63.prefCard becomes a no-op) and
+         an Experience card (Experience Level / Wealth features / Redo the experience questions)
+         is inserted as the FIRST card of the Settings → App Preference subpage.
+   4. "Changing the name and partner name under My Profile will change the owner and
+      collaborator role underneath - review whole app, make sure this principle is embedded
+      across the apps"
+      -> My Profile now captions the two name fields with the roles (Owner / Collaborator) and
+         shows a live "roles right now" line; saving the profile RENAMES the person across the
+         whole data model (people, transactions, splits, private-transaction authors, account
+         owners incl. joint pairs, "X owes Y" ledgers and their references, budgets scopes,
+         saving-goal owners, recurring templates, Experience Level keys, collab identity,
+         Household Storage Owner snapshot, Advanced-mode spaces) and re-renders every view, so
+         every role label in the app keeps following the current names.
+   Everything else (balances, transactions, permissions, privacy, toast v18, tiles drill) is untouched.
+*/
+(function(){
+'use strict';
+var $=function(id){return document.getElementById(id);};
+
+/* ---------- tiny CSS (runtime-injected like b17/b18 so it wins the cascade) ---------- */
+var css='.b19role{font-size:12px;color:var(--muted);margin:-6px 0 12px 2px;line-height:1.45}'
+  +'.b19role b{color:var(--accent)}'
+  +'.b19role[hidden]{display:none}'
+  +'.b19roles{background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:9px 12px;margin:2px 0 12px;font-size:12.5px;color:var(--muted);line-height:1.5}'
+  +'.b19roles b{color:var(--text)}';
+var st=document.createElement('style');st.id='v160b19css';st.textContent=css;
+document.head.appendChild(st);
+
+var B19=window.B19={};
+
+/* b18's ovHead/escB are IIFE-local — b19 carries its own copies (same markup/classes) */
+function ovHead19(title){return '<div class="xovh"><b>'+title+'</b><button class="xovx" data-act="x63ovx">\u00d7</button></div>';}
+function escB19(s){return esc(String(s==null?'':s));}
+
+/* ======================================================================
+   ITEM 4 CORE · person rename across the whole data model
+   Mirrors the People-manager renamePerson (people/txns/splits/accounts/
+   ledgers/OV/TXF) and extends it to every name-keyed store added since:
+   budgets scopes, goal owners, recurring templates, Experience Level keys,
+   profile name/partner, collaborator identity, Household Storage Owner
+   snapshot and Advanced-mode spaces. No toast, no manager render — the
+   caller owns feedback and re-rendering.
+   ====================================================================== */
+B19.rename=function(from,to){
+  from=String(from||'');to=String(to||'').trim();
+  if(!from||!to||from===to)return false;
+  if(DB.people.indexOf(from)<0)return false;
+  if(DB.people.indexOf(to)>=0)return false; /* caller validates; never merge two people */
+  var i=DB.people.indexOf(from);DB.people[i]=to;
+  /* transactions: who it belongs to, who hid it, split shares */
+  DB.txns.forEach(function(t){
+    if(t.person===from)t.person=to;
+    if(t.pby===from)t.pby=to; /* private-transaction author (v1.54) */
+    if(Array.isArray(t.split))t.split.forEach(function(s){if(s&&s.p===from)s.p=to;});
+  });
+  /* accounts: owner, joint pairs, "X owes Y" ledgers + their references */
+  DB.accounts.forEach(function(a){
+    if(a.owner===from)a.owner=to;
+    else if(a.owner&&String(a.owner).indexOf(' & ')>=0)a.owner=a.owner.split(' & ').map(function(x){return x===from?to:x;}).join(' & ');
+    if(/^.+ owes .+$/.test(String(a.name))){
+      var pn=String(a.name).split(' owes ').map(function(x){return x===from?to:x;}).join(' owes ');
+      if(pn!==a.name){var on=a.name;a.name=pn;DB.txns.forEach(function(t){if(t.to===on)t.to=pn;if(t.owedAcc===on)t.owedAcc=pn;});}
+    }
+  });
+  /* session drill / transfer person state */
+  try{if(typeof OV!=='undefined'&&OV.person===from)OV.person=to;}catch(e){}
+  try{if(typeof TXF!=='undefined'&&TXF.person===from)TXF.person=to;}catch(e){}
+  /* budgets: person-scoped scopes */
+  if(DB.budgets2&&typeof DB.budgets2==='object'&&DB.budgets2[from]){
+    var nb={};Object.keys(DB.budgets2).forEach(function(k){nb[k===from?to:k]=DB.budgets2[k];});
+    DB.budgets2=nb;
+  }
+  if(BG&&BG.scope===from)BG.scope=to;
+  if(BG&&BG.work&&BG.work[from]){BG.work[to]=BG.work[from];delete BG.work[from];}
+  /* saving goals */
+  if(Array.isArray(DB.goals))DB.goals.forEach(function(g){if(g&&g.owner===from)g.owner=to;});
+  /* recurring series templates carry the person */
+  if(Array.isArray(DB.recur))DB.recur.forEach(function(r){if(r&&r.tpl&&r.tpl.person===from)r.tpl.person=to;});
+  /* Experience Level keys (beta 18) — per person, values preserved */
+  if(DB.meta.expLevel&&typeof DB.meta.expLevel==='object'&&from in DB.meta.expLevel){
+    var ne={};Object.keys(DB.meta.expLevel).forEach(function(k){ne[k===from?to:k]=DB.meta.expLevel[k];});
+    DB.meta.expLevel=ne;
+  }
+  /* profile name / partner name themselves */
+  if(DB.meta.profile){
+    if(DB.meta.profile.name===from)DB.meta.profile.name=to;
+    if(DB.meta.profile.partner===from)DB.meta.profile.partner=to;
+  }
+  /* collaborator identity (v1.45 model) */
+  try{
+    var c=collabCfg();
+    if(c.me===from)c.me=to;
+    if(Array.isArray(c.members))c.members=c.members.map(function(m){return m===from?to:m;});
+  }catch(e){}
+  /* Household Storage Owner snapshot (v1.59 beta 6) + Advanced spaces */
+  try{
+    var v=m59();
+    if(v.pdh&&v.pdh.owner===from)v.pdh.owner=to;
+    if(v.adv&&Array.isArray(v.adv.spaces))v.adv.spaces=v.adv.spaces.map(function(s){return s===from?to:s;});
+    if(Array.isArray(v.modes))v.modes.forEach(function(m){if(m&&m.spaces){if(m.spaces===from)m.spaces=to;else if(Array.isArray(m.spaces))m.spaces=m.spaces.map(function(s){return s===from?to:s;});}});
+  }catch(e){}
+  /* account-summary expand-state cache keyed by person names (beta 17) — forget it */
+  try{if(typeof V63!=='undefined')V63.accKeys17={};}catch(e){}
+  /* duplicate-detection stamps embed person names — rebuild */
+  try{if(typeof stampInit==='function')stampInit();}catch(e){}
+  return true;
+};
+
+/* ======================================================================
+   ITEM 4 · profile save = names + roles everywhere
+   Intercepts data-act="profsaveB3" ahead of the beta3 handler (which only
+   pushed the new name as an EXTRA person and left accounts, transactions,
+   ledgers, budgets and roles under the old name).
+   ====================================================================== */
+B19.roleLine=function(){
+  var pr=DB.meta.profile||{},me=pr.name||'you',P=pr.partner||'';
+  try{if(!P&&isCouple())P=partnerName();}catch(e){}
+  return '<b>Roles right now:</b> '+esc(me)+' — <b>Owner</b>'
+    +(isCouple()?(' · '+esc(P||'your partner')+' — <b>Collaborator</b>'):'')+''
+    +'<br><span style="opacity:.85">Change a name above, tap Save, and every role in the app follows the new name — accounts, transactions, splits, budgets, goals and access.</span>';
+};
+B19.profileSave=function(){
+  var nm=(($('profNameB3')||{}).value||'').trim();
+  var pt=(($('profPartB3')||{}).value||'').trim();
+  var pr=DB.meta.profile=DB.meta.profile||{};
+  var old=pr.name||'',oldP=pr.partner||'',cp=isCouple();
+  if(!nm){toast('Your name is required');return;}
+  if(cp&&pt&&pt===nm){toast('Choose a different name for each of you');return;}
+  function takenBy(n,allowA,allowB){
+    return DB.people.some(function(p){return p===n&&p!==allowA&&p!==allowB;});
+  }
+  if(nm!==old&&takenBy(nm,old,oldP)){toast('“'+nm+'” is already used in this household');return;}
+  if(cp&&pt&&pt!==oldP&&takenBy(pt,old,oldP)){toast('“'+pt+'” is already used in this household');return;}
+  var changed=[];
+  /* your name: rename the person, then stamp the profile */
+  if(old&&nm!==old&&DB.people.indexOf(old)>=0){
+    if(B19.rename(old,nm))changed.push(old+' is now '+nm);
+    else{toast('Could not rename '+old);return;}
+  }
+  pr.name=nm;
+  if(DB.people.indexOf(nm)<0)DB.people.push(nm);
+  /* partner name (Couple mode only) */
+  if(cp&&pt&&pt!==oldP){
+    if(oldP&&DB.people.indexOf(oldP)>=0){
+      if(B19.rename(oldP,pt))changed.push(oldP+' is now '+pt);
+      else{toast('Could not rename '+oldP);return;}
+    }
+    pr.partner=pt;
+    if(DB.people.indexOf(pt)<0)DB.people.push(pt);
+  }
+  /* the Owner role identity used by the collaborator-file model */
+  try{collabCfg().me=nm;}catch(e){}
+  touch();save();
+  try{renderAll();}catch(e){}
+  try{B3.renderProfileSub();B3.rowSummaries();}catch(e){}
+  try{renderMe();}catch(e){}
+  toast(changed.length?('Profile saved — '+changed.join(', ')+' · roles updated everywhere'):'Profile saved');
+};
+
+/* ======================================================================
+   ITEM 4 · role captions under the name fields (renderProfileSub wrap)
+   ====================================================================== */
+var _rps19=B3.renderProfileSub;
+B3.renderProfileSub=function(){
+  _rps19.apply(this,arguments);
+  try{
+    var pr=DB.meta.profile||{},cp=isCouple();
+    var meEl=$('b19RoleMe');
+    if(meEl){meEl.hidden=false;meEl.innerHTML='<b>Owner</b> — '+(pr.name?esc(pr.name):'you')+' owns this app, its data and every setting.';}
+    var paEl=$('b19RolePart');
+    if(paEl){
+      paEl.hidden=!cp;
+      if(cp){var P=pr.partner||'';if(!P){try{P=partnerName();}catch(e){}}
+        paEl.innerHTML='<b>Collaborator</b> — '+esc(P||'your partner')+' joins the household with the access you allow in Mode &amp; Partner Access.';}
+    }
+    var rs=$('b19Roles');
+    if(rs)rs.innerHTML=B19.roleLine();
+    /* the b3 auto-fill picks DB.people[0] which can be the placeholder person "Me" —
+       with rename-on-save that would merge the partner into "Me". Default to the real
+       partner instead (profile.partner, else first real non-demo other person). */
+    var ptEl=$('profPartB3');
+    if(ptEl&&ptEl.value==='Me'&&document.activeElement!==ptEl){
+      var want=pr.partner||'';
+      try{if(!want)want=realPeople().filter(function(p){return p!==pr.name;})[0]||'';}catch(e){}
+      if(want)ptEl.value=want;
+    }
+  }catch(e){console.warn('b19role',e);}
+};
+
+/* ======================================================================
+   ITEM 1 · Experience sheet is SELF-ONLY
+   Full replacement of beta18 expRender: no person chips, viewer's own level
+   only, partner's choice explicitly private. Actions x63expick / x63gosw /
+   x63ovx are reused unchanged; x63person is neutralised below.
+   ====================================================================== */
+X63.expRender=function(){
+  var s=X63.sel||{person:X63.viewer(),pick:null};
+  s.person=X63.viewer(); /* self-only, always */
+  var v=X63.viewer(),lv=X63.levelOf(v),pick=(s.pick==null)?lv:s.pick;
+  var diff=pick!==lv;
+  function opt(key,name,desc){
+    return '<button class="xq18'+(pick===key?' on':'')+'" data-act="x63expick" data-v="'+key+'"><span class="xqbox">'+ico('check')+'</span>'
+      +'<span><b>'+name+(lv===key?' <span class="pill soft" style="margin-left:4px">current</span>':'')+'</b><small>'+desc+'</small></span></button>';
+  }
+  var prev='';
+  if(diff){
+    prev='<div class="xi-ex" style="margin:10px 0 0">'+(pick==='full'
+      ?'<b>If you switch to Full:</b> the Wealth tab is added; Cash Flow regains its full analysis; the complete report catalogue becomes available; labels use standard terms with explanations. Your financial records are not changed.'
+      :'<b>If you switch to Simple:</b> the Wealth tab is hidden; Cash Flow becomes Money with plain-language labels; Reports shows the essentials with a Show more reports option. Your financial records are not changed.')+'</div>';
+  }
+  X63.ovOpen(ovHead19('Experience Level')
+    +'<div class="help small" style="margin:2px 0 4px">Simple focuses on everyday money. Full adds Wealth, advanced Cash Flow analysis and the complete report catalogue. Both show the same data for you.</div>'
+    +'<div class="xexprow"><span class="lb"><b>You'+(v?' — '+escB19(v):'')+'</b><small>your own Experience Level</small></span><span class="st">'+(lv==='simple'?'Simple':'Full')+'</span></div>'
+    +'<div class="mgr-lb" style="margin-top:12px">Choose</div>'
+    +opt('simple','Simple','Track everyday money, payments and shared spending. Wealth analysis stays hidden unless you enable it.')
+    +opt('full','Full','See Wealth, complete Cash Flow analysis, assets, debts and the full Reports catalogue.')
+    +prev
+    +'<div class="btnrow" style="margin-top:12px"><button class="btn" data-act="x63gosw">'+(diff?('Switch to '+(pick==='full'?'Full':'Simple')):'No change to make')+'</button>'
+    +'<button class="btn ghost" data-act="x63ovx">Cancel</button></div>'
+    +'<div class="help small" style="margin-top:8px">You choose for yourself — there is deliberately no way to set or see your partner\u2019s level here. Each person picks their own level privately on their own side, and switching never changes, moves or reclassifies any financial record.</div>');
+};
+/* defensive: the old person-chip action must do nothing even if a stale node exists */
+X63.person19=function(){};
+
+/* expGo wrap: the switch always applies to the viewer (partner path removed) */
+var _eg19=X63.expGo;
+X63.expGo=function(){
+  try{if(X63.sel)X63.sel.person=X63.viewer();}catch(e){}
+  var before=X63.levelOf(X63.viewer());
+  _eg19.apply(this,arguments);
+  try{b19SyncRows();}catch(e){}
+  var after=X63.levelOf(X63.viewer());
+  if(before!==after&&B3.open&&B3.cur==='prefs')try{B3.renderPrefsSub();}catch(e){}
+};
+
+/* ======================================================================
+   ITEM 3 · Experience card lives in Settings → App Preference
+   X63.prefCard (beta18 root card) becomes a no-op; the three rows move into
+   the App Preference subpage as its first card. b19SyncRows() does the job
+   beta18's closure-local prefSync() did (same ids, so either impl works).
+   ====================================================================== */
+X63.prefCard=function(){ /* retired — the card moved into App Preference */ };
+B19.expCardHTML=function(){
+  return '<div class="card" id="b19ExpCard"><h2>'+ico('user')+' Experience</h2><div class="rows">'
+    +'<button class="trow" data-act="x63exp"><span class="lb">Experience Level<small id="x63expSub"></small></span><span class="amt2 muted">'+ico('chevright')+'</span></button>'
+    +'<button class="trow" data-act="x63wv" id="x63wvRow"><span class="lb">Wealth features<small id="x63wvSub"></small></span><span class="amt2 muted">'+ico('chevright')+'</span></button>'
+    +'<button class="trow" data-act="x63redo"><span class="lb">Redo the experience questions<small>Answer a few short questions again</small></span><span class="amt2 muted">'+ico('chevright')+'</span></button>'
+    +'</div><div class="help small" style="margin-top:8px">You choose for yourself only — each person picks their own Experience Level privately on their own side, and their choice is not shown here. Switching is reversible and never deletes, moves or reclassifies any financial record.</div></div>';
+};
+B19.ensureExpCard=function(){
+  var sec=document.querySelector('#view-settings .setsub[data-sub="prefs"]');
+  if(!sec)return;
+  if($('b19ExpCard')&&sec.contains($('b19ExpCard')))return;
+  /* rebuild after any wholesale settings repaint */
+  var old=$('b19ExpCard');if(old)old.remove();
+  var existing=$('x63expSub');if(existing&&sec.contains(existing)){ /* row ids survived inside another node — still rebuild for consistent grouping */ }
+  sec.insertAdjacentHTML('afterbegin',B19.expCardHTML());
+};
+function b19SyncRows(){
+  var v=X63.viewer(),lv=X63.levelOf(v);
+  var sub=$('x63expSub');
+  if(sub)sub.textContent=(lv==='simple'?'Simple':'Full')+' · for you'+(v?' ('+v+')':'')+' — tap to view or change';
+  var wv=$('x63wvRow');
+  if(wv){
+    wv.hidden=lv!=='simple';
+    var ws=$('x63wvSub');
+    if(ws)ws.textContent={hidden:'Hidden — no Wealth tab or Net Worth summary',summary:'One Overall Position card in Money','full-tab':'Full Wealth tab, Simple wording'}[X63.wealthVis()]||'Hidden';
+  }
+}
+B19.syncRows=b19SyncRows;
+
+/* renderSettings wrap: keep the card present + rows fresh (runs ahead of b18's wrap) */
+var _rs19=renderSettings;
+renderSettings=function(){
+  try{B19.ensureExpCard();}catch(e){console.warn('b19card',e);}
+  _rs19.apply(this,arguments);
+  try{b19SyncRows();}catch(e){}
+};
+/* opening the App Preference subpage also refreshes the rows */
+var _rpr19=B3.renderPrefsSub;
+B3.renderPrefsSub=function(){
+  try{B19.ensureExpCard();}catch(e){}
+  _rpr19.apply(this,arguments);
+  try{b19SyncRows();}catch(e){}
+};
+
+/* ======================================================================
+   action wiring: profsaveB3 intercepted, x63person neutralised, x63redo
+   and x63wv keep working from their new home (they are global actions).
+   ====================================================================== */
+var _ha19=handleAct;
+handleAct=function(el){
+  var a=el.dataset.act;
+  if(a==='profsaveB3'){try{B19.profileSave();}catch(e){console.warn('b19save',e);toast('Profile could not be saved');}return;}
+  if(a==='x63person'){X63.person19();return;} /* self-only: no partner picker */
+  return _ha19.apply(this,arguments);
+};
+
+/* ======================================================================
+   version + release notes
+   ====================================================================== */
+V59.ver='1.60 beta 19';
+document.title=String(document.title).replace(/1\.60 beta 18/,'1.60 beta 19');
+document.querySelectorAll('.sub').forEach(function(e){if(/1\.60 beta 18/.test(e.textContent))e.textContent='v1.60 beta 19';});
+var ol19=document.querySelector('#view-settings details.help ol');
+if(ol19)ol19.insertAdjacentHTML('beforeend','<li><b>Experience Level is personal (v1.60 beta 19):</b> the Experience sheet is now self-only — you choose your own level and there is no way to set or see your partner\u2019s choice. Experience Level, Wealth features and the experience questions moved into Settings → App Preference (renamed from Preferences). And one principle is now embedded everywhere: the names in My Profile ARE the roles — your name is the Owner, your partner is the Collaborator, and saving a new name updates it across accounts, transactions, splits, budgets, goals, recurring series, Experience keys and every role label in the app.</li>');
+
+/* boot: card in place, rows fresh */
+try{B19.ensureExpCard();}catch(e){}
+try{b19SyncRows();}catch(e){}
 })();
 </script>
 </body>
