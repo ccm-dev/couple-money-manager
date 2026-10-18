@@ -204,8 +204,11 @@ main{padding:calc(68px + env(safe-area-inset-top)) 12px calc(100px + env(safe-ar
 .cbox p{font-size:14px;line-height:1.55;margin-bottom:16px}
 .cbox .crow{display:flex;gap:10px}
 .crow .btn{flex:1;padding:11px;font-size:14px;border-radius:11px}
-/* toast */
-.toast{position:fixed;left:50%;bottom:calc(96px + env(safe-area-inset-bottom));transform:translateX(-50%) translateY(20px);background:var(--ink);color:var(--bg);padding:12px 18px 16px;border-radius:16px;font-size:13px;font-weight:700;opacity:0;transition:.25s;z-index:80;pointer-events:none;max-width:86%;text-align:center;display:flex;align-items:center;box-shadow:0 6px 24px rgba(0,0,0,.28)}
+/* toast — theme-aware contrast: uses the accent colour on light mode and a
+   contrasting neutral on dark mode, so it always stands out against the theme */
+.toast{position:fixed;left:50%;bottom:calc(96px + env(safe-area-inset-bottom));transform:translateX(-50%) translateY(20px);background:var(--accent);color:#fff;padding:12px 18px 16px;border-radius:16px;font-size:13px;font-weight:700;opacity:0;transition:.25s;z-index:80;pointer-events:none;max-width:86%;text-align:center;display:flex;align-items:center;box-shadow:0 6px 24px var(--accent-glow)}
+html[data-mode="dark"] .toast{background:var(--accent);color:#fff}
+html[data-mode="dark"] .toast{box-shadow:0 6px 24px var(--accent-glow)}
 .toast.on{opacity:1;transform:translateX(-50%)}
 /* misc */
 .empty{text-align:center;padding:30px 16px;color:var(--muted)}
@@ -298,12 +301,12 @@ button.fin.pick::after{content:'▾';color:var(--muted);font-weight:800;font-siz
 /* toast with action button (v1.5) */
 .toast.act{pointer-events:auto}
 /* v1.25: prominent Undo pill + a countdown bar showing the time left to undo */
-#toastUndo{display:none;margin-left:14px;background:var(--accent);color:#fff;border:0;border-radius:999px;padding:8px 16px;min-height:33px;font-size:12.5px;font-weight:800;font-family:inherit;align-items:center;gap:6px;box-shadow:0 2px 10px rgba(0,0,0,.3);flex:none}
+#toastUndo{display:none;margin-left:14px;background:rgba(255,255,255,.2);color:#fff;border:0;border-radius:999px;padding:8px 16px;min-height:33px;font-size:12.5px;font-weight:800;font-family:inherit;align-items:center;gap:6px;box-shadow:0 2px 10px rgba(0,0,0,.2);flex:none}
 .toast.act #toastUndo{display:inline-flex}
 #toastUndo:active{transform:scale(.93);opacity:.85}
 #toastBar{position:absolute;left:12px;right:12px;bottom:6px;height:3px;border-radius:2px;overflow:hidden;opacity:0;transition:opacity .2s}
 .toast.act #toastBar{opacity:1}
-#toastBar i{display:block;height:100%;background:var(--accent);border-radius:2px;transform-origin:left center}
+#toastBar i{display:block;height:100%;background:rgba(255,255,255,.8);border-radius:2px;transform-origin:left center}
 /* v1.16: consistent stroke icons — every pictorial emoji replaced by a crisp monochrome svg */
 svg.icn{width:1.05em;height:1.05em;vertical-align:-0.16em;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex:none}
 h2 svg.icn{width:1.18em;height:1.18em;vertical-align:-0.22em}
@@ -336,6 +339,19 @@ details.more[open] summary{margin-bottom:10px}
 .tile{display:flex;flex-direction:column;gap:3px;border:1px solid var(--line);border-radius:14px;padding:11px 12px;background:var(--bg);min-height:84px}
 .tile:active{background:var(--line)}
 .tile .ti{color:var(--accent)}.tile b{font-size:13.5px}.tile small{font-size:12px;color:var(--muted);font-weight:600}
+
+/* account summary tiles — tappable group filters */
+.acc-tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin-bottom:10px}
+.acc-tile{display:flex;align-items:center;gap:10px;border:1px solid var(--line);border-radius:14px;padding:10px 12px;background:var(--bg);cursor:pointer;transition:var(--press-t)}
+.acc-tile.on,.acc-tile:active{background:var(--accent-soft);color:var(--accent);border-color:var(--accent)}
+.acc-tile .ti{width:34px;height:34px;border-radius:11px;background:var(--card);color:var(--accent);display:flex;align-items:center;justify-content:center;flex:none}
+.acc-tile .ti svg{width:18px;height:18px}
+.acc-tile.on .ti{background:var(--accent);color:#fff}
+.acc-tile .tx{flex:1;min-width:0}
+.acc-tile .tx b{display:block;font-size:13.5px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.acc-tile .tx small{display:block;font-size:11px;color:var(--muted);font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.acc-tile .amt{font-size:14px;font-weight:800;white-space:nowrap}
+.acc-tile .amt.neg{color:var(--exp)}
 .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:8px;margin-bottom:10px}
 .kpi{background:var(--bg);border-radius:12px;padding:9px 10px}.kpi small{display:block;font-size:11.5px;color:var(--muted);font-weight:700}.kpi b{display:block;font-size:15px;margin-top:2px;overflow-wrap:anywhere;line-height:1.25}
 .page{padding-top:calc(72px + env(safe-area-inset-top))}
@@ -646,7 +662,7 @@ body.ps .hcell b,body.ps .hcell.hot span{color:var(--muted)!important}
 .setgrp{font-size:12px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;margin:18px 6px 8px}
 .setgrp:first-child{margin-top:4px}
 body.sheeton .toast{bottom:auto;top:calc(14px + env(safe-area-inset-top));transform:translateX(-50%) translateY(-20px)}
-body.sheeton .toast.on{transform:translateX(-50%)}
+body.sheeton .toast.on{transform:translateX(-50%) translateY(-20px)}
 .plwarn{margin-top:6px;background:color-mix(in srgb,var(--warn) 14%,transparent);color:var(--ink);border-radius:10px;padding:8px 10px;line-height:1.45}
 #fPLSeg .chip{font-size:13px}
 #chBtns .btn{line-height:1.3}
@@ -1395,9 +1411,10 @@ details.adv{border-style:dashed}
   <!-- ============ ACCOUNTS (v1.6 simplified) ============ -->
   <section class="view" id="view-accounts">
     <div class="card">
-      <h2><svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 21h18"/><path d="M5 21v-9"/><path d="M9.5 21v-9"/><path d="M14.5 21v-9"/><path d="M19 21v-9"/><path d="M3 8l9-5 9 5z"/><path d="M4 12h16"/></svg> Account Summary <span class="sub">tap to open one level at a time</span></h2>
+      <h2><svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 21h18"/><path d="M5 21v-9"/><path d="M9.5 21v-9"/><path d="M14.5 21v-9"/><path d="M19 21v-9"/><path d="M3 8l9-5 9 5z"/><path d="M4 12h16"/></svg> Account Summary <span class="sub">tap a tile to filter by group</span></h2>
+      <div class="acc-tiles" id="accTiles"></div>
       <div class="rows" id="accList"></div>
-      <div class="help small" style="margin-top:8px">Tap a person to see their account types, tap a type to see its accounts, then tap an account to open it.</div>
+      <div class="help small" style="margin-top:8px">Tap a person to expand their accounts, then tap an account to open it.</div>
       <button class="btn" data-act="accaddq" style="width:100%;margin-top:12px"><svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Add account</button>
     </div>
   </section>
@@ -1762,7 +1779,7 @@ function defaultDB(){
   return {version:4,people:['Me'],accTypes:['Cash','Bank','Card','eWallet'],accTypeMeta:{},accounts:[{name:'Cash',start:0,owner:'',type:'Cash'},{name:'Bank',start:0,owner:'',type:'Bank'}],
     categories:JSON.parse(JSON.stringify(DEF_CATS)),subcats:{},txns:[],recur:[],
     budgets:{},fixedCats:[],
-    meta:{changedAt:0,pushedAt:0,currency:'RM',accent:'',mode:'',legsMigrated:false}};
+    meta:{changedAt:0,pushedAt:0,currency:'RM',accent:'',mode:'',legsMigrated:false,experienceLevel:'simple',experienceSelectedAt:0,simpleWealthVisibility:'hidden'}};
 }
 function normalizeDB(){
   if(!DB.subcats||typeof DB.subcats!=='object'||Array.isArray(DB.subcats))DB.subcats={};
@@ -1799,6 +1816,9 @@ function normalizeDB(){
   if(!Array.isArray(DB.recur))DB.recur=[];
   DB.recur=DB.recur.filter(function(r){return r&&r.id&&r.tpl&&['day','week','month','year'].indexOf(r.freq)>=0&&/^\d{4}-\d{2}-\d{2}$/.test(r.anchor||'')&&/^\d{4}-\d{2}-\d{2}$/.test(r.next||'');});
   DB.recur.forEach(function(r){var e=parseInt(r.every,10);r.every=(e>=1)?e:1;r.seq=Math.max(0,parseInt(r.seq,10)||0);});
+  /* v1.60 beta 17a: Simple / Full experience level (default Simple for new users) */
+  if(!DB.meta.experienceLevel||(DB.meta.experienceLevel!=='simple'&&DB.meta.experienceLevel!=='full'))DB.meta.experienceLevel='simple';
+  if(!DB.meta.simpleWealthVisibility)DB.meta.simpleWealthVisibility='hidden';
 }
 function loadDB(){
   try{
@@ -3078,6 +3098,7 @@ function txDetailHTML(t){
 }
 
 /* ================= accounts view (v1.10 hierarchical summary) ================= */
+var ACC_TILE='all'; /* active account summary tile filter: all | money | vehicles | property | investments | debts | betweenus */
 function renderAccounts(){
   var bl=balances();
   var n=bl.rows.length;
@@ -3086,7 +3107,57 @@ function renderAccounts(){
   var asA=0,asL=0;
   bl.rows.forEach(function(r){var a=DB.accounts.find(function(x){return x.name===r.name;});if(a&&accTypeKind(a.type)==='liability')asL+=r.bal;else asA+=r.bal;});
   if($('accSplit'))$('accSplit').innerHTML=bl.rows.length?('Assets <b class="pos">'+money(asA)+'</b> · Liabilities <b class="'+(asL<0?'neg':'')+'">'+(asL<0?money(-asL)+' owed':money(asL))+'</b>'):'';
-  $('accList').innerHTML=bl.rows.length?accSummaryHTML(bl.rows):'<div class="empty"><div class="big">'+ico('card')+'</div><b>No accounts</b><p>Add your first account below.</p></div>';
+
+  /* render tile strip */
+  var tilesEl=$('accTiles');
+  if(tilesEl){
+    var me=meName(),jp=isCouple()&&DB.people.length>=2?jointPair(DB.people[0],DB.people[1]):'';
+    var groups=[
+      {k:'all',l:'All',ic:'wallet',n:bl.rows.length,v:bl.rows.reduce(function(s,r){return s+r.bal;},0)},
+      {k:'money',l:'Money',ic:'cash',n:0,v:0},
+      {k:'vehicles',l:'Vehicles',ic:'car',n:0,v:0},
+      {k:'property',l:'Property',ic:'home',n:0,v:0},
+      {k:'investments',l:'Investments',ic:'trend',n:0,v:0},
+      {k:'debts',l:'Debts',ic:'bank',n:0,v:0},
+      {k:'betweenus',l:'Between Us',ic:'scale',n:0,v:0}
+    ];
+    bl.rows.forEach(function(r){
+      var a=DB.accounts.find(function(x){return x.name===r.name;});if(!a)return;
+      var isRecv=/^.+ owes .+$/.test(r.name);
+      if(isRecv){groups[6].n++;groups[6].v+=r.bal;return;}
+      if(accTypeKind(a.type)==='liability'){groups[5].n++;groups[5].v+=r.bal;return;}
+      if(a.type==='Vehicle'){groups[2].n++;groups[2].v+=r.bal;return;}
+      if(a.type==='Property'){groups[3].n++;groups[3].v+=r.bal;return;}
+      if(a.type==='Investment'){groups[4].n++;groups[4].v+=r.bal;return;}
+      groups[1].n++;groups[1].v+=r.bal;
+    });
+    tilesEl.innerHTML=groups.map(function(g){
+      var active=ACC_TILE===g.k;
+      var cls=g.k==='debts'||g.k==='betweenus'?'neg':'';
+      return '<button class="acc-tile'+(active?' on':'')+'" data-act="acctile" data-k="'+g.k+'">'
+        +'<span class="ti">'+ico(g.ic)+'</span>'
+        +'<span class="tx"><b>'+g.l+'</b><small>'+g.n+' account'+(g.n===1?'':'s')+'</small></span>'
+        +'<span class="amt '+cls+'">'+money(g.v)+'</span>'
+        +'</button>';
+    }).join('');
+  }
+
+  /* filter rows by active tile */
+  var rows=bl.rows.filter(function(r){
+    if(ACC_TILE==='all')return true;
+    var a=DB.accounts.find(function(x){return x.name===r.name;});if(!a)return false;
+    var isRecv=/^.+ owes .+$/.test(r.name);
+    if(ACC_TILE==='betweenus')return isRecv;
+    if(isRecv)return false;
+    if(ACC_TILE==='debts')return accTypeKind(a.type)==='liability';
+    if(ACC_TILE==='money')return a.type==='Cash'||a.type==='Bank'||a.type==='e-Wallet'||a.type==='eWallet';
+    if(ACC_TILE==='vehicles')return a.type==='Vehicle';
+    if(ACC_TILE==='property')return a.type==='Property';
+    if(ACC_TILE==='investments')return a.type==='Investment';
+    return true;
+  });
+
+  $('accList').innerHTML=rows.length?accSummaryHTML(rows):'<div class="empty"><div class="big">'+ico('card')+'</div><b>No accounts</b><p>Add your first account below.</p></div>';
 }
 /* v1.10: collapsible account summary — people → account types → accounts.
    ASUM holds collapsed keys: 'p:NAME' folds a person's types, 'p:NAME|t:TYPE' folds their accounts. */
@@ -4312,6 +4383,7 @@ function handleAct(el){
     case 'ccpay':openCardPay(el.dataset.n,+el.dataset.a);break;
     case 'txnedit':openSheet(el.dataset.id);break; /* v1.35: Edit inside the expanded detail card */
     case 'acc':openAccount(el.dataset.n);break;
+    case 'acctile':ACC_TILE=el.dataset.k;renderAccounts();break;
     case 'asum':asumToggle(el.dataset.k);break;
     case 'persondrill':openPerson(el.dataset.p);break;
     case 'pdrill':if(TXF.person!=='all')openPerson(TXF.person);break;
@@ -11005,6 +11077,15 @@ var SET_HTML=''
       +'<button class="trow" data-act="mgr" data-k="budgets"><span class="lb">'+ico('wallet')+' Budgets<small id="cntBudgetsB3"></small></span><span class="amt2 muted">'+ico('chevright')+'</span></button>'
       +'<button class="trow" data-act="mgr" data-k="goals"><span class="lb">'+ico('target')+' Saving goals<small id="cntGoalsB3"></small></span><span class="amt2 muted">'+ico('chevright')+'</span></button>'
     +'</div></div>'
+    +'<div class="card"><h2>Experience Level</h2>'
+      +'<div class="f-row"><label style="flex:1"><b>App experience</b><small id="expLvlSum" class="muted">How much detail you see</small></label>'
+      +'<div class="segmini" id="expLvlSeg" style="margin-bottom:0">'
+      +'<button type="button" class="'+(DB.meta.experienceLevel==='simple'?'on':'')+'" data-act="v63explvl" data-v="simple">'+ico('wallet')+' Simple</button>'
+      +'<button type="button" class="'+(DB.meta.experienceLevel==='full'?'on':'')+'" data-act="v63explvl" data-v="full">'+ico('trend')+' Full</button>'
+      +'</div></div>'
+      +'<div class="help small" style="margin-top:8px">Simple shows everyday money and shared finances; Wealth stays hidden. Full adds Wealth, advanced Cash Flow analysis and the complete report catalogue. <b>You can switch anytime.</b></div>'
+      +'<button class="btn ghost sm" data-act="v63expswitch" style="margin-top:8px">'+ico('info')+' See what changes</button>'
+    +'</div>'
   +'</section>'
   /* Help & About (plan §9.1) */
   +'<section class="setsub" data-sub="about" hidden>'
@@ -11080,7 +11161,7 @@ B3.rowSummaries=function(){
   var st=statusState59();
   s('sum_dataB3',STG_L[storageMode()],st.cls==='warn'||st.cls==='bad');
   var rc=remCfg();
-  s('sum_prefsB3',(DB.meta.currency||'RM')+' · '+(DB.meta.mode||'auto')+' · reminders '+(rc&&rc.on?'on':'off'));
+  s('sum_prefsB3',(DB.meta.currency||'RM')+' · '+(DB.meta.mode||'auto')+' · '+(DB.meta.experienceLevel==='full'?'Full':'Simple')+' experience');
   s('sum_aboutB3',V59.ver+' · help');
   s('sum_dzB3','Delete profile and data');
   if($('cntCatsB3'))$('cntCatsB3').textContent=(((DB.categories.Expense||[]).length)+((DB.categories.Income||[]).length))+' categories';
@@ -12627,7 +12708,7 @@ renderAccounts=function(){
   }
 })();
 
-B3.renderPrefsSub=function(){ try{renderRem();}catch(e){} };
+B3.renderPrefsSub=function(){ try{renderRem();}catch(e){} try{V63.renderExpLevelUI();}catch(e){} };
 B3.renderModeSub=function(){
   var tabs=$('b10modeTabs');
   if(tabs)tabs.innerHTML=[['solo','Personal'],['couple','Couple'],['adv','Advanced']].map(function(x){
@@ -13887,7 +13968,7 @@ if(ol15)ol15.insertAdjacentHTML('beforeend','<li><b>Privacy pill tells the truth
 (function(){
 'use strict';
 if(!window.DB && !document.getElementById('v160b16')){var _s=document.createElement('span');_s.id='v160b16';_s.hidden=true;document.body.appendChild(_s);}
-var V63=window.V63={ver:'1.60 beta 16',itab:'wealth',trendR:'1Y',upH:30,accF:'all',accHist:false,asum:{},addCat:'',scrolls:{},payAcc:'',remAcc:'',disAcc:''};
+var V63=window.V63={ver:'1.60 beta 16',itab:'wealth',trendR:'1Y',upH:30,accF:'all',accHist:false,accTile:'all',asum:{},addCat:'',scrolls:{},payAcc:'',remAcc:'',disAcc:''};
 try{var st=sessionStorage.getItem('v63itab');if(st)V63.itab=st;}catch(e){}
 
 /* ---------- propertyConfig (docx §24, verbatim structure) ---------- */
@@ -15384,7 +15465,7 @@ handleAct=function(el){
     case 'v63uph':V63.upH=+el.dataset.h;renderOverview();return;
     case 'v63accs':V63.accF=el.dataset.f==='debts'?'debts':'all';gotoView('accounts');return;
     case 'v63accf':V63.accF=el.dataset.f;renderAccounts();return;
-    case 'v63acchist':V63.accHist=!V63.accHist;renderAccounts();return;
+    case 'v63explvl':V63.setExperienceLevel(el.dataset.v);return;
     case 'v63asum':V63.asum[el.dataset.k]=(V63.asum[el.dataset.k]===false);renderAccounts();return;
     case 'v63rep':openReport(el.dataset.k);return;
     case 'v63catlist':(function(){
@@ -15433,6 +15514,476 @@ var ol16=document.querySelector('#view-settings details.help ol');
 if(ol16)ol16.insertAdjacentHTML('beforeend','<li><b>Insights &amp; Reports redesign (v1.60 beta 16):</b> the app now opens on Insights with Wealth, Cash Flow and Couple sub-tabs; Reports is a tile catalogue of 25 reports; Settings moved to the profile button in the header; Accounts groups everything under What You Own and What You Owe in plain language; cards, loans and hire purchase carry payment reminders with a bell reminder centre; Vehicles and Properties gained recorded-value histories, linked financing, disposal workflow and (for property) ownership-share and rental-activity tracking — value changes never create income or spending.</li>');
 })();
 
+</script>
+<script id="v160b17">
+/* ===================== v1.60 beta 17 · blend + simplify + toast v17 =====================
+   Additive layer on v1.60 beta 16 (user request):
+   1. "Account summary in beta16 is good, but please blend what we have designed in
+      beta15 in beta16 as well eg between us, collapse all button. Simplify the UI"
+        · Collapse all / Expand all returns to the Account Summary header row
+          (the beta10 button, rewired to collapse/expand the beta16 category groups);
+        · Between Us returns as a collapsible group under What You Owe — scale icon,
+          "N open balances / all settled up", net figure, ledger rows "X owes Y"
+          that open the ledger history (the beta15 summary design, beta16 look);
+        · Simplify: the "tap to collapse/expand" micro-copy is stripped from group
+          rows, the stale person-first help line is replaced, the hierarchy is
+          tightened (slimmer section headers, tighter rows).
+   2. "Increase the sharpness of toast … consistent with the overall theme … show the
+      toast in the middle of the screen" — pure-CSS redesign (v160b17css): the toast
+      now pops in dead-centre of the screen above sheets, as one crisp themed card
+      (app tokens, coloured edge bar, solid icon tile, bold text, spring animation),
+      with the countdown as a floating chip. b13 structure/classes/logic untouched.
+   Version bump + in-app release notes. */
+(function(){
+'use strict';
+var V63=window.V63;
+function $(id){return document.getElementById(id);}
+function qa(s,el){return [].slice.call((el||document).querySelectorAll(s));}
+
+/* ---------- 0 · CSS — appended at RUNTIME so it lands after the beta13 toast
+      stylesheet (which is itself runtime-appended) and wins the cascade ---------- */
+var CSS17="/* v1.60 beta 17 \u2014 toast v17 contrast + account summary tiles + blend ---------- */\n/* ---------- toast v17: theme-aware shadow tokens (light/dark) ---------- */\n:root{--toast-card-shadow:0 24px 64px rgba(2,6,23,.14),0 6px 16px rgba(2,6,23,.07);--toast-sm-shadow:0 4px 12px rgba(2,6,23,.10);--toast-chip-shadow:0 4px 14px rgba(2,6,23,.08);--toast-badge-shadow:0 4px 12px rgba(2,6,23,.12)}\n@media (prefers-color-scheme: dark){html:not([data-mode=\"light\"]){--toast-card-shadow:0 24px 64px rgba(0,0,0,.55),0 6px 16px rgba(0,0,0,.42);--toast-sm-shadow:0 4px 12px rgba(0,0,0,.42);--toast-chip-shadow:0 4px 14px rgba(0,0,0,.42);--toast-badge-shadow:0 4px 12px rgba(0,0,0,.42)}}\n\n/* ---------- A1. Account summary tiles strip ---------- */\n#accTiles{display:flex;gap:7px;overflow-x:auto;padding:6px 2px 2px;scrollbar-width:none;margin-bottom:6px}\n#accTiles::-webkit-scrollbar{display:none}\n.acc-tile{flex:none;min-width:max-content;white-space:nowrap;background:var(--card);border:1.5px solid var(--hair);border-radius:11px;padding:7px 13px;font-size:12.5px;font-weight:700;color:var(--muted);cursor:pointer;transition:var(--press-t)}\n.acc-tile.on,.acc-tile:active{background:var(--accent-soft);color:var(--accent);border-color:var(--accent);box-shadow:var(--toast-badge-shadow)}\n.acc-tile .ti{margin-right:5px;font-size:13px;line-height:1}\n.acc-tile.bu-tile .cic{margin-right:4px}\n\n/* ---------- A2. Account summary: slimmer hierarchy ---------- */\n.ownh{padding:10px 2px 4px;font-size:11px;letter-spacing:.8px}\n.catrow{padding:10px;margin-bottom:5px}\n.catrow .ct small{font-size:10.5px}\n.catrow .cv.neg{color:var(--exp)}\n.arow2{padding:8px 2px}\n.arow2 .nm small{font-size:11px}\n/* Between Us group (blended from the beta15 summary design) */\n.catrow.bu17{background:var(--accent-soft)}\n.catrow.bu17 .cic{color:var(--accent-2)}\n.catrow.bu17 .cv.neg{color:var(--exp)}\n#accList .arow2.burow{padding-left:12px}\n\n/* ---------- B. Toast v17: mid-screen, sharp, app-themed ---------- */\n.toast{top:50%;bottom:auto;z-index:120;width:min(400px,calc(100% - 32px));max-width:none;padding:0;\n background:transparent!important;color:var(--ink);display:block;text-align:left;font-size:13px;font-weight:600;\n transform:translate(-50%,-46%) scale(.88);opacity:0;\n transition:transform .32s cubic-bezier(.34,1.56,.64,1),opacity .18s ease}\n.toast.on{transform:translate(-50%,-50%) scale(1);opacity:1}\nbody.sheeton .toast{top:50%;bottom:auto;border-radius:16px;transform:translate(-50%,-46%) scale(.88)}\nbody.sheeton .toast.on{transform:translate(-50%,-50%) scale(1)}\n.toast.b13info,.toast.b13ok,.toast.b13warn,.toast.b13err{background:transparent!important}\n/* crisp single card \u2014 no more pastel outer shell */\n.b13card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px 14px 12px 18px;\n box-shadow:var(--toast-card-shadow)}\n.b13card::before{content:'';position:absolute;left:0;top:12px;bottom:12px;width:4px;border-radius:999px;background:var(--accent)}\n.toast.b13info .b13card::before{background:var(--accent)}\n.toast.b13ok .b13card::before{background:var(--inc)}\n.toast.b13warn .b13card::before{background:var(--warn)}\n.toast.b13err .b13card::before{background:var(--exp)}\n/* solid colour icon tile, white glyph */\n.b13ico{width:38px;height:38px;min-height:38px;border-radius:12px;margin-top:0;box-shadow:var(--toast-sm-shadow)}\n.b13ico .icn{width:20px;height:20px;stroke-width:2.4}\n.toast.b13info .b13ico{background:var(--accent);color:#fff!important}\n.toast.b13ok .b13ico{background:var(--inc);color:#fff!important}\n.toast.b13warn .b13ico{background:var(--warn);color:#fff!important}\n.toast.b13err .b13ico{background:var(--exp);color:#fff!important}\n/* bolder, higher-contrast text */\n#toastTitle{font-size:14.5px;letter-spacing:.2px}\n#toastMsg{font-size:13px;color:var(--ink);opacity:.78;font-weight:600}\n/* actions stay tappable even though the toast itself is click-through */\n.b13acts{margin-top:10px}\n#toastUndo{background:var(--accent);color:#fff;border:0;box-shadow:0 6px 16px var(--accent-glow);pointer-events:auto}\n#toastX{pointer-events:auto}\n.toast.on #toastX{color:var(--muted)}\n/* countdown becomes a floating chip under the card */\n.b13foot{margin:8px auto 0;width:max-content;max-width:100%;background:var(--card);border:1px solid var(--line);\n border-radius:999px;padding:4px 12px;box-shadow:var(--toast-chip-shadow);font-size:11px;font-weight:700;color:var(--muted)}\n.toast.b13info #toastCnt{color:var(--accent)}\n.toast.b13ok #toastCnt{color:var(--inc)}\n.toast.b13warn #toastCnt{color:var(--warn)}\n.toast.b13err #toastCnt{color:var(--exp)}";
+(function(){var st=document.createElement('style');st.id='v160b17css';st.textContent=CSS17;document.head.appendChild(st);})();
+
+/* ---------- 1 · Account Summary: Between Us group (beta15 design, beta16 look) ---------- */
+function buHTML17(){
+  var ls=ledgers(),due=ls.filter(function(l){return l.amt>=0.005;});
+  var open=V63.asum.bu===true; /* collapsed by default, like the beta15 summary design */
+  var net=0;due.forEach(function(l){net+=l.amt;});
+  var val=due.length===1?money(due[0].amt):(due.length?money(net):'Settled');
+  var h='<button class="catrow bu17" data-act="v63asum" data-k="bu"><span class="cic">'+ico('scale')+'</span>'
+    +'<span class="ct"><b>Between Us</b><small>'+(due.length?due.length+' open balance'+(due.length===1?'':'s'):'all settled up')+'</small></span>'
+    +'<span class="cv'+(due.length?' neg':'')+'">'+val+'</span>'
+    +'<span class="cch">'+ico(open?'chevdown':'chevright')+'</span></button>';
+  if(open){
+    var sorted=ls.slice().sort(function(a,b){return ((b.amt>=0.005)?1:0)-((a.amt>=0.005)?1:0)||b.amt-a.amt;});
+    h+=sorted.map(function(l){
+      var done=l.amt<0.005,pp=l.name.split(' owes ');
+      return '<button class="arow2 burow" data-act="acc" data-n="'+esc(l.name)+'"><span class="nm"><b>'
+        +(done?esc(pp[0])+' &amp; '+esc(pp[1]):esc(l.debtor)+' owes '+esc(l.creditor))
+        +'</b><small>'+(done?'all settled up':'tap to see the history')+'</small></span>'
+        +'<span class="vv'+(done?' pos':' neg')+'">'+money(l.amt)+'</span></button>';
+    }).join('');
+  }
+  return h;
+}
+
+/* ---------- 2a · Account summary tiles strip (All / Money / Vehicles / … / Between Us / Debts) ---------- */
+function renderAccTiles(){
+  var card=$('accList')&&$('accList').closest('.card');if(!card)return;
+  var old=card.querySelector('#accTiles');if(old)old.remove();
+  var h2=card.querySelector('h2');if(!h2)return;
+  var tiles=[
+    ['all','All',ico('wallet')],
+    ['Money','Money',ico('cash')],
+    ['Vehicles','Vehicles',ico('car')],
+    ['Investments','Investments',ico('trend')],
+    ['Properties','Properties',ico('home')],
+    ['Other','Other',ico('box')],
+    ['bu','Between Us',ico('scale')],
+    ['debts','Debts',ico('bank')]
+  ];
+  var html='<div class="acc-tiles" id="accTiles">'+tiles.map(function(t){
+    if(t[0]==='bu'&&!ledgers().length)return '';
+    return '<button class="acc-tile'+(V63.accTile===t[0]?' on':'')+'" data-act="v63tile" data-t="'+t[0]+'"><span class="ti">'+t[2]+'</span> '+t[1]+'</button>';
+  }).join('')+'</div>';
+  h2.insertAdjacentHTML('afterend',html);
+}
+/* Hide/show Between Us vs own/owe sections based on the active tile */
+function applyTileFilter(){
+  var list=$('accList');if(!list)return;
+  var tile=V63.accTile||'all';
+  var showBU=tile==='all'||tile==='bu';
+  var hideNonBU=tile==='bu';
+  qa('.bu17,.burow',list).forEach(function(el){el.hidden=!showBU;});
+  if(hideNonBU){
+    qa('.ownh',list).forEach(function(el){el.hidden=true;});
+    qa('.catrow',list).forEach(function(el){if(!el.classList.contains('bu17'))el.hidden=true;});
+    qa('.arow2',list).forEach(function(el){if(!el.classList.contains('burow'))el.hidden=true;});
+  }else{
+    qa('.ownh,.catrow,.arow2',list).forEach(function(el){el.hidden=false;});
+  }
+}
+/* ---------- 2 · renderAccounts wrap: append Between Us, simplify, rewire Collapse all, tiles ---------- */
+V63.accTile=V63.accTile||'all';
+V63.accKeys17=[];
+var _ra17=renderAccounts;
+renderAccounts=function(){
+  _ra17.apply(this,arguments);
+  try{
+    var list=$('accList');if(!list)return;
+    var card=list.closest('.card');if(!card)return;
+    /* replace the beta-16 filter chips with the beta-17 tile strip */
+    var oldChips=card.querySelector('.accchips');if(oldChips)oldChips.remove();
+    renderAccTiles();
+    /* collect the group keys currently rendered — the set ACCUMULATES across renders,
+       because collapsing a side removes its group rows from the DOM and Expand all
+       must still know them (beta17 fix for the collapse/expand deadlock) */
+    qa('[data-act=v63asum]',list).forEach(function(b){
+      if(V63.accKeys17.indexOf(b.dataset.k)<0)V63.accKeys17.push(b.dataset.k);
+    });
+    if(ledgers().length&&V63.accKeys17.indexOf('bu')<0)V63.accKeys17.push('bu');
+    /* Between Us section, below What You Owe */
+    qa('.catrow.bu17',list).forEach(function(r){r.remove();});
+    qa('.arow2.burow',list).forEach(function(r){r.remove();});
+    if(ledgers().length)list.insertAdjacentHTML('beforeend',buHTML17());
+    /* simplify: strip the tap-to-collapse/expand micro-copy from group rows */
+    qa('.catrow .ct small',list).forEach(function(s){
+      var t=s.textContent||'';
+      if(/·\s*tap to (collapse|expand)/.test(t))s.textContent=t.replace(/\s*·\s*tap to (collapse|expand)/,'');
+    });
+    /* apply tile-level filtering (hide/show between-us vs own/owe sections) */
+    applyTileFilter();
+    /* replace the stale person-first help line once */
+    var help=card.querySelector('.help.small');
+    if(help&&!help.dataset.b17){help.dataset.b17='1';help.textContent='Tap a tile to filter, then tap a group to expand it, then tap an account to open it.';}
+    /* Collapse all / Expand all — the beta10 header button, rewired to the beta16 groups */
+    var btn=$('asumColl10');
+    if(btn){
+      btn.hidden=false;btn.dataset.act='v63coll';
+      var anyClosed=V63.accKeys17.some(function(k){return V63.asum[k]===false;});
+      btn.innerHTML=ico(anyClosed?'plus':'minus')+(anyClosed?' Expand all':' Collapse all');
+      btn.style.margin='0 0 0 auto';btn.style.color='var(--accent)';btn.style.fontWeight='800';
+      var h2=card.querySelector('h2');
+      if(h2){h2.style.display='flex';h2.style.alignItems='center';h2.style.gap='8px';}
+    }
+  }catch(e){console.warn('acc17',e);}
+};
+
+/* ---------- 3 · Collapse/Expand all action ---------- */
+var _hA17=handleAct;
+handleAct=function(el){
+  switch(el.dataset.act){
+    case 'v63coll':(function(){
+      var anyClosed=V63.accKeys17.some(function(k){return V63.asum[k]===false;});
+      if(anyClosed){V63.accKeys17.forEach(function(k){delete V63.asum[k];});toast('Expanded');}
+      else{V63.accKeys17.forEach(function(k){V63.asum[k]=false;});toast('Collapsed');}
+      renderAccounts();
+    })();return;
+    case 'v63tile':
+      V63.accTile=el.dataset.t;
+      if(el.dataset.t==='all'||el.dataset.t==='bu'){V63.accF='all';}
+      else if(el.dataset.t==='debts'){V63.accF='debts';}
+      else{V63.accF=el.dataset.t;}
+      renderAccounts();return;
+    case 'v63asum': /* Between Us is default-collapsed — invert with its own semantics */
+      if(el.dataset.k==='bu'){V63.asum.bu=(V63.asum.bu!==true);renderAccounts();return;}
+      break;
+  }
+  return _hA17(el);
+};
+
+/* ---------- 5 · Simple vs Full Experience (§3, §5, §6, §7, §10) ---------- */
+
+/* §10 — configuration table: what each experience level shows */
+V63.experienceConfig={
+  simple:{
+    label:'Simple',
+    reports:['f_cash','f_couple','f_goals','f_assets','f_loans'],
+    tabs:['cash','couple'],
+    wealthVisible:false,
+    desc:'Everyday money and shared finances'
+  },
+  full:{
+    label:'Full',
+    reports:['f_wealth','f_cash','f_couple','f_goals','f_assets','f_loans'],
+    tabs:['wealth','cash','couple'],
+    wealthVisible:true,
+    desc:'Everyday money plus net worth, investments and loans'
+  }
+};
+
+/* §3.5 — terminology mapping: Simple mode relabels wealthier terms */
+V63.simpleLabels={
+  'Net worth':'Balance',
+  'Net worth trend':'Balance trend',
+  'Asset Allocation':'Where your money is',
+  'Liability Reduction':'Paying down debts',
+  'Wealth Drivers':'What moved your balance',
+  'Financial Health':'Money health',
+  'Emergency fund':'Rainy-day fund',
+  'Debt ratio':'Debt',
+  'Savings rate':'Saving rate',
+  'Household snapshot':'Together',
+  'Between Us History':'Who owes whom',
+  'Joint Progress':'Together',
+  'Cash Flow':'Money'
+};
+V63.term=function(k){if(!V63.isSimple()){return k;}return V63.simpleLabels[k]||k;};
+V63.isSimple=function(){return (DB.meta.experienceLevel||'simple')==='simple';};
+
+/* §5.5 — persist the chosen level, re-render, mark as selected */
+V63.setExperienceLevel=function(level){
+  if(!level||(level!=='simple'&&level!=='full'))return;
+  if(DB.meta.experienceLevel===level&&DB.meta.experienceSelectedAt)return;
+  DB.meta.experienceLevel=level;
+  DB.meta.experienceSelectedAt=Date.now();
+  if(level==='simple')DB.meta.simpleWealthVisibility='hidden';
+  save();
+  try{V63.renderExpLevelUI();}catch(e){}
+  try{if(typeof renderOverview==='function')renderOverview();}catch(e){}
+  try{if(typeof renderReports==='function')renderReports();}catch(e){}
+  try{if(typeof renderAccounts==='function')renderAccounts();}catch(e){}
+  toast('Experience set to '+(level==='simple'?'Simple':'Full'));
+};
+
+/* §6.1 — Settings: keep the Experience Level toggle in sync */
+V63.renderExpLevelUI=function(){
+  var seg=document.querySelector('#expLvlSeg');if(!seg)return;
+  seg.innerHTML='<button type="button" class="seg'+(V63.isSimple()?' on':'')+'" data-act="v63explvl" data-v="simple">'+ico('wallet')+' Simple</button>'
+    +'<button type="button" class="seg'+(V63.isSimple()?'':' on')+'" data-act="v63explvl" data-v="full">'+ico('trend')+' Full</button>';
+};
+
+/* §6.2 — change preview: used by Settings toggle and "See what changes" button */
+V63.showExpSwitchPreview=function(level){
+  if(!level)level=V63.isSimple()?'full':'simple';
+  var msg=level==='full'
+    ?'Full adds the Wealth tab (Net Worth, Asset Allocation, Financial Health), advanced Cash Flow analysis, and all 6 report tiles.'
+    :'Simple hides the Wealth tab and advanced Cash Flow, showing everyday money and shared finances. Reports collapse to 5 tiles.';
+  askConfirm(msg,'Switch to '+(level==='simple'?'Simple':'Full')+'?',function(){V63.setExperienceLevel(level);});
+};
+
+/* §5.2 — onboarding questions (recommendation logic in §5.3) */
+V63.expQuestions=[
+  {q:'q1',t:'What do you want to track?',multi:true,opts:[
+    {v:'money',l:'Everyday money \u2014 spending, income, bills'},
+    {v:'wealth',l:'Building wealth \u2014 investments, property, loans'},
+    {v:'both',l:'Both'}]},
+  {q:'q2',t:'How do you think about money?',multi:false,opts:[
+    {v:'simple',l:'Simple \u2014 keep it straightforward'},
+    {v:'full',l:'Full \u2014 I want all the details'}]}
+];
+V63.expRec=function(){
+  var a1=AU.expQ1||[],a2=AU.expQ2;
+  var hasMoney=a1.indexOf('money')>=0||a1.indexOf('both')>=0;
+  var hasWealth=a1.indexOf('wealth')>=0||a1.indexOf('both')>=0;
+  if(a2==='full')return {level:'full',reason:'You want all the details \u2014 Full gives you the complete picture.'};
+  if(a2==='simple'&&hasWealth)return {level:'full',reason:'You track wealth \u2014 Full adds Net Worth, Asset Allocation and Financial Health.'};
+  if(hasMoney&&hasWealth)return {level:'full',reason:'You track both everyday money and wealth \u2014 Full covers both.'};
+  if(hasWealth)return {level:'full',reason:'You want to build wealth \u2014 Full adds Net Worth, Asset Allocation and Financial Health.'};
+  return {level:'simple',reason:'You prefer an everyday-money focus \u2014 Simple shows spending, income and shared finances.'};
+};
+
+/* §5.3 — onboarding screen render */
+V63.expTitle=function(){
+  switch(AU.expStep){
+    case 'q1':return 'What do you want to track?';
+    case 'q2':return 'How do you think about money?';
+    case 'rec':return 'Our recommendation';
+    case 'preview':return 'Here is what changes';
+    default:return 'Experience level';
+  }
+};
+V63.expStepHTML=function(){
+  var h='';
+  if(AU.expStep==='q1'){
+    var q=V63.expQuestions[0];
+    h='<div class="mgr-lb" style="margin:12px 0 8px">'+esc(q.t)+'</div>'
+      +q.opts.map(function(o){
+        var sel=AU.expQ1.indexOf(o.v)>=0;
+        return '<button class="exp-pill'+(sel?' sel':'')+'" data-act="auexpq" data-q="q1" data-v="'+o.v+'">'
+          +'<span class="ti">'+(sel?ico('check'):'\u00b7')+'</span> '+esc(o.l)+'</button>';
+      }).join('');
+    h+='<div class="help small" style="margin:8px 0 6px">You can pick more than one.</div>'
+      +'<button class="btn" data-act="auexpnext" style="margin-top:8px">'+ico('chevright')+' Continue</button>';
+  }else if(AU.expStep==='q2'){
+    var q2=V63.expQuestions[1];
+    h='<div class="mgr-lb" style="margin:12px 0 8px">'+esc(q2.t)+'</div>'
+      +q2.opts.map(function(o){
+        return '<button class="usecard'+(AU.expQ2===o.v?' on':'')+'" data-act="auexpq" data-q="q2" data-v="'+o.v+'">'
+          +'<span class="aucard-ic">'+ico(o.v==='simple'?'wallet':'trend')+'</span>'
+          +'<span><b>'+o.l.split(' \u2014 ')[0]+'</b><small>'+o.l.split(' \u2014 ')[1]+'</small></span></button>';
+      }).join('');
+    h+='<button class="btn"'+(AU.expQ2?'':' disabled')+' data-act="auexpnext" style="margin-top:8px">'+ico('chevright')+' Continue</button>';
+  }else if(AU.expStep==='rec'){
+    var r=AU.expRec;
+    h='<div class="tipcard" style="margin:8px 0"><span class="ti">'+ico(r.level==='simple'?'wallet':'trend')+'</span>'
+      +'<div><b>'+r.level.toUpperCase()+' is recommended</b><div class="help small" style="margin-top:2px">'+esc(r.reason)+'</div></div></div>'
+      +'<div class="mgr-lb" style="margin:12px 0 8px">Use this recommendation, or choose the other?</div>'
+      +'<div style="display:flex;gap:8px;margin-bottom:8px">'
+      +'<button class="btn" data-act="auexprec" data-v="'+r.level+'" style="flex:1">'+ico('check')+' Use '+r.level+'</button>'
+      +'<button class="btn ghost sm" data-act="auexprec" data-v="'+(r.level==='simple'?'full':'simple')+'" style="flex:1">'+(r.level==='full'?'Switch to Simple':'Switch to Full')+'</button>'
+      +'</div>';
+  }else if(AU.expStep==='preview'){
+    var lv=AU.expLevel;
+    h='<div class="tipcard" style="margin:8px 0"><span class="ti">'+ico(lv==='simple'?'wallet':'trend')+'</span>'
+      +'<div><b>'+(lv==='simple'?'Simple':'Full')+' experience</b>'
+      +'<div class="help small" style="margin-top:2px">'+(lv==='full'
+        ?'Adds the Wealth tab (Net Worth, Asset Allocation, Financial Health), advanced Cash Flow analysis, and all 6 report tiles.'
+        :'Shows everyday money and shared finances. The Wealth tab and advanced Cash Flow are hidden. Reports collapse to 5 tiles.')+'</div>'
+      +'</div></div>'
+      +'<button class="btn" data-act="auexpnext" style="margin-top:8px">'+ico('check')+' Get started</button>';
+  }
+  return h;
+};
+V63.renderExpOnboarding=function(){
+  if(!AU.expStep){AU.expQ1=[];AU.expQ2='';AU.expStep='q1';AU.expLevel='';AU.expRec=null;}
+  var b=$('auBody'),s=$('auSub'),em=(sessGet()||{}).email||'';
+  if(!b||!s)return;
+  s.textContent=V63.expTitle();
+  b.innerHTML=V63.expStepHTML();
+};
+V63.setExpQuestion=function(q,v){
+  if(q==='q1'){var arr=AU.expQ1||[];if(arr.indexOf(v)>=0)arr.splice(arr.indexOf(v),1);else arr.push(v);AU.expQ1=arr;}
+  else if(q==='q2')AU.expQ2=v;
+  V63.renderExpOnboarding();
+};
+V63.nextExpStep=function(){
+  var s=AU.expStep;
+  if(s==='q1'){
+    if(!(AU.expQ1||[]).length){toast('Pick at least one');return;}
+    AU.expStep='q2';
+  }else if(s==='q2'){
+    if(!AU.expQ2){toast('Pick one');return;}
+    AU.expRec=V63.expRec();
+    AU.expLevel=AU.expRec.level;
+    AU.expStep='rec';
+  }else if(s==='rec'){
+    AU.expStep='preview';
+  }else if(s==='preview'){
+    V63.setExperienceLevel(AU.expLevel);
+    AU.expStep='';
+    authFinish();
+    return;
+  }
+  V63.renderExpOnboarding();
+};
+
+/* §5.1 — inject 'experience' step into the authNextMode chain */
+var _anmExp=authNextMode;
+authNextMode=function(){
+  var nm=_anmExp();
+  /* When all other onboarding steps are complete and the user
+     hasn't chosen an experience level, redirect to the experience step */
+  if(!nm&&sessGet()&&!DB.meta.experienceSelectedAt){return 'experience';}
+  return nm;
+};
+
+/* renderAuth: 'experience' is a terminal auth mode handled entirely here */
+var _rAuthExp=renderAuth;
+renderAuth=function(){
+  if(AU.mode==='experience'){
+    if(!AU.expStep){AU.expQ1=[];AU.expQ2='';AU.expStep='q1';AU.expLevel='';AU.expRec=null;}
+    V63.renderExpOnboarding();
+    return;
+  }
+  return _rAuthExp();
+};
+
+/* §3.1 — Simple mode: hide Wealth tab, rename Cash Flow to "Money" */
+var _stabExp=V63.stabHTML16;
+V63.stabHTML16=function(){
+  if(!V63.isSimple())return _stabExp();
+  var tabs=[['cash','Money']];
+  if(V63.coupleOK())tabs.push(['couple','Couple']);
+  if(tabs.every(function(t){return t[0]!==V63.itab;}))V63.itab='cash';
+  return '<div class="stab">'+tabs.map(function(t){
+    return '<button class="'+(V63.itab===t[0]?'on':'')+'" data-act="v63tab" data-t="'+t[0]+'">'+t[1]+'</button>';
+  }).join('')+'</div>';
+};
+var _whExp=V63.wealthHTML;
+V63.wealthHTML=function(){
+  if(V63.isSimple())return '';
+  return _whExp();
+};
+
+/* §3.4 — filter report tiles by experience level + "Show more" toggle */
+V63.moreReports=false;
+var _rrExp=renderReports;
+renderReports=function(){
+  _rrExp();
+  var t=$('v63tiles');if(!t)return;
+  if(!V63.isSimple())return;
+  var allowed=V63.experienceConfig.simple.reports;
+  qa('.tile',t).forEach(function(btn){
+    if(btn.dataset.k&&allowed.indexOf(btn.dataset.k)<0){btn.hidden=!V63.moreReports;}
+  });
+  /* add or refresh the show-more toggle */
+  var hidden=FAM16.filter(function(f){return allowed.indexOf(f[0])<0;});
+  if(hidden.length){
+    var existing=$('#showMoreReports');
+    var label=V63.moreReports?'Show less reports':'Show more reports';
+    var icon=V63.moreReports?'chevup':'chevdown';
+    if(existing){existing.innerHTML=ico(icon)+' '+esc(label);}
+    else{t.insertAdjacentHTML('beforeend','<button class="btn ghost sm" id="showMoreReports" data-act="morereports" style="width:100%;margin-top:8px">'+ico(icon)+' '+esc(label)+'</button>');}
+  }
+};
+
+/* §3.6 — progressive disclosure: collapse advanced fields in Simple mode */
+var _rMgrExp=renderMgr;
+renderMgr=function(){
+  _rMgrExp.apply(this,arguments);
+  if(!V63.isSimple())return;
+  var b=$('mgrBody');if(!b)return;
+  /* wrap xFields59 extras (cycle, min pay, asset valuation) in a collapsed <details> */
+  qa('#edX59,#newX59',b).forEach(function(div){
+    if(!div.parentNode||!div.parentNode.classList.contains('exp-details')){
+      var det=document.createElement('details');det.className='more exp-details';
+      det.innerHTML='<summary>Show more options</summary>';
+      div.parentNode.replaceChild(det,div);det.appendChild(div);
+    }
+  });
+  /* collapse existing advanced details and relabel summaries */
+  qa('details.more.adv',b).forEach(function(d){d.removeAttribute('open');});
+  qa('details.more summary',b).forEach(function(sum){
+    var t=sum.textContent||'';
+    if(!t||/^(Show more|Show advanced)/.test(t))return;
+    if(/Advanced/.test(t)){sum.textContent='Show advanced options';}
+    else{sum.textContent='Show more options';}
+  });
+};
+
+/* §10 — CSS: onboarding pills + simple-mode details styling */
+(function(){
+  var css=[
+    '.exp-pill{display:flex;align-items:center;gap:8px;border:1.5px solid var(--line);border-radius:11px;padding:10px 13px;margin-bottom:8px;cursor:pointer;font-size:13px;font-weight:600;color:var(--muted);transition:var(--press-t)}',
+    '.exp-pill.sel,.exp-pill:active{background:var(--accent-soft);color:var(--accent);border-color:var(--accent);box-shadow:var(--toast-chip-shadow)}',
+    '.exp-pill .ti{margin-right:2px}',
+    'details.more.exp-details[open] summary{margin-bottom:8px}',
+    '#showMoreReports{margin-top:10px}'
+  ].join('\n');
+  var st=document.createElement('style');st.id='v160b17expcss';st.textContent=css;document.head.appendChild(st);
+})();
+
+/* ---------- §6 + §5 — handleAct wrapper: experience actions + lock interception ---------- */
+var _hAexp=handleAct;
+handleAct=function(el){
+  switch(el.dataset.act){
+    case 'v63expswitch':V63.showExpSwitchPreview();return;
+    case 'v63explvl':V63.showExpSwitchPreview(el.dataset.v);return;
+    case 'auexpq':V63.setExpQuestion(el.dataset.q,el.dataset.v);return;
+    case 'auexpnext':V63.nextExpStep();return;
+    case 'auexprec':AU.expLevel=el.dataset.v;AU.expStep='preview';V63.renderExpOnboarding();return;
+    case 'aulock':
+      if(!DB.meta.experienceSelectedAt){
+        DB.meta.lockAsked=1;save();
+        if(el.dataset.v==='pin')V56.lockNext=1;
+        auNext();
+      }else{_hAexp(el);}
+      return;
+    case 'morereports':V63.moreReports=!V63.moreReports;renderReports();return;
+  }
+  return _hAexp(el);
+};
+
+/* ---------- startup hook: show experience onboarding for existing users ---------- */
+setTimeout(function(){
+  try{
+    var s=sessGet(),acc=s&&acctMap()[s.email];
+    if(s&&acc&&profOK()&&!DB.meta.experienceSelectedAt&&$('authScr')&&$('authScr').hidden){
+      authShow('experience');
+    }
+  }catch(e){}
+},20);
+
+/* ---------- 4 · version + in-app release notes ---------- */
+V59.ver=’1.60 beta 17b’;
+document.title=String(document.title).replace(/1\.60 beta 17/,’1.60 beta 17b’);
+qa(‘.sub’).forEach(function(e){if(/1\.60 beta 17/.test(e.textContent))e.textContent=’v1.60 beta 17b’;});
+var ol17=document.querySelector(‘#view-settings details.help ol’);
+if(ol17)ol17.insertAdjacentHTML(‘beforeend’,’<li><b>Account summary tiles + theme-aware toasts (v1.60 beta 17a):</b> the Account Summary now has a scrollable tile strip — All, Money, Vehicles, Investments, Properties, Other, Between Us, Debts — replacing the old filter chips. Tap any tile to filter the list; tapping “Between Us” hides everything else and shows only who owes who (tap a ledger row to open it). The tile strip sits above the group list and its active state tracks the accent colour. Toast shadows and the undo button’s glow now use theme-aware CSS variables so they contrast correctly in both light and dark modes, and follow your chosen accent colour. The Collapse / Expand all button from beta 17 is retained on the header row.</li>’
+  +’<li><b>Simple vs Full experience (v1.60 beta 17b):</b> new onboarding asks each user whether they track everyday money, building wealth, or both, and recommends Simple or Full accordingly. Settings gains an Experience Level card with Simple/Full toggle and “See what changes” preview. Simple mode hides the Wealth tab (Net Worth, Asset Allocation, Financial Health) and the advanced Cash Flow analysis, renames Cash Flow to “Money”, collapses advanced account-form fields behind “Show more options”, and filters the Reports catalogue down to 5 tiles (with a “Show more reports” toggle for the rest). Full mode keeps everything. Terminology maps to simpler language in Simple mode (e.g. Net worth \u2192 Balance, Emergency fund \u2192 Rainy-day fund). Existing users with a profile see the onboarding screen once, on next open.</li>’);
+})();
 </script>
 </body>
 </html>
