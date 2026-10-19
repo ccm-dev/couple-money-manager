@@ -8179,7 +8179,7 @@ var _accSave57=accSave;accSave=function(n){
   var vis=$('mgrEVis')?$('mgrEVis').value:null,a0=DB.accounts.find(function(x){return x.name===n;}),was=a0?(a0.vis==='me'?'me':'shared'):'';
   if(vis==='me'&&was==='shared'&&isCouple()){
     var P=partnerName(),nn=(($('mgrEName')||{}).value||'').trim()||n;
-    askChoice('Make “'+n+'” private? From now on '+P+' won’t see it, its transactions or its balance. What about what '+P+' has already seen?',[
+    askChoice('Make “'+n+'” private? From now on '+P+' won’t see it, its transactions or its balance. What about what '+P+' has already seen? Information already synced may remain in authorised backups or on '+P+'\u2019s device.',[
       {c:'btn',l:ico('lock')+' Make private and remove its history from '+esc(P)+'’s phone',f:function(){$('mgrEVis').value='shared';_accSave57(n);var a=DB.accounts.find(function(x){return x.name===nn;});if(a){a.vis='me';a.pvby=meName()||a.owner;a.retract=1;delete a.shareFrom;touch();if($('mgrSheet').classList.contains('on'))renderMgr();toast('“'+nn+'” is private. Its history is removed from '+P+'’s phone the next time it syncs.');}}},
       {c:'btn ghost',l:'Make private, '+esc(P)+' keeps what they’ve seen',f:function(){$('mgrEVis').value='shared';_accSave57(n);var a=DB.accounts.find(function(x){return x.name===nn;});if(a){a.vis='me';a.pvby=meName()||a.owner;delete a.retract;delete a.shareFrom;touch();if($('mgrSheet').classList.contains('on'))renderMgr();}}}]);
     return;
@@ -10062,13 +10062,13 @@ function modeCards6(){
 }
 function privStatus6(){
   var m=storageMode();
-  if(m==='household')return {cls:'ok',text:'Private space · on this device',why:'Private accounts never upload to the household cloud. Optional: keep an encrypted personal backup for recovery.'};
+  if(m==='household')return {cls:'ok',text:'Private space · on this phone',why:'Your private space stays on this phone. Keep an encrypted backup in case you lose it.'};
   if(m==='drive'||m==='onedrive'){
     var s=bkState59();
     return s==='ok'?{cls:'ok',text:'Private space · in your personal backup',why:'Your latest encrypted personal backup includes your private space.'}
       :{cls:'warn',text:'Private space · backup due',why:'Your private space has changes that are not in your last personal backup yet.'};
   }
-  return {cls:'warn',text:'Private space · device only',why:'No automatic copy exists. If this device is lost, your private space is lost — download an encrypted backup.'};
+  try{var pt=+(DB.meta.v59||{}).privTouch||0;if(pt&&Date.now()-pt>6048e5)return {cls:'warn',text:'Private space · backup due',why:'Your private space has changes from more than 7 days ago that are not in any backup. If this phone is lost, they are lost. Download an encrypted backup.'};}catch(e){}return {cls:'warn',text:'Private space · device only',why:'Your private space stays on this phone. Keep an encrypted backup in case you lose it — there is no cloud copy.'};
 }
 var _rsB6=renderStore59;
 renderStore59=function(){
@@ -14372,7 +14372,7 @@ function cSnapshot16(){
   var h='<div class="kpis">'+kpi('Household assets',money(N.assets),'pos')+kpi('Household debts',money(N.liabs),'neg')+kpi('Net worth',money(N.net),N.net<0?'neg':'pos')+'</div>'
     +(top?'<div class="mgr-lb" style="margin-top:8px">What you own together</div>'+top:'')
     +(tl2?'<div class="mgr-lb" style="margin-top:8px">What you owe</div>'+tl2:'')
-    +'<div class="help small" style="margin-top:6px">Shared and Joint accounts only — private accounts are never included.</div>';
+    +'<div class="help small" style="margin-top:6px">Shared and Joint information only. Your private accounts are not included here.</div>';
   return card16(ico('users')+' Household snapshot',h);
 }
 function cBetween16(){
@@ -14462,7 +14462,7 @@ function cInsight16(){
 }
 V63.coupleHTML=function(){
   return '<div class="note-soft">'+ico('users')+' Shared &amp; Joint information only — partner-private accounts and amounts never appear here.</div>'
-    +cSnapshot16()+cBetween16()+cContribution16()+cShared16()+cAccounts16()+cGoals16()+cInsight16();
+    +(!window.X63||!X63.isSimple||!X63.isSimple()?cSnapshot16():'')+cBetween16()+cContribution16()+cShared16()+cAccounts16()+cGoals16()+cInsight16();
 };
 
 /* ---------- Insights render chain replacement ---------- */
@@ -14856,15 +14856,15 @@ renderAccounts=function(){
     var card=$('accList')&&$('accList').closest('.card');if(!card)return;
     var bl=balances();
     /* filter chips */
-    var disposed=DB.accounts.some(function(a){return isVal(a)&&V63.statusOf(a)!=='active';});
+    var disposed=DB.accounts.some(function(a){return V63.statusOf(a)!=='active';});
     var chips=[['all','All'],['Money','Money'],['Vehicles','Vehicles'],['Investments','Investments'],['Properties','Properties'],['Other','Other'],['debts','Debts']];
     var ch='<div class="accchips">'+chips.map(function(c){
       return '<button class="'+(V63.accF===c[0]?'on':'')+'" data-act="v63accf" data-f="'+c[0]+'">'+c[1]+'</button>';
-    }).join('')+(disposed?'<button class="'+(V63.accHist?'on':'')+'" data-act="v63acchist">'+(V63.accHist?'Hide sold &amp; archived':'Show sold &amp; archived')+'</button>':'')+'</div>';
+    }).join('')+(disposed?'<button class="'+(V63.accHist?'on':'')+'" data-act="v63acchist">'+(V63.accHist?'Hide archived':'Show archived')+'</button>':'')+'</div>';
     var rows=bl.rows.filter(function(r){
       var a=a59(r.name);if(!a)return false;
       if(a.recv||/^.+ owes .+$/.test(a.name)||LBL_RE.test(a.name))return false; /* Between Us ledgers live in the Between Us report */
-      if(!V63.accHist&&isVal(a)&&V63.statusOf(a)!=='active')return false;
+      if(!V63.accHist&&V63.statusOf(a)!=='active')return false;
       var k=V63.catOf(a.type,a);
       if(V63.accF==='all')return true;
       if(V63.accF==='debts')return V63.ownOf(a.type,a)===0;
@@ -15124,7 +15124,7 @@ function assetCard16(a){
   if(loans.length)h+='<div class="mgr-lb" style="margin-top:10px">Linked financing · kept separately under What You Owe</div>'+derived16(a,v,loans,isProp?'property':'vehicle');
   h+='<div class="btnrow" style="margin-top:10px">'
     +'<button class="btn sm" data-act="valopen" data-n="'+esc16(a.name)+'">'+ico('pencil')+' Update value</button>'
-    +'<button class="btn sm ghost" data-act="v63dispose" data-n="'+esc16(a.name)+'">'+ico('swap')+' '+(st==='active'?'Sell / archive':'Reopen')+'</button>'
+    +'<button class="btn sm ghost" data-act="v63dispose" data-n="'+esc16(a.name)+'">'+ico('swap')+' '+(st==='active'?'Close / archive':'Reopen')+'</button>'
     +'<button class="btn sm ghost" data-act="v63edit" data-k="'+esc16(a.name)+'">'+ico('sliders')+' Edit</button></div>';
   h+='<div class="help small" style="margin-top:8px">Value changes never create income, spending or cash flow. Selling does not close linked financing.</div></div>';
   /* property-linked activity (docx §7 — recorded via the transaction's Property tag) */
@@ -15585,7 +15585,7 @@ function rows18(){
   return bl.rows.filter(function(r){
     var a=a59(r.name);if(!a)return false;
     if(a.recv||/^.+ owes .+$/.test(r.name)||LBL_RE.test(r.name))return false; /* ledgers live in the Between Us tile */
-    if(!V63.accHist&&isVal(a)&&V63.statusOf(a)!=='active')return false;
+    if(!V63.accHist&&V63.statusOf(a)!=='active')return false;
     return true;
   });
 }
@@ -15628,7 +15628,7 @@ function tilesHTML18(){
   /* between us */
   var led=[];
   try{led=ledgers().filter(function(l){return l.amt>=0.005;});}catch(e){}
-  if(led.length||true){
+  if(isCouple()){
     var bu=0;led.forEach(function(l){bu+=l.amt;});
     h+=tile('bu','Between Us',led.length?money(bu):'Settled',led.length,'bu'+(led.length?' negv':''),
       led.length?led.length+' open balance'+(led.length===1?'':'s'):'all settled up');
@@ -15653,6 +15653,8 @@ function page18(){
   return p;
 }
 function scopeRows18(k){
+  if(k==='onlyme')return rows18().filter(function(r){var a=a59(r.name);return a&&a.vis==='me'&&pvMine(a);});
+  if(k==='shared')return rows18().filter(function(r){var a=a59(r.name);return a&&a.vis!=='me';});
   if(k==='All')return rows18();
   if(k==='debts')return rows18().filter(function(r){var a=a59(r.name);return a&&V63.ownOf(a.type,a)===0;});
   return rows18().filter(function(r){var a=a59(r.name);return a&&V63.catOf(a.type,a)===k;});
@@ -15690,8 +15692,8 @@ function accTree18(rows){
       if(!openT)return;
       out.push('<div class="asum-l3">'+l2.slice().sort(function(x,y){return alphasort(x.a.name,y.a.name);}).map(function(x){
         var a=x.a,b=x.r.bal,st=V63.statusOf(a);
-        var lb=esc18(a.name)+(st!=='active'?'<span class="statuspill '+(st==='sold'?'sold':'arch')+'">'+esc18(st==='sold'?'Sold':'Archived')+'</span>':'');
-        var sub=esc18(a.owner||'No owner')+(a.vis==='me'?' · Only me':'')+' · '+esc18(V63.catOf(a.type,a));
+        var lb=esc18(a.name)+(st!=='active'?'<span class="statuspill '+(st==='sold'?'sold':'arch')+'">'+esc18(st==='sold'?'Sold':(st==='closed'?'Closed':'Archived'))+'</span>':'');
+        var sub=esc18(a.owner||'No owner')+' · '+(a.vis==='me'?'Only me':'Shared'+((typeof isCouple==='function'&&isCouple()&&permFor59(a.name)!=='owner')?' · '+({view:'View only',add:'Add transactions',full:'Full transaction access',admin:'Account administrator'}[a.partnerAccess||'add']||'Add transactions'):''))+' · '+esc18(V63.catOf(a.type,a));
         return trow({act:'acc',attrs:'data-n="'+esc18(a.name)+'"',lb:lb,sub:sub,amt:money(b),cls:b<0?'neg':''});
       }).join('')+'</div>');
     });
@@ -15719,7 +15721,7 @@ function renderAT18(){
     return;
   }
   var rows=scopeRows18(AT18.k);
-  t.textContent=AT18.k==='All'?'All accounts':(AT18.k==='debts'?'What You Owe':AT18.k);
+  t.textContent=AT18.k==='All'?'All accounts':(AT18.k==='debts'?'What You Owe':(AT18.k==='onlyme'?'Only me':(AT18.k==='shared'?'Shared':AT18.k)));
   s.textContent=rows.length?rows.length+' account'+(rows.length===1?'':'s')+' · arranged by person, type, account':'no accounts here yet';
   /* enumerate every person / person|type key for Collapse all / Expand all */
   var keys=[];
@@ -15828,9 +15830,9 @@ renderAccounts=function(){
     var help=card.querySelector('.help.small');
     if(help)help.textContent='Tap a tile to see its accounts arranged by person, type and account.';
     var old=card.querySelector('.accchips');if(old)old.remove();
-    var disposed=DB.accounts.some(function(a){return isVal(a)&&V63.statusOf(a)!=='active';});
+    var disposed=DB.accounts.some(function(a){return V63.statusOf(a)!=='active';});
     list.innerHTML=tilesHTML18()
-      +(disposed?'<div class="accchips" style="margin-top:12px"><button class="'+(V63.accHist?'on':'')+'" data-act="v63acchist">'+(V63.accHist?'Hide sold &amp; archived':'Show sold &amp; archived')+'</button></div>':'');
+      +(disposed?'<div class="accchips" style="margin-top:12px"><button class="'+(V63.accHist?'on':'')+'" data-act="v63acchist">'+(V63.accHist?'Hide archived':'Show archived')+'</button></div>':'');
     var btn=$('asumColl10');if(btn)btn.hidden=true;
   }catch(e){console.warn('acc18',e);}
 };
@@ -16690,6 +16692,958 @@ if(ol19)ol19.insertAdjacentHTML('beforeend','<li><b>Experience Level is personal
 /* boot: card in place, rows fresh */
 try{B19.ensureExpCard();}catch(e){}
 try{b19SyncRows();}catch(e){}
+})();
+</script>
+<style id="v160b20css">
+/* beta 20: experience overlay never covers the lock screen; partner-view preview page */
+#x63ob{z-index:150}
+#pagePVP20{z-index:48;background:var(--bg)}
+.b20pvpbar{position:sticky;top:0;z-index:2;display:flex;align-items:center;gap:10px;
+ padding:calc(10px + env(safe-area-inset-top)) 14px 10px;background:color-mix(in srgb,var(--accent-2) 12%,var(--card));
+ border-bottom:1px solid var(--hair);font-weight:800;font-size:13px}
+.b20pvpbar span{flex:1;display:flex;align-items:center;gap:7px;min-width:0}
+.b20pvpbar .btn{flex:none}
+input.b20ferr{border-color:var(--exp)!important}
+#b20sdv .tipcard{display:flex;gap:12px;align-items:flex-start}
+.atile18 .statuspill{margin-left:4px}
+</style>
+<script id="v160b20">
+/* ===================== v1.60 beta 20 · Advanced Couple Mode Specification v2.1
+   + Add & Edit Account Review & Redesign v1.1 =====================
+   Baseline: beta19 (which is beta18 + the 18-Oct personal-experience / App
+   Preference / name=role layer). One additive layer: window-level wraps and
+   asserted static patches only — no upstream rewrite.
+
+   Part 1 · Account lifecycle, restricted delete, account service
+     WP-AE-01/02  account service + stable ids + rename covers every reference
+     WP-AE-06/13  Close / Reopen / Archive / Restore for EVERY account type
+     WP-18        owner-only lifecycle, no partner trace for Private accounts
+     AE-CLS-01..09, AE-ARC-01..16 (client), OD-AE-02..05
+     AE-G01 delete only when empty · AE-G02 rename updates recurring/links
+   --------------------------------------------------------------------------- */
+(function(){
+'use strict';
+function start20(){
+var $=function(id){return document.getElementById(id);};
+var B20=window.B20={ver:'1.60 beta 20',pv:null,disc:false};
+function esc20(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+function adv20(){try{return (typeof B3.mode==='function')?B3.mode()==='adv':DB.meta.usage==='adv';}catch(e){return DB&&DB.meta&&DB.meta.usage==='adv';}}
+function cpl20(){try{return isCouple();}catch(e){return false;}}
+function simple20(){try{return X63.isSimple();}catch(e){return false;}}
+B20.adv=adv20;B20.cpl=cpl20;B20.simple=simple20;
+function log20(a,what){try{a.changeLog=a.changeLog||[];a.changeLog.push({at:Date.now(),by:meName(),what:what});if(a.changeLog.length>30)a.changeLog=a.changeLog.slice(-30);}catch(e){}}
+B20.log=log20;
+function isLedger20(a){try{return a&&(a.recv||/^.+ owes .+$/.test(a.name||'')||LBL_RE.test(a.name||''));}catch(e){return false;}}
+B20.isLedger=isLedger20;
+function liveStatus20(a){try{var s=V63.statusOf(a);return s==='sold'?'closed':s;}catch(e){return 'active';}}
+B20.status=liveStatus20;
+function isEnded20(a){var s=liveStatus20(a);return s==='closed'||s==='archived';}
+B20.ended=isEnded20;
+function permLabel20(p){return {view:'View only',add:'Add transactions',full:'Full transaction access',admin:'Account administrator'}[p]||'Add transactions';}
+B20.permLabel=permLabel20;
+
+/* ---------- 1 · Stable account ids (OD-AE-01 / AE-REN-01) + status migration (AE-ARC-15) ---------- */
+B20.migrate=function(){
+  try{
+    var needDate=[];
+    DB.accounts.forEach(function(a){
+      if(!a.id)a.id='ac'+Math.random().toString(36).slice(2,8)+String(Date.now()).slice(-4);
+      if(a.status==='sold'){a.status='closed';a.closeReason=a.closeReason||'sold';a.closedDate=a.closedDate||a.statusDate||'';}
+      else if(a.status==='archived'){a.closedDate=a.closedDate||a.statusDate||'';a.archivedAt=a.archivedAt||a.statusDate||'';}
+      if((a.status==='sold'||a.status==='archived'||a.status==='closed')&&!a.closedDate&&!a.statusDate)needDate.push(a.name);
+    });
+    B20.needDate=needDate;
+  }catch(e){}
+};
+
+/* ---------- 2 · Close / Archive leave Net Worth for EVERY type (OD-AE-05, AE-CLS-01, AE-ARC-03) ---------- */
+var _aao20=V63.activeAsOf;
+V63.activeAsOf=function(a,d){
+  var st=liveStatus20(a);
+  if((st==='closed'||st==='archived')&&a){
+    var dd=a.closedDate||a.statusDate||'';
+    if(!dd)return false; /* ended without a date: excluded from active totals now */
+    return String(d)<String(dd); /* active totals keep the value only BEFORE the closed date */
+  }
+  return _aao20(a,d);
+};
+
+/* ---------- 3 · Lists, tiles, drill and pickers exclude Closed + Archived (AE-ARC-04/05, AC-ACC-15) ----------
+   rows18/tilesHTML18/scopeRows18 are IIFE-local in the b18 block: the closed/archived
+   exclusion and the Show-archived relabel are done with ASSERTED STATIC PATCHES in
+   make_v160b20.py. This global renderAccounts wrap adds the post-render hooks. */
+var _ra20=renderAccounts;
+renderAccounts=function(){
+  _ra20.apply(this,arguments);
+  try{
+    if(B20.needDate&&B20.needDate.length&&!B20.needDateShown){
+      B20.needDateShown=true;
+      var n=a59(B20.needDate[0]);
+      if(n){openMgr('v63dispose');V63.disAcc=n.name;
+        toast('Set the closed date for \u201c'+n.name+'\u201d \u2014 the app never guesses one.');}
+    }
+    if(B20.sdv)B20.sdv();
+    if(B20.tilesPost)B20.tilesPost();
+  }catch(e){}
+};
+/* the chip reads V63.accHist — relabel happens via static patches in the build */
+
+/* transaction + transfer pickers exclude ended accounts (AE-ARC-04/06) unless already selected */
+var _ao20=accOptions;
+accOptions=function(sel){
+  var h=_ao20(sel);
+  try{
+    if(V63.accHist)return h;
+    var dec=function(s){return String(s).replace(/&amp;/g,'&').replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&quot;/g,'"').replace(/&#39;/g,"'");};
+    h=h.replace(/<option([^>]*)>([^<]*)<\/option>/g,function(m,attrs,label){
+      var v=dec((attrs.match(/value="([^"]*)"/)||[])[1]||dec(label));
+      if(sel&&v===sel)return m;
+      var a=a59(v);if(a&&isEnded20(a))return '';
+      return m;
+    });
+  }catch(e){}
+  return h;
+};
+/* adding to a closed or archived account is blocked (AE-ARC-06) */
+var _ca20=canAdd59;
+canAdd59=function(n){
+  var a=a59(n);
+  if(a&&isEnded20(a)&&!V63.accHist)return false;
+  return _ca20(n);
+};
+
+/* ---------- 4 · Upcoming payments: skip ended accounts + never leak a partner's Private reminder (WP-07, AC-REM-01, AE-ARC-04) ---------- */
+var _up20=V63.calc.upcoming;
+V63.calc.upcoming=function(horizon,who){
+  var out=_up20(horizon,who),me='';
+  try{me=meName();}catch(e){}
+  return out.filter(function(x){
+    var a=a59(x.name);
+    if(a&&isEnded20(a))return false;
+    if(a&&a.vis==='me'&&(a.pvby||a.owner)&&me&&(a.pvby||a.owner)!==me)return false; /* AC-REM-01 */
+    if(x.rec){var rc=(DB.recur||[]).find(function(r){return r.id===x.rec;});
+      if(rc&&rc.tpl){var pa=a59(rc.tpl.account);
+        if(pa&&isEnded20(pa))return false;
+        if(pa&&pa.vis==='me'&&(pa.pvby||pa.owner)&&me&&(pa.pvby||pa.owner)!==me)return false;}
+    }
+    return true;
+  });
+};
+
+/* ---------- 5 · Restricted delete: only empty, unlinked accounts (OD-AE-02, AE-CLS-04/05, AE-G01) ---------- */
+B20.deleteReasons=function(n){
+  var a=a59(n),r=[];
+  try{
+    var tx=DB.txns.filter(function(t){return t.account===n||(t.type==='Transfer'&&t.to===n);}).length;
+    if(tx)r.push(tx+' transaction'+(tx===1?'':'s'));
+    var rc=(DB.recur||[]).filter(function(x){return x&&x.tpl&&(x.tpl.account===n||x.tpl.to===n);}).length;
+    if(rc)r.push(rc+' recurring item'+(rc===1?'':'s'));
+    var lk=DB.accounts.filter(function(x){return x&&x.name!==n&&x.linkedAsset===n;}).length;
+    if(lk)r.push(lk+' linked financing');
+    if(a&&Array.isArray(a.linkedLoans)&&a.linkedLoans.length)r.push(r.length?'':'linked financing');
+    var gl=(DB.goals||[]).filter(function(g){return g.acc===n;}).length;
+    if(gl)r.push(gl+' linked goal'+(gl===1?'':'s'));
+  }catch(e){}
+  return r;
+};
+var _ad20=accDel;
+accDel=function(n){
+  try{
+    var a=a59(n);
+    if(a&&isLedger20(a)){toast('Between Us ledgers are managed only by Between Us settlement \u2014 they can\u2019t be deleted here.');return;}
+    var rs=B20.deleteReasons(n);
+    if(rs.length){
+      askChoice('\u201c'+n+'\u201d can\u2019t be deleted \u2014 it still has '+rs.join(' · ')+'. A delete never moves transactions. Close it instead: it leaves your overall position from a date you choose, and its history stays. Or archive it after closing to tidy the lists.',[
+        {c:'btn',l:ico('swap')+' Close this account',f:function(){V63.disAcc=n;openMgr('v63dispose');}},
+        {c:'btn ghost',l:'Cancel',f:function(){}}
+      ]);
+      return;
+    }
+  }catch(e){}
+  _ad20(n);
+};
+
+/* ---------- 6 · Close / Reopen / Archive / Restore sheet for every type (AE-CLS-01..03, AE-ARC-01/02/08, WP-AE-06/13) ---------- */
+var _led20=LBL_RE;
+V56.mgr.v63dispose=function(){
+  var a=a59(V63.disAcc)||{};
+  if(isLedger20(a)){$('mgrBody').innerHTML='<div class="help small">Between Us ledgers are managed only by Between Us settlement \u2014 they can\u2019t be closed, archived or deleted here.</div>';return;}
+  var st=V63.statusOf(a),valued=isVal(a),sw=simple20();
+  var bal=0;try{bal=accountBalAsOf(a.name,todayISO());}catch(e){}
+  var opts='';
+  function opt(v,l){return '<option value="'+v+'"'+(st===v?' selected':'')+'>'+l+'</option>';}
+  opts+=opt('active',sw?'In use':'Active');
+  opts+=opt('closed',sw?'I no longer use this account':'Closed');
+  if(!valued)opts+=opt('archived',sw?'Hide this account (archived)':'Archived (closed and hidden)');
+  else opts+=opt('sold','Sold / Disposed');
+  if(!valued&&st==='sold')opts+=opt('sold','Sold / Disposed');
+  if(st==='archived'&&!valued){/* archived already in opts */}
+  var closedShown=(st==='closed'||st==='archived'||st==='sold');
+  var h='<div class="aucard" style="text-align:left"><b>'+esc20(a.name||'')+'</b>'
+    +(valued?'<p>Recorded value now: <b>'+money(valueAsOf(a,todayISO()))+'</b></p>':'<p>Balance today: <b>'+money(bal)+'</b></p>')
+    +'</div>'
+    +'<div class="mgr-lb">Status</div><select class="fin" id="dz16st" style="margin-bottom:7px">'+opts+'</select>'
+    +'<div class="mgr-lb">'+(st==='active'?'Closed date':'Effective date')+'</div><input type="date" class="fin" id="dz16d" value="'+(a.closedDate||a.statusDate||todayISO())+'" style="margin-bottom:7px">'
+    +'<div class="mgr-lb">Reason (optional)</div><select class="fin" id="dz16r" style="margin-bottom:8px">'
+    +['','paid-off','cancelled','sold','no longer used','other'].map(function(r){return '<option value="'+r+'"'+((a.closeReason||'')===r?' selected':'')+'>'+(r||'No reason')+'</option>';}).join('')+'</select>'
+    +'<div class="help small" style="margin-bottom:10px">'+(sw
+      ?'If you no longer use this account, it stops counting in What You Have Minus What You Owe from the date you pick. Its history stays, and you can bring it back any time. Reminders for it stop.'
+      :'From the closed date the account leaves active Net Worth and Accounts totals, and stays in history. Closing stops its reminders. Archived accounts are hidden from lists and pickers \u2014 nothing else changes. Linked loans and hire purchase stay open.')+'</div>'
+    +'<button class="btn" data-act="v63disposesave">'+(sw?'Save':'Save status')+'</button>'
+    +(st==='archived'?'<button class="btn ghost" data-act="v63dispose19" style="margin-top:7px">'+(sw?'Show again':'Restore to Closed')+'</button>':'')
+    +(st==='closed'&&!valued?'<button class="btn ghost" data-act="v63arch18" style="margin-top:7px">'+(sw?'Hide this account':'Archive (hide from lists)')+'</button>':'');
+  $('mgrBody').innerHTML=h;
+};
+function b20apply20(a,st,d,reason){
+  if(st==='active'){delete a.status;delete a.statusDate;delete a.disposalDate;delete a.closedDate;delete a.closeReason;delete a.archivedAt;log20(a,'Restored to active');}
+  else if(st==='archived'){a.status='archived';a.closedDate=d;a.archivedAt=d;if(reason)a.closeReason=reason;delete a.statusDate;delete a.disposalDate;log20(a,'Archived from '+d);}
+  else if(st==='sold'){a.status='sold';a.statusDate=d;a.disposalDate=d;a.closedDate=d;a.closeReason=reason||'sold';delete a.archivedAt;log20(a,'Marked sold from '+d);}
+  else{a.status='closed';a.closedDate=d;if(reason)a.closeReason=reason;delete a.archivedAt;delete a.statusDate;delete a.disposalDate;log20(a,'Closed from '+d);}
+}
+V63.disposeSave=function(){
+  var a=a59(V63.disAcc);if(!a)return;
+  if(permFor59(a.name)!=='owner'){toast('Only the account owner can close, archive or reopen an account.');return;}
+  var st=($('dz16st')||{}).value||'active',d=($('dz16d')||{}).value||todayISO(),r=($('dz16r')||{}).value||'';
+  if(!d){toast('Pick the closed date');return;}
+  if(st!=='active'&&a.purchaseDate&&d<a.purchaseDate){toast('The effective date is before the purchase date \u2014 choose a later date');return;}
+  if(st!=='active'&&isLedger20(a)){toast('Between Us ledgers can\u2019t be closed or archived');return;}
+  var bal=0;try{bal=accountBalAsOf(a.name,todayISO());}catch(e){}
+  if(st!=='active'&&Math.abs(bal)>0.004&&(st==='closed'||st==='archived')&&!isVal(a)){
+    askChoice(money(Math.abs(bal))+' will leave your overall position from '+dLabelY(d)+'. Transfer it first, or continue.',[
+      {c:'btn',l:'Continue \u2014 close it from '+dLabelY(d),f:function(){b20apply20(a,st,d,r);touch();renderMgr();renderAll();
+        toast(st==='archived'?'Archived \u00b7 hidden from lists, Net Worth unchanged from its closed date':st==='active'?'Reopened \u00b7 back in active totals':'Closed from '+dLabelY(d)+' \u00b7 history stays');}},
+      {c:'btn ghost',l:'Record a transfer first',f:function(){closeMgr();gotoView('txns');}}
+    ]);return;
+  }
+  var wasSt=V63.statusOf(a);
+  b20apply20(a,st,d,r);
+  touch();renderMgr();renderAll();
+  toast(st==='active'?'Reopened \u00b7 back in active totals':(st==='sold'?'Marked sold from '+dLabelY(d)+' \u00b7 linked financing untouched':st==='archived'?'Archived \u00b7 hidden from lists \u2014 Net Worth already followed the closed date':st==='closed'?'Closed from '+dLabelY(d)+' \u00b7 history stays':'Updated'));
+};
+MGR_TITLE.v63dispose=ico('swap')+' Close, archive or reopen';
+
+/* lifecycle actions are owner-only for Shared accounts; a Private account\u2019s lifecycle is never visible to the partner
+   (WP-18, AC-ACC-14, AE-ARC-09/10) \u2014 the partner\u2019s lists come from the shared copy, which strips Private accounts. */
+
+/* ---------- 7 · Account service: one rename that covers EVERY reference (WP-AE-01/02, AE-REN-02, AE-G02) ---------- */
+B20.renameEverywhere=function(o,nw){
+  if(!o||!nw||o===nw)return;
+  DB.txns.forEach(function(t){
+    if(t.account===o)t.account=nw;
+    if(t.to===o)t.to=nw;
+    if(t.owedAcc===o)t.owedAcc=nw;
+    if(t.prop===o)t.prop=nw;
+  });
+  (DB.recur||[]).forEach(function(r){if(r&&r.tpl){if(r.tpl.account===o)r.tpl.account=nw;if(r.tpl.to===o)r.tpl.to=nw;}});
+  (DB.goals||[]).forEach(function(g){if(g&&g.acc===o)g.acc=nw;});
+  DB.accounts.forEach(function(a){
+    if(a.linkedAsset===o)a.linkedAsset=nw;
+    if(Array.isArray(a.linkedLoans))a.linkedLoans=a.linkedLoans.map(function(x){return x===o?nw:x;});
+    if(Array.isArray(a.access))a.access=a.access.map(function(x){return (x&&x.acc===o)?Object.assign({},x,{acc:nw}):x;});
+  });
+  try{relink59(o,nw);}catch(e){}
+  try{if(V63.accKeys17)V63.accKeys17={};}catch(e){}
+  try{if(DRILL.acc===o)DRILL.acc=nw;}catch(e){}
+  try{if(MGR.edit===o)MGR.edit=null;}catch(e){}
+};
+B20.rename=B20.renameEverywhere;
+
+/* unknown references are flagged, never silently created (AE-REN-03) */
+B20.unknownRefs=function(){
+  var names={},out=[];
+  DB.accounts.forEach(function(a){names[a.name]=1;});
+  function unkn(n,where){if(n&&!names[n]&&!/^.+ owes .+$/.test(n)&&!LBL_RE.test(n)&&out.indexOf(n)<0)out.push(n);}
+  DB.txns.forEach(function(t){unkn(t.account,'transactions');if(t.type==='Transfer')unkn(t.to,'transactions');});
+  (DB.recur||[]).forEach(function(r){if(r&&r.tpl){unkn(r.tpl.account,'recurring');unkn(r.tpl.to,'recurring');}});
+  (DB.goals||[]).forEach(function(g){unkn(g.acc,'goals');});
+  DB.accounts.forEach(function(a){unkn(a.linkedAsset,'links');});
+  return out;
+};
+var _ee20=ensureEntities;
+ensureEntities=function(){
+  var before={};DB.accounts.forEach(function(a){before[a.name]=1;});
+  var refs=[];
+  try{ /* references that point at NO account before normalisation */
+    var seen={};
+    function unkn(n){if(n&&!seen[n]){seen[n]=1;if(!before[n]&&!/^.+ owes .+$/.test(n)&&!LBL_RE.test(n))refs.push(n);}}
+    DB.txns.forEach(function(t){unkn(t.account);if(t.type==='Transfer')unkn(t.to);});
+    (DB.recur||[]).forEach(function(r){if(r&&r.tpl){unkn(r.tpl.account);unkn(r.tpl.to);}});
+    (DB.goals||[]).forEach(function(g){unkn(g.acc);});
+    DB.accounts.forEach(function(a){unkn(a.linkedAsset);});
+  }catch(e){}
+  _ee20.apply(this,arguments);
+  try{
+    refs.forEach(function(nm){
+      var na=a59(nm);
+      if(na){DB.accounts=DB.accounts.filter(function(a){return a!==na;});} /* AE-REN-03: a reference never creates an account */
+      B20.attention=B20.attention||[];
+      if(!B20.attention.some(function(x){return x.name===nm;}))B20.attention.push({name:nm,where:'a record still points to it'});
+    });
+    if(B20.attention.length&&!B20.attToastShown){B20.attToastShown=true;
+      setTimeout(function(){toast('Needs attention: \u201c'+B20.attention[0].name+'\u201d is referenced but doesn\u2019t exist. No account was created for it.');},1200);}
+  }catch(e){}
+};
+
+/* ---------- 8 · Edit-save hardening (AE-G04, AE-EDT-03/04, AE-VAL-02/03/06, AE-ADD-05, AE-G02, OD-AE-03/04) ---------- */
+B20.reservedName=function(nn){
+  if(/.+\s+owes\s+.+/i.test(nn))return 'Pick a different name. \u201cX owes Y\u201d is reserved for Between Us ledgers.';
+  if(/[\u2019\']s personal account$/i.test(nn))return 'Pick a different name. Names ending in \u201c\u2019s personal account\u201d are reserved.';
+  return '';
+};
+B20.dupName=function(nn,self){
+  var k=String(nn||'').toLowerCase().replace(/\s+/g,' ');
+  return DB.accounts.some(function(a){return a.name!==self&&String(a.name).toLowerCase().replace(/\s+/g,' ')===k;});
+};
+var _as20=accSave;
+accSave=function(n){
+  try{
+    var a0=a59(n);
+    var nn=(($('mgrEName')||{}).value||'').trim();
+    var ty=$('mgrEType')?($('mgrEType').value||''):'';
+    if(a0){
+      if(!nn){toast('Enter a name');return;}
+      var res=B20.reservedName(nn);
+      if(res){toast(res);return;}
+      if(B20.dupName(nn,n)){toast('Pick a different name. \u201c'+nn+'\u201d already exists.');return;}
+      var balN=0;try{balN=DB.txns.filter(function(t){return t.account===n||(t.type==='Transfer'&&t.to===n);}).length;}catch(e){}
+      var links=B20.deleteReasons(n).length>0;
+      if(ty&&balN>0&&(accTypeKind(ty)!==accTypeKind(a0.type))){
+        toast('This account has transactions, so it can\u2019t move between what you own and what you owe. Create a new account and transfer the balance instead.');return;
+      }
+      if(ty&&links&&!balN&&(accTypeKind(ty)!==accTypeKind(a0.type))){
+        toast('This account is linked to other records, so it can\u2019t move between what you own and what you owe.');return;
+      }
+      var st=parseAmt(($('mgrEStart')||{}).value);
+      if(ty&&accTypeKind(ty)==='liability'&&st>0){$('mgrEStart').value=String(-st);} /* owed amounts are entered positive, stored negative */
+      var oldName=a0.name,oldStart=a0.start,was0=a0.vis==='me'?'me':'shared';
+      var r=_as20(n);
+      try{
+        var a1=a59(oldName)||a59(n);
+        if(a1){
+          if(oldName!==a1.name)B20.renameEverywhere(oldName,a1.name);
+          if(oldStart!==a1.start&&(balN>0||links)){log20(a1,'Opening balance changed from '+money(oldStart)+' to '+money(a1.start));}
+          var now1=a1.vis==='me'?'me':'shared';
+          if(isCouple()&&now1!==was0){a1.visLog=(a1.visLog||[]);a1.visLog.push({at:Date.now(),by:meName(),from:was0,to:now1});if(a1.visLog.length>20)a1.visLog=a1.visLog.slice(-20);}
+          if(a1.owner&&/ & /.test(a1.owner)&&a1.vis==='me'){delete a1.vis;delete a1.pvby;toast('An account with more than one owner is always shared.');}
+        }
+      }catch(e){}
+      return r;
+    }
+  }catch(e){console.warn('b20accSave',e);}
+  return _as20(n);
+};
+/* AE-VIS-08: retraction disclosure is worded exactly (static patch in the build adds the sentence) */
+
+/* change-log display: "Last changed by {name} on {date}" for shared accounts (AE-EDT-07) */
+var _rmE20=renderMgr;
+renderMgr=function(){
+  _rmE20.apply(this,arguments);
+  try{
+    if(MGR.kind!=='accs')return;
+    var a=MGR.edit?a59(MGR.edit):null;
+    if(a&&Array.isArray(a.visLog)&&a.visLog.length&&$('mgrEOwner')){
+      var last=a.visLog[a.visLog.length-1];
+      var host=$('mgrEOwner').parentNode;
+      if(host&&!$('b20vislog'))
+        host.insertAdjacentHTML('beforeend','<div class="help small" id="b20vislog" style="margin-top:-2px">Last changed by '+esc20(last.by||'\u2014')+' on '+dLabelY(new Date(last.at).toISOString().slice(0,10))+'</div>');
+    }
+  }catch(e){}
+};
+
+
+/* ---------------------------------------------------------------------------
+   Part 2 · Add flow (WP-AE-03/04/07/10, AE-G05..G14, AE-ADD-02/05/06/08,
+   AE-CAT-01/02, AE-VAL-01..07, AE-FLD-02, AE-MOD-01/04, BG-06)
+   --------------------------------------------------------------------------- */
+
+/* ---------- 9 · All 11 categories selectable + Other debt is a liability (AE-G05/07, AE-CAT-01/02, AE-ADD-02) ---------- */
+V63.CATS['Businesses'].types=['Business'];
+V63.CATS['Money owed to me'].types=['Owed to me'];
+V63.CATS['Other debt']={types:['Other Debt'],own:0,ic:'card2',ex:'Borrowed from family, taxes or bills to pay'};
+Object.keys(V63.CATS).forEach(function(c){(V63.CATS[c].types||[]).forEach(function(t){V63.typeCat[t]=c;});});
+V63.ACC_ORDER_OWE=['Loans','Hire Purchase','Cards & credit lines','Other debt','Other'];
+try{DB.accTypeMeta=DB.accTypeMeta||{};DB.accTypeMeta['Other Debt']={kind:'liability'};DB.accTypeMeta['Business']={kind:'asset'};DB.accTypeMeta['Owed to me']={kind:'asset'};}catch(e){}
+/* unmapped liability types group under Other debt, never under the asset Other (AE-CAT-02) */
+var _cat20=V63.catOf;
+V63.catOf=function(ty,a){
+  var r=_cat20(ty,a);
+  try{if(r==='Other'&&accTypeKind(ty)==='liability')return 'Other debt';}catch(e){}
+  return r;
+};
+/* chips for the three new/fixed categories always drive the Type select */
+B20.chipType=function(cat){
+  var c=V63.CATS[cat],ty=(c&&c.types&&c.types[0])||'';
+  var s=$('mgrNewAType');
+  if(s&&ty){
+    var has=false;[].forEach.call(s.options,function(o){if(o.value===ty)has=true;});
+    if(!has){var o=document.createElement('option');o.value=ty;o.textContent=ty;s.appendChild(o);}
+    s.value=ty;
+  }
+  return ty;
+};
+function amtPlaceholder20(ty){
+  var liab=false;try{liab=accTypeKind(ty)==='liability';}catch(e){}
+  return liab?'How much do you owe today? e.g. 1200':'How much is in it today?';
+}
+function b20amtHint(ty){
+  var old=$('b20amtHint');if(old)old.remove();
+  var inp=$('mgrNewStart');if(!inp)return;
+  try{
+    if(accTypeKind(ty)==='liability'){
+      inp.insertAdjacentHTML('afterend','<div class="help small" id="b20amtHint" style="margin:-3px 2px 7px">Enter the amount you owe as a positive number \u2014 the app stores it as what you owe.</div>');
+    }
+  }catch(e){}
+}
+var _sac20=V63.syncAddCat;
+V63.syncAddCat=function(){
+  _sac20();
+  try{
+    if(MGR.kind!=='accs')return;
+    var cat=V63.addCat,c=V63.CATS[cat];
+    if(c&&c.types&&c.types.length&&c.types.indexOf(($('mgrNewAType')||{}).value||'')<0){
+      B20.chipType(cat);
+      if(V63.CATS[cat].types.indexOf(($('mgrNewAType')||{}).value||'')<0)return;
+    }
+    var s=$('mgrNewAType');
+    if(s){var ph=$('mgrNewStart');if(ph)ph.placeholder=amtPlaceholder20(s.value);b20amtHint(s.value);}
+  }catch(e){}
+};
+/* inline field errors instead of toast-only (AE-VAL-07) */
+B20.fieldErr=function(id,msg){
+  var el=$(id);if(!el)return toast(msg);
+  el.style.borderColor='var(--exp)';
+  var old=el.parentNode.querySelector('.b20ferr');if(old)old.remove();
+  el.insertAdjacentHTML('afterend','<div class="help small b20ferr" style="color:var(--exp);margin:-2px 2px 6px">'+esc20(msg)+'</div>');
+  setTimeout(function(){el.style.borderColor='';var o=el.parentNode.querySelector('.b20ferr');if(o)o.remove();},4000);
+};
+
+/* ---------- 10 · Add: validate first, then create through the existing chain (AE-VAL-01..06, AE-G09/10/14, AE-FLD-02, AE-ADD-05/06, BG-06) ---------- */
+function b20doAdd(){
+  var nm0=(($('mgrNewName')||{}).value||'').trim(); /* captured BEFORE the chain — the core save re-renders the sheet and blanks the form */
+  var cat0=V63.addCat;
+  _aam20.apply(this,arguments);
+  try{
+    var a=DB.accounts.find(function(x){return x.name===nm0;});
+    if(!a)return;
+    var ty2=a.type||'';
+    if(accTypeKind(ty2)==='liability'&&a.start>0)a.start=-a.start; /* entered positive, stored negative (AT-17) */
+    var l4=($('mgrNewL4')||{}).value||'';
+    if(l4)a.l4=String(l4).replace(/\D/g,'').slice(0,4);
+    if(isCouple()&&a.owner&&/ & /.test(a.owner)&&a.vis==='me'){delete a.vis;delete a.pvby;
+      toast('An account with more than one owner is always shared.');}
+    if(isCouple()&&!a.owner){a.owner=meName();} /* the creator always keeps access to what they create */
+    if(cat0&&V63.CATS[cat0]){V63.addCat=cat0;if(!a.v63cat||V63.CATS[cat0])a.v63cat=cat0;} /* the re-render's sync must not stomp the chosen category */
+    if(a.start!==undefined)save();
+  }catch(e){console.warn('b20addPost',e);}
+}
+var _aam20=addAccountMgr;
+addAccountMgr=function(){
+  try{
+    var n=(($('mgrNewName')||{}).value||'').trim();
+    if(!n){B20.fieldErr('mgrNewName','Enter an account name');return;}
+    if(n.length>40){B20.fieldErr('mgrNewName','Keep the name under 40 characters');return;}
+    var res=B20.reservedName(n);
+    if(res){B20.fieldErr('mgrNewName',res);return;}
+    if(B20.dupName(n,'')){B20.fieldErr('mgrNewName','Pick a different name. \u201c'+n+'\u201d already exists.');return;}
+    var ty=($('mgrNewAType')||{}).value||'';
+    var amt=parseAmt(($('mgrNewStart')||{}).value);
+    if((ty==='Property'||ty==='Vehicle')&&(!amt||amt<=0)){
+      askConfirm('Add with no purchase price? A property or vehicle usually needs one \u2014 it drives your overall position. You can also set the price first.','Add with no purchase price',function(){b20doAdd();});
+      return;
+    }
+  }catch(e){console.warn('b20add',e);}
+  b20doAdd();
+};
+
+/* ---------- 11 · Form defaults: owner = signed-in person, last 4 digits at creation, plain amount labels (AE-G10/14, AE-MOD-01, AE-ADD-05/06) ---------- */
+var _rm20=renderMgr;
+renderMgr=function(){
+  _rm20.apply(this,arguments);
+  try{
+    if(MGR.kind!=='accs')return;
+    var no=$('mgrNewOwner');
+    if(no&&!no.value){try{var me=meName();if(me&&DB.people.indexOf(me)>=0){no.value=me;}}catch(e){}}
+    var no2=$('mgrNewOwner');
+    if(no2&&!$('mgrNewL4')&&!$('mgrEName')){
+      no2.parentNode.insertAdjacentHTML('afterend','<div class="mgr-lb">Last 4 digits (optional)</div><input class="fin" id="mgrNewL4" inputmode="numeric" maxlength="4" placeholder="Helps match bank statements" style="margin-bottom:7px">');
+    }
+    var s=$('mgrNewAType');
+    if(s){var ph=$('mgrNewStart');if(ph&&!ph.value)ph.placeholder=amtPlaceholder20(s.value);}
+    /* Account actions on the edit form: Close / Archive for EVERY type (AE-CLS-01, AE-ENT-02) */
+    var ea=MGR.edit?a59(MGR.edit):null;
+    if(ea&&!isVal(ea)&&!isLedger20(ea)&&!$('b20accAct')){
+      var stE=V63.statusOf(ea);
+      var anchor=$('mgrEL4')||$('mgrEOwner')||$('mgrEName');
+      if(anchor&&anchor.parentNode){
+        anchor.parentNode.insertAdjacentHTML('afterend','<div id="b20accAct" style="margin-top:10px"><div class="mgr-lb">Account actions</div>'
+          +(stE==='active'?'<button class="btn ghost" data-act="v63dispose" data-n="'+esc20(ea.name)+'" style="width:100%">'+ico('swap')+' '+(simple20()?'I no longer use this account':'Close or archive this account')+'</button>'
+          :'<button class="btn ghost" data-act="v63dispose" data-n="'+esc20(ea.name)+'" style="width:100%">'+ico('swap')+' '+(stE==='archived'?(simple20()?'Show again':'Reopen or restore'):(simple20()?'Use this account again':'Reopen'))+'</button>')
+          +'</div>');
+      }
+    }
+  }catch(e){}
+};
+
+/* chip tap: keep category + type in step, never reset (AE-G05) */
+var _ha20=handleAct;
+handleAct=function(el){
+  switch(el.dataset.act){
+    case 'v63addcat':{
+      V63.addCat=el.dataset.c;
+      var ty=B20.chipType(V63.addCat);
+      V63.syncAddCat();
+      var s=$('mgrNewAType');if(s&&ty&&!s.value)s.value=ty;
+      var ph=$('mgrNewStart');if(ph)ph.placeholder=amtPlaceholder20(ty||s.value);
+      b20amtHint(ty);
+      return;
+    }
+  }
+  return _ha20(el);
+};
+
+/* ---------- 12 · Back / accidental close keeps nothing silently (AE-ADD-08) ---------- */
+var _cm20=closeMgr;
+closeMgr=function(){
+  try{
+    if(MGR.kind==='accs'&&!MGR.edit&&!B20.disc){
+      var nn=(($('mgrNewName')||{}).value||'').trim();
+      if(nn){
+        askChoice('Discard this account? \u201c'+nn+'\u201d hasn\u2019t been saved yet.',[
+          {c:'btn',l:'Discard',f:function(){B20.disc=true;$('mgrNewName').value='';$('mgrNewStart').value='';_cm20();B20.disc=false;}},
+          {c:'btn ghost',l:'Keep editing',f:function(){}}
+        ]);
+        return;
+      }
+    }
+  }catch(e){}
+  _cm20();
+};
+
+/* ---------- 13 · Onboarding / inline entry reuse the same rules (AE-ADD-09 partial, AE-G15 sign fix) ---------- */
+var _auP20=window.auPerson;
+if(typeof _auP20==='function'){window.auPerson=_auP20;}
+
+
+/* ---------------------------------------------------------------------------
+   Part 3 · Advanced Couple v2.1 — WP-01..05, 09, 10, 14..18
+   --------------------------------------------------------------------------- */
+
+/* ---------- 14 · Couple tab is Shared-only, in both Experience levels (BG-01, WP-01, AC-INS-02..05, AC-EXP-04) ----------
+   cSnapshot16 / cAccounts16 / cContribution16 / cInsight16 are IIFE-local in the b16
+   block and read the global DB directly. Instead of rewriting them, V63.coupleHTML is
+   wrapped to render against a SHARED-ONLY copy of DB (private accounts and any
+   transaction touching them removed; split bills always kept). The Couple tab then
+   ignores the scope chip entirely and both partners see identical figures.
+   The Simple-level snapshot hide (BG-14/WP-15) is an asserted static patch at the
+   call site inside V63.coupleHTML. */
+B20.privNames=function(){var m={};DB.accounts.forEach(function(a){if(a.vis==='me')m[a.name]=1;});return m;};
+B20.sharedDB=function(){
+  var c=null;
+  try{c=JSON.parse(JSON.stringify(DB));}catch(e){return DB;}
+  var pn=B20.privNames();
+  c.accounts=(c.accounts||[]).filter(function(a){
+    if(!a||a.locked||a.recv)return false;
+    if(a.name&&(/^.+ owes .+$/.test(a.name)||LBL_RE.test(a.name)))return false;
+    return a.vis!=='me';
+  });
+  c.txns=(c.txns||[]).filter(function(t){
+    if(!t)return false;
+    if(t.group)return true; /* split bills are always Shared */
+    if(pn[t.account])return false;
+    if(t.type==='Transfer'&&t.to&&pn[t.to])return false;
+    return true;
+  });
+  c.recur=(c.recur||[]).filter(function(r){return r&&r.tpl&&!pn[r.tpl.account];});
+  return c;
+};
+B20.coupleTabShared=function(fn){
+  var orig=DB,meta=DB.meta;
+  var c=B20.sharedDB();c.meta=meta; /* meta is shared on purpose: dismissals still register */
+  DB=c;
+  try{return fn();}finally{DB=orig;}
+};
+var _ch20=V63.coupleHTML;
+V63.coupleHTML=function(){
+  return B20.coupleTabShared(function(){return _ch20();});
+};
+/* AC-REM-04: upcoming payments inside Couple-tab contexts use shared scope only */
+
+/* ---------- 15 · The Private space stays on this phone (BG-02, WP-02, OD-02, AC-STO-03/04/05/11/12/13) ---------- */
+pushPrivate=function(){ /* OD-02: Private data is never uploaded. The household cloud holds the shared copy only. */ };
+/* privStatus6 wording (AC-STO-04) + 7-day backup-due (AC-STO-13) are ASSERTED STATIC PATCHES
+   in make_v160b20.py — privStatus6 is IIFE-local in the beta6 block. */
+/* AC-STO-11: the first time the household cloud is reachable, offer to delete the old private cloud document */
+var _hhp20=hhPush;
+hhPush=function(){
+  try{
+    if(DB.meta.cloudSyncOn&&HH.id){
+      var sz=0;try{sz=JSON.stringify(sharedCopy(Date.now())).length;}catch(e){}
+      if(sz>800000){
+        var lw=+(DB.meta.v59||{}).sizeWarnAt||0;
+        if(Date.now()-lw>864e5){DB.meta.v59=DB.meta.v59||{};DB.meta.v59.sizeWarnAt=Date.now();
+          toast('Household data is at '+Math.round(sz/10000)+'% of the cloud document limit. Consider closing and archiving old accounts.');}
+      }
+    }
+  }catch(e){}
+  var p=_hhp20();
+  try{
+    if(p&&p.then&&DB.meta.cloudSyncOn&&HH.id&&adv20()&&!DB.meta.v59.privCloudCleared&&!DB.meta.v59.privCloudAsked){
+      p.then(function(ok){
+        if(!ok)return;
+        DB.meta.v59=DB.meta.v59||{};DB.meta.v59.privCloudAsked=1;save();
+        setTimeout(function(){
+          askChoice('Your previous app version uploaded a copy of your private space to the household cloud. This version keeps your private space on this phone only. Delete the old cloud copy? Your data on this phone is not touched.',[
+            {c:'btn',l:'Delete the old cloud copy',f:function(){
+              fsMods().then(function(F){return F.deleteDoc(hhPrivRef(F,HH.id));}).then(function(){
+                DB.meta.v59.privCloudCleared=Date.now();save();
+                toast('Old private cloud copy deleted. Your private space stays on this phone.');
+              }).catch(function(e){toast(fsErr(e));});
+            }},
+            {c:'btn ghost',l:ico('save')+' Download my backup first',f:function(){openMgr('bkfile');}},
+            {c:'btn ghost',l:'Decide later',f:function(){DB.meta.v59.privCloudAsked=0;}}
+          ]);
+        },900);
+      });
+    }
+  }catch(e){}
+  return p;
+};
+/* AC-STO-12: second-device notice — Private accounts appear only after a restore */
+B20.sdv=function(){
+  var host=$('accList');if(!host)return;
+  var old=$('b20sdv');if(old)old.remove();
+  try{
+    if(!adv20()||!DB.meta.cloudSyncOn||!HH.id)return;
+    if(DB.meta.v59&&DB.meta.v59.sdvDismissed)return;
+    var mine=DB.accounts.filter(function(a){return a.vis==='me'&&pvMine(a);}).length;
+    if(mine>0)return;
+    var card=host.closest('.card');
+    if(!card)return;
+    card.insertAdjacentHTML('beforebegin','<div class="card" id="b20sdv"><div class="tipcard"><span class="ti">'+ico('phone')+'</span><div style="flex:1"><b>Your private accounts are not on this phone</b><div class="help small">This device has no private space yet. Restore them from your personal backup to see them here \u2014 restoring never uploads private data.</div><div class="btnrow" style="margin-top:8px"><button class="btn sm" data-act="bkrestorefile2">Restore from my backup</button><button class="btn sm ghost" data-act="b20sdvoff">Dismiss</button></div></div></div></div>');
+  }catch(e){}
+};
+/* touch() keeps a private-space activity stamp for the backup-due attention (AC-STO-13) */
+var _tch20=touch;
+touch=function(){var r=_tch20.apply(this,arguments);
+  try{B20.migrate();}catch(e){}
+  try{if(adv20()&&DB.accounts.some(function(a){return a.vis==='me';})){DB.meta.v59=DB.meta.v59||{};DB.meta.v59.privTouch=Date.now();}}catch(e){}
+  return r;};
+
+/* ---------- 16 · The household creator can remove a joined partner (BG-05, WP-05, OD-03, AC-HH-05) ---------- */
+var _rca20=renderCloudAcc;
+renderCloudAcc=function(){
+  _rca20();
+  try{
+    if(!FB.user||!HH.id)return;
+    var I=HH.info||{};if(I.owner!==FB.user.uid)return;
+    var b=$('fbBody');if(!b)return;
+    var mine=(FB.user.email||'').toLowerCase();
+    var uidByEm={};(I.members||[]).forEach(function(u){var e=(I.memberEmails||{})[u];if(e)uidByEm[e]=u;});
+    b.querySelectorAll('.dayg .mgr-row').forEach(function(row){
+      var lb=row.querySelector('span.lb');if(!lb||row.querySelector('[data-act=b20hhremove]'))return;
+      var em=(lb.childNodes[0]&&lb.childNodes[0].textContent||'').trim().toLowerCase();
+      if(!em||em===mine)return;
+      var uid=uidByEm[em];if(!uid)return;
+      var btn=document.createElement('button');
+      btn.className='ibtn';btn.setAttribute('data-act','b20hhremove');
+      btn.setAttribute('data-e',em);btn.setAttribute('data-u',uid);
+      btn.setAttribute('aria-label','Remove '+em);btn.innerHTML=ico('userx');
+      row.appendChild(btn);
+    });
+  }catch(e){console.warn('b20hh',e);}
+};
+MGR_TITLE.b20hhremove='Remove from household';
+var _haP20=handleAct;
+handleAct=function(el){
+  switch(el.dataset.act){
+    case 'b20hhremove':{
+      var em=el.dataset.e,uid=el.dataset.u;
+      var P=em;try{var pn=partnerName();}catch(e){}
+      askChoice('Remove '+em+' from the household? Sync stops. '+em+' keeps the copy of shared data already on their phone. Your private accounts are not affected.',[
+        {c:'btn red-solid',l:'Remove from household',f:function(){
+          fsMods().then(function(F){
+            var u={members:F.arrayRemove(uid)};
+            u['memberEmails.'+uid]=F.deleteField();
+            u.removedMembers=F.arrayUnion({email:em,at:new Date().toISOString(),by:(FB.user.email||'')});
+            return F.updateDoc(hhRef(F,HH.id),u);
+          }).then(function(){toast(em+' was removed. They keep the shared copy already on their phone \u2014 nothing is wiped remotely.');renderCloudAcc();})
+            .catch(function(e){toast(fsErr(e));});
+        }},
+        {c:'btn ghost',l:'Cancel',f:function(){}}
+      ]);return;
+    }
+    case 'b20sdvoff':{DB.meta.v59=DB.meta.v59||{};DB.meta.v59.sdvDismissed=1;save();var c=$('b20sdv');if(c)c.remove();return;}
+    case 'bkrestorefile2':{openMgr('bkfile');return;}
+    case 'b20pvp':{B20.pvOpen();return;}
+    case 'b20pvpx':{B20.pvClose();return;}
+    case 'v63arch18':{var s1=$('dz16st');if(s1)s1.value='archived';V63.disposeSave();return;}
+    case 'v63dispose19':{var s2=$('dz16st');if(s2)s2.value='closed';V63.disposeSave();return;}
+  }
+  return _haP20(el);
+};
+/* the removed partner\u2019s device: sync stops, local data stays (OD-03) */
+var _hhpR20=hhPush;
+hhPush=function(){
+  var p=_hhpR20();
+  try{
+    if(p&&p.then&&FB.user&&HH.id){
+      p.then(function(ok){
+        if(ok)return;
+        fsMods().then(function(F){return F.getDoc(hhRef(F,HH.id));}).then(function(s){
+          var d=s.exists()?s.data():{};
+          var mem=d.members||[];
+          if(mem.indexOf(FB.user.uid)<0){
+            hhDetach();DB.meta.hh='';save();
+            toast('You are no longer in this household. The data already on this phone stays \u2014 nothing was deleted.');
+          }
+        }).catch(function(){});
+      });
+    }
+  }catch(e){}
+  return p;
+};
+
+/* ---------- 17 · Partner-view preview (BG-04, WP-04, AC-PVP-01..05) ---------- */
+B20.pvData=function(){
+  var me='',P='';
+  try{me=meName();P=partnerName();}catch(e){}
+  var minePn={},anyPn={};
+  DB.accounts.forEach(function(a){if(a.vis==='me'){anyPn[a.name]=1;if((a.pvby||a.owner)===me)minePn[a.name]=1;}});
+  var accs=DB.accounts.filter(function(a){return a&&!a.locked&&!a.recv&&!B20.isLedger(a)&&a.vis!=='me';});
+  var accSet={};accs.forEach(function(a){accSet[a.name]=1;});
+  function relabel(n){return anyPn[n]?((a59(n)||{}).owner||me)+'\u2019s personal account':n;}
+  var txns=DB.txns.filter(function(t){
+    if(t.demo)return false;
+    var inA=accSet[t.account],inB=t.type==='Transfer'&&t.to&&accSet[t.to];
+    if(!inA&&!inB)return false;
+    if(t.priv&&(t.pby||me)===me)return false;          /* my own legacy private entries never reach the partner */
+    if(t.priv&&t.pby&&t.pby!==me)return false;          /* AC-PVP-05: the partner's own private entries are never shown in preview */
+    return true;
+  }).slice(0,200);
+  return {me:me,P:P,accs:accs,txns:txns,relabel:relabel,anyPn:anyPn,accSet:accSet};
+};
+B20.pvOpen=function(){
+  if(!cpl20()){toast('Partner-view preview is available in Couple and Advanced Couple.');return;}
+  var d=B20.pvData();
+  var p=$('pagePVP20');
+  if(!p){
+    p=document.createElement('div');p.className='page';p.id='pagePVP20';
+    p.innerHTML='<div class="b20pvpbar"><span>'+ico('eye')+' Previewing '+esc20(d.P||'your partner')+'\u2019s view</span><button class="btn sm" data-act="b20pvpx">Exit</button></div>'
+      +'<div id="b20pvpBody" style="padding:12px 14px 40px"></div>';
+    var host=document.querySelector('main')||document.body;host.appendChild(p);
+  }
+  var body=$('b20pvpBody');
+  var rows=d.accs.map(function(a){return {name:a.name};});
+  var bal={},tot=0;
+  rows.forEach(function(r){try{bal[r.name]=accountBalAsOf(r.name,todayISO());}catch(e){bal[r.name]=0;}tot+=bal[r.name]||0;});
+  var byCat={};
+  d.accs.forEach(function(a){var k=V63.catOf(a.type,a);byCat[k]=byCat[k]||[];byCat[k].push(a);});
+  var tiles='<div class="tiles18">';
+  tiles+='<div class="atile18 net"><span class="atic">'+ico('pie')+'</span><b>All</b><span class="av'+(tot<0?' neg':' pos')+'">'+(tot<0?'\u2212':'+')+money(Math.abs(tot))+'</span><small>'+d.accs.length+' account'+(d.accs.length===1?'':'s')+' \u00b7 what '+esc20(d.P||'your partner')+' can see</small></div>';
+  Object.keys(byCat).forEach(function(k){
+    var t2=0;byCat[k].forEach(function(a){t2+=bal[a.name]||0;});
+    var ic=(V63.CATS[k]&&V63.CATS[k].ic)||'box';
+    tiles+='<div class="atile18"><span class="atic">'+ico(ic)+'</span><b>'+esc20(k)+'</b><span class="av'+(t2<0?' neg':'')+'">'+money(t2)+'</span><small>'+byCat[k].length+' account'+(byCat[k].length===1?'':'s')+'</small></div>';
+  });
+  var led=[];try{if(cpl20())led=ledgers().filter(function(l){return l.amt>=0.005;});}catch(e){}
+  if(cpl20()){
+    var bu=0;led.forEach(function(l){bu+=l.amt;});
+    tiles+='<div class="atile18 bu"><span class="atic">'+ico('scale')+'</span><b>Between Us</b><span class="av'+(led.length?' neg':'')+'">'+(led.length?money(bu):'Settled')+'</span><small>'+(led.length?led.length+' open balance'+(led.length===1?'':'s'):'all settled up')+'</small></div>';
+  }
+  tiles+='</div>';
+  var perms='<div class="card"><div class="mgr-sec">Shared accounts &amp; '+esc20(d.P||'partner')+'\u2019s access</div><div class="rows">'
+    +(d.accs.length?d.accs.map(function(a){
+      var p=permFor59(a.name);var pl=(p==='owner'||p==='none')?'Owner':permLabel20(a.partnerAccess||'add');
+      return '<div class="mgr-row" style="padding:8px 2px"><span class="lb">'+esc20(a.name)+'<small>'+esc20(a.owner||'No owner')+'</small></span><span class="pvpill">'+esc20(pl)+'</span></div>';
+    }).join(''):'<div class="help">No shared accounts yet. Use \u201cChoose accounts to share\u201d to let your partner see some.</div>')
+    +'</div></div>';
+  var latest=d.txns.slice(-8).reverse().map(function(t){
+    var acc=relabelSafe20(d,t.account),to2=t.type==='Transfer'?relabelSafe20(d,t.to):'';
+    var neg=t.type==='Expense'||(t.type==='Transfer'&&!accSet20(d,t.account));
+    return '<div class="xtxrow"><span class="nm"><b>'+esc20(t.category||t.type||'')+'</b><small>'+esc20(dLabelY(t.date))+' \u00b7 '+esc20(acc)+(to2?' \u2192 '+esc20(to2):'')+'</small></span><span class="vv '+(neg?'':'pos')+'">'+money(t.amount)+'</span></div>';
+  }).join('');
+  var buCard='';
+  if(cpl20()){
+    var net=0;led.forEach(function(l){net+=(l.creditor===d.me?l.amt:-l.amt);});
+    var dir=led.length===1?(led[0].debtor+' owes '+led[0].creditor):(net>0?(d.P+' owes '+d.me):((net<0?d.me:d.P)+' owes '+(net<0?d.P:d.me)));
+    buCard='<div class="card"><div class="mgr-sec">Between Us</div><div style="text-align:center;padding:4px 0 6px"><b style="font-size:14px">'+esc20(led.length?dir:'All settled up')+'</b><div style="font-size:24px;font-weight:800" class="'+(net<0?'neg':'pos')+'">'+money(Math.abs(net||0))+'</div></div></div>';
+  }
+  body.innerHTML='<div class="help small" style="margin:0 2px 10px">Exactly what '+esc20(d.P||'your partner')+' receives: shared and joint accounts, their transactions, Between Us. Private accounts never leave this phone, so they are not here.</div>'
+    +'<div class="card">'+tiles+'</div>'
+    +'<div class="card"><div class="mgr-sec">Latest transactions</div><div class="rows">'+(latest||'<div class="help">No shared transactions yet.</div>')+'</div></div>'
+    +buCard+perms;
+  p.classList.add('on');
+  document.body.style.overflow='hidden';
+  try{p.scrollTop=0;}catch(e){}
+  B20.pv={on:true,t:Date.now()};
+  B20.pvReset();
+};
+function relabelSafe20(d,n){return n?(d.anyPn[n]?((a59(n)||{}).owner||d.me)+'\u2019s personal account':n):'';}
+function accSet20(d,n){return !!(n&&d.accSet[n]);}
+B20.pvReset=function(){
+  if(B20.pvTimer)clearTimeout(B20.pvTimer);
+  B20.pvTimer=setTimeout(function(){if(B20.pv&&B20.pv.on)B20.pvClose(true);},90000);
+};
+B20.pvClose=function(auto){
+  B20.pv={on:false};
+  if(B20.pvTimer){clearTimeout(B20.pvTimer);B20.pvTimer=null;}
+  var p=$('pagePVP20');if(p)p.classList.remove('on');
+  document.body.style.overflow='';
+  toast(auto?'Preview closed after 90 seconds of inactivity':'Preview closed \u2014 nothing was changed');
+};
+document.addEventListener('click',function(){if(B20.pv&&B20.pv.on)B20.pvReset();},true);
+
+/* ---------- 18 · Tiles: mode-aware Between Us + Only me / Shared tiles (BG-13, WP-14, AC-BU-06, AC-ACC-11) ----------
+   tilesHTML18 / scopeRows18 / renderAT18 / tileIcon are IIFE-local in b18: the
+   Between-Us-tile mode gate, the drill titles, the row badges and the Closed pill
+   are ASSERTED STATIC PATCHES in make_v160b20.py. This DOM hook runs after every
+   accounts render: it drops the Between Us tile in Personal mode and appends the
+   two Advanced-Couple visibility tiles. */
+B20.tilesPost=function(){
+  try{
+    var g=document.querySelector('.tiles18');if(!g)return;
+    if(!cpl20()){var bu=g.querySelector('.atile18.bu');if(bu)bu.remove();}
+    if(adv20()&&!g.querySelector('[data-k=onlyme]')&&!g.querySelector('[data-k=shared]')){
+      var mine=[],sh=[];
+      DB.accounts.forEach(function(a){
+        if(!a||a.locked||a.recv||/^.+ owes .+$/.test(a.name||'')||LBL_RE.test(a.name||''))return;
+        var b=accountBalAsOf(a.name,todayISO());if(!isFinite(b))return;
+        if(a.vis==='me'&&pvMine(a))mine.push({a:a,b:b});else if(a.vis!=='me')sh.push({a:a,b:b});
+      });
+      function mk(k,label,list,ic){
+        if(!list.length)return null;
+        var t=0;list.forEach(function(x){t+=x.b;});
+        var d=document.createElement('button');d.className='atile18';d.setAttribute('data-act','atile18');d.setAttribute('data-k',k);
+        d.innerHTML='<span class="atic">'+ico(ic)+'</span><b>'+esc20(label)+'</b><span class="av'+(t<-0.004?' neg':'')+'">'+money(t)+'</span><small>'+list.length+' account'+(list.length===1?'':'s')+(k==='onlyme'?' · just you':'')+'</small>';
+        return d;
+      }
+      var m=mk('onlyme','Only me',mine,'lock'),s=mk('shared','Shared',sh,'users');
+      if(m)g.appendChild(m);if(s)g.appendChild(s);
+    }
+  }catch(e){console.warn('b20tiles',e);}
+};
+
+/* ---------- 19 · Simple reports: no Shared Money tile outside Couple modes (BG-13, AC-EXP-08) ---------- */
+var _rf20=X63.reportsFilter;
+X63.reportsFilter=function(){
+  _rf20();
+  try{
+    if(cpl20())return;
+    var t=$('v63tiles');if(!t)return;
+    [].forEach.call(t.children,function(ch){
+      var bb=ch.querySelector('b');
+      if(bb&&bb.textContent==='Shared Money')ch.remove();
+    });
+  }catch(e){}
+};
+
+/* ---------- 20 · OD-04: a new user who skips starts in Simple (BG-16, WP-16, AC-EXP-14) ---------- */
+B20.existingHH=function(){
+  try{
+    if(DB.meta.demo&&DB.meta.demo.on)return false;
+    if((DB.txns||[]).some(function(t){return !t.demo;}))return true;
+    return DB.accounts.length>1;
+  }catch(e){return true;}
+};
+X63.obSkip=function(){
+  var v=X63.viewer();
+  DB.meta.expLevel=DB.meta.expLevel||{};
+  var isNew=!DB.meta.expOnboarded&&!B20.existingHH();
+  if(isNew){DB.meta.expLevel[v]='simple';}
+  else if(!DB.meta.expLevel[v])DB.meta.expLevel[v]='full'; /* existing household keeps Full until it answers */
+  DB.meta.expOnboarded=true;DB.meta.expSelectionSource='skipped'; /* the skip is not a literacy judgement */
+  X63.save();X63.obClose();
+  if(isNew){
+    V63.itab='cash';try{sessionStorage.setItem('v63itab',V63.itab);}catch(e){}
+    X63.apply();
+    toast('Simple experience set \u2014 you can change it any time in Settings \u2192 App Preference');
+  }else{
+    toast('No problem \u2014 Experience Level is in Settings \u2192 App Preference');
+  }
+};
+/* the settings switch records its source code (WP-16 reason codes) */
+var _eg20=X63.expGo;
+X63.expGo=function(){
+  var r=_eg20.apply(this,arguments);
+  try{DB.meta.expSelectionSource='settings';X63.save();}catch(e){}
+  return r;
+};
+
+/* ---------- 21 · The experience overlay never covers the lock screen (AC-ONB-08, PT-23) ---------- */
+var _obo20=X63.obOpen;
+X63.obOpen=function(){
+  try{
+    var lk=$('lockScr'),au=$('authScr');
+    if((lk&&!lk.hidden)||(au&&!au.hidden))return;
+  }catch(e){}
+  return _obo20();
+};
+
+/* ---------- 22 · Scope control in plain words for Simple (AC-EXP-05) ---------- */
+var _pc20=perCtrlHTML;
+perCtrlHTML=function(noPer){
+  var h=_pc20(noPer);
+  try{if(simple20())h=h.replace(/All mine/g,'All my money');}catch(e){}
+  return h;
+};
+
+/* ---------- 23 · Terminology coverage: Accounts, drill, settings (BG-17, WP-17, AC-EXP-06) ---------- */
+var _rs20=renderSettings;
+renderSettings=function(){
+  _rs20.apply(this,arguments);
+  try{if(simple20())setTimeout(function(){var v=$('view-settings');if(v)X63.terminology(v);},30);}catch(e){}
+};
+/* account links from Simple open the matching tile (BG-17) */
+var _haT20=handleAct;
+handleAct=function(el){
+  switch(el.dataset.act){
+    case 'x63accs':{
+      var f=el.dataset.f||'all';
+      if(f==='all'){V63.accF='all';gotoView('accounts');return;}
+      if(simple20()&&(f==='Money'||f==='debts'||V63.CATS[f])){
+        gotoView('accounts');
+        setTimeout(function(){ /* openAT18 is b18-local: reach it through the tile itself */
+          var t=document.querySelector('.atile18[data-k="'+f+'"]');
+          if(t)t.click();else{V63.accF=f;renderAccounts();}
+        },80);
+        return;
+      }
+      V63.accF=f;gotoView('accounts');return;
+    }
+  }
+  return _haT20(el);
+};
+
+/* ---------- 24 · Modes page: partner may use a different mode + preview entry (AC-MODE-06, AC-PVP-01) ---------- */
+var _rms20=B3.renderModeSub;
+B3.renderModeSub=function(){
+  _rms20.apply(this,arguments);
+  try{
+    var mb=$('modeBodyB3');if(!mb)return;
+    if(!document.getElementById('b20modenote')){
+      mb.insertAdjacentHTML('beforeend','<div class="help small" id="b20modenote" style="margin-top:8px">'+ico('users')+' Each partner can use a different mode \u2014 your choice changes only what you see.</div>');
+    }
+    if(adv20()&&!document.getElementById('b20pvpBtn')){
+      mb.insertAdjacentHTML('beforeend','<button class="btn ghost" id="b20pvpBtn" data-act="b20pvp" style="margin-top:8px">'+ico('eye')+' Preview as '+esc20(partnerName()||'your partner')+'</button>');
+    }
+  }catch(e){console.warn('b20mode',e);}
+};
+
+/* ---------- 25 · boot + version ---------- */
+V59.ver='1.60 beta 20';
+V63.ver='1.60 beta 20';
+document.title=String(document.title).replace(/1\.60 beta 19/,'1.60 beta 20');
+document.querySelectorAll('.sub').forEach(function(e){if(/1\.60 beta 19/.test(e.textContent))e.textContent='v1.60 beta 20';});
+try{
+  var ol20=document.querySelector('#relNotes ol,#relList ol,main ol');
+  if(ol20)ol20.insertAdjacentHTML('beforeend','<li><b>Advanced Couple v2.1 + Add &amp; Edit v1.1 (v1.60 beta 20):</b> your private space now truly stays on this phone \u2014 nothing is uploaded, and the app offers to delete any old cloud copy. The Couple tab shows shared information only, so both partners see identical figures. Every account can be Closed, Reopened and Archived (archived ones hide from lists and pickers until you tap Show archived), and delete is only for empty accounts \u2014 nothing ever moves transactions silently. All 11 account categories work, what you owe is entered as a positive number, the owner always defaults to you, and renaming an account now follows it into recurring items, linked financing and goals. The household creator can remove a partner (they keep the copy already on their phone), you can preview exactly what your partner sees, and a new user who skips the experience questions starts in Simple.</li>');
+}catch(e){}
+B20.migrate();
+try{if(adv20()&&DB.accounts.some(function(a){return a.vis==='me';})){DB.meta.v59=DB.meta.v59||{};DB.meta.v59.privTouch=DB.meta.v59.privTouch||Date.now();}}catch(e){}
+save();
+}
+if(window.V63&&window.DB){start20();}
+else{var n20=0;(function w20(){if(window.V63&&window.DB){start20();}else if(++n20<240){setTimeout(w20,50);}})();}
 })();
 </script>
 </body>
