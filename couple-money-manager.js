@@ -128,7 +128,7 @@ var ACT=(function(){
   function list(){var o={};Object.keys(H).sort().forEach(function(k){o[k]=H[k].map(function(h){return h.mod;}).reverse();});return o;}
   return {on:on,dispatch:dispatch,list:list};
 })();
-var balAt57,plPick,plRender,bkPreview,bkFileGo,bkDue,bkDays,expSettle,expPDF,expXLSX,stmRowHTML,authNextMode,renderPriv,isCouple,batchPriv,txKey,lockKey,tourTick,svgTrend,svgNet,stmFoot,stmAccs,fbAutoSync,lockDots,hideAmtApply,shareNotes,isCalcEl,renderRem,txObserve,backupWrapText,cloudAction,syncStatus,syncUI,accSummaryHTML; /* bindings whose first (superseded) definition was removed */
+var balAt57,plPick,plRender,bkPreview,bkFileGo,bkDue,bkDays,expSettle,expPDF,expXLSX,stmRowHTML,authNextMode,renderPriv,isCouple,batchPriv,txKey,lockKey,tourTick,svgTrend,svgNet,stmFoot,stmAccs,fbAutoSync,lockDots,hideAmtApply,isCalcEl,renderRem,txObserve,backupWrapText,cloudAction,syncStatus,syncUI,accSummaryHTML; /* bindings whose first (superseded) definition was removed */
 var __ST57=window.setTimeout,__BQ57=[];window.__BOOTED=0;
 window.setTimeout=function(f,ms){if(!window.__BOOTED&&typeof f==='function'){__BQ57.push([f,ms]);return -1;}return __ST57.apply(window,arguments);};
 function flushQueue57(){window.setTimeout=__ST57;var q=__BQ57;__BQ57=[];q.forEach(function(x){__ST57(x[0],x[1]||0);});}
@@ -345,7 +345,6 @@ function idbDel(k){return idbOpen().then(function(db){return new Promise(functio
 
 /* ================= cloud sync (Google Drive / OneDrive file) ================= */
 var Cloud={handle:null,perm:''};
-var FS_OK=false;
 function cloudInit(){syncStatus();}
 
 
@@ -993,12 +992,6 @@ function download(name,mime,text){
 }
 function exportJSON(){download('money-data.json','application/json',JSON.stringify(DB,null,1));toast('Snapshot saved — move it to Drive / OneDrive');}
 function csvField(s){s=String(s==null?'':s);return /[",\n]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s;}
-function exportCSV(){
-  var H='Date,Income/Expense,Category,Subcategory,Account,Person,Note,Amount,Split,To Account,Owed Account,Owed Amount';
-  var L=DB.txns.map(function(t){return [t.date,t.type,t.type==='Transfer'?'':t.category,t.subcategory,t.account,t.person,t.note,(Math.round(t.amount*100)/100).toFixed(2),hasSplit(t)?t.split.map(function(s){return s.p+':'+(Math.round(s.v*100)/100);}).join('|'):'',t.to||'',t.owedAcc||'',(t.owedAcc&&t.owedAmt)?(Math.round(t.owedAmt*100)/100):'' ].map(csvField).join(',');});
-  download('money-export.csv','text/csv','\uFEFF'+H+'\n'+L.join('\n'));
-  toast('CSV exported — Excel-ready');
-}
 /* ===== v1.15: Excel upload template for data migration ===== */
 function templateSampleRows(){
   return [
@@ -1208,7 +1201,6 @@ function dayRows(list,mode){
   }).join('');
 }
 /* ================= transactions view ================= */
-var TX_SHOW=10; /* v1.35: kept only for legacy sims — the Show-more cap itself was removed */
 var TXF={month:'all',person:'all',account:'all',type:'all',cat:'all',q:'',open:false}; /* v1.28: open = the filter dropdowns are expanded */
 var BSEL={on:false,ids:[]};
 var EXP={txn:'',grp:{}}; /* v1.35: the transaction id whose detail card is expanded on the Transactions screen */
@@ -1572,12 +1564,7 @@ function clearAll(sel){
 
 /* ================= add / edit sheet ================= */
 var F={id:null,type:'Expense',cat:'',sub:''};
-function accOptions(sel){
-  var names=sortedAlpha(DB.accounts.filter(function(a){return !a.locked;}).map(function(a){return a.name;}));
-  var h=names.map(function(n){return '<option'+(sel===n?' selected':'')+'>'+esc(n)+'</option>';}).join('');
-  if(sel&&names.indexOf(sel)<0)h='<option selected>'+esc(sel)+'</option>'+h;
-  return h;
-}
+var accOptions;
 /* ===== v1.17: owner-driven transactions + cross-owner owed transfers =====
    The Paid-by picker is gone — a transaction's person is the OWNER of the selected account.
    A transfer between two DIFFERENT owners can be ticked “Amount owed”: on top of the two
@@ -1613,7 +1600,6 @@ function updateOwnerUI(){
   $('fOwedRow').hidden=!show;
   if(!show){$('fOwedHint').innerHTML='';return;}
   var amt=parseAmt($('fAmount').value)||0;
-  var ex1=DB.accounts.some(function(a){return a.name===toO+' owes '+fo;});
   var ex2=DB.accounts.some(function(a){return a.name===fo+' owes '+toO;});
   var nm=ex2?(fo+' owes '+toO):(toO+' owes '+fo);
   var sg=ex2?'−':'+';
@@ -2042,144 +2028,112 @@ document.addEventListener('touchcancel',function(){EDGEBACK=null;},{passive:true
 function handleAct(el){return ACT.dispatch(el);}
 ACT.on('core',{
 'nav':function(el,next){
-var a=el.dataset.act;
 gotoView(el.dataset.v);
 },
 'add':function(el,next){
-var a=el.dataset.act;
 openSheet();
 },
 'import':function(el,next){
-var a=el.dataset.act;
 gotoView('settings');
 setTimeout(function(){$('fileImport').click();},80);
 },
 'replacefile':function(el,next){
-var a=el.dataset.act;
 $('fileReplace').click();
 },
 'closesheet':function(el,next){
-var a=el.dataset.act;
 closeSheet();
 },
 'ftype':function(el,next){
-var a=el.dataset.act;
 setFormType(el.dataset.t);
 },
 'fsign':function(el,next){
-var a=el.dataset.act;
 flipSign();
 },
 'splitadd':function(el,next){
-var a=el.dataset.act;
 splitAdd();
 },
 'splitdel':function(el,next){
-var a=el.dataset.act;
 splitDel(+el.dataset.i);
 },
 'spliteven':function(el,next){
-var a=el.dataset.act;
 splitEven();
 },
 'splitadd':function(el,next){
-var a=el.dataset.act;
 splitAdd();
 },
 'savetxn':function(el,next){
-var a=el.dataset.act;
 saveTxn();
 },
 'duptxn':function(el,next){
-var a=el.dataset.act;
 dupTxn();
 },
 'deltxn':function(el,next){
-var a=el.dataset.act;
 delTxn();
 },
 'cyes':function(el,next){
-var a=el.dataset.act;
 confirmResolve(true);
 },
 'cno':function(el,next){
-var a=el.dataset.act;
 confirmResolve(false);
 },
 'year':function(el,next){
-var a=el.dataset.act;
 OV.year=el.dataset.y;
 renderOverview();
 },
 'person':function(el,next){
-var a=el.dataset.act;
 OV.person=el.dataset.p;
 renderOverview();
 },
 'top':function(el,next){
-var a=el.dataset.act;
 OV.top=el.dataset.t;
 renderOverview();
 },
 'yrow':function(el,next){
-var a=el.dataset.act;
 OV.year=el.dataset.y;
 OV.scope='year';
 renderOverview();
 if(REPORT.open)closeReport();
 },
 'ovcat':function(el,next){
-var a=el.dataset.act;
 ovCatTap(el.dataset.c);
 },
 'txn':function(el,next){
-var a=el.dataset.act;
 if(BSEL.on){var bi=BSEL.ids.indexOf(el.dataset.id);if(bi<0)BSEL.ids.push(el.dataset.id);else BSEL.ids.splice(bi,1);renderTxns();}
       else openSheet(el.dataset.id);
 },
 'txgrp':function(el,next){
-var a=el.dataset.act;
 (function(){var gid=el.dataset.g,ids=DB.txns.filter(function(x){return x.group===gid;}).map(function(x){return x.id;});
       if(BSEL.on){var all=ids.every(function(i){return BSEL.ids.indexOf(i)>=0;});ids.forEach(function(i){var k=BSEL.ids.indexOf(i);if(all&&k>=0)BSEL.ids.splice(k,1);else if(!all&&k<0)BSEL.ids.push(i);});}
       else{if(EXP.grp[gid])delete EXP.grp[gid];else EXP.grp[gid]=1;}
       renderTxns();})();
 },
 'ccpay':function(el,next){
-var a=el.dataset.act;
 openCardPay(el.dataset.n,+el.dataset.a);
 },
 'txnedit':function(el,next){
-var a=el.dataset.act;
 openSheet(el.dataset.id);
 },
 'acc':function(el,next){
-var a=el.dataset.act;
 openAccount(el.dataset.n);
 },
 'asum':function(el,next){
-var a=el.dataset.act;
 asumToggle(el.dataset.k);
 },
 'persondrill':function(el,next){
-var a=el.dataset.act;
 openPerson(el.dataset.p);
 },
 'pdrill':function(el,next){
-var a=el.dataset.act;
 if(TXF.person!=='all')openPerson(TXF.person);
 },
 'dacc':function(el,next){
-var a=el.dataset.act;
 DRILL.acc=el.dataset.a||'';
 DRILL.expDay=null;
 renderDrill();
 },
 'mgr':function(el,next){
-var a=el.dataset.act;
 openMgr(el.dataset.k);
 },
 'mgrclose':function(el,next){
-var a=el.dataset.act;
 closeMgr();
 },
 'mgredit':function(el,next){
@@ -2187,218 +2141,170 @@ var a=el.dataset.act;
 switch(a){case 'mgredit':if(MGR.kind==='recur'){recurAnchorEdit(el.dataset.k);break;}MGR.edit=el.dataset.k;renderMgr();break;}
 },
 'mgrcancel':function(el,next){
-var a=el.dataset.act;
 MGR.edit=null;
 renderMgr();
 },
 'mgrsave':function(el,next){
-var a=el.dataset.act;
 mgrSave(el);
 },
 'mgradd':function(el,next){
-var a=el.dataset.act;
 mgrAdd();
 },
 'mgrdel':function(el,next){
-var a=el.dataset.act;
 mgrDel(el.dataset.k);
 },
 'fcatmenu':function(el,next){
-var a=el.dataset.act;
 openMgr('pickcat');
 },
 'fsubmenu':function(el,next){
-var a=el.dataset.act;
 openMgr('picksub');
 },
 'pickcat':function(el,next){
-var a=el.dataset.act;
 F.cat=el.dataset.c;
 renderFormCats(F.cat);
 closeMgr();
 },
 'picksub':function(el,next){
-var a=el.dataset.act;
 F.sub=(el.dataset.s==='(None)')?'':el.dataset.s;
 renderFormCats(F.cat);
 closeMgr();
 },
 'picksubnone':function(el,next){
-var a=el.dataset.act;
 F.sub='';
 renderFormCats(F.cat);
 closeMgr();
 },
 'subadd':function(el,next){
-var a=el.dataset.act;
 subAddFromPicker();
 },
 'catadd2':function(el,next){
-var a=el.dataset.act;
 catAddFromPicker();
 },
 'psum':function(el,next){
-var a=el.dataset.act;
 exportPersonCSV();
 },
 'month':function(el,next){
-var a=el.dataset.act;
 openMonth(el.dataset.k);
 },
 'dtoacc':function(el,next){
-var a=el.dataset.act;
 if(DRILL.person){DRILL.acc='';}else{DRILL.level='accmonth';DRILL.month='';DRILL.cat='';}
 DRILL.expDay=null;
 renderDrill();
 },
 'dtoperson':function(el,next){
-var a=el.dataset.act;
 DRILL.level='pmonth';
 DRILL.month='';
 DRILL.cat='';
 renderDrill();
 },
 'dback':function(el,next){
-var a=el.dataset.act;
 drillBack();
 },
 'dtomonth':function(el,next){
-var a=el.dataset.act;
 DRILL.level='month';
 DRILL.cat='';
 renderDrill();
 },
 'dmode':function(el,next){
-var a=el.dataset.act;
 DRILL.mode=el.dataset.m;
 DRILL.expDay=null;
 renderDrill();
 },
 'dday':function(el,next){
-var a=el.dataset.act;
 DRILL.expDay=DRILL.expDay===el.dataset.d?null:el.dataset.d;
 renderDrill();
 },
 'cycper':function(el,next){
-var a=el.dataset.act;
 DRILL.cyc=DRILL.cyc===el.dataset.s?'':el.dataset.s;
 renderDrill();
 },
 'dcat':function(el,next){
-var a=el.dataset.act;
 openCatIn(el.dataset.c);
 },
 'accent':function(el,next){
-var a=el.dataset.act;
 DB.meta.accent=el.dataset.a;
 applyTheme();
 touch();
 },
 'mode':function(el,next){
-var a=el.dataset.act;
 DB.meta.mode=el.dataset.m;
 applyTheme();
 touch();
 },
 'cloud':function(el,next){
-var a=el.dataset.act;
 cloudAction();
 },
 'fbsignout':function(el,next){
-var a=el.dataset.act;
 fbSignOut();
 },
 'fbtoggle':function(el,next){
-var a=el.dataset.act;
 fbToggle();
 },
 'fbsync':function(el,next){
-var a=el.dataset.act;
 fbSyncNow();
 },
 'fbrestore':function(el,next){
-var a=el.dataset.act;
 fbRestore();
 },
 'fbdelcloud':function(el,next){
-var a=el.dataset.act;
 fbDeleteCloud();
 },
 'bklist':function(el,next){
-var a=el.dataset.act;
 openMgr('backups');
 },
 'bkdl':function(el,next){
-var a=el.dataset.act;
 backupDownload(parseInt(el.dataset.i,10)||0);
 },
 'bkrest':function(el,next){
-var a=el.dataset.act;
 backupRestore(parseInt(el.dataset.i,10)||0);
 },
 'bkdel':function(el,next){
-var a=el.dataset.act;
 backupDelOne(parseInt(el.dataset.i,10)||0);
 },
 'bkclear':function(el,next){
-var a=el.dataset.act;
 backupClearAll();
 },
 'snap':function(el,next){
-var a=el.dataset.act;
 exportJSON();
 },
 'xlstpl':function(el,next){
-var a=el.dataset.act;
 downloadTemplateXLSX();
 },
 'clear':function(el,next){
-var a=el.dataset.act;
 clearDataOpen();
 },
 'clrsel':function(el,next){
-var a=el.dataset.act;
 clearApply(false);
 },
 'clrall':function(el,next){
-var a=el.dataset.act;
 clearApply(true);
 },
 'clrclose':function(el,next){
-var a=el.dataset.act;
 $('clrmodal').classList.remove('on');
 navSync();
 },
 'padd':function(el,next){
-var a=el.dataset.act;
 addPerson(($('personName')||{}).value);
 },
 'delp':function(el,next){
-var a=el.dataset.act;
 delPerson(el.dataset.n);
 },
 'cadd':function(el,next){
-var a=el.dataset.act;
 addCategory(($('catNewName')||{}).value,$('catNewType')?$('catNewType').value:'Expense');
 },
 'delc':function(el,next){
-var a=el.dataset.act;
 delCategory(el.dataset.t,el.dataset.n);
 },
 'accaddq':function(el,next){
-var a=el.dataset.act;
 quickAddAcc();
 },
 'repclose':function(el,next){
-var a=el.dataset.act;
 closeReport();
 },
 'undo':function(el,next){
-var a=el.dataset.act;
 undoNow();
 },
 'selmode':function(el,next){
-var a=el.dataset.act;
 BSEL.on=!BSEL.on;
 if(!BSEL.on)BSEL.ids=[];
 EXP.txn='';
@@ -2406,17 +2312,14 @@ renderTxns();
 navSync();
 },
 'txfilter':function(el,next){
-var a=el.dataset.act;
 TXF.open=!TXF.open;
 renderTxns();
 },
 'selall':function(el,next){
-var a=el.dataset.act;
 BSEL.ids=txFiltered().map(function(t){return t.id;});
 renderTxns();
 },
 'selclear':function(el,next){
-var a=el.dataset.act;
 BSEL.ids=[];
 renderTxns();
 },
@@ -2425,54 +2328,43 @@ var a=el.dataset.act;
 switch(a){case 'batchedit':if(!BSEL.ids.length){toast('Tick at least one transaction first');break;}openMgr('batchedit');break;}
 },
 'batchdel':function(el,next){
-var a=el.dataset.act;
 batchDel();
 },
 'batchapply':function(el,next){
-var a=el.dataset.act;
 batchApply();
 },
 'fcat':function(el,next){
-var a=el.dataset.act;
 F.cat=el.dataset.c;
 F.sub='';
 renderFormCats(F.cat);
 },
 'fsubpick':function(el,next){
-var a=el.dataset.act;
 F.sub=el.dataset.s||'';
 renderFormCats(F.cat);
 },
 'subadd2':function(el,next){
-var a=el.dataset.act;
 (function(){var nv=(($('fSubNew')||{}).value||'').trim();if(!nv){toast('Type a sub-category name');return;}if(!F.cat){toast('Choose a category first');return;}if(subList(F.cat).indexOf(nv)<0)subList(F.cat).push(nv);F.sub=nv;$('fSubNew').value='';renderFormCats(F.cat);save();})();
 },
 'txfclr':function(el,next){
-var a=el.dataset.act;
 TXF[el.dataset.f]='all';
 renderTxns();
 },
 'txfclrall':function(el,next){
-var a=el.dataset.act;
 TXF.month=TXF.person=TXF.account=TXF.type=TXF.cat='all';
 renderTxns();
 },
 'peroff':function(el,next){
-var a=el.dataset.act;
 PER.off=Math.min(0,PER.off+(+el.dataset.d));
 renderOverview();
 renderReport();
 },
 'rep':function(el,next){
-var a=el.dataset.act;
 openReport(el.dataset.k);
 },
 'settle':function(el,next){
-var a=el.dataset.act;
 openSettle(el.dataset.n);
 },
 'bgsave':function(el,next){
-var a=el.dataset.act;
 saveBudgets();
 }
 });
@@ -2588,7 +2480,6 @@ function repMerch(){
 var DYNF={snapshot:repSnapshot,settle:repSettle,heat:repHeat,budget:repBudget,shared:repShared,cash:repCash,fixed:repFixed,cc:repCC,merch:repMerch};
 Object.assign(REP_TITLES,{snapshot:ico('users')+' Couple snapshot',settle:ico('scale')+' Between Us',heat:ico('calendar')+' Daily spending',budget:ico('wallet')+' Budget vs actual',shared:ico('users')+' Shared vs personal',cash:ico('trend')+' Cash flow & savings',fixed:ico('repeat')+' Fixed vs variable',cc:ico('card')+' Card statements',merch:ico('bag')+' Merchants & subscriptions'});
 var TILES=[['snapshot','users','Couple snapshot'],['settle','scale','Between Us'],['budget','wallet','Budget vs actual'],['cash','trend','Cash flow & savings'],['shared','users','Shared vs personal'],['heat','calendar','Daily spending'],['fixed','repeat','Fixed vs variable'],['cc','card','Card statements'],['merch','bag','Merchants & subscriptions']];
-var TILES2=[['breakdown','receipt','Spending breakdown','by category'],['monthly','chart','Monthly cash flow','12-month chart'],['top','trophy','Top 10 spending','categories & purchases'],['year','calendar','By year','yearly totals'],['person','users','By person','income & spend']];
 
 /* budgets manager */
 
@@ -2940,14 +2831,12 @@ Object.assign(MGR_TITLE,{budgets:ico('wallet')+' Budgets',goals:ico('target')+' 
 
 ACT.on('core',{
 'perwho':function(el,next){
-var a=el.dataset.act;
 PER.who=el.dataset.p;
 renderOverview();
 renderReport();
 return;
 },
 'permode':function(el,next){
-var a=el.dataset.act;
 PER.mode=el.dataset.m;
 PER.off=0;
 renderOverview();
@@ -2955,66 +2844,54 @@ renderReport();
 return;
 },
 'tlist':function(el,next){
-var a=el.dataset.act;
 (function(){var s=el.dataset.s,e=el.dataset.e,c=el.dataset.c||'',ty=el.dataset.t||'Expense',w=whoOK();
       openTxnList(el.dataset.h||'Transactions',function(){var l=DB.txns.filter(function(t){return t.date>=s&&t.date<=e&&t.type!=='Transfer'&&(!c||t.category===c)&&(ty==='all'||t.type===ty);});return w==='couple'?l:applyPerson(l,w);});})();
 return;
 },
 'topm':function(el,next){
-var a=el.dataset.act;
 TOP.mode=el.dataset.t;
 renderReport();
 return;
 },
 'goaladd':function(el,next){
-var a=el.dataset.act;
 GC.id=el.dataset.id;
 openMgr('goalc');
 return;
 },
 'goalcin':function(el,next){
-var a=el.dataset.act;
 goalContrib(1);
 return;
 },
 'goalcout':function(el,next){
-var a=el.dataset.act;
 goalContrib(-1);
 return;
 },
 'goalnew':function(el,next){
-var a=el.dataset.act;
 goalNew();
 return;
 },
 'goalsave':function(el,next){
-var a=el.dataset.act;
 goalSave(el.dataset.id);
 return;
 },
 'goaldel':function(el,next){
-var a=el.dataset.act;
 goalDel(el.dataset.id);
 return;
 },
 'bgscope':function(el,next){
-var a=el.dataset.act;
 BG.scope=el.dataset.p;
 renderMgr();
 return;
 },
 'remtog':function(el,next){
-var a=el.dataset.act;
 remToggle();
 return;
 },
 'remtest':function(el,next){
-var a=el.dataset.act;
 if(typeof Notification!=='undefined'&&Notification.permission==='granted'){notify('Couple Money Manager','Test reminder · notifications are working ✓');toast('Test notification sent');}else toast('Turn on reminders first');
 return;
 },
 'mgr':function(el,next){
-var a=el.dataset.act;
 if(el.dataset.k==='budgets'){BG.work=null;BG.scope=whoOK();}
 next(el);
 }
@@ -3481,7 +3358,7 @@ function lockShow(mode){
   var T={unlock:'Enter your PIN',set1:'Choose a 4-digit PIN',set2:'Enter the PIN again',verify:'Enter your current PIN',verifyoff:'Enter your PIN to turn the lock off'};
   $('lkTitle').textContent=T[mode]||'Enter PIN';$('lkMsg').textContent='';
   $('lkCancel').style.visibility=mode==='unlock'?'hidden':'visible';
-  $('lockScr').hidden=false;document.body.classList.add('locked');lockDots();
+  $('lockScr').hidden=false;document.body.classList.add('locked');if(typeof lockDots==='function')lockDots(); /* v1.60 fix: lockDots is first assigned in the v1.52 section below — at boot (PIN already set) this ran before that assignment and killed the whole script, leaving a frozen lock screen with a dead keypad */
 }
 function lockHide(){$('lockScr').hidden=true;document.body.classList.remove('locked');LOCK.mode='';}
 document.addEventListener('visibilitychange',function(){
@@ -3512,7 +3389,6 @@ function fbSignIn(kind){
     toast('Sign-in failed. Check your connection and try again.');
   });
 };
-var FBA={busy:false};
 var _fbSU50=fbSetUser;
 
 document.addEventListener('visibilitychange',function(){if(!document.hidden&&FB.user&&DB&&DB.meta.cloudSyncOn)setTimeout(fbAutoSync,600);});
@@ -3620,20 +3496,6 @@ function stmCatFn(){
     for(var i=0;i<STM_RULES.length;i++)if(STM_RULES[i][0].test(desc)&&cats.indexOf(STM_RULES[i][1])>=0)return STM_RULES[i][1];
     return cats.indexOf('Others')>=0?'Others':(cats[0]||'Others');
   };
-}
-function stmCount(){var n=0,i=0,e=0;STM.rows.forEach(function(r){if(!r.inc)return;n++;var v=Math.abs(parseAmt(r.amount));if(r.type==='Income')i+=v;else e+=v;});return {n:n,i:i,e:e};}
-function stmAdd(){
-  var c=stmCount();if(!c.n){toast('Tick at least one line');return;}
-  var bad=STM.rows.filter(function(r){return r.inc&&(!r.date||!(Math.abs(parseAmt(r.amount))>0));}).length;
-  if(bad){toast(bad+' ticked line'+(bad>1?'s have':' has')+' no date or amount');return;}
-  askConfirm('Add '+c.n+' transaction'+(c.n>1?'s':'')+' to '+STM.acc+'? You can undo right after.','Add '+c.n,function(){
-    backupSnap('pre-statement');
-    var who=ownerOf(STM.acc)||DB.people[0]||'Me',add=STM.rows.filter(function(r){return r.inc;}).map(function(r){return mkTxn({date:r.date,type:r.type,category:r.cat,account:STM.acc,person:who.indexOf(' & ')>=0?(DB.people[0]||''):who,note:r.desc,amount:Math.abs(parseAmt(r.amount))});});
-    ensureEntities(add);DB.txns=DB.txns.concat(add);
-    var ids={};add.forEach(function(t){ids[t.id]=1;});
-    closeMgr();touch();
-    toastAct('Added '+add.length+' from the statement — undo?',function(){DB.txns=DB.txns.filter(function(t){return !ids[t.id];});touch();toast('Removed ✓');});
-  });
 }
 MGR_TITLE.stmt=ico('upload')+' Review statement';
 
@@ -3744,7 +3606,6 @@ document.addEventListener('touchstart',function(){},{passive:true}); /* iOS: ena
 
 /* ---------- 1. account summary: debt ledgers (receivables) are not listed ---------- */
 /* ---------- 2. 3D charts ---------- */
-var B3DEF='<defs><linearGradient id="b3s" x1="0" x2="1"><stop offset="0" stop-color="#fff" stop-opacity=".30"/><stop offset=".5" stop-color="#fff" stop-opacity=".04"/><stop offset="1" stop-color="#000" stop-opacity=".14"/></linearGradient><filter id="b3b" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="2.2"/></filter></defs>';
 
 /* ---------- 3. email account (compulsory) + first person ---------- */
 var AU={mode:'signup',busy:false,err:''};
@@ -3815,22 +3676,7 @@ function auForgot(){
     askConfirm('Reset the login for '+em+' on this phone? Your money data is kept. You can then create the account again with a new password.','Reset login',function(){var m=acctMap();delete m[em];acctSaveMap(m);AU.mode='signup';AU.err='';renderAuth();$('auEmail').value=em;toast('Login reset. Create your account again.');});
   });
 }
-function auPerson(){
-  var sel=$('auMeSel'),me=(sel&&sel.value!=='__new')?sel.value:(($('auMe')||{}).value||'').trim(),pt=(($('auPartner')||{}).value||'').trim(),demo=!!($('auDemo')&&$('auDemo').checked);
-  if(!me){AU.err='Enter your name to continue.';renderAuth();return;}
-  if(pt&&pt.toLowerCase()===me.toLowerCase()){AU.err='Your partner needs a different name.';renderAuth();return;}
-  var meUsed=DB.txns.some(function(t){return t.person==='Me';});
-  if(DB.people.length===1&&DB.people[0]==='Me'&&!meUsed)DB.people=[];
-  if(DB.people.indexOf(me)<0)DB.people.push(me);
-  if(pt&&DB.people.indexOf(pt)<0)DB.people.push(pt);
-  DB.accounts.forEach(function(a){if(!a.owner&&!a.recv&&(a.name==='Cash'||a.name==='Bank'))a.owner=me;});
-  DB.meta.profile={name:me,partner:pt};
-  collabCfg().me=me;
-  jrInit(pt);
-  if(demo)demoLoad(true);
-  touch();authHide();afterLogin();
-  toast('Welcome, '+me+'! Your getting-started checklist is on the Dashboard.');
-}
+var auPerson;
 function afterLogin(){gotoView('overview');renderAll();}
 function auLogout(){
   askConfirm('Log out? Your data stays on this phone. You will need your email and password to come back in.','Log out',function(){
@@ -4287,22 +4133,7 @@ function overlayPriv(){
 }
 function hhDetach(){if(HH.unsub)try{HH.unsub();}catch(e){DIAG.note(e,"core/23-v1-54-google-email-sign-in-shared:93");}if(HH.unsubP)try{HH.unsubP();}catch(e){DIAG.note(e,"core/23-v1-54-google-email-sign-in-shared:93");}HH.unsub=HH.unsubP=null;HH.id='';HH.info=null;HH.priv=null;HH.lastPriv='';}
 function hhGone(msg){hhDetach();if(DB){DB.meta.hh='';save();}renderCloudAcc();if(msg)toast(msg);}
-function hhPush(){
-  if(!(FB.user&&DB.meta.cloudSyncOn&&HH.id))return Promise.resolve(false);
-  stampChanges();var id=HH.id,merged=false;
-  return fsMods().then(function(F){var ref=hhRef(F,id);
-    return F.runTransaction(FB.db,function(tx){return tx.get(ref).then(function(s){
-      if(!s.exists())throw {code:'not-found'};
-      var d=s.data();
-      if(d.data&&d.by!==DEVICE&&(+d.changedAt||0)>(+DB.meta.hhAt||0)){mergeShared(JSON.parse(d.data));overlayPriv();merged=true;}
-      var now=Date.now(),sh=JSON.stringify(sharedCopy(now));
-      if(sh.length>1000000)throw {code:'too-big'};
-      tx.update(ref,{data:sh,changedAt:now,by:DEVICE,updatedAt:new Date().toISOString()});
-      return now;
-    });});
-  }).then(function(now){DB.meta.hhAt=now;DB.meta.cloudPushedAt=Date.now();stampInit();save();pushPrivate();if(merged)renderAll();else renderCloudAccSafe();syncStatus();return true;})
-  .catch(function(e){console.warn('hh-push',e);syncUI('warn','Sync failed — tap');if(e&&(e.code==='too-big'||e.code==='permission-denied'))toast(fsErr(e));return false;});
-}
+var hhPush;
 function waitFree(fn){if($('authScr').hidden&&$('lockScr').hidden&&!TOUR.steps)fn();else setTimeout(function(){waitFree(fn);},700);}
 function hhJoin(id){
   var em=(FB.user.email||'').toLowerCase(),uid=FB.user.uid;
@@ -4665,7 +4496,8 @@ var _ihf56=isHiddenFor;isHiddenFor=function(t){return _ihf56(t)||!!(t&&t.pvx);};
 
 /* privacy chooser on the add / edit form */
 (function(){
-  var more=$('fMore'),box=$('fSplitBox');
+var more=$('fMore');
+
   var row=document.createElement('div');row.className='f-row';row.id='fPLRow';
   row.innerHTML='<label>'+ico('lock')+' Privacy</label><div class="segmini" id="fPLSeg" style="margin-bottom:4px"></div><div class="help small" id="fPLHint"></div>';
   if(more&&more.parentNode)more.parentNode.insertBefore(row,more);
@@ -5035,7 +4867,6 @@ function stmAdd56(){
   askConfirm('Add '+c.n+' transaction'+(c.n>1?'s':'')+' to '+STM.acc+'? You can undo the whole import later in Settings → Import.','Add '+c.n,function(){
     backupSnap('pre-statement');
     var acc=STM.acc,who0=ownerOf(acc)||DB.people[0]||'Me',who=who0.indexOf(' & ')>=0?(meName()||DB.people[0]||''):who0,bid='b'+uid(),add=[],P=partnerName(),me=meName();
-    var accVis=stmAccObj().vis==='me';
     STM.rows.forEach(function(r){
       if(!r.inc)return;var amt=Math.round(Math.abs(parseAmt(r.amount))*100)/100;
       if(r.kind==='trf'){var from=r.dir==='in'?r.other:acc,to=r.dir==='in'?acc:r.other;add.push(mkTxn({date:r.date,type:'Transfer',account:from,to:to,person:ownerOf(from)||who,note:r.desc,amount:amt}));return;}
@@ -5184,7 +5015,6 @@ function expCSV(){
   shareFile('money-'+expStamp(D)+'.csv',new Blob(['\uFEFF'+H+'\n'+L.join('\n')],{type:'text/csv'}));
   closeMgr();toast('CSV ready · '+D.tx.length+' transaction'+(D.tx.length===1?'':'s')+(D.priv?' · includes private data':''));
 }
-function pm(n){return realMoney(n);}
 var EXP_KIND={xlsx:['Analyse in Excel','Transactions, account balances, a monthly summary and who owes whom, on separate sheets.','Create Excel file'],pdf:['Monthly report','Totals, spending by category, balances and transactions. Opens the print window: choose Save as PDF.','Create report'],settle:['Settle-up statement','Shared bills, each person’s share and the net amount owed. Opens the print window.','Create statement'],csv:['Move to another app','A CSV file that any app or this app’s import can read.','Create CSV file']};
 MGR_TITLE.export=ico('download')+' Export';
 V56.mgr.export=function(){
@@ -5311,24 +5141,20 @@ var _dl56=demoLoad;demoLoad=function(q){_dl56(q);if(!q){gotoView('overview');}};
 /* ---------- actions ---------- */
 (function(){
 var __h6=function(el,next){
-var a=el.dataset.act;
 next(el);
 plRender();
 return;
 };
 var __h11=function(el,next){
-var a=el.dataset.act;
 openMgr('stmpre');
 return;
 };
 var __h31=function(el,next){
-var a=el.dataset.act;
 openMgr('bkfile');
 return;
 };
 ACT.on('core',{
 'auwel':function(el,next){
-var a=el.dataset.act;
 AU.welcomed=1;
 if(el.dataset.v==='inv'){AU.invite=1;DB.meta.usage='couple';save();}
 AU.mode='signup';
@@ -5337,24 +5163,20 @@ renderAuth();
 return;
 },
 'aumode':function(el,next){
-var a=el.dataset.act;
 AU.welcomed=1;
 next(el);
 },
 'autype':function(el,next){
-var a=el.dataset.act;
 AU.atype=el.dataset.v;
 document.querySelectorAll('#auBody [data-act=autype]').forEach(function(x){x.classList.toggle('on',x.dataset.v===AU.atype);});
 return;
 },
 'auvis':function(el,next){
-var a=el.dataset.act;
 AU.avis=el.dataset.v;
 document.querySelectorAll('#auVisSeg button').forEach(function(x){x.classList.toggle('on',x.dataset.v===AU.avis);});
 return;
 },
 'aulock':function(el,next){
-var a=el.dataset.act;
 DB.meta.lockAsked=1;
 save();
 if(el.dataset.v==='pin')V56.lockNext=1;
@@ -5362,7 +5184,6 @@ authFinish();
 return;
 },
 'fpl':function(el,next){
-var a=el.dataset.act;
 if(el.dataset.v==='full'&&!plFullOK()){toast('Split bills and amounts owed involve '+partnerName()+', so they can only hide details');return;}
 F.pl=el.dataset.v;
 plRender();
@@ -5372,34 +5193,29 @@ return;
 'splitdel':__h6,
 'spliteven':__h6,
 'pstog':function(el,next){
-var a=el.dataset.act;
 if(el.checked){psOn();toast('Privacy Screen on');}else{el.checked=true;hideAmtToggle();}
 renderPriv();
 return;
 },
 'pstipx':function(el,next){
-var a=el.dataset.act;
 DB.meta.psTip=1;
 save();
 renderOverview();
 return;
 },
 'pvspace':function(el,next){
-var a=el.dataset.act;
 PER.space=el.dataset.v;
 renderOverview();
 renderReport();
 return;
 },
 'sharesave':function(el,next){
-var a=el.dataset.act;
 shareSave();
 return;
 },
 'stmpick':__h11,
 'stmstart':__h11,
 'stmpick2':function(el,next){
-var a=el.dataset.act;
 STX.pre=el.dataset.n;
 DB.meta.stmAcc=el.dataset.n;
 closeMgr();
@@ -5407,14 +5223,12 @@ $('fileStmt').click();
 return;
 },
 'stmfor':function(el,next){
-var a=el.dataset.act;
 STX.pre=el.dataset.n;
 DB.meta.stmAcc=el.dataset.n;
 $('fileStmt').click();
 return;
 },
 'stmsug':function(el,next){
-var a=el.dataset.act;
 STM.acc=STM.sug;
 DB.meta.stmAcc=STM.sug;
 STM.sug='';
@@ -5424,133 +5238,110 @@ renderMgr();
 return;
 },
 'stmdf':function(el,next){
-var a=el.dataset.act;
 stmRedate(el.dataset.v);
 return;
 },
 'stmfix':function(el,next){
-var a=el.dataset.act;
 STX.mhi=STX.hi||0;
 openMgr('stmmap');
 return;
 },
 'stmmapgo':function(el,next){
-var a=el.dataset.act;
 stmMapGo();
 return;
 },
 'stmall':function(el,next){
-var a=el.dataset.act;
 STM.rows.forEach(function(r){r.inc=el.dataset.v==='1';r.touched=1;});
 renderMgr();
 return;
 },
 'stmswap':function(el,next){
-var a=el.dataset.act;
 STM.rows.forEach(function(r){if(r.kind==='in')r.kind='out';else if(r.kind==='out')r.kind='in';else return;var ty=r.kind==='in'?'Income':'Expense';if((DB.categories[ty]||[]).indexOf(r.cat)<0){r.cat=stmCatFn()(r.desc,ty);r.auto=STX.lastAuto;r.cat0=r.cat;}});
 renderMgr();
 return;
 },
 'stmbulk':function(el,next){
-var a=el.dataset.act;
 (function(){var v=($('stmBulkCat')||{}).value||'';if(!v){toast('Choose a category');return;}var p=v.split('|'),n=0;STM.rows.forEach(function(r){if(!r.inc)return;var ty=r.kind==='in'?'Income':(r.kind==='trf'?'':'Expense');if(ty===p[0]){r.cat=p[1];r.auto='';r.touched=1;n++;}});renderMgr();toast(n?n+' line'+(n===1?'':'s')+' set to '+p[1]:'No ticked '+p[0].toLowerCase()+' lines');})();
 return;
 },
 'stmadd':function(el,next){
-var a=el.dataset.act;
 stmAdd56();
 return;
 },
 'impundo':function(el,next){
-var a=el.dataset.act;
 impUndo(el.dataset.id);
 return;
 },
 'csv':function(el,next){
-var a=el.dataset.act;
 EXP2.kind='csv';
 openMgr('export');
 return;
 },
 'exptile':function(el,next){
-var a=el.dataset.act;
 EXP2.kind=el.dataset.k;
 if(EXP2.kind==='settle')EXP2.priv=false;
 openMgr('export');
 return;
 },
 'expper':function(el,next){
-var a=el.dataset.act;
 EXP2.per=el.dataset.v;
 renderMgr();
 return;
 },
 'expspace':function(el,next){
-var a=el.dataset.act;
 EXP2.space=el.dataset.v;
 EXP2.accs={};
 renderMgr();
 return;
 },
 'expacc':function(el,next){
-var a=el.dataset.act;
 if(!el.dataset.v)EXP2.accs={};else EXP2.accs[el.dataset.v]=!EXP2.accs[el.dataset.v];
 renderMgr();
 return;
 },
 'expppl':function(el,next){
-var a=el.dataset.act;
 EXP2.ppl=el.dataset.v;
 renderMgr();
 return;
 },
 'exppriv':function(el,next){
-var a=el.dataset.act;
 EXP2.priv=!!el.checked;
 renderMgr();
 return;
 },
 'expgo':function(el,next){
-var a=el.dataset.act;
 ({xlsx:expXLSX,pdf:expPDF,settle:expSettle,csv:expCSV})[EXP2.kind]();
 return;
 },
 'bkdown':__h31,
 'bkfile':__h31,
 'bkfilego':function(el,next){
-var a=el.dataset.act;
 bkFileGo();
 return;
 },
 'bkrestorefile':function(el,next){
-var a=el.dataset.act;
 bkRestorePick();
 return;
 },
 'bkpwgo':function(el,next){
-var a=el.dataset.act;
 bkPwGo();
 return;
 },
 'bkprevgo':function(el,next){
-var a=el.dataset.act;
 bkPrevGo();
 return;
 },
 'bklater':function(el,next){
-var a=el.dataset.act;
 DB.meta.bkSnooze=Date.now()+7*864e5;
 save();
 renderOverview();
 return;
 },
 'demoexit':function(el,next){
-var a=el.dataset.act;
 demoExit();
 return;
 },
 'mgr':function(el,next){
-var a=el.dataset.act;
 if(el.dataset.k==='accs'&&$('mgrSheet').classList.contains('on')){MGR.kind='accs';MGR.edit=null;$('mgrTitle').innerHTML=MGR_TITLE.accs;renderMgr();return;}
 next(el);
 }
@@ -6308,7 +6099,8 @@ if(simple21()){try{PER.mode='month';PER.off=0;}catch(e){DIAG.note(e,"42-v160-b21
 
 /* — from core/09-transactions-view.js:27 — */
 SCREEN.base('renderTxns',88539,function __base_renderTxns(){
-  var ms={},i;
+var ms={};
+
   DB.txns.forEach(function(t){ms[t.date.slice(0,7)]=1;});
   var mks=Object.keys(ms).sort().reverse();
   if(TXF.month!=='all'&&mks.indexOf(TXF.month)<0)TXF.month='all';
@@ -7716,7 +7508,6 @@ SCREEN.around('renderAuth',398562,function(_rAuth56){return function(){
   if(m==='person'){
     var cp=AU.invite||DB.meta.usage==='couple',inv=!!AU.invite,real=realPeople(),pr=DB.meta.profile||{};
     s.textContent=inv?'Almost there. Tell us who you are.':'Tell us who you are.';
-    var tys=[['Bank','bank'],['Cash','wallet'],['Credit card','card'],['e-Wallet','wallet']];
     b.innerHTML=(real.length?'<label class="aul">Which person are you?</label><select class="fin" id="auMeSel" onchange="$(\'auMeWrap\').hidden=this.value!==\'__new\'"><option value="__new">Someone new…</option>'+sortedAlpha(real).map(function(p){return '<option'+(pr.name===p?' selected':'')+'>'+esc(p)+'</option>';}).join('')+'</select>':'')
       +'<div id="auMeWrap"'+(real.length&&pr.name&&real.indexOf(pr.name)>=0?' hidden':'')+'><label class="aul">Your name</label><input class="fin" id="auMe" autocomplete="given-name" placeholder="e.g. Huei"></div>'
       +(cp&&!inv?'<label class="aul">Partner’s name <span class="muted">(optional, invite them later)</span></label><input class="fin" id="auPartner" placeholder="e.g. Kim">':'')
@@ -8770,7 +8561,6 @@ SCREEN.around('accSave',10033447,function(_accSaveCore59){return function(n){
   var p=permFor59(n);
   if(p!=='owner'&&p!=='admin'){toast(p==='view'||p==='add'||p==='full'?'Only the owner or an Account administrator can change account settings.':'You can’t change this account.');return;}
   var visSel=$('mgrEVis'),want=visSel?visSel.value:null,was=a0.vis==='me'?'me':'shared',snap={o:a0.owner,v:a0.vis,pv:a0.pvby,pa:a0.partnerAccess};
-  var nameNew=(($('mgrEName')||{}).value||'').trim();
   function extras(){x59Apply(a0);}
   function finish(vis){
     if(visSel)visSel.value=was;
@@ -9999,7 +9789,6 @@ var _pdfNew59=pdfNew;pdfNew=function(){
 var _expPDF59=expPDF;expPDF=function(){V59.nwPdf=expData();try{_expPDF59();}finally{V59.nwPdf=null;}};
 
 /* ---------------- Privacy card: rules, conflicts, partner access ---------------- */
-function pa59(n,val){var a=a59(n);if(!a||permFor59(n)!=='owner'){toast('Only the account owner can change partner access.');return;}a.partnerAccess=val;touch();toast(partnerName()+': '+PERM_L[val]+' on '+n);}
 var _ov59b=ov59;ov59=function(){
   _ov59b();var pb=$('perBody');if(!pb||!isCouple()||pb.querySelector('.pvbanner'))return;
   var n=privConflicts59().length;if(!n)return;
@@ -10011,84 +9800,69 @@ function moveFrom59(ids,from,to){var n=0;ids.forEach(function(id){var t=DB.txns.
 /* ---------------- actions ---------------- */
 ACT.on('v159-b2-product-plan',{
 'ovtog':function(el,next){
-var a=el.dataset.act;
 (function(){var k=el.dataset.k,card=el.closest('.card');V59.ov[k]=!V59.ov[k];if(card)card.classList.toggle('open',!!V59.ov[k]);})();
 return;
 },
 'insnext':function(el,next){
-var a=el.dataset.act;
 V59.ins++;
 (function(){var ic=document.querySelector('#perBody .insight');if(ic)ic.outerHTML=insHTML59();})();
 return;
 },
 'insask':function(el,next){
-var a=el.dataset.act;
 aiOpen();
 aiSend(el.dataset.q);
 return;
 },
 'valopen':function(el,next){
-var a=el.dataset.act;
 V59.val=el.dataset.n;
 openMgr('valupd');
 return;
 },
 'valsave':function(el,next){
-var a=el.dataset.act;
 valSave59();
 return;
 },
 'valdel':function(el,next){
-var a=el.dataset.act;
 (function(){var ac=a59(V59.val),i=+el.dataset.i;if(ac&&valHist(ac)[i])askConfirm('Remove this value from the history?','Remove',function(){valHist(ac).splice(i,1);touch();renderMgr();});})();
 return;
 },
 'loanopen':function(el,next){
-var a=el.dataset.act;
 V59.loan=el.dataset.n;
 openMgr('loanpay');
 return;
 },
 'loansave':function(el,next){
-var a=el.dataset.act;
 loanSave59();
 return;
 },
 'privrev':function(el,next){
-var a=el.dataset.act;
 openMgr('privrev');
 return;
 },
 'hidebal2':function(el,next){
-var a=el.dataset.act;
 accHideBal(el.dataset.n,false);
 renderPriv();
 return;
 },
 'pvmk':function(el,next){
-var a=el.dataset.act;
 pvMake59([el.dataset.id]);
 renderMgr();
 toast('Made Shared');
 return;
 },
 'pvmkall':function(el,next){
-var a=el.dataset.act;
 askConfirm('Make all '+privConflicts59().length+' transactions Shared? '+partnerName()+' will be able to see them.','Make Shared',function(){var n=pvMake59(privConflicts59().map(function(t){return t.id;}));renderMgr();toast(n+' made Shared');});
 return;
 },
 'pvmv':function(el,next){
-var a=el.dataset.act;
 (function(){var to=($('pvTo_'+el.dataset.id)||{}).value;if(!to)return;pvMove59([el.dataset.id],to);renderMgr();toast('Moved to '+to);})();
 return;
 },
 'pvmvall':function(el,next){
-var a=el.dataset.act;
 (function(){var to=($('pvAllTo')||{}).value;if(!to)return;var n=pvMove59(privConflicts59().filter(function(t){return !t.group&&!t.owedAcc;}).map(function(t){return t.id;}),to);renderMgr();toast(n+' moved to '+to);})();
 return;
 },
 'pvmvpick':function(el,next){
-var a=el.dataset.act;
 (function(){
       var m=V59.mv||{},to=el.dataset.n,n=moveFrom59(m.ids||[],m.from,to),ac=a59(m.from);
       if(ac){delete ac.vis;delete ac.pvby;delete ac.shareFrom;jr().shared=1;}
@@ -10098,17 +9872,14 @@ var a=el.dataset.act;
 return;
 },
 'usgsw':function(el,next){
-var a=el.dataset.act;
 usgSwitch59(el.dataset.v);
 return;
 },
 'usgdo':function(el,next){
-var a=el.dataset.act;
 usgApply59('solo');
 return;
 },
 'usgsettle':function(el,next){
-var a=el.dataset.act;
 closeMgr();
 gotoView('overview');
 V59.ov.betw=true;
@@ -10116,27 +9887,22 @@ renderOverview();
 return;
 },
 'stgsw':function(el,next){
-var a=el.dataset.act;
 stgSwitch59(el.dataset.v);
 return;
 },
 'stgdisc':function(el,next){
-var a=el.dataset.act;
 stgSwitch59('device');
 return;
 },
 'austore':function(el,next){
-var a=el.dataset.act;
 stgPick59(el.dataset.v);
 return;
 },
 'auprov':function(el,next){
-var a=el.dataset.act;
 (function(){var v=m59();if(el.dataset.v==='go'){var e=(($('auProv')||{}).value||'').trim();if(e&&!emailOK(e)){AU.err='Enter a valid email address or leave it empty.';renderAuth();return;}v.providerEmail=e;}v.providerAsked=1;save();auNext();})();
 return;
 },
 'auinv':function(el,next){
-var a=el.dataset.act;
 (function(){
       if(el.dataset.v==='go'){var e=(($('auInv')||{}).value||'').trim().toLowerCase();
         if(!emailOK(e)){AU.err='Enter your partner’s email address.';renderAuth();return;}
@@ -10147,7 +9913,6 @@ var a=el.dataset.act;
 return;
 },
 'bkkeep':function(el,next){
-var a=el.dataset.act;
 openMgr('bkfile');
 return;
 }
@@ -10555,16 +10320,6 @@ function nowMode6(){if(curMode6())return 'adv';return isCouple()?'couple':'solo'
 function modeLabel6(m){return m==='adv'?'Advanced Couple':(m==='couple'?'Couple':'Personal');}
 
 /* ---------- 2. Mode & storage panel: three large cards + Compare modes (plan 7) ---------- */
-function privStatus6(){
-  var m=storageMode();
-  if(m==='household')return {cls:'ok',text:'Private space · on this phone',why:'Your private space stays on this phone. Keep an encrypted backup in case you lose it.'};
-  if(m==='drive'||m==='onedrive'){
-    var s=bkState59();
-    return s==='ok'?{cls:'ok',text:'Private space · in your personal backup',why:'Your latest encrypted personal backup includes your private space.'}
-      :{cls:'warn',text:'Private space · backup due',why:'Your private space has changes that are not in your last personal backup yet.'};
-  }
-  try{var pt=+(DB.meta.v59||{}).privTouch||0;if(pt&&Date.now()-pt>6048e5)return {cls:'warn',text:'Private space · backup due',why:'Your private space has changes from more than 7 days ago that are not in any backup. If this phone is lost, they are lost. Download an encrypted backup.'};}catch(e){DIAG.note(e,"18-v159-b6-three-modes:32");}return {cls:'warn',text:'Private space · device only',why:'Your private space stays on this phone. Keep an encrypted backup in case you lose it — there is no cloud copy.'};
-}
 
 SCREEN.on('renderSettings',50002586);
 
@@ -11820,48 +11575,40 @@ TOURS.invite=function(){return [{pre:function(){gotoView('settings');setTimeout(
 /* ---------- 9. actions + layer integration ---------- */
 ACT.on('v160-b3-settings',{
 'txn':function(el,next){
-var a=el.dataset.act;
 if(el.closest('#txList')&&!BSEL.on){ /* plan 6: tap opens the read-only detail — Edit opens the sheet */
       var tid=el.dataset.id;EXP.txn=(EXP.txn===tid)?'':tid;renderTxns();return;
     }
 next(el);
 },
 'setopen':function(el,next){
-var a=el.dataset.act;
 B3.setGo(el.dataset.k);
 return;
 },
 'setback':function(el,next){
-var a=el.dataset.act;
 B3.setBack();
 return;
 },
 'accflt':function(el,next){
-var a=el.dataset.act;
 B3.accFilter=el.dataset.f||'all';
 gotoView('settings');
 B3.setGo('accounts');
 return;
 },
 'accflt2':function(el,next){
-var a=el.dataset.act;
 B3.accFilter=el.dataset.f||'all';
 B3.renderAccSub();
 return;
 },
 'txmore':function(el,next){
-var a=el.dataset.act;
 B3.txnN+=20;
 renderTxns();
 return;
 },
 'insdis':function(el,next){
-var a=el.dataset.act;
 (function(){var D=DB.meta.ins60=DB.meta.ins60||{};D.ym=todayISO().slice(0,7);D.k='__all__';save();renderOverview();})();
 return;
 },
 'ractx':function(el,next){
-var a=el.dataset.act;
 EXP.txn=el.dataset.id;
 EXP.grp={};
 gotoView('txns');
@@ -11869,7 +11616,6 @@ renderTxns();
 return;
 },
 'txcopy':function(el,next){
-var a=el.dataset.act;
 F.id=el.dataset.id;
 EXP.txn='';
 renderTxns();
@@ -11877,7 +11623,6 @@ dupTxn();
 return;
 },
 'txdel':function(el,next){
-var a=el.dataset.act;
 F.id=el.dataset.id;
 EXP.txn='';
 renderTxns();
@@ -11885,38 +11630,31 @@ delTxn();
 return;
 },
 'loanint':function(el,next){
-var a=el.dataset.act;
 V59.loan=el.dataset.n;
 openMgr('loanint');
 return;
 },
 'loanintsave':function(el,next){
-var a=el.dataset.act;
 loanChargeSave();
 return;
 },
 'dzprof':function(el,next){
-var a=el.dataset.act;
 B3.dzProf();
 return;
 },
 'dzgo':function(el,next){
-var a=el.dataset.act;
 B3.runDeletion(false);
 return;
 },
 'dzretry':function(el,next){
-var a=el.dataset.act;
 B3.runDeletion(true);
 return;
 },
 'dzcancel':function(el,next){
-var a=el.dataset.act;
 B3.renderDangerSub();
 return;
 },
 'profsaveB3':function(el,next){
-var a=el.dataset.act;
 (function(){
         var nm=(($('profNameB3')||{}).value||'').trim();
         var pt=(($('profPartB3')||{}).value||'').trim();
@@ -11927,13 +11665,11 @@ var a=el.dataset.act;
 return;
 },
 'mgrcat3':function(el,next){
-var a=el.dataset.act;
 openMgr('cats');
 setTimeout(function(){var b=$('mgrBody');if(b&&!b.querySelector('[data-act=mgr][data-k=subs]'))b.insertAdjacentHTML('beforeend','<div style="border-top:1px solid var(--line);margin-top:10px;padding-top:10px"><button class="btn ghost" data-act="mgr" data-k="subs" style="width:100%">'+ico('list')+' Manage sub-categories</button></div>');},60);
 return;
 },
 'stgsync':function(el,next){
-var a=el.dataset.act;
 B3.setGo('mode');
 return;
 }
@@ -12811,7 +12547,6 @@ SCREEN.on('B3.renderPrefsSub',160018242);B3.renderPrefsSub=SCREEN.define('B3.ren
 SCREEN.on('B3.renderModeSub',160018349);
 
 /* share-my-notes removed (req 19): notes are always shared with the partner view */
-shareNotes=function(){return true;};
 B10.cleanup=function(){
   qa('label.mgr-row,.pv-row,label.pv-row').forEach(function(el){
     var t=el.textContent||'';
@@ -12918,7 +12653,6 @@ B10.cleanup();
 (function(){ 'use strict';
 if(!window.V59)window.V59={};
 var B10=window.B10; if(!B10)B10=window.B10={drOpen:{},secOpen:{},mtab:'couple',rest:false,lastRep:''};
-var B11=window.B11={};
 function $(id){return document.getElementById(id);}
 function qa(sel,root){return [].slice.call((root||document).querySelectorAll(sel));}
 
@@ -13380,7 +13114,6 @@ if(ol13)ol13.insertAdjacentHTML('beforeend','<li><b>Redesigned toast bubbles (v1
 window.txSwap=txSwap; /* used by js/screens */
 window.mode=mode; /* used by js/screens */
 window.ADV=ADV; /* used by js/screens */
-var B14=window.B14={};
 function q(s,r){return (r||document).querySelector(s);}
 function qa(s,r){return [].slice.call((r||document).querySelectorAll(s));}
 function mode(){
@@ -13517,7 +13250,6 @@ if(ol14)ol14.insertAdjacentHTML('beforeend','<li><b>Personal accounts are an Adv
          settles on the real selection instead of a pre-population guess. */
 (function(){
 'use strict';
-var B15=window.B15={};
 
 /* ---------- R1 · privInfo59: never claim Private without a real Private account ---------- */
 var _pi15=privInfo59;
@@ -14500,7 +14232,6 @@ window.loanPick16=loanPick16; /* used by js/screens */
 window.vehExtras16=vehExtras16; /* used by js/screens */
 window.propExtras16=propExtras16; /* used by js/screens */
 var V63=window.V63;
-function sgn16(v){return (v<0?'\u2212':'+')+money(Math.abs(v));}
 
 /* ================= Accounts view: plain-language What You Own / What You Owe (plan §2/§6, mock-up S5) ================= */
 V63.ACC_ORDER_OWN=['Money','Vehicles','Investments','Properties','Businesses','Money owed to me','Other'];
@@ -15054,7 +14785,6 @@ if(ol16)ol16.insertAdjacentHTML('beforeend','<li><b>Insights &amp; Reports redes
 'use strict';
 window.buHTML17=buHTML17; /* used by js/screens */
 var V63=window.V63;
-function $(id){return document.getElementById(id);}
 function qa(s,el){return [].slice.call((el||document).querySelectorAll(s));}
 
 /* ---------- 0 · CSS — appended at RUNTIME so it lands after the beta13 toast
@@ -15143,7 +14873,6 @@ window.tilesHTML18=tilesHTML18; /* used by js/screens */
 window.atRestore18=atRestore18; /* used by js/screens */
 var V63=window.V63;
 function $(id){return document.getElementById(id);}
-function qa(s,el){return [].slice.call((el||document).querySelectorAll(s));}
 
 /* ---------- filtered rows (same rule set the beta16 summary used) ---------- */
 function rows18(){
@@ -16395,7 +16124,6 @@ V56.mgr.v63dispose=function(){
   else opts+=opt('sold','Sold / Disposed');
   if(!valued&&st==='sold')opts+=opt('sold','Sold / Disposed');
   if(st==='archived'&&!valued){/* archived already in opts */}
-  var closedShown=(st==='closed'||st==='archived'||st==='sold');
   var h='<div class="aucard" style="text-align:left"><b>'+esc(a.name||'')+'</b>'
     +(valued?'<p>Recorded value now: <b>'+money(valueAsOf(a,todayISO()))+'</b></p>':'<p>Balance today: <b>'+money(bal)+'</b></p>')
     +'</div>'
@@ -16432,7 +16160,6 @@ V63.disposeSave=function(){
       {c:'btn ghost',l:'Record a transfer first',f:function(){closeMgr();gotoView('txns');}}
     ]);return;
   }
-  var wasSt=V63.statusOf(a);
   b20apply20(a,st,d,r);
   touch();renderMgr();renderAll();
   toast(st==='active'?'Reopened \u00b7 back in active totals':(st==='sold'?'Marked sold from '+dLabelY(d)+' \u00b7 linked financing untouched':st==='archived'?'Archived \u00b7 hidden from lists \u2014 Net Worth already followed the closed date':st==='closed'?'Closed from '+dLabelY(d)+' \u00b7 history stays':'Updated'));
@@ -17042,7 +16769,6 @@ function qa(sel,el){return [].slice.call((el||document).querySelectorAll(sel));}
 function txt(el){return (el&&el.textContent||'').trim();}
 
 /* ---------- 0 · one-time data tidy: one e-Wallet type ---------- */
-var migDone=null;
 function mig21(){
   if(!window.DB||!DB.accounts)return;
   try{
