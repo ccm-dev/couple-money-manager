@@ -2213,3 +2213,100 @@ main{padding-top:calc(78px + env(safe-area-inset-top))}
 #sheet.pay32 .seg:has(#segExp){display:none}
 #sheet.pay32 #fOptLb61,#sheet.pay32 #fOptLb61+*{display:none}
 .p32head.s-none .r32ic{color:var(--accent)}
+
+/* ===== v1.60 beta 33 — Your Profile · "Your partner" field states ===== */
+/* No collaborator yet — the greyed, locked partner input (scoped to this field). */
+#profPartB3[disabled],#profPartB3:disabled{opacity:.55;background:var(--line);color:var(--muted);cursor:not-allowed;-webkit-text-fill-color:var(--muted);-webkit-user-select:none;user-select:none}
+#profPartB3[disabled]::placeholder,#profPartB3:disabled::placeholder{color:var(--muted);opacity:.9}
+/* Status line under the partner field: joined / pending / invite collaborator. */
+.profpart-note{display:flex;align-items:flex-start;gap:7px;flex-wrap:wrap;margin-top:9px;font-size:var(--fs-12);font-weight:600;color:var(--muted);line-height:1.5}
+.profpart-note .icn{flex:none;width:15px;height:15px;margin-top:1px;color:var(--muted)}
+.profpart-note.ok .icn{color:var(--inc)}
+.profpart-note.pending .icn{color:var(--warn)}
+.profpart-note b{color:var(--ink)}
+.profpart-note .btn{flex:none;width:auto;padding:8px 13px;font-size:var(--fs-12);border-radius:10px;margin-top:2px}
+
+/* ===== v1.60 beta 34 · account activity filter (scoped to .af-card) ===== */
+.af-card .af-bar{display:flex;gap:6px;align-items:center;margin:2px 0 8px}
+.af-card .af-bar .chips{flex:1;min-width:0}
+.af-card .af-ib{position:relative;flex:none;width:40px;height:40px;border-radius:11px;background:var(--bg);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;color:var(--ink)}
+.af-card .af-ib.on{background:var(--accent-soft);border-color:var(--accent);color:var(--accent)}
+.af-card .af-ib svg{width:18px;height:18px}
+.af-card .af-bd{position:absolute;top:-5px;right:-5px;min-width:17px;height:17px;border-radius:9px;background:var(--accent);color:var(--white,#fff);font-size:var(--fs-11);font-weight:800;display:flex;align-items:center;justify-content:center;padding:0 4px}
+.af-card .af-bd[hidden],.af-card .af-srch[hidden],.af-card .af-adv[hidden],.af-card .af-kinds[hidden]{display:none}
+.af-card .af-srch{margin:0 0 8px}
+.af-card .af-kinds{margin:0 0 8px}
+.af-card .af-adv{background:var(--bg);border-radius:14px;padding:10px 12px;margin:0 0 10px}
+.af-card .af-sec{margin-bottom:12px}
+.af-card .af-lb{font-size:var(--fs-11);font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px;display:flex;justify-content:space-between}
+.af-card .af-lb span{text-transform:none;letter-spacing:0;font-weight:600}
+.af-card .af-two{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.af-card .af-adv .fin{background:var(--card);min-width:0}
+.af-card .af-adv .segmini{background:var(--card);margin-bottom:0}
+.af-card .af-act{margin:0 0 8px}
+.af-card .af-stats{margin:0 0 6px}
+.af-card .af-cnt{display:flex;justify-content:space-between;gap:8px;font-size:var(--fs-12);color:var(--muted);font-weight:600;margin:0 2px 8px}
+.af-card .af-empty{text-align:center;padding:22px 12px}
+.af-card .af-empty b{display:block;color:var(--ink);font-size:var(--fs-15);margin-bottom:4px}
+.af-card .af-empty .btn{margin-top:10px}
+.af-card .mhead{flex-wrap:wrap;gap:2px 8px}
+.af-card .mhead > span:last-child{margin-left:auto;text-align:right}
+
+/* ===== v1.60 beta 35 · month-end balance chart (scoped to .afb-card) ===== */
+.afb-card h2{align-items:center}
+.afb-card h2 .sub{margin-left:auto}
+.afb-card .afb-n{display:inline-flex;margin:0;padding:2px;gap:2px;border-radius:9px}
+.afb-card .afb-n button{flex:none;padding:4px 9px;font-size:var(--fs-11);border-radius:7px;text-transform:none;letter-spacing:0}
+.afb-card .afb-bars{display:flex;gap:6px;align-items:flex-end;height:128px;padding-top:4px}
+.afb-card .afb-bar{flex:1;min-width:0;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:3px;background:none;border:0;padding:0;cursor:pointer;font:inherit;color:inherit}
+.afb-card .afb-v{font-size:var(--fs-11);font-weight:700;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:clip;max-width:100%}
+.afb-card .afb-col{width:100%;max-width:44px;border-radius:7px 7px 3px 3px;background:var(--accent-soft);border:1px solid var(--line);transition:height .2s ease}
+.afb-card .afb-bar.neg .afb-col{background:var(--exp-soft)}
+.afb-card .afb-bar.sel .afb-col{background:var(--accent);border-color:var(--accent)}
+.afb-card .afb-bar.sel.neg .afb-col{background:var(--exp);border-color:var(--exp)}
+.afb-card .afb-bar.sel .afb-v{color:var(--ink)}
+.afb-card .afb-m{font-size:var(--fs-11);font-weight:700;color:var(--muted)}
+.afb-card .afb-bar.sel .afb-m{color:var(--accent)}
+.afb-card .afb-bar:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:8px}
+.afb-card .afb-det{margin-top:10px;background:var(--bg);border-radius:12px;padding:10px 12px;display:flex;justify-content:space-between;align-items:center;gap:10px}
+.afb-card .afb-det b{display:block;font-size:var(--fs-16)}
+.afb-card .afb-det small{display:block;font-size:var(--fs-12);color:var(--muted);margin-top:2px}
+.afb-card .afb-go{flex:none;color:var(--accent);font-weight:700;font-size:var(--fs-13);background:none;border:0;padding:8px 2px;min-height:40px;cursor:pointer}
+.afb-card .afb-note{margin-top:8px}
+@media (max-width:360px){.afb-card .afb-bars{gap:3px}.afb-card .afb-v{font-size:10px}}
+
+/* ===== v1.60 beta 37 · statement filters · Between Us history · loan payments ===== */
+.af-card .af-bl{flex:1;min-width:0;font-size:var(--fs-12);font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.4px}
+.af-card .af-navrow{display:flex;justify-content:space-between;gap:8px;margin:10px 0 12px}
+.af-card .af-nav{flex:1;min-height:40px;border-radius:11px;background:var(--bg);border:1px solid var(--line);font:inherit;font-size:var(--fs-12);font-weight:700;color:var(--accent);padding:6px 10px;cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.af-card .af-nav.l{text-align:left}.af-card .af-nav.r{text-align:right}
+.af-card .af-nav.off{color:var(--muted);opacity:.45;cursor:default;display:flex;align-items:center}
+.af-card .af-nav.off.r{justify-content:flex-end}
+.af-card .af-lead{font-size:var(--fs-13);color:var(--muted);line-height:1.5;margin:-2px 0 10px}
+.af-card .af-lead b{color:var(--ink)}
+.afl-card h2{align-items:center}
+.afl-card h2 .sub{margin-left:auto}
+.afl-card .afl-p{display:inline-flex;margin:0;padding:2px;gap:2px;border-radius:9px}
+.afl-card .afl-p button{flex:none;padding:4px 9px;font-size:var(--fs-11);border-radius:7px;text-transform:none;letter-spacing:0}
+.afl-card .afl-sum{background:var(--bg);border-radius:12px;padding:10px 12px;margin-bottom:10px}
+.afl-card .afl-sum b{display:block;font-size:var(--fs-16)}
+.afl-card .afl-sum small{display:block;font-size:var(--fs-12);color:var(--muted);margin-top:2px;line-height:1.45}
+.afl-card .afl-btns{display:flex;flex-wrap:wrap;gap:8px;margin:4px 0 8px}
+.afl-card .mhead{flex-wrap:wrap;gap:2px 8px}
+.afl-card .mhead > span:last-child{margin-left:auto;text-align:right}
+
+/* ===== v1.60 beta 38 · asset income & costs (category rule) ===== */
+.afi-card h2{align-items:center}
+.afi-card h2 .sub{margin-left:auto}
+.afi-card .afl-p{display:inline-flex;margin:0;padding:2px;gap:2px;border-radius:9px}
+.afi-card .afl-p button{flex:none;padding:4px 9px;font-size:var(--fs-11);border-radius:7px;text-transform:none;letter-spacing:0}
+.afi-card .af-stats{margin:0 0 6px}
+.afi-card .afi-from{font-size:var(--fs-12);color:var(--muted);margin:0 2px 10px;line-height:1.45}
+.afi-card .afi-btns{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0}
+.afi-card .af-sec{margin-bottom:12px}
+.afi-card .af-lb{font-size:var(--fs-11);font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px;display:flex;justify-content:space-between}
+.afi-card .af-lb span{text-transform:none;letter-spacing:0;font-weight:600}
+.afi-card .afi-taken{opacity:.5;border-style:dashed;cursor:not-allowed}
+.afi-card .afi-taken small{font-weight:600;margin-left:3px}
+.afi-card .mhead{flex-wrap:wrap;gap:2px 8px}
+.afi-card .mhead > span:last-child{margin-left:auto;text-align:right}
