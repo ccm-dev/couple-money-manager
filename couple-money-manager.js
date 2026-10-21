@@ -20635,3 +20635,1206 @@ window.CMM_VERSION=VERSION291;window.CMM_SCHEMA_VERSION=SCHEMA291;
   REM.openFromNotification=openFromNotification;
   setTimeout(function(){REM.registerBg().then(function(){try{renderRem();}catch(e){}});REM.syncSchedule();},1500);
 })();
+
+/* ##################################################################
+   ##### SECTION: v160b33 — v1.60 beta 33 · Your Profile partner field
+   ##################################################################
+   Review fix for the "Your Profile" screen (Settings › Your Profile):
+   · When the collaborator ACCEPTS the household invitation, the
+     "Your partner" field auto-fills with their nickname (the display
+     name they registered with in the household) exactly ONCE — tracked
+     by DB.meta.profile.partnerAuto, so a later rename by the owner sticks.
+     A provisional name (typed at sign-up) is renamed everywhere with
+     B19.rename so transactions, splits and roles follow.
+   · While there is NO collaborator, the field is greyed out and locked,
+     and an "Invite collaborator" button points at Settings › Modes ›
+     Household & membership — the page that sends the invitation.
+   The earlier beta-3/beta-19 auto-fills (which guessed a name from
+   DB.people) still run first; this layer then corrects the state. */
+(function(){
+'use strict';
+function n33(e,site){try{DIAG.note(e,site);}catch(_){/* the logger must never throw */}}
+
+/* ---- collaborator state across the household models (beta 33) ----
+   joined  — a collaborator exists (accepted the invitation / is a member)
+   pending — invited, not accepted yet
+   nick    — the collaborator's own nickname ('' when still unknown)
+   real    — nick comes from the collaborator's own profile (trusted);
+             false when it was only derived from their email
+   key     — stable id of THIS collaborator: the auto-fill runs once per
+             key, so the owner's later nickname edits are never overwritten */
+function profCollabB33(){
+  var out={joined:false,pending:false,local:false,nick:'',real:false,email:'',key:''};
+  var I=(typeof HH!=='undefined'&&HH&&HH.info)||null;
+  if(I){
+    var mem=(I.members||[]),inv=(I.invites||[]);
+    if(mem.length>=2){ /* a second member = the invitation was accepted */
+      out.joined=true;
+      var cu='';
+      mem.forEach(function(u){if(u&&u!==I.owner)cu=u;});
+      out.key='hh:'+(cu||I.owner||('x'+mem.length));
+      if(cu){
+        var p=(I.memberProfiles||{})[cu]||{};
+        out.nick=String(p.displayName||'').trim();out.real=!!out.nick;
+        out.email=String((I.memberEmails||{})[cu]||p.email||'').trim();
+      }
+    }else if(inv.length){
+      out.pending=true;out.email=String(inv[0]||'').trim();out.key='inv:'+out.email;
+    }
+  }
+  try{ /* the Household Storage folder model (v1.59 beta 3) */
+    var f=pdh59();
+    if(f&&f.acceptedAt){
+      out.joined=true;
+      if(!out.key||out.key.indexOf('inv:')===0)out.key='pdh:'+(f.code||f.owner||'');
+      if(!out.nick&&f.email){out.nick=nick33(f.email);out.email=out.email||f.email;}
+    }else if(f&&f.sharedAt&&!f.acceptedAt){out.pending=true;if(f.email)out.email=out.email||f.email;}
+  }catch(e){n33(e,'b33:pdh');}
+  if(!out.nick&&out.email)out.nick=nick33(out.email); /* display-name guess, never trusted for renames */
+  try{ /* Advanced Couple: the second space is a LOCAL collaborator — the field stays editable */
+    if(usageMode()==='adv'){out.joined=true;out.local=true;if(!out.key)out.key='adv';}
+  }catch(e){n33(e,'b33:adv');}
+  return out;
+}
+/* "kim.tan91@…" → "Kim Tan" */
+function nick33(em){
+  var s=String(em||'').split('@')[0].replace(/[0-9._\-+]+/g,' ').trim();
+  if(!s)return '';
+  return s.split(/\s+/).map(function(w){return w.charAt(0).toUpperCase()+w.slice(1);}).join(' ');
+}
+/* only the household OWNER's device may rewrite the partner name — on the
+   collaborator's own phone the same field means the OWNER, not them */
+function ownerDeviceB33(){
+  try{
+    var I=(typeof HH!=='undefined'&&HH&&HH.info)||null;
+    if(I){
+      if(typeof FB!=='undefined'&&FB&&FB.user&&I.owner===FB.user.uid)return true;
+      var s=sessGet()||{};
+      if(I.ownerEmail&&s.email&&String(I.ownerEmail).toLowerCase()===String(s.email).toLowerCase())return true;
+      return !(I.owner||I.ownerEmail); /* recorded owner exists and it is not this device */
+    }
+    if(typeof pdhIsOwner59==='function')return !!pdhIsOwner59();
+  }catch(e){n33(e,'b33:own');}
+  return true;
+}
+/* ---- the once-per-collaborator auto-fill (beta 33) ----
+   Writes DB.meta.profile.partner and adds the collaborator as a person.
+   A stored name is renamed everywhere (B19.rename) so history follows;
+   a name that was only derived from an email never replaces one the
+   owner typed. Returns 'filled' | 'kept' | ''. */
+function profAutoFillB33(){
+  if(typeof DB==='undefined'||!DB)return '';
+  if(!ownerDeviceB33())return '';
+  var c=profCollabB33();
+  if(!c.joined)return '';
+  var pr=DB.meta.profile=DB.meta.profile||{};
+  if(!c.nick)return ''; /* accepted but the nickname is not known yet — retry on the next sync */
+  if(pr.partnerAuto===c.key)return ''; /* already auto-filled for this collaborator — owner edits win */
+  var old=String(pr.partner||'').trim();
+  if(old===c.nick){pr.partnerAuto=c.key;save();return 'kept';}
+  if(old&&!c.real){pr.partnerAuto=c.key;save();return 'kept';} /* keep the owner's own wording */
+  if(old&&DB.people.indexOf(old)>=0&&!B19.rename(old,c.nick))pr.partner=c.nick; /* target already a person — never merge */
+  else if(old!==c.nick)pr.partner=c.nick;
+  if(DB.people.indexOf(c.nick)<0)DB.people.push(c.nick);
+  pr.partnerAuto=c.key;
+  touch();
+  try{
+    var au=$('authScr'),lk=$('lockScr');
+    if((!au||au.hidden)&&(!lk||lk.hidden)){
+      renderAll();
+      B3.renderProfileSub();B3.rowSummaries();renderMe();
+    }
+  }catch(e){n33(e,'b33:fill-ui');}
+  toast('Collaborator joined — “'+c.nick+'” is now Your Partner · rename it here any time');
+  return 'filled';
+}
+
+/* ---- Your Profile: keep the partner field in the right state (beta 33) ----
+   Runs after the base and beta-12/beta-19 steps. In couple modes only
+   (the row is hidden in Personal/solo). */
+SCREEN.after('B3.renderProfileSub',261000000,{call:'apply',ret:false},function(){
+  try{
+    var row=$('profPartRowB3'),pt=$('profPartB3');
+    if(!row||!pt||row.hidden)return;
+    profAutoFillB33();
+    var c=profCollabB33(),pr=DB.meta.profile||{};
+    var stored=String(pr.partner||'');
+    var note=$('profPartNoteB33');
+    if(!note){
+      note=document.createElement('div');
+      note.id='profPartNoteB33';note.className='profpart-note';
+      row.appendChild(note); /* inside the f-row, so solo mode hides it too */
+    }
+    if(c.joined){
+      pt.disabled=false;pt.readOnly=false;
+      pt.placeholder='e.g. Wifey';
+      if(stored&&document.activeElement!==pt)pt.value=stored; /* nothing stored → keep the pipeline's best guess on show */
+      note.className='profpart-note ok';
+      note.innerHTML=c.local
+        ?ico('users')+'<span><b>'+esc(stored||'Your collaborator')+'</b> is your collaborator space. Rename above — Save follows the new name through every transaction, split and role.</span>'
+        :ico('users')+'<span><b>'+esc(stored||c.nick||'Your collaborator')+'</b> accepted the invitation'+(c.email?' · '+esc(c.email):'')+'. You can rename the collaborator above — Save follows the new name through every transaction, split and role.</span>';
+    }else{
+      if(document.activeElement!==pt)pt.value=stored; /* clears the old people-based guess when nothing is stored */
+      pt.disabled=true;
+      pt.placeholder=stored?'Locked — fills in when your collaborator accepts':'Auto-fills when your collaborator accepts';
+      if(c.pending){
+        note.className='profpart-note pending';
+        note.innerHTML=ico('clock')+'<span>Invitation pending'+(c.email?' for <b>'+esc(c.email)+'</b>':'')+' — the nickname they accept with fills in here.</span>'
+          +'<button class="btn sm ghost" data-act="profpartinv33">Manage invite</button>';
+      }else{
+        note.className='profpart-note';
+        note.innerHTML=ico('users')+'<span>No collaborator yet. Invite your partner — their nickname fills in here the moment they accept.</span>'
+          +'<button class="btn sm ghost" data-act="profpartinv33">'+ico('plus')+' Invite collaborator</button>';
+      }
+    }
+  }catch(e){n33(e,'b33:profsub');}
+});
+SCREEN.on('B3.renderProfileSub',261000000);
+
+/* ---- Invite collaborator: jump to Settings › Modes › Household & membership ----
+   (same navigation the built-in invite tour uses) */
+ACT.on('beta-33-profile-partner',{
+  profpartinv33:function(){
+    try{
+      gotoView('settings');
+      setTimeout(function(){try{B3.setGo('mode');}catch(e){n33(e,'b33:inv-go');}},80);
+    }catch(e){n33(e,'b33:inv');}
+  }
+});
+
+/* ---- the moment the collaborator accepts (household snapshot) ----
+   renderCloudAccSafe runs on every household snapshot, so acceptance is
+   picked up even when the profile screen is closed. */
+var _rcsB33=renderCloudAccSafe;
+renderCloudAccSafe=function(){
+  _rcsB33.apply(this,arguments);
+  try{profAutoFillB33();}catch(e){n33(e,'b33:sync');}
+};
+
+/* ---- version + release note (beta 33) ---- */
+try{V59.ver='1.60 beta 33';}catch(e){}
+try{V63.ver='1.60 beta 33';}catch(e){}
+try{if(window.B20)B20.ver='1.60 beta 33';}catch(e){}
+try{document.title='v1.60 beta 33 · Couple Money Manager';}catch(e){}
+try{
+  if(!window.__B33RN){
+    var olB33=q('#pageSet details.help ol')||q('#view-settings details.help ol');
+    if(olB33){olB33.insertAdjacentHTML('beforeend','<li><b>Your Profile (beta 33):</b> “Your partner” auto-fills from the collaborator’s nickname the first time they accept the invitation — rename it later and Save follows everywhere. With no collaborator the field stays locked, with an Invite collaborator button.</li>');window.__B33RN=1;}
+  }
+}catch(e){}
+})();
+
+;
+/* ##################################################################
+   ##### SECTION: v160b34 — v1.60 beta 34 · account activity filter (phase 1)
+   ################################################################## */
+
+/* ===================== v1.60 beta 34 · account activity filter =====================
+   Adds period / type / search / advanced filters to the account page (the drill-down that
+   opens from Account Summary). Phase 1 of the "Account Summary · Recent activity filter" mockup.
+
+   What it does
+   · Replaces ONLY the existing "Monthly" card (asset-kind accounts) or the flat "Transactions"
+     card (liability accounts with no statement day). Nothing else on the page changes:
+     statement cards, loan / asset cards, Import a statement, Edit button all stay.
+   · With no filter set the card looks and behaves as before: months collapsed, same rows,
+     same month-end "Bal" on every header.
+   · Rows come from monthRowsHTML()/accTxnRow(), so the D2/D3 icon + colour rules and split-bill
+     grouping are unchanged.
+   · The month-end Bal on each header is always the true month-end balance (accRunningBals),
+     never recomputed from the filtered rows. While a filter is on, the header says "filtered net".
+   · Everything is computed inside withPV(withView(...)) — the same privacy wrappers renderDrill
+     uses — so a partner's fully-private transactions are never searched or counted. Rows the viewer
+     sees masked (isHiddenFor: hide-details, private-account relabels) are searched and categorised
+     on their masked copy only (pub()), so search / category chips cannot leak a hidden note.
+     Hidden balances stay '***' because accRunningBals / fmt are already patched.
+   · Left alone on purpose: credit-card accounts with a statement day (the statement cards are
+     the whole view), and Between Us / receivable ledgers (isLedger20).
+   · Simple Experience: period chips + search only (no advanced panel).
+
+   Public surface: window.AF34 (state in DRILL.af, reset by openAccount).
+*/
+(function(){
+"use strict";
+
+var AF=window.AF34={};
+var ORDER=900000010;
+var PERIODS=[['all','All'],['7d','7 days'],['30d','30 days'],['month','This month'],['3m','3 months'],['12m','12 months']];
+var SORTS=[['new','Newest'],['old','Oldest'],['big','Largest']];
+var KIND_ORDER=['Income','Expense','Transfer'];
+
+/* ---------- state ---------- */
+function newF(acc){return {acc:acc,period:'all',from:'',to:'',kinds:[],cats:[],who:'',min:'',max:'',q:'',sort:'new',adv:false,search:false};}
+function F(){if(!DRILL.af||DRILL.af.acc!==DRILL.acc)DRILL.af=newF(DRILL.acc);return DRILL.af;}
+AF.state=F;AF.newF=newF;AF.priv=priv;AF.simple=simple;
+function tog(arr,v){var i=arr.indexOf(v);if(i<0)arr.push(v);else arr.splice(i,1);}
+function simple(){try{return !!simple20();}catch(e){return false;}}
+/* same wrappers renderDrill runs under (order: withPV outside, withView inside) */
+function priv(fn){return withPV(withView(fn))();}
+
+/* ---------- dates ---------- */
+/* inclusive windows: "7 days" = today and the 6 days before it (7 calendar days) */
+function range(f){
+  var t=todayISO(),y=+t.slice(0,4),m=+t.slice(5,7);
+  switch(f.period){
+    case '7d':return [addDaysISO(t,-6),t];
+    case '30d':return [addDaysISO(t,-29),t];
+    case 'month':return [t.slice(0,7)+'-01',t.slice(0,7)+'-'+pad2(daysInMonth(y,m))];
+    case '3m':return [addDaysISO(addMonthsISO(t,-3),1),t];
+    case '12m':return [addDaysISO(addMonthsISO(t,-12),1),t];
+    case 'custom':return [f.from||'',f.to||''];
+    default:return ['',''];
+  }
+}
+AF.range=range;
+
+/* ---------- data (call inside priv()) ---------- */
+function ctx(){
+  var acc=DRILL.acc,a=DB.accounts.find(function(x){return x.name===acc;})||{};
+  var l=allTxns().filter(function(t){return txnTouchesAcc(t,acc);});
+  /* same person scope the base render applies */
+  if(DRILL.person)l=applyPerson(l,DRILL.person);else if(OV.person!=='all')l=applyPerson(l);
+  return {acc:acc,a:a,all:l,liab:accTypeKind(a.type)==='liability',val:!!(a.name&&isVal(a)),rb:accRunningBals(acc)};
+}
+/* what the viewer may see of a row: a partner's hidden-details transaction is matched on its
+   masked copy (note blank, category "Private"), exactly as it is displayed — so search and the
+   category chips can never reveal what the row hides */
+function pub(t){try{return (isHiddenFor(t)&&!t.masked)?maskTx(t):t;}catch(e){return t;}}
+AF.pub=pub;
+function isFiltered(f){return f.period!=='all'||f.kinds.length>0||f.cats.length>0||!!f.who||f.min!==''||f.max!==''||f.q.trim()!=='';}
+function advCount(f){return (f.cats.length?1:0)+(f.who?1:0)+((f.min!==''||f.max!=='')?1:0)+(f.sort!=='new'?1:0)+(f.period==='custom'?1:0);}
+function num(v){var n=parseFloat(String(v).replace(/,/g,''));return isFinite(n)?n:null;}
+function filt(l,f,acc,kindOf){
+  var r=range(f),q=f.q.trim().toLowerCase(),mn=f.min!==''?num(f.min):null,mx=f.max!==''?num(f.max):null;
+  return l.filter(function(t){
+    if(r[0]&&t.date<r[0])return false;
+    if(r[1]&&t.date>r[1])return false;
+    if(f.kinds.length&&f.kinds.indexOf(kindOf?kindOf(t):t.type)<0)return false;
+    var v=pub(t);
+    if(f.cats.length&&f.cats.indexOf(v.category)<0)return false;
+    if(f.who&&!(shareOf(t,f.who)>0))return false;
+    if(mn!==null||mx!==null){var ab=Math.abs(accEffect(t,acc));if(mn!==null&&ab+0.004<mn)return false;if(mx!==null&&ab-0.004>mx)return false;}
+    if(q&&(v.note+' '+v.category+' '+v.subcategory+' '+v.person+' '+v.account+' '+(v.to||'')+' '+v.amount).toLowerCase().indexOf(q)<0)return false;
+    return true;
+  });
+}
+AF.filt=filt;
+function sums(rows,acc){
+  var i=0,o=0;
+  rows.forEach(function(t){var v=accEffect(t,acc);if(v<0)o-=v;else i+=v;});
+  i=Math.round(i*100)/100;o=Math.round(o*100)/100;
+  return {i:i,o:o,n:Math.round((i-o)*100)/100};
+}
+
+/* ---------- labels: per account kind ---------- */
+function kindLabel(c,type){
+  var m=c.liab?{Income:'Refunds & credits',Expense:'Charges',Transfer:'Repayments & transfers'}
+    :c.val?{Income:'Income',Expense:'Costs',Transfer:'Transfers'}
+    :{Income:'Income',Expense:'Expense',Transfer:'Transfers'};
+  return m[type]||type;
+}
+function sumLabels(c){return c.liab?['Repaid / credits','Charges','Net change']:['Money in','Money out','Net'];}
+
+/* ---------- html builders (call inside priv()) ---------- */
+function perHTML(f){
+  return PERIODS.map(function(p){return '<button type="button" class="chip'+(f.period===p[0]?' on':'')+'" data-act="afper" data-p="'+p[0]+'">'+p[1]+'</button>';}).join('');
+}
+function kindsHTML(f,c){
+  var have=KIND_ORDER.filter(function(k){return c.all.some(function(t){return t.type===k;});});
+  if(have.length<2)return '';
+  return '<button type="button" class="chip'+(f.kinds.length?'':' on')+'" data-act="afkind" data-k="">All</button>'
+    +have.map(function(k){return '<button type="button" class="chip'+(f.kinds.indexOf(k)>=0?' on':'')+'" data-act="afkind" data-k="'+k+'">'+esc(kindLabel(c,k))+'</button>';}).join('');
+}
+function advHTML(f,c,o){
+  var cats=[],seen={};
+  c.all.forEach(function(t){var k=pub(t).category;if(k&&!seen[k]){seen[k]=1;cats.push(k);}});
+  cats.sort(alphasort);
+  var people=(DB.people||[]).filter(function(p){return c.all.some(function(t){return shareOf(t,p)>0;});});
+  var h='';
+  if(cats.length>1)h+='<div class="af-sec"><div class="af-lb">Category <span>pick any</span></div><div class="chips wrap">'
+    +cats.map(function(k){return '<button type="button" class="chip'+(f.cats.indexOf(k)>=0?' on':'')+'" data-act="afcat" data-c="'+esc(k)+'">'+esc(k)+'</button>';}).join('')+'</div></div>';
+  if(people.length>1)h+='<div class="af-sec"><div class="af-lb">Person</div><div class="segmini"><button type="button" class="'+(f.who?'':'on')+'" data-act="afwho" data-w="">Anyone</button>'
+    +people.map(function(p){return '<button type="button" class="'+(f.who===p?'on':'')+'" data-act="afwho" data-w="'+esc(p)+'">'+esc(p)+'</button>';}).join('')+'</div></div>';
+  h+='<div class="af-sec"><div class="af-lb">Amount</div><div class="af-two"><input class="fin" inputmode="decimal" autocomplete="off" placeholder="Min" aria-label="Minimum amount" data-af="min" value="'+esc(f.min)+'"><input class="fin" inputmode="decimal" autocomplete="off" placeholder="Max" aria-label="Maximum amount" data-af="max" value="'+esc(f.max)+'"></div></div>';
+  if(!(o&&o.noDates))h+='<div class="af-sec"><div class="af-lb">Custom dates</div><div class="af-two"><input class="fin" type="date" aria-label="From date" data-af="from" value="'+esc(f.from)+'"><input class="fin" type="date" aria-label="To date" data-af="to" value="'+esc(f.to)+'"></div></div>';
+  h+='<div class="af-sec"><div class="af-lb">Sort</div><div class="segmini">'+SORTS.map(function(s){return '<button type="button" class="'+(f.sort===s[0]?'on':'')+'" data-act="afsort" data-s="'+s[0]+'">'+s[1]+'</button>';}).join('')+'</div></div>';
+  h+='<button type="button" class="btn sm ghost" data-act="afclear">Reset filters</button>';
+  return h;
+}
+function activeHTML(f){
+  var a=[];
+  if(f.period==='custom')a.push(['dates',(f.from?dLabel(f.from):'Start')+' – '+(f.to?dLabel(f.to):'Today')]);
+  if(f.cats.length)a.push(['cats','Category: '+f.cats[0]+(f.cats.length>1?' +'+(f.cats.length-1):'')]);
+  if(f.who)a.push(['who','Person: '+f.who]);
+  if(f.min!==''||f.max!=='')a.push(['amt','Amount '+(f.min||'0')+' – '+(f.max||'∞')]);
+  if(f.sort!=='new')a.push(['sort',f.sort==='old'?'Oldest first':'Largest first']);
+  if(!a.length)return '';
+  return '<div class="chips wrap af-act">'+a.map(function(x){return '<button type="button" class="chip on" data-act="afrm" data-k="'+x[0]+'">'+esc(x[1])+' <span class="x" aria-hidden="true">×</span></button>';}).join('')
+    +'<button type="button" class="chip" data-act="afclear">Clear all</button></div>';
+}
+function stat(lb,v,cls){return '<div class="stat"><small>'+esc(lb)+'</small><b class="'+cls+'">'+v+'</b></div>';}
+function groupsHTML(rows,f,c){
+  var acc=c.acc,rb=c.rb;
+  if(f.sort==='big'){
+    /* monthRowsHTML lists newest-first from an ascending list, so an ascending-by-size list comes out largest-first */
+    var s=rows.slice().sort(function(x,y){return Math.abs(accEffect(x,acc))-Math.abs(accEffect(y,acc));});
+    return '<div class="dayg mbox open"><div class="day-h"><span>Largest first</span><span>'+rows.length+' txn'+(rows.length===1?'':'s')+'</span></div>'+monthRowsHTML(s,acc,rb)+'</div>';
+  }
+  var byM={};
+  rows.forEach(function(t){(byM[t.date.slice(0,7)]=byM[t.date.slice(0,7)]||[]).push(t);});
+  var ks=Object.keys(byM).sort();if(f.sort!=='old')ks.reverse();
+  var filtered=isFiltered(f),auto=filtered&&rows.length<=12; /* a short result list opens by itself */
+  return ks.map(function(k){
+    var tl=byM[k],inn=0,out=0;
+    tl.forEach(function(t){var v=accEffect(t,acc);if(v<0)out-=v;else inn+=v;});
+    var net=inn-out,mb=rb.mo[k];
+    var head=MONTHS[(+k.slice(5))-1]+' '+k.slice(0,4)+' <span class="muted" style="font-weight:600">· '+tl.length+' txn'+(tl.length===1?'':'s')+'</span>';
+    var right='<span class="'+(net<0?'neg':'pos')+'">'+(filtered?'filtered net ':'net ')+(net<0?'-':'+')+money(Math.abs(net))+'</span>'+(mb!==undefined?' · <b class="'+(mb<0?'neg':'')+'">Bal '+money(mb)+'</b>':'');
+    var st=DRILL.mopen&&DRILL.mopen[k]!==undefined?!!DRILL.mopen[k]:auto;
+    var list=f.sort==='old'?tl.slice().reverse():tl;
+    return '<div class="dayg mbox'+(st?' open':'')+'"><button type="button" class="day-h mhead" data-act="afmtog" data-k="'+k+'"><span><span class="gchev'+(st?' on':'')+'" aria-hidden="true"></span>'+head+'</span><span>'+right+'</span></button>'+(st?monthRowsHTML(list,acc,rb):'')+'</div>';
+  }).join('');
+}
+function resHTML(f,c){
+  var rows=filt(c.all,f,c.acc),filtered=isFiltered(f),h=activeHTML(f);
+  if(filtered){
+    var s=sums(rows,c.acc),L=sumLabels(c);
+    h+='<div class="stats af-stats">'+stat(L[0],money(s.i),s.i>0?'pos':'')+stat(L[1],money(s.o),s.o>0?'neg':'')+stat(L[2],(s.n>0?'+':'')+money(s.n),s.n<0?'neg':(s.n>0?'pos':''))+'</div>';
+    h+='<div class="af-cnt"><span>'+rows.length+' of '+c.all.length+' transaction'+(c.all.length===1?'':'s')+'</span><span>'+(f.sort==='old'?'Oldest first':f.sort==='big'?'Largest first':'Newest first')+'</span></div>';
+  }
+  if(!rows.length)return h+'<div class="help af-empty"><b>No transactions match</b>Try a longer period or clear a filter.<br><button type="button" class="btn sm" data-act="afclear">Clear filters</button></div>';
+  return h+groupsHTML(rows,f,c);
+}
+function parts(f){
+  var c=ctx();
+  return {c:c,per:perHTML(f),kinds:kindsHTML(f,c),adv:simple()?'':advHTML(f,c),res:resHTML(f,c)};
+}
+
+/* ---------- mount: swap the old card for the filter card ---------- */
+function oldCard(liab){
+  var found=null;
+  qa('#drillBody > .card').forEach(function(c){
+    var h=c.querySelector('h2'),tx=h?h.textContent:'';
+    if(!found&&(liab?/^\s*Transactions/.test(tx):/·\s*Monthly/.test(tx)))found=c;
+  });
+  return found;
+}
+AF.mount=function(){
+  if(!(DRILL.open&&DRILL.level==='accmonth'&&DRILL.acc))return;
+  var a=DB.accounts.find(function(x){return x.name===DRILL.acc;});
+  if(!a||isLedger20(a)||isRecvAcc(a.name))return;           /* ledgers keep their own page */
+  var liab=accTypeKind(a.type)==='liability';
+  if(liab&&accCycleFor(a))return;                              /* statement cards are the whole view */
+  var old=oldCard(liab);if(!old)return;
+  var f=F(),p=priv(function(){return parts(f);});
+  if(!p.c.all.length)return;                                   /* nothing to filter: keep the empty-state card */
+  var h2=liab?'<h2>'+ico('list')+' Transactions <span class="sub">'+p.c.all.length+' txn'+(p.c.all.length===1?'':'s')+'</span></h2>'
+    :(old.querySelector('h2')?old.querySelector('h2').outerHTML:'<h2>'+ico('calendar')+' Monthly</h2>');
+  var ns=simple(),n=advCount(f);
+  var html='<div class="card af-card" id="afCard">'+h2
+    +'<div class="af-bar"><div class="chips" id="afPer">'+p.per+'</div>'
+    +'<button type="button" class="af-ib'+(f.search||f.q?' on':'')+'" id="afSB" data-act="afsearch" aria-label="Search transactions">'+ico('search')+'</button>'
+    +(ns?'':'<button type="button" class="af-ib'+(f.adv||n?' on':'')+'" id="afFB" data-act="afadv" aria-label="More filters">'+ico('filter')+'<span class="af-bd" id="afBd"'+(n?'':' hidden')+'>'+n+'</span></button>')
+    +'</div>'
+    +'<div class="af-srch" id="afSrch"'+(f.search||f.q?'':' hidden')+'><input class="fin" id="afQ" data-af="q" placeholder="Search note, category, person or amount" autocomplete="off" enterkeyhint="search" value="'+esc(f.q)+'"></div>'
+    +'<div class="chips af-kinds" id="afKinds"'+(p.kinds?'':' hidden')+'>'+p.kinds+'</div>'
+    +(ns?'':'<div class="af-adv" id="afAdv"'+(f.adv?'':' hidden')+'>'+p.adv+'</div>')
+    +'<div id="afRes">'+p.res+'</div>'
+    +(liab?'':'<div class="help small" style="margin-top:4px">Tap a month to show or hide its transactions. The month header shows the month-end balance; Bal on each row is the balance after that transaction.</div>')
+    +'</div>';
+  old.insertAdjacentHTML('beforebegin',html);
+  old.remove();
+};
+/* shared building blocks for other page types (beta 37) */
+AF.ui={perHTML:perHTML,advHTML:advHTML,activeHTML:activeHTML,stat:stat,isFiltered:isFiltered,advCount:advCount,sums:sums,pub:pub};
+
+/* ---------- partial updates (never re-render the whole page, so typing keeps focus) ---------- */
+AF.modes={}; /* other page types (beta 37: card statement period, Between Us history) register a sync here */
+AF.sync=function(o){
+  var card=$('afCard');if(!card)return;
+  var m=card.dataset.mode;if(m){if(AF.modes[m])AF.modes[m](o);return;}
+  if(!(DRILL.open&&DRILL.level==='accmonth'))return;
+  var f=F(),p=priv(function(){return parts(f);}),set=function(id,h){var e=$(id);if(e)e.innerHTML=h;};
+  set('afPer',p.per);set('afKinds',p.kinds);
+  var k=$('afKinds');if(k)k.hidden=!p.kinds;
+  set('afRes',p.res);
+  if(o&&o.adv)set('afAdv',p.adv);
+  var n=advCount(f),bd=$('afBd');if(bd){bd.textContent=n;bd.hidden=!n;}
+  var fb=$('afFB');if(fb)fb.classList.toggle('on',!!(f.adv||n));
+  var sb=$('afSB');if(sb)sb.classList.toggle('on',!!(f.search||f.q));
+};
+
+/* ---------- actions ---------- */
+ACT.on('b34-account-filter',{
+'afper':function(el){var f=F();f.period=el.dataset.p;f.from='';f.to='';AF.sync({adv:true});},
+'afkind':function(el){var f=F(),k=el.dataset.k;if(!k)f.kinds=[];else tog(f.kinds,k);AF.sync({});},
+'afcat':function(el){tog(F().cats,el.dataset.c);AF.sync({adv:true});},
+'afwho':function(el){F().who=el.dataset.w||'';AF.sync({adv:true});},
+'afsort':function(el){F().sort=el.dataset.s;AF.sync({adv:true});},
+'afsearch':function(el){
+  var f=F();f.search=!(f.search||f.q);if(!f.search)f.q='';
+  var s=$('afSrch'),i=$('afQ');if(s)s.hidden=!f.search;if(i)i.value=f.q;
+  AF.sync({});if(f.search&&i)i.focus();
+},
+'afadv':function(el){var f=F();f.adv=!f.adv;var a=$('afAdv');if(a)a.hidden=!f.adv;AF.sync({});},
+'afrm':function(el){
+  var f=F(),k=el.dataset.k;
+  if(k==='dates'){f.from='';f.to='';f.period='all';}
+  if(k==='cats')f.cats=[];
+  if(k==='who')f.who='';
+  if(k==='amt'){f.min='';f.max='';}
+  if(k==='sort')f.sort='new';
+  AF.sync({adv:true});
+},
+'afclear':function(el){
+  var f=F(),adv=f.adv,search=f.search;
+  DRILL.af=newF(DRILL.acc);DRILL.af.adv=adv;DRILL.af.search=search;
+  var i=$('afQ');if(i)i.value='';
+  AF.sync({adv:true});
+},
+'afmtog':function(el){
+  var k=el.dataset.k,box=el.closest('.mbox'),was=!!(box&&box.classList.contains('open'));
+  DRILL.mopen=DRILL.mopen||{};DRILL.mopen[k]=was?0:1; /* 0 = closed on purpose (beats the auto-open of a short result list) */
+  AF.sync({});
+}
+});
+document.addEventListener('input',function(e){
+  var t=e.target;if(!t||!t.dataset||!t.dataset.af||!$('afCard'))return;
+  var f=F(),k=t.dataset.af;
+  if(k==='from'||k==='to'){f[k]=t.value;f.period=(f.from||f.to)?'custom':'all';}
+  else f[k]=t.value;
+  AF.sync({});
+});
+
+/* ---------- wiring ---------- */
+SCREEN.after('renderDrill',ORDER,{call:'none',ret:false},function(){
+  try{AF.mount();}catch(e){DIAG.note(e,'af34:mount');}
+});
+SCREEN.on('renderDrill',ORDER);
+/* a fresh visit to an account starts with no filters */
+SCREEN.before('openAccount',ORDER,{call:'apply',ret:true},function(){DRILL.af=null;});
+SCREEN.on('openAccount',ORDER);
+
+/* ---------- version + release note (beta 34) ---------- */
+try{V59.ver='1.60 beta 34';}catch(e){}
+try{V63.ver='1.60 beta 34';}catch(e){}
+try{if(window.B20)B20.ver='1.60 beta 34';}catch(e){}
+try{document.title='v1.60 beta 34 · Couple Money Manager';}catch(e){}
+try{
+  if(!window.__B34RN){
+    var olB34=q('#pageSet details.help ol')||q('#view-settings details.help ol');
+    if(olB34){olB34.insertAdjacentHTML('beforeend','<li><b>Account filters (beta 34):</b> an account page can now be filtered by period (7 days to 12 months), by type, by text search and — in Full Experience — by category, person, amount, custom dates and sort. Month headers keep the true month-end balance; a partner’s hidden transactions stay hidden from search.</li>');window.__B34RN=1;}
+  }
+}catch(e){}
+
+})();
+
+;
+/* ##################################################################
+   ##### SECTION: v160b35 — v1.60 beta 35 · month-end balance chart (phase 2)
+   ################################################################## */
+
+/* ===================== v1.60 beta 35 · month-end balance chart =====================
+   Phase 2 of the account-page plan. Adds one "Month-end balance" card above the beta 34
+   activity filter card. Requires beta 34 (window.AF34).
+
+   Rules
+   · Full Experience only (Simple Experience keeps the page as beta 34 left it).
+   · Shown only where the beta 34 filter card is shown (asset accounts and liabilities without a
+     statement day) and NOT for recorded-value assets (Property / Vehicle / Other asset), whose
+     meaningful figure is the recorded value on their own card, not a transaction balance.
+   · Hidden balance (partner hid it, or a partner's fully-private transaction touches the account):
+     the card is not drawn at all — no masked bars, no "***" chart.
+   · Each bar is the TRUE month-end balance from accRunningBals (carried forward through months with
+     no activity), computed inside the same withPV(withView(...)) wrappers as the page.
+   · Liabilities show the amount owed (positive bars) and are labelled "Owed at month-end".
+   · Tap a bar → its month-end figure and the change on the month before. "View activity" sets the
+     beta 34 filter to that month (other filters cleared), opens the month and scrolls to it.
+   · 6 / 12 month toggle; months before the account's first transaction are not drawn.
+
+   Public surface: window.AF35 (state in DRILL.afb, reset by openAccount).
+*/
+(function(){
+"use strict";
+if(!window.AF34){try{DIAG.note(new Error('beta 35 needs beta 34'),'af35:boot');}catch(e){}return;}
+var AF=window.AF34,B=window.AF35={};
+var ORDER=900000020;
+
+/* ---------- state ---------- */
+function S(){
+  if(!DRILL.afb||DRILL.afb.acc!==DRILL.acc)DRILL.afb={acc:DRILL.acc,n:6,sel:''};
+  return DRILL.afb;
+}
+function monthEndISO(k){var y=+k.slice(0,4),m=+k.slice(5,7);return k+'-'+pad2(daysInMonth(y,m));}
+function addMonthK(k,n){return addMonthsISO(k+'-01',n).slice(0,7);}
+/* 1.2k / 12k / 1.25M — the exact figure is in the detail line under the chart */
+function compact(v){
+  var a=Math.abs(v),s=v<0?'−':'';
+  if(a>=1e6)return s+(a/1e6).toFixed(a>=1e7?1:2).replace(/\.?0+$/,'')+'M';
+  if(a>=1e4)return s+Math.round(a/1e3)+'k';
+  if(a>=1e3)return s+(a/1e3).toFixed(1).replace(/\.0$/,'')+'k';
+  return s+Math.round(a);
+}
+B.compact=compact;
+
+/* ---------- eligibility (outside the privacy wrappers: account meta only) ---------- */
+function eligible(){
+  if(!(DRILL.open&&DRILL.level==='accmonth'&&DRILL.acc))return false;
+  var fc=$('afCard');if(!fc||fc.dataset.mode)return false; /* only beta 34's own account filter card (not statement / ledger pages) */
+  if(AF.simple())return false;                        /* Full Experience only */
+  var a=DB.accounts.find(function(x){return x.name===DRILL.acc;});
+  if(!a||isVal(a))return false;                       /* recorded-value assets have their own card */
+  if(isBalHidden(a.name))return false;                /* hidden balance: no chart at all */
+  return true;
+}
+
+/* ---------- data (inside the privacy wrappers) ---------- */
+function series(n){
+  var acc=DRILL.acc,a=DB.accounts.find(function(x){return x.name===acc;})||{};
+  var liab=accTypeKind(a.type)==='liability';
+  var rb=accRunningBals(acc),keys=Object.keys(rb.mo).sort();
+  if(!keys.length)return null;
+  var today=todayISO(),cur=today.slice(0,7),first=keys[0];
+  var start=addMonthK(cur,-(n-1));if(start<first)start=first;
+  /* balance carried into the window: last month-end before it, else the opening balance */
+  var carry=+a.start||0;
+  keys.forEach(function(k){if(k<start)carry=rb.mo[k];});
+  var out=[],k=start,prev=carry,guard=0;
+  while(k<=cur&&guard++<24){
+    var bal=rb.mo[k]!==undefined?rb.mo[k]:prev;
+    if(!isFinite(bal))return null;                    /* belt and braces: never draw a masked figure */
+    out.push({k:k,bal:bal,chg:Math.round((bal-prev)*100)/100,open:k===cur,show:liab?-bal:bal});
+    prev=bal;k=addMonthK(k,1);
+  }
+  return out.length?{liab:liab,pts:out}:null;
+}
+B.series=series;
+
+/* ---------- html ---------- */
+function cardHTML(){
+  var st=S(),d=AF.priv(function(){return series(st.n);});
+  if(!d)return '';
+  var pts=d.pts;
+  if(!st.sel||!pts.some(function(p){return p.k===st.sel;}))st.sel=pts[pts.length-1].k;
+  var mx=Math.max.apply(null,pts.map(function(p){return Math.abs(p.show);}).concat([1]));
+  var sel=pts.filter(function(p){return p.k===st.sel;})[0];
+  var title=d.liab?'Owed at month-end':'Month-end balance';
+  var bars=pts.map(function(p){
+    var h=Math.max(6,Math.round(Math.abs(p.show)/mx*86)),neg=p.show<0;
+    var lab=MONTHS[(+p.k.slice(5))-1];
+    var aria=lab+' '+p.k.slice(0,4)+(p.open?' to date':'')+': '+money(p.show).replace(/<[^>]+>/g,'');
+    return '<button type="button" class="afb-bar'+(p.k===st.sel?' sel':'')+(neg?' neg':'')+'" data-act="afbsel" data-k="'+p.k+'" aria-label="'+esc(aria)+'" aria-pressed="'+(p.k===st.sel)+'">'
+      +'<span class="afb-v">'+compact(p.show)+'</span><span class="afb-col" style="height:'+h+'px"></span><span class="afb-m">'+lab+'</span></button>';
+  }).join('');
+  /* change on the month: for a liability, owing less is good */
+  var good=d.liab?sel.chg>0:sel.chg>0,chgAmt=d.liab?-sel.chg:sel.chg;
+  var chgTxt=Math.abs(sel.chg)<0.005?'<span class="muted">no change on the month</span>'
+    :'<span class="'+(good?'pos':'neg')+'">'+(chgAmt>0?'+':'−')+money(Math.abs(chgAmt))+' on the month</span>';
+  var mlab=MONTHS[(+sel.k.slice(5))-1]+' '+sel.k.slice(0,4)+(sel.open?' (to date)':'');
+  return '<div class="card afb-card" id="afBal"><h2>'+ico('chart')+' '+title
+    +'<span class="sub"><span class="segmini afb-n">'
+    +[6,12].map(function(n){return '<button type="button" class="'+(st.n===n?'on':'')+'" data-act="afbn" data-n="'+n+'">'+n+'M</button>';}).join('')
+    +'</span></span></h2>'
+    +'<div class="afb-bars" role="group" aria-label="'+esc(title)+'">'+bars+'</div>'
+    +'<div class="afb-det"><div><b class="'+(sel.show<0&&!d.liab?'neg':'')+'">'+money(sel.show)+'</b><small>'+mlab+' · '+chgTxt+'</small></div>'
+    +'<button type="button" class="afb-go" data-act="afbgo" data-k="'+sel.k+'">View activity ›</button></div>'
+    +'<div class="help small afb-note">'+(d.liab?'Amount owed at the end of each month, from recorded transactions.':'Balance at the end of each month, from recorded transactions.')+' Tap a month for its figure.</div>'
+    +'</div>';
+}
+
+/* ---------- mount / refresh ---------- */
+B.mount=function(){
+  var old=$('afBal');if(old)old.remove();
+  if(!eligible())return;
+  var h=cardHTML();if(!h)return;
+  $('afCard').insertAdjacentHTML('beforebegin',h);
+};
+function refresh(){
+  var old=$('afBal');if(!old)return;
+  if(!eligible()){old.remove();return;}
+  var h=cardHTML();if(!h){old.remove();return;}
+  old.insertAdjacentHTML('beforebegin',h);old.remove();
+}
+
+/* ---------- actions ---------- */
+ACT.on('b35-month-end-chart',{
+'afbsel':function(el){S().sel=el.dataset.k;refresh();var b=q('#afBal .afb-bar.sel');if(b)b.focus();},
+'afbn':function(el){S().n=+el.dataset.n===12?12:6;refresh();},
+'afbgo':function(el){
+  var k=el.dataset.k,f=AF.state(),keep={adv:f.adv};
+  DRILL.af=AF.newF(DRILL.acc);DRILL.af.adv=keep.adv;
+  DRILL.af.period='custom';DRILL.af.from=k+'-01';DRILL.af.to=monthEndISO(k);
+  DRILL.mopen=DRILL.mopen||{};DRILL.mopen[k]=1;
+  var i=$('afQ');if(i)i.value='';var s=$('afSrch');if(s)s.hidden=true;
+  AF.sync({adv:true});
+  var c=$('afCard');if(c&&c.scrollIntoView)c.scrollIntoView({behavior:'smooth',block:'start'});
+}
+});
+
+/* ---------- wiring: after beta 34 has mounted its card ---------- */
+SCREEN.after('renderDrill',ORDER,{call:'none',ret:false},function(){
+  try{B.mount();}catch(e){DIAG.note(e,'af35:mount');}
+});
+SCREEN.on('renderDrill',ORDER);
+SCREEN.before('openAccount',ORDER,{call:'apply',ret:true},function(){DRILL.afb=null;});
+SCREEN.on('openAccount',ORDER);
+
+/* ---------- version + release note (beta 35) ---------- */
+try{V59.ver='1.60 beta 35';}catch(e){}
+try{V63.ver='1.60 beta 35';}catch(e){}
+try{if(window.B20)B20.ver='1.60 beta 35';}catch(e){}
+try{document.title='v1.60 beta 35 · Couple Money Manager';}catch(e){}
+try{
+  if(!window.__B35RN){
+    var olB35=q('#pageSet details.help ol')||q('#view-settings details.help ol');
+    if(olB35){olB35.insertAdjacentHTML('beforeend','<li><b>Month-end balance (beta 35):</b> in Full Experience an account page shows its balance at the end of each of the last 6 or 12 months (amount owed for loans). Tap a month for the exact figure and its change, then View activity to filter the list to that month. Not shown when the balance is hidden.</li>');window.__B35RN=1;}
+  }
+}catch(e){}
+
+})();
+
+;
+/* ##################################################################
+   ##### SECTION: v160b36 — v1.60 beta 36 · privacy view hardening
+   ################################################################## */
+
+/* ===================== v1.60 beta 36 · privacy view hardening =====================
+   ROOT CAUSE (present since v1.56)
+   Two wrappers build "what this viewer may see":
+     · withView(f) — masks a partner's "hide details" transactions (note blank, category "Private").
+     · withPV(f)   — drops a partner's fully-private transactions and relabels Only-me accounts.
+   withPV raises VW.d (to hold saves while DB.txns is swapped). withView treats VW.d>0 as "already
+   masked" and skips. So under withPV(withView(f)) — and under withPV(f) alone, which is how Overview,
+   Accounts, Insights, the dashboard and the on-device assistant run — hide-details transactions were
+   NEVER masked. Screens stayed safe only because row renderers mask again on display; anything
+   that reads the data (search, category totals, the on-device assistant) saw the real note.
+
+   Observed leak (beta 33, before this fix): the partner asks the on-device assistant
+   "recent transactions" → "17 Oct · Shopping (SECRET handbag) · RM 999.00".
+
+   FIX
+   pvBuild() — the single function every withPV call asks for the viewer's copy of the data — now
+   also masks hide-details transactions, using the same rule and the same maskTx() as withView.
+   withPV therefore always hands f the viewer's view, and withView's skip under VW.d becomes correct.
+   · Balances are unchanged: maskTx keeps date, type, account, to, owedAcc and amount.
+   · The viewer's own transactions are never touched (pby === me).
+   · No data is written: masked copies live only while f runs, exactly as with withView today.
+   · Cached per change, like the existing V57 privacy-view cache.
+
+   Also fixes the version label: pinVersion28 pins V59.ver to the global VERSION, so every later
+   "V59.ver=..." assignment (beta 33, 34, 35) was ignored and Help & About kept showing beta 32.
+*/
+(function(){
+"use strict";
+var B36=window.B36={ver:'1.60 beta 36'};
+
+/* same test withView uses */
+function needsMask(t,me){return !!(t&&t.priv&&t.pby&&me&&t.pby!==me&&!t.masked);}
+function maskOne(t){var m=maskTx(t);m.priv=1;m.pby=t.pby;m.u=t.u;return m;}
+B36.needsMask=needsMask;
+
+var _pvb36=pvBuild,C={k:null,src:null,v:null};
+pvBuild=function(space){
+  var v=_pvb36.apply(this,arguments);                 /* existing: full-private dropped, Only-me relabelled */
+  var me=meName();if(!DB||!me)return v;
+  var src=v?v.t:DB.txns,acc=v?v.a:DB.accounts;
+  var k=[typeof V57!=='undefined'?V57.rev:0,space,me,src.length,DB.meta&&DB.meta.changedAt].join('|');
+  if(C.k===k&&C.src===src&&C.acc===acc)return C.v;
+  var hit=false,t2=src.map(function(t){if(needsMask(t,me)){hit=true;return maskOne(t);}return t;});
+  var out=hit?{t:t2,a:acc}:v;
+  C={k:k,src:src,acc:acc,v:out};
+  return out;
+};
+
+/* ---------- version label ----------
+   pinVersion28 pins V59/V63/B20 .ver to a getter over a VERSION variable private to the beta 28
+   closure, with a setter that ignores writes. Re-pin the same way, to this build's version.
+   FUTURE BETAS: change B36.ver below (or re-pin with pinVer36) — plain "V59.ver=..." does nothing. */
+var CUR=B36.ver;
+function pinVer36(o){if(!o)return;try{Object.defineProperty(o,'ver',{get:function(){return CUR;},set:function(){},configurable:true});}catch(e){try{o.ver=CUR;}catch(x){}}}
+window.pinVer36=function(v){if(v)CUR=String(v);pinVer36(window.V59);pinVer36(window.V63);pinVer36(window.B20);try{document.title='v'+CUR+' · Couple Money Manager';}catch(e){}};
+try{pinVer36(typeof V59!=='undefined'?V59:null);}catch(e){}
+try{pinVer36(typeof V63!=='undefined'?V63:null);}catch(e){}
+try{pinVer36(window.B20);}catch(e){}
+/* finish291() (beta 28.1) re-sets document.title from its own private VERSION291 after the data loads;
+   keep the tab title on the current version whenever older code rewrites it */
+try{
+  var tEl=document.querySelector('title');
+  if(tEl&&window.MutationObserver)new MutationObserver(function(){
+    var want='v'+CUR+' · Couple Money Manager';
+    if(document.title!==want&&/Couple Money Manager/.test(document.title))document.title=want;
+  }).observe(tEl,{childList:true,characterData:true,subtree:true});
+}catch(e){}
+try{document.title='v1.60 beta 36 · Couple Money Manager';}catch(e){}
+try{
+  if(!window.__B36RN){
+    var ol=q('#pageSet details.help ol')||q('#view-settings details.help ol');
+    if(ol){ol.insertAdjacentHTML('beforeend','<li><b>Privacy fix (beta 36):</b> a partner’s “hide details” transactions are now masked everywhere the app reads data — including the on-device assistant, which could show their note and category. Help &amp; About shows the right version again.</li>');window.__B36RN=1;}
+  }
+}catch(e){}
+})();
+
+;
+/* ##################################################################
+   ##### SECTION: v160b37 — v1.60 beta 37 · statement filters · Between Us history · loan payments on assets
+   ################################################################## */
+
+/* ===================== v1.60 beta 37 =====================
+   Phase 3, built on the beta 34 filter engine (window.AF34) and the beta 36 privacy view.
+
+   1 · CREDIT-CARD STATEMENT PERIOD (DRILL.level 'cyc', opened from Billing periods)
+       · Opening / Spent / Paid / Closing stay the TRUE statement figures.
+       · New: type chips (Purchases · Payments · Refunds & credits), search, and in Full Experience
+         category / person / amount / sort. Day headers keep the true end-of-day balance.
+       · New: ‹ previous / next › statement, keeping the filter (e.g. "Groceries" across statements).
+         Opening a period from the Billing periods list starts with no filter.
+
+   2 · BETWEEN US HISTORY (a "X owes Y" ledger opened from the Between Us tile)
+       · Replaces the generic Monthly card, whose signed "Bal −RM 37.60" hid WHO owes.
+       · Every figure is said in words: "Wei owes RM 286.40", "Huei Yik owes RM 37.60", "Settled".
+       · Type chips: Shared bills · Refunds & credits · Settlements · Money lent (only those present),
+         plus period, search and the advanced panel. Not narrowed by the Insights person scope —
+         a ledger is about both people by definition.
+
+   3 · LOAN PAYMENTS ON PROPERTY / VEHICLE / OTHER ASSET PAGES
+       · Uses the links the app ALREADY stores (loan.linkedAsset, asset.linkedLoans) — no new data.
+       · Shows repayments into the linked loan(s): total for 12 months / all, by month, newest first,
+         each row with the loan balance after it, and an "Open loan" button.
+       · A linked loan the viewer cannot see (a partner's Only-me account) is left out.
+       · Rental income and running costs are NOT here yet: they need a per-transaction link
+         (a data-model decision — see the beta 37 hand-over notes).
+
+   Everything is computed inside withPV(withView(...)) (AF34.priv), like the rest of the page.
+   Public surface: window.AF37.
+*/
+(function(){
+"use strict";
+if(!window.AF34||!window.AF34.ui){try{DIAG.note(new Error('beta 37 needs beta 34'),'af37:boot');}catch(e){}return;}
+var AF=window.AF34,U=AF.ui,X=window.AF37={};
+var ORDER=900000030;
+function F(){return AF.state();}
+
+/* ---------- fix: addMonthsISO went one year too far back for negative offsets that cross a year
+   (15 Jan 2026 − 1 month gave 15 Dec 2024; 21 Oct 2026 − 12 months gave 21 Oct 2024). The app's
+   own caller (recurring transactions) only moves forward, so its results do not change; the
+   "3 months" / "12 months" filters and the 12M chart now span the right months. ---------- */
+addMonthsISO=function(iso,n){
+  var p=String(iso).split('-'),mi=(+p[1])-1+(+n||0),y=+p[0]+Math.floor(mi/12),m=((mi%12)+12)%12+1;
+  var dd=Math.min(+p[2],daysInMonth(y,m));return y+'-'+pad2(m)+'-'+pad2(dd);
+};
+function acct(n){return DB.accounts.find(function(x){return x.name===n;});}
+
+/* ---------- shared pieces ---------- */
+function kindsHTML(f,all,labels,kindOf){
+  var have=Object.keys(labels).filter(function(k){return all.some(function(t){return kindOf(t)===k;});});
+  if(have.length<2)return '';
+  return '<button type="button" class="chip'+(f.kinds.length?'':' on')+'" data-act="afkind" data-k="">All</button>'
+    +have.map(function(k){return '<button type="button" class="chip'+(f.kinds.indexOf(k)>=0?' on':'')+'" data-act="afkind" data-k="'+k+'">'+esc(labels[k])+'</button>';}).join('');
+}
+function shellHTML(mode,head,top,p,f,o){
+  var ns=AF.simple(),n=U.advCount(f);
+  return '<div class="card af-card" id="afCard" data-mode="'+mode+'">'+head+(top||'')
+    +'<div class="af-bar">'+(o.per?'<div class="chips" id="afPer">'+p.per+'</div>':'<span class="af-bl">'+esc(o.label||'Filter')+'</span>')
+    +'<button type="button" class="af-ib'+(f.search||f.q?' on':'')+'" id="afSB" data-act="afsearch" aria-label="Search transactions">'+ico('search')+'</button>'
+    +(ns?'':'<button type="button" class="af-ib'+(f.adv||n?' on':'')+'" id="afFB" data-act="afadv" aria-label="More filters">'+ico('filter')+'<span class="af-bd" id="afBd"'+(n?'':' hidden')+'>'+n+'</span></button>')
+    +'</div>'
+    +'<div class="af-srch" id="afSrch"'+(f.search||f.q?'':' hidden')+'><input class="fin" id="afQ" data-af="q" placeholder="'+esc(o.ph||'Search note, category, person or amount')+'" autocomplete="off" enterkeyhint="search" value="'+esc(f.q)+'"></div>'
+    +'<div class="chips af-kinds" id="afKinds"'+(p.kinds?'':' hidden')+'>'+p.kinds+'</div>'
+    +(ns?'':'<div class="af-adv" id="afAdv"'+(f.adv?'':' hidden')+'>'+p.adv+'</div>')
+    +'<div id="afRes">'+p.res+'</div>'
+    +(o.help?'<div class="help small" style="margin-top:4px">'+o.help+'</div>':'')
+    +'</div>';
+}
+function applyParts(p,f){
+  var set=function(id,h){var e=$(id);if(e)e.innerHTML=h;};
+  if(p.per!==undefined)set('afPer',p.per);
+  set('afKinds',p.kinds);var k=$('afKinds');if(k)k.hidden=!p.kinds;
+  set('afRes',p.res);
+  if(p.advNow)set('afAdv',p.adv);
+  var n=U.advCount(f),bd=$('afBd');if(bd){bd.textContent=n;bd.hidden=!n;}
+  var fb=$('afFB');if(fb)fb.classList.toggle('on',!!(f.adv||n));
+  var sb=$('afSB');if(sb)sb.classList.toggle('on',!!(f.search||f.q));
+}
+function emptyHTML(){return '<div class="help af-empty"><b>No transactions match</b>Try another filter or clear them.<br><button type="button" class="btn sm" data-act="afclear">Clear filters</button></div>';}
+function stripHTML(rows,all,f,acc,L){
+  var s=U.sums(rows,acc);
+  return '<div class="stats af-stats">'+U.stat(L[0],money(s.i),s.i>0?'pos':'')+U.stat(L[1],money(s.o),s.o>0?'neg':'')
+    +U.stat(L[2],(s.n>0?'+':'')+money(s.n),s.n<0?'neg':(s.n>0?'pos':''))+'</div>'
+    +'<div class="af-cnt"><span>'+rows.length+' of '+all.length+' transaction'+(all.length===1?'':'s')+'</span><span>'+(f.sort==='old'?'Oldest first':f.sort==='big'?'Largest first':'Newest first')+'</span></div>';
+}
+
+/* =====================================================================
+   1 · CREDIT-CARD STATEMENT PERIOD
+   ===================================================================== */
+var CYC_L={Expense:'Purchases',Transfer:'Payments',Income:'Refunds & credits'};
+function cycKind(t){return t.type;}
+function cycCtx(){
+  var acc=DRILL.acc,a=acct(acc)||{},s=DRILL.cs,e=DRILL.ce;
+  var all=allTxns().filter(function(t){return t.date>=s&&t.date<=e&&txnTouchesAcc(t,acc);});
+  var cyc=accCycleFor(a),ps=cyc?cyclePeriods(cyc,acc):[];
+  return {acc:acc,a:a,s:s,e:e,all:all,rb:accRunningBals(acc),ps:ps};
+}
+function cycDays(rows,f,c){
+  var acc=c.acc,rb=c.rb;
+  if(f.sort==='big'){
+    var b=rows.slice().sort(function(x,y){return Math.abs(accEffect(y,acc))-Math.abs(accEffect(x,acc));});
+    return '<div class="dayg"><div class="day-h"><span>Largest first</span><span>'+rows.length+' txn'+(rows.length===1?'':'s')+'</span></div>'+b.map(function(t){return cycTxnRow(t,acc,rb.tx[t.id]);}).join('')+'</div>';
+  }
+  var g={};rows.forEach(function(t){(g[t.date]=g[t.date]||[]).push(t);});
+  var days=Object.keys(g).sort();if(f.sort!=='old')days.reverse();
+  var filtered=U.isFiltered(f);
+  return days.map(function(d){
+    var dn=0,seen={};g[d].forEach(function(t){dn+=accEffect(t,acc);});
+    var list=f.sort==='old'?g[d]:g[d].slice().reverse();
+    var rws=list.map(function(t){
+      if(t.group){if(seen[t.group])return '';var legs=g[d].filter(function(x){return x.group===t.group;});
+        if(legs.length>1){seen[t.group]=1;var lb;legs.forEach(function(x){if(rb.tx[x.id]!==undefined)lb=rb.tx[x.id];});return cycGrpRow(t.group,legs,acc,lb);}}
+      return cycTxnRow(t,acc,rb.tx[t.id]);
+    }).join('');
+    return '<div class="dayg"><div class="day-h"><span>'+dLabelYW(d)+'</span><span>'+(filtered?'filtered net ':'net ')+(dn<0?'-':'+')+money(Math.abs(dn))
+      +(rb.day[d]!==undefined?' · <b class="'+(rb.day[d]<0?'neg':'')+'">Bal '+money(rb.day[d])+'</b>':'')+'</span></div>'+rws+'</div>';
+  }).join('');
+}
+function cycParts(f,advNow){
+  var c=cycCtx(),rows=AF.filt(c.all,f,c.acc,cycKind),h=U.activeHTML(f);
+  if(U.isFiltered(f))h+=stripHTML(rows,c.all,f,c.acc,['Payments & credits','Purchases','Net']);
+  h+=rows.length?cycDays(rows,f,c):emptyHTML();
+  return {c:c,kinds:kindsHTML(f,c.all,CYC_L,cycKind),adv:AF.simple()?'':U.advHTML(f,c,{noDates:true}),res:h,advNow:advNow};
+}
+function navHTML(c){
+  var i=-1;c.ps.forEach(function(p,k){if(p.s===c.s&&p.e===c.e)i=k;});
+  if(i<0)return '';
+  var pv=c.ps[i-1],nx=c.ps[i+1];
+  var b=function(p,lb,cls){return p?'<button type="button" class="af-nav '+cls+'" data-act="afcnav" data-s="'+p.s+'" data-e="'+p.e+'">'+lb+'</button>':'<span class="af-nav off '+cls+'" aria-hidden="true">'+lb+'</span>';};
+  return '<div class="af-navrow">'+b(pv,'‹ '+(pv?dLabel(pv.s)+' – '+dLabel(pv.e):'Earlier'),'l')+b(nx,(nx?dLabel(nx.s)+' – '+dLabel(nx.e):'Later')+' ›','r')+'</div>';
+}
+X.mountCyc=function(){
+  if(!(DRILL.open&&DRILL.level==='cyc'&&DRILL.acc))return;
+  var card=q('#drillBody > .card');if(!card||card.id==='afCard')return;
+  var f=F();f.period='all';f.from='';f.to='';            /* the statement IS the period */
+  var p=AF.priv(function(){return cycParts(f,true);});
+  if(!p.c.all.length)return;                             /* "Nothing billed" stays as it is */
+  var h2=card.querySelector('h2'),kp=card.querySelector('.kpis');
+  var nav=AF.priv(function(){return navHTML(p.c);});
+  var html=shellHTML('cyc',(h2?h2.outerHTML:''),(kp?kp.outerHTML:'')+nav,p,f,{per:false,label:'Filter this statement',
+    help:'Opening, Spent, Paid and Closing are the whole statement. Day headers show the card balance at the end of that day.'});
+  card.insertAdjacentHTML('beforebegin',html);card.remove();
+};
+AF.modes.cyc=function(o){var f=F();applyParts(AF.priv(function(){return cycParts(f,!!(o&&o.adv));}),f);};
+
+/* =====================================================================
+   2 · BETWEEN US HISTORY
+   ===================================================================== */
+function isLedgerPage(a){return !!(a&&isLedger20(a)&&/^.+ owes .+$/.test(a.name)&&!LBL_RE.test(a.name));}
+var LED_L={bill:'Shared bills',credit:'Refunds & credits',settle:'Settlements',owed:'Money lent'};
+function ledKind(L){return function(t){
+  if(t.type==='Transfer'&&(t.account===L||t.to===L))return 'settle';
+  if(t.owedAcc===L)return 'owed';
+  return accEffect(t,L)<0?'credit':'bill';
+};}
+/* "Wei owes RM 286.40" / "Huei Yik owes RM 37.60" / "Settled" — never a signed balance */
+function oweShort(L,b){
+  if(!isFinite(b))return money(b);
+  var pp=L.split(' owes ');if(Math.abs(b)<0.005)return 'Settled';
+  return esc(b>0?pp[0]:pp[1])+' owes '+money(Math.abs(b));
+}
+X.oweShort=oweShort;
+function ledCtx(){
+  var L=DRILL.acc;
+  var all=allTxns().filter(function(t){return txnTouchesAcc(t,L);});   /* both people: no person scope */
+  return {acc:L,all:all,rb:accRunningBals(L),bal:accountBalAsOf(L,'9999-12-31')};
+}
+function ledGroups(rows,f,c){
+  var L=c.acc,noBal={tx:{}};                            /* rows without a signed per-row Bal */
+  if(f.sort==='big'){
+    var s=rows.slice().sort(function(x,y){return Math.abs(accEffect(x,L))-Math.abs(accEffect(y,L));});
+    return '<div class="dayg mbox open"><div class="day-h"><span>Largest first</span><span>'+rows.length+' txn'+(rows.length===1?'':'s')+'</span></div>'+monthRowsHTML(s,L,noBal)+'</div>';
+  }
+  var byM={};rows.forEach(function(t){(byM[t.date.slice(0,7)]=byM[t.date.slice(0,7)]||[]).push(t);});
+  var ks=Object.keys(byM).sort();if(f.sort!=='old')ks.reverse();
+  var filtered=U.isFiltered(f),auto=filtered?rows.length<=12:false;
+  return ks.map(function(k,i){
+    var tl=byM[k],ch=0;tl.forEach(function(t){ch+=accEffect(t,L);});ch=Math.round(ch*100)/100;
+    var mb=c.rb.mo[k];
+    var head=MONTHS[(+k.slice(5))-1]+' '+k.slice(0,4)+' <span class="muted" style="font-weight:600">· '+tl.length+' txn'+(tl.length===1?'':'s')+'</span>';
+    var right='<span class="muted">'+(filtered?'filtered change ':'change ')+(ch<0?'−':'+')+money(Math.abs(ch))+'</span>'+(mb!==undefined?' · <b>'+oweShort(L,mb)+'</b>':'');
+    var st=DRILL.mopen&&DRILL.mopen[k]!==undefined?!!DRILL.mopen[k]:(auto||(!filtered&&i===0&&f.sort!=='old'));
+    var list=f.sort==='old'?tl.slice().reverse():tl;
+    return '<div class="dayg mbox'+(st?' open':'')+'"><button type="button" class="day-h mhead" data-act="afmtog" data-k="'+k+'"><span><span class="gchev'+(st?' on':'')+'" aria-hidden="true"></span>'+head+'</span><span>'+right+'</span></button>'+(st?monthRowsHTML(list,L,noBal):'')+'</div>';
+  }).join('');
+}
+function ledParts(f,advNow){
+  var c=ledCtx(),kf=ledKind(c.acc),rows=AF.filt(c.all,f,c.acc,kf),h=U.activeHTML(f);
+  var pp=c.acc.split(' owes ');
+  if(U.isFiltered(f))h+=stripHTML(rows,c.all,f,c.acc,['Added','Settled / credited','Net change']);
+  h+=rows.length?ledGroups(rows,f,c):emptyHTML();
+  return {c:c,pp:pp,per:U.perHTML(f),kinds:kindsHTML(f,c.all,LED_L,kf),adv:AF.simple()?'':U.advHTML(f,c),res:h,advNow:advNow};
+}
+X.mountLedger=function(){
+  if(!(DRILL.open&&DRILL.level==='accmonth'&&DRILL.acc))return;
+  var a=acct(DRILL.acc);if(!isLedgerPage(a))return;
+  var old=null;qa('#drillBody > .card').forEach(function(c){var h=c.querySelector('h2');if(!old&&h&&/·\s*Monthly/.test(h.textContent))old=c;});
+  if(!old)return;
+  var f=F(),p=AF.priv(function(){return ledParts(f,true);});
+  if(!p.c.all.length)return;
+  var now=p.c.bal;
+  var head='<h2>'+ico('scale')+' Between Us history <span class="sub"><b>'+oweShort(p.c.acc,now)+'</b></span></h2>'
+    +'<div class="af-lead">'+(Math.abs(now)<0.005?'You are all square.':'Shared bills make <b>'+esc(p.pp[0])+'</b> owe <b>'+esc(p.pp[1])+'</b> more; settlements and refund shares bring it down.')+'</div>';
+  var html=shellHTML('ledger',head,'',p,f,{per:true,ph:'Search bill, category, person or amount',
+    help:'Each month shows who owes whom at the end of that month. Tap a month to see its bills and settlements.'});
+  old.insertAdjacentHTML('beforebegin',html);old.remove();
+};
+AF.modes.ledger=function(o){var f=F();applyParts(AF.priv(function(){return ledParts(f,!!(o&&o.adv));}),f);};
+
+/* =====================================================================
+   3 · LOAN PAYMENTS ON ASSET PAGES (existing links only)
+   ===================================================================== */
+function linkedLoans(a){
+  var n={};(a.linkedLoans||[]).forEach(function(x){n[x]=1;});
+  DB.accounts.forEach(function(l){if(l.linkedAsset===a.name)n[l.name]=1;});
+  var me=meName();
+  return Object.keys(n).map(acct).filter(function(l){
+    if(!l||!isLoan(l))return false;
+    if(l.vis==='me'&&me&&(l.pvby||l.owner)!==me)return false;   /* a partner's Only-me loan stays invisible */
+    return true;
+  });
+}
+X.linkedLoans=linkedLoans;
+function lpState(){if(!DRILL.afl||DRILL.afl.acc!==DRILL.acc)DRILL.afl={acc:DRILL.acc,period:'12m',open:{}};return DRILL.afl;}
+function lpHTML(){
+  var st=lpState(),a=acct(DRILL.acc);if(!a)return '';
+  var loans=linkedLoans(a);if(!loans.length)return '';
+  var names={};loans.forEach(function(l){names[l.name]=1;});
+  var from=st.period==='12m'?addDaysISO(addMonthsISO(todayISO(),-12),1):'';
+  var pays=allTxns().filter(function(t){return t.type==='Transfer'&&names[t.to]&&(!from||t.date>=from);});
+  var rbs={};loans.forEach(function(l){rbs[l.name]=accRunningBals(l.name);});
+  var tot=0;pays.forEach(function(t){tot+=t.amount;});tot=Math.round(tot*100)/100;
+  var byM={};pays.forEach(function(t){(byM[t.date.slice(0,7)]=byM[t.date.slice(0,7)]||[]).push(t);});
+  var ks=Object.keys(byM).sort().reverse();
+  var chips='<span class="segmini afl-p">'+[['12m','12 months'],['all','All']].map(function(p){return '<button type="button" class="'+(st.period===p[0]?'on':'')+'" data-act="aflper" data-p="'+p[0]+'">'+p[1]+'</button>';}).join('')+'</span>';
+  var list=ks.map(function(k,i){
+    var tl=byM[k],s=0;tl.forEach(function(t){s+=t.amount;});
+    var open=st.open[k]!==undefined?!!st.open[k]:i===0;
+    return '<div class="dayg mbox'+(open?' open':'')+'"><button type="button" class="day-h mhead" data-act="afltog" data-k="'+k+'"><span><span class="gchev'+(open?' on':'')+'" aria-hidden="true"></span>'
+      +MONTHS[(+k.slice(5))-1]+' '+k.slice(0,4)+' <span class="muted" style="font-weight:600">· '+tl.length+' payment'+(tl.length===1?'':'s')+'</span></span><span><b>'+money(s)+'</b></span></button>'
+      +(open?tl.slice().reverse().map(function(t){return accTxnRow(t,t.to,rbs[t.to].tx[t.id]);}).join(''):'')+'</div>';
+  }).join('');
+  return '<div class="card afl-card" id="aflCard"><h2>'+ico('swap')+' Loan payments<span class="sub">'+chips+'</span></h2>'
+    +'<div class="afl-sum"><b>'+money(tot)+'</b><small>'+(st.period==='12m'?'paid in the last 12 months':'paid in total')+' · '+pays.length+' payment'+(pays.length===1?'':'s')+' into '+loans.map(function(l){return esc(l.name);}).join(', ')+'</small></div>'
+    +(list||'<div class="help" style="padding:6px 2px">No repayments recorded'+(st.period==='12m'?' in the last 12 months':'')+'.</div>')
+    +'<div class="afl-btns">'+loans.map(function(l){return '<button type="button" class="btn sm ghost" data-act="aflopen" data-n="'+esc(l.name)+'">'+ico('chevright')+' Open '+esc(l.name)+'</button>';}).join('')+'</div>'
+    +'<div class="help small">Repayments into the loan'+(loans.length===1?'':'s')+' linked to this asset (Accounts → this asset → Edit). Bal on each row is what was still owed after it. Interest and charges are on the loan page.</div></div>';
+}
+X.mountLoans=function(){
+  var old=$('aflCard');if(old)old.remove();
+  if(!(DRILL.open&&DRILL.level==='accmonth'&&DRILL.acc))return;
+  var a=acct(DRILL.acc);if(!a||!isVal(a))return;
+  var h=AF.priv(lpHTML);if(!h)return;
+  var anchor=$('afCard');
+  if(anchor)anchor.insertAdjacentHTML('beforebegin',h);
+  else{var first=q('#drillBody > .card');if(first)first.insertAdjacentHTML('afterend',h);else $('drillBody').insertAdjacentHTML('beforeend',h);}
+};
+function lpRefresh(){var c=$('aflCard');if(!c)return;var h=AF.priv(lpHTML);if(!h){c.remove();return;}c.insertAdjacentHTML('beforebegin',h);c.remove();}
+
+/* ---------- actions ---------- */
+ACT.on('b37-statement-ledger-asset',{
+/* a statement opened from the Billing periods list starts with no filter */
+'cycopen':function(el,next){DRILL.af=null;return next(el);},
+'afcnav':function(el){DRILL.cs=el.dataset.s;DRILL.ce=el.dataset.e;renderDrill();var c=$('afCard');if(c&&c.scrollIntoView)c.scrollIntoView({block:'start'});},
+'aflper':function(el){lpState().period=el.dataset.p==='all'?'all':'12m';lpRefresh();},
+'afltog':function(el){var st=lpState(),k=el.dataset.k,box=el.closest('.mbox');st.open[k]=box&&box.classList.contains('open')?0:1;lpRefresh();},
+'aflopen':function(el){openAccount(el.dataset.n);}
+});
+
+/* ---------- wiring ---------- */
+SCREEN.after('renderDrill',ORDER,{call:'none',ret:false},function(){
+  try{X.mountCyc();}catch(e){DIAG.note(e,'af37:cyc');}
+  try{X.mountLedger();}catch(e){DIAG.note(e,'af37:ledger');}
+  try{X.mountLoans();}catch(e){DIAG.note(e,'af37:loans');}
+});
+SCREEN.on('renderDrill',ORDER);
+SCREEN.before('openAccount',ORDER,{call:'apply',ret:true},function(){DRILL.afl=null;});
+SCREEN.on('openAccount',ORDER);
+
+/* ---------- version + release note ---------- */
+try{if(window.pinVer36)window.pinVer36('1.60 beta 37');}catch(e){}
+try{
+  if(!window.__B37RN){
+    var ol=q('#pageSet details.help ol')||q('#view-settings details.help ol');
+    if(ol){ol.insertAdjacentHTML('beforeend','<li><b>Statements, Between Us and loans (beta 37):</b> a credit-card statement can be filtered (purchases, payments, category, person, amount) and stepped to the previous or next statement; each Between Us ledger has a history that says who owes whom at every month-end, with filters; Property, Vehicle and other asset pages show repayments into their linked loans.</li>');window.__B37RN=1;}
+  }
+}catch(e){}
+})();
+
+;
+/* ##################################################################
+   ##### SECTION: v160b38 — v1.60 beta 38 · asset income & costs by category rule
+   ################################################################## */
+
+/* ===================== v1.60 beta 38 · asset income & costs (category rule) =====================
+   DATA MODEL (decision: category rule, not a per-transaction tag)
+   · One optional field on Property / Vehicle / Other asset accounts:
+       a.assetCats = { Income:[category names], Expense:[category names] }
+     Income and Expense are kept apart because the two lists can share a name.
+   · No field on any transaction. Matching is live: an Income / Expense transaction (not a
+     transfer) whose category is in the asset's rule shows on that asset's page — past ones too.
+   · EXCLUSIVE: a category belongs to at most one asset, so two rented properties cannot double-count
+     "Rental income". The editor shows a category taken by another asset as unavailable.
+   · DISPLAY ONLY: balances, net worth, cash flow, budgets and reports are unchanged.
+   · Follows category renames and merges (renameCategory / mergeCategory are wrapped).
+   · Privacy: matched inside the beta 36 privacy view, so a partner's hide-details transaction
+     (category shown as "Private") never matches, and a fully-private one is never seen.
+   · Editing: owner of the asset only (permFor59 === 'owner'); view-only and closed accounts read only.
+   · The rule lives on the asset account, so it syncs, backs up and restores with it; an Only-me
+     asset is not shared, so neither is its rule.
+
+   UI: an "Income & costs" card on the asset page (after Loan payments): 12 months / All,
+   Income · Costs · Net, month groups newest first, and "Choose categories" for the owner.
+   Public surface: window.AF38.
+*/
+(function(){
+"use strict";
+if(!window.AF34){try{DIAG.note(new Error('beta 38 needs beta 34'),'af38:boot');}catch(e){}return;}
+var AF=window.AF34,X=window.AF38={};
+var ORDER=900000040,KINDS=['Income','Expense'];
+function acct(n){return DB.accounts.find(function(x){return x.name===n;});}
+
+/* ---------- the rule ---------- */
+function rule(a){
+  var r=a&&a.assetCats;
+  return {Income:(r&&Array.isArray(r.Income))?r.Income.slice():[],Expense:(r&&Array.isArray(r.Expense))?r.Expense.slice():[]};
+}
+function ruleEmpty(r){return !r.Income.length&&!r.Expense.length;}
+/* which asset already claims each category (other than `except`) */
+function claims(except){
+  var m={Income:{},Expense:{}};
+  DB.accounts.forEach(function(a){if(a.name===except||!isVal(a))return;var r=rule(a);KINDS.forEach(function(k){r[k].forEach(function(c){m[k][c]=a.name;});});});
+  return m;
+}
+function matches(t,r){return !!(t&&t.type!=='Transfer'&&r[t.type]&&r[t.type].indexOf(t.category)>=0);}
+X.rule=rule;X.matches=matches;X.claims=claims;
+
+/* ---------- category renames / merges carry the rule along ---------- */
+function moveCat(ty,from,to){
+  (DB.accounts||[]).forEach(function(a){
+    if(!a.assetCats||!Array.isArray(a.assetCats[ty]))return;
+    var l=a.assetCats[ty],i=l.indexOf(from);if(i<0)return;
+    l.splice(i,1);if(to&&l.indexOf(to)<0)l.push(to);
+  });
+}
+if(typeof renameCategory==='function'){var _rc38=renameCategory;renameCategory=function(ty,oldN,newN){var r=_rc38.apply(this,arguments);try{if(newN&&newN!==oldN)moveCat(ty,oldN,newN);}catch(e){DIAG.note(e,'af38:rename');}return r;};}
+if(typeof mergeCategory==='function'){var _mc38=mergeCategory;mergeCategory=function(ty,from,into){var r=_mc38.apply(this,arguments);try{moveCat(ty,from,into);}catch(e){DIAG.note(e,'af38:merge');}return r;};}
+
+/* ---------- state ---------- */
+function S(){if(!DRILL.afi||DRILL.afi.acc!==DRILL.acc)DRILL.afi={acc:DRILL.acc,period:'12m',open:{},edit:false,draft:null};return DRILL.afi;}
+function canEdit(a){try{return permFor59(a.name)==='owner'&&!a.locked;}catch(e){return false;}}
+
+/* ---------- html (inside the privacy view) ---------- */
+function editorHTML(a,st){
+  var d=st.draft,cl=claims(a.name),h='';
+  KINDS.forEach(function(k){
+    var cats=(DB.categories&&DB.categories[k]||[]).slice().sort(alphasort);
+    h+='<div class="af-sec"><div class="af-lb">'+(k==='Income'?'Income categories':'Cost categories')+' <span>pick any</span></div><div class="chips wrap">'
+      +cats.map(function(c){
+        var by=cl[k][c],on=d[k].indexOf(c)>=0;
+        if(by&&!on)return '<span class="chip afi-taken" title="Already linked to '+esc(by)+'">'+esc(c)+' <small>· '+esc(by)+'</small></span>';
+        return '<button type="button" class="chip'+(on?' on':'')+'" data-act="afitog" data-k="'+k+'" data-c="'+esc(c)+'">'+esc(c)+'</button>';
+      }).join('')+'</div></div>';
+  });
+  return '<div class="afi-ed">'+h
+    +'<div class="help small" style="margin:-4px 0 10px">A category can belong to one asset only. This shows the transactions here — it does not move money or change any total.</div>'
+    +'<div class="afi-btns"><button type="button" class="btn sm" data-act="afisave">Save</button><button type="button" class="btn sm ghost" data-act="afiedit">Cancel</button></div></div>';
+}
+function cardHTML(){
+  var st=S(),a=acct(DRILL.acc);if(!a||!isVal(a))return '';
+  var r=rule(a),ed=canEdit(a);
+  var head='<h2>'+ico('trend')+' Income &amp; costs<span class="sub"><span class="segmini afl-p">'
+    +[['12m','12 months'],['all','All']].map(function(p){return '<button type="button" class="'+(st.period===p[0]?'on':'')+'" data-act="afiper" data-p="'+p[0]+'">'+p[1]+'</button>';}).join('')
+    +'</span></span></h2>';
+  if(st.edit&&ed)return '<div class="card afi-card" id="afiCard">'+head+editorHTML(a,st)+'</div>';
+  if(ruleEmpty(r)){
+    return '<div class="card afi-card" id="afiCard">'+head
+      +'<div class="help">'+(ed?'Choose the categories that belong to this '+esc(String(a.type).toLowerCase())+' — for example Rental income, Quit rent or Maintenance — and their transactions show here, past ones included.'
+        :'No categories are linked to this asset yet. Its owner can choose them.')+'</div>'
+      +(ed?'<div class="afi-btns"><button type="button" class="btn sm" data-act="afiedit">'+ico('tag')+' Choose categories</button></div>':'')+'</div>';
+  }
+  var from=st.period==='12m'?addDaysISO(addMonthsISO(todayISO(),-12),1):'';
+  var rows=allTxns().filter(function(t){return matches(t,r)&&(!from||t.date>=from);});
+  var inc=0,exp=0;rows.forEach(function(t){if(t.type==='Income')inc+=t.amount;else exp+=t.amount;});
+  inc=Math.round(inc*100)/100;exp=Math.round(exp*100)/100;var net=Math.round((inc-exp)*100)/100;
+  var byM={};rows.forEach(function(t){(byM[t.date.slice(0,7)]=byM[t.date.slice(0,7)]||[]).push(t);});
+  var ks=Object.keys(byM).sort().reverse();
+  var list=ks.map(function(k,i){
+    var tl=byM[k],mi=0,mo=0;tl.forEach(function(t){if(t.type==='Income')mi+=t.amount;else mo+=t.amount;});
+    var open=st.open[k]!==undefined?!!st.open[k]:i===0;
+    return '<div class="dayg mbox'+(open?' open':'')+'"><button type="button" class="day-h mhead" data-act="afitogm" data-k="'+k+'"><span><span class="gchev'+(open?' on':'')+'" aria-hidden="true"></span>'
+      +MONTHS[(+k.slice(5))-1]+' '+k.slice(0,4)+' <span class="muted" style="font-weight:600">· '+tl.length+' txn'+(tl.length===1?'':'s')+'</span></span><span>'
+      +(mi?'<span class="pos">+'+money(mi)+'</span>':'')+(mi&&mo?' · ':'')+(mo?'<span class="neg">-'+money(mo)+'</span>':'')+'</span></button>'
+      +(open?tl.slice().reverse().map(function(t){return accTxnRow(t,t.account);}).join(''):'')+'</div>';
+  }).join('');
+  var names=KINDS.reduce(function(o,k){return o.concat(r[k]);},[]);
+  return '<div class="card afi-card" id="afiCard">'+head
+    +'<div class="stats af-stats">'
+    +'<div class="stat"><small>Income</small><b class="'+(inc>0?'pos':'')+'">'+money(inc)+'</b></div>'
+    +'<div class="stat"><small>Costs</small><b class="'+(exp>0?'neg':'')+'">'+money(exp)+'</b></div>'
+    +'<div class="stat"><small>Net</small><b class="'+(net<0?'neg':(net>0?'pos':''))+'">'+(net>0?'+':'')+money(net)+'</b></div></div>'
+    +'<div class="afi-from">From '+names.map(esc).join(', ')+'</div>'
+    +(list||'<div class="help" style="padding:6px 2px">Nothing in these categories'+(st.period==='12m'?' in the last 12 months':'')+'.</div>')
+    +(ed?'<div class="afi-btns"><button type="button" class="btn sm ghost" data-act="afiedit">'+ico('tag')+' Edit categories</button></div>':'')
+    +'<div class="help small">Transactions in these categories, from any account. Shown here only — totals elsewhere are unchanged.</div></div>';
+}
+
+/* ---------- mount / refresh ---------- */
+X.mount=function(){
+  var old=$('afiCard');if(old)old.remove();
+  if(!(DRILL.open&&DRILL.level==='accmonth'&&DRILL.acc))return;
+  var a=acct(DRILL.acc);if(!a||!isVal(a))return;
+  var h=AF.priv(cardHTML);if(!h)return;
+  var after=$('aflCard');
+  if(after)after.insertAdjacentHTML('afterend',h);
+  else if($('afCard'))$('afCard').insertAdjacentHTML('beforebegin',h);
+  else{var first=q('#drillBody > .card');if(first)first.insertAdjacentHTML('afterend',h);else $('drillBody').insertAdjacentHTML('beforeend',h);}
+};
+function refresh(){var c=$('afiCard');if(!c)return X.mount();var h=AF.priv(cardHTML);if(!h){c.remove();return;}c.insertAdjacentHTML('beforebegin',h);c.remove();}
+
+/* ---------- actions ---------- */
+ACT.on('b38-asset-category-rule',{
+'afiper':function(el){S().period=el.dataset.p==='all'?'all':'12m';refresh();},
+'afitogm':function(el){var st=S(),k=el.dataset.k,box=el.closest('.mbox');st.open[k]=box&&box.classList.contains('open')?0:1;refresh();},
+'afiedit':function(){
+  var st=S(),a=acct(DRILL.acc);if(!a||!canEdit(a))return;
+  st.edit=!st.edit;st.draft=st.edit?rule(a):null;refresh();
+},
+'afitog':function(el){
+  var st=S();if(!st.edit||!st.draft)return;
+  var k=el.dataset.k,c=el.dataset.c,l=st.draft[k];if(!l)return;
+  var i=l.indexOf(c);if(i>=0)l.splice(i,1);else{if(claims(DRILL.acc)[k][c])return;l.push(c);}
+  refresh();
+},
+'afisave':function(){
+  var st=S(),a=acct(DRILL.acc);if(!a||!canEdit(a)||!st.draft)return;
+  var cl=claims(a.name),d={Income:[],Expense:[]};
+  KINDS.forEach(function(k){st.draft[k].forEach(function(c){if(!cl[k][c]&&d[k].indexOf(c)<0)d[k].push(c);});});
+  if(ruleEmpty(d))delete a.assetCats;else a.assetCats=d;
+  st.edit=false;st.draft=null;
+  try{if(typeof touch==='function')touch();else save();}catch(e){try{save();}catch(x){}}
+  try{toast(ruleEmpty(d)?'No categories linked to '+a.name:'Categories linked to '+a.name);}catch(e){}
+  renderDrill();
+}
+});
+
+/* ---------- wiring ---------- */
+SCREEN.after('renderDrill',ORDER,{call:'none',ret:false},function(){try{X.mount();}catch(e){DIAG.note(e,'af38:mount');}});
+SCREEN.on('renderDrill',ORDER);
+SCREEN.before('openAccount',ORDER,{call:'apply',ret:true},function(){DRILL.afi=null;});
+SCREEN.on('openAccount',ORDER);
+
+/* ---------- version + release note ---------- */
+try{if(window.pinVer36)window.pinVer36('1.60 beta 38');}catch(e){}
+try{
+  if(!window.__B38RN){
+    var ol=q('#pageSet details.help ol')||q('#view-settings details.help ol');
+    if(ol){ol.insertAdjacentHTML('beforeend','<li><b>Asset income &amp; costs (beta 38):</b> on a Property, Vehicle or other asset page, its owner can choose the categories that belong to it (e.g. Rental income, Maintenance). Their transactions — past ones too — show on that page with income, costs and net. A category belongs to one asset only, and nothing else is recounted.</li>');window.__B38RN=1;}
+  }
+}catch(e){}
+})();
