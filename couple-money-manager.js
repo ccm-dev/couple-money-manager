@@ -21838,3 +21838,707 @@ try{
   }
 }catch(e){}
 })();
+;
+/* ##################################################################
+   ##### SECTION: v160b39 — v1.60 beta 39 · account page IA per mockup (phase 4)
+   ################################################################## */
+
+/* ===================== v1.60 beta 39 · account page IA per mockup =====================
+   Phase 4 of the "Account Summary · Recent activity filter" mockup, built on betas 34-38.
+
+   What it adds to the account page (the drill-down opened from Account Summary)
+   · HERO CARD — icon tile, account name + type, pills (Owner · Only me / Shared · View only ·
+     Closed / Sold · Balance hidden), the headline figure with the mockup's per-kind labels
+     (Current balance · Amount to pay now · Outstanding · Recorded value) and quick actions
+     (Add transaction · Transfer · Pay statement · Update value · Record repayment · Reopen),
+     disabled for view-only / ended accounts.
+   · OVERVIEW / ACTIVITY TABS — the sticky tab bar from the mockup. The page DOM stays
+     single-column; the tabs are CSS views: Overview shows hero, banners, this-month metrics,
+     the month-end chart, the recent-activity preview and the details card; Activity shows the
+     compact hero, banners, the beta 34 filter card and (credit cards) the Billing periods list.
+     Nothing betas 34-38 render is rewritten — their cards are only tagged and ordered.
+   · THIS-MONTH METRICS — "This month · Oct 2026, to date" + three cells (Money in / Money out /
+     Net; liabilities: Repaid / Charges / Net change; recorded-value assets: Income / Costs / Net,
+     from the asset's category rule when it has one).
+   · RECENT ACTIVITY PREVIEW — its own 7 days / 30 days / 3 months chips (mockup), the four newest
+     rows (split bills collapse to one row, same as everywhere), a "Filter ›" link and
+     "See all N in Activity ›".
+   · DETAILS CARD — type, owner, visibility, account number (•• last 4), opening balance,
+     statement day & payment terms, interest / instalment / next due, linked asset and
+     financing, purchase price, ownership share, notes, status.
+   · RECORDED-VALUE CHART — Property / Vehicle / Other asset get a month-end recorded-value
+     chart from the value history, shaped like the beta 35 balance chart (which keeps covering
+     transaction-balance accounts).
+
+   Rules carried over from the mockup
+   · Balance hidden (the partner hid it, or a partner's private transaction touches the
+     account): the hero figure shows "••••" and the charts are not drawn — same as beta 35.
+   · View-only / closed: actions are disabled; a closed or sold account offers "Reopen".
+   · Everything is computed inside withPV(withView(...)) (AF.priv), so a partner's hidden
+     transactions never feed the metrics, preview or details.
+   · Between Us ledgers and sub-pages (statement period, person, month) are left exactly as
+     beta 37 shaped them; Simple Experience keeps the page it has today (Full Experience only).
+
+   Public surface: window.AF39. State: DRILL.acrtab ('ov'|'ac'), DRILL.acrvn (value-chart
+   months), DRILL.acrvsel (selected bar), DRILL.acrrp (preview period) — reset by openAccount.
+*/
+(function(){
+"use strict";
+if(!window.AF34||!window.AF34.ui){try{DIAG.note(new Error('beta 39 needs beta 34'),'af39:boot');}catch(e){}return;}
+var AF=window.AF34,U=AF.ui,X=window.AF39={};
+var ORDER=900000050;
+function $(id){return document.getElementById(id);}
+function acct(n){return DB.accounts.find(function(x){return x.name===n;});}
+try{ICONS.info=ICONS.info||'<circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/>';}catch(e){}
+
+/* ---------- kind + icon + wording ---------- */
+var TY_ICO={Bank:'bank',Cash:'cash','e-Wallet':'wallet',eWallet:'wallet',Card:'card','Credit Card':'card',Loan:'bank','Hire Purchase':'carplus',Property:'home',Vehicle:'car',Investment:'trend','Other Asset':'box'};
+function tyIco(a){return TY_ICO[a.type]||(accTypeKind(a.type)==='liability'?'card':'wallet');}
+function kindOf(a){if(isVal(a))return 'val';if(isLoan(a))return 'loan';if(accTypeKind(a.type)==='liability')return 'debt';return 'asset';}
+function ordDay(n){return n+((n%10===1&&n!==11)?'st':(n%10===2&&n!==12)?'nd':(n%10===3&&n!==13)?'rd':'th');}
+var ST_L={closed:'Closed',sold:'Sold',archived:'Archived'};
+function endedOf(a){return V63.statusOf(a)!=='active';}
+
+/* ---------- state ---------- */
+X.tab=function(){if(DRILL.acrtab!=='ac')DRILL.acrtab='ov';return DRILL.acrtab;};
+
+/* ---------- data (call inside AF.priv) ---------- */
+function gather(){
+  var acc=DRILL.acc,a=acct(acc)||{};
+  var liab=accTypeKind(a.type)==='liability',val=isVal(a),loan=!val&&!!isLoan(a);
+  var cyc=liab?accCycleFor(a):0;
+  var rb=accRunningBals(acc);
+  var bal=accountBalAsOf(acc,todayISO());
+  var hid=isBalHidden(acc)||(!val&&!isFinite(bal));
+  var rows=allTxns().filter(function(t){return txnTouchesAcc(t,acc);});
+  if(DRILL.person)rows=applyPerson(rows,DRILL.person);else if(OV.person!=='all')rows=applyPerson(rows);
+  /* recorded-value assets: prefer the income & costs category rule (beta 38) so the
+     preview and metrics show rental income and costs, not an empty account */
+  var rule=null;
+  if(val&&window.AF38){var r=AF38.rule(a);if(r.Income.length||r.Expense.length)rule=r;}
+  var use=rule?allTxns().filter(function(t){return AF38.matches(t,rule);}):rows;
+  return {acc:acc,a:a,liab:liab,val:val,loan:loan,cyc:cyc,rb:rb,bal:bal,hid:hid,use:use,rule:!!rule,kind:kindOf(a)};
+}
+X.gather=gather;
+
+/* statement figures for a card with a statement day (same maths as the statement card) */
+function stmtInfo(a){
+  var cyc=accCycleFor(a);if(!cyc)return null;
+  var ref=todayISO(),le=lastCycleEnd(cyc,ref);
+  var stmt=accountBalAsOf(a.name,le);if(!isFinite(stmt))return null;
+  var stmtOwed=stmt<0?-stmt:0,paid=0;
+  DB.txns.forEach(function(t){if(t.date>le&&t.date<=ref&&((t.type==='Income'&&t.account===a.name)||(t.type==='Transfer'&&t.to===a.name)))paid+=t.amount;});
+  var stillDue=Math.max(0,Math.round((stmtOwed-paid)*100)/100);
+  var bal=accountBalAsOf(a.name,ref);if(!isFinite(bal))return null;
+  var owed=Math.max(0,-bal);
+  var due=addDaysISO(le,a.dueDays||20),dl=Math.round((Date.parse(due)-Date.parse(ref))/864e5);
+  return {stmtOwed:stmtOwed,stillDue:stillDue,owed:owed,due:due,dl:dl};
+}
+X.stmtInfo=stmtInfo;
+
+/* ---------- hero ---------- */
+function heroHTML(g){
+  var a=g.a,t=todayISO();
+  var perm=permFor59(g.acc),viewOnly=perm==='view'||accLocked(g.acc),ended=endedOf(a);
+  var can=canAdd59(g.acc)&&!ended&&!viewOnly&&perm!=='none';
+  var pills='';
+  if(a.owner)pills+='<span class="pill acr-n">Owner · '+esc(a.owner)+'</span>';
+  if(a.vis==='me'){if(pvMine(a))pills+='<span class="pill acr-b">'+ico('lock')+' Only me</span>';}
+  else if(isCouple()&&a.owner)pills+='<span class="pill acr-b">Shared</span>';
+  if(viewOnly)pills+='<span class="pill acr-w">View only</span>';
+  if(ended){var st=V63.statusOf(a);pills+='<span class="pill acr-w">'+esc(ST_L[st]||st)+(a.closedDate?' · '+dLabel(a.closedDate):'')+'</span>';}
+  if(g.hid)pills+='<span class="pill acr-w">'+ico('eyeoff')+' Balance hidden</span>';
+  var lab,val,sub,neg=false;
+  if(g.val){
+    lab='Recorded value';var lv=lastVal(a);
+    val=g.hid?'••••':money(g.bal);neg=!g.hid&&g.bal<0;
+    sub='Purchase '+money(purchaseOf(a))+(a.purchaseDate?' · '+dLabelY(a.purchaseDate):'')+(lv?' · updated '+dLabelY(lv.date):'');
+  }else if(g.cyc){
+    lab='Amount to pay now';var si=g.hid?null:stmtInfo(a);
+    if(!si){val='••••';sub='Statement on day '+g.cyc+' · balances hidden';}
+    else{val=si.stillDue>0?money(si.stillDue):money(0);neg=si.stillDue>0;
+      var dtxt=si.stillDue<0.005?'Paid ✓ for this statement':(si.dl<0?'Overdue since '+dLabel(si.due):'Due '+dLabel(si.due)+' · in '+si.dl+' day'+(si.dl===1?'':'s'));
+      sub=dtxt+' · Total outstanding '+money(si.owed);}
+  }else if(g.loan||g.kind==='debt'){
+    lab=g.loan?'Outstanding':'Amount owed';
+    var owed=g.hid?NaN:Math.max(0,-g.bal);
+    if(g.hid){val='••••';}
+    else if(owed>0){val=money(owed);neg=true;}
+    else{val=money(g.bal);neg=false;}
+    sub=(a.l4?'•••• '+esc(a.l4)+' · ':'')+'as at '+dLabelY(t);
+  }else{
+    lab='Current balance';
+    val=g.hid?'••••':money(g.bal);neg=!g.hid&&g.bal<0;
+    sub=(a.l4?'Account •••• '+esc(a.l4)+' · ':'')+'as at '+dLabelY(t);
+  }
+  var acts='';
+  if(ended){
+    acts='<button type="button" class="btn ghost" data-act="v63dispose" data-n="'+esc(a.name)+'">'+ico('refresh')+' Reopen</button>';
+  }else if(!viewOnly&&perm!=='none'){
+    if(g.cyc){
+      var si2=g.hid?null:stmtInfo(a);
+      if(si2&&si2.stillDue>=0.005&&can)acts+='<button type="button" class="btn" data-act="ccpay" data-n="'+esc(a.name)+'" data-a="'+si2.stillDue+'">'+ico('card')+' Pay '+money(si2.stillDue)+'</button>';
+      if(can)acts+='<button type="button" class="btn ghost" data-act="acradd" data-n="'+esc(a.name)+'">'+ico('plus')+' Add purchase</button>';
+    }else{
+      if(can)acts+='<button type="button" class="btn" data-act="acradd" data-n="'+esc(a.name)+'">'+ico('plus')+' Add transaction</button>';
+      if(can)acts+='<button type="button" class="btn ghost" data-act="acrtrf" data-n="'+esc(a.name)+'">'+ico('swap')+' Transfer</button>';
+    }
+    if(g.val&&can)acts+='<button type="button" class="btn ghost" data-act="valopen" data-n="'+esc(a.name)+'">'+ico('pencil')+' Update value</button>';
+    if(g.loan&&can)acts+='<button type="button" class="btn ghost" data-act="loanopen" data-n="'+esc(a.name)+'">'+ico('bank')+' Record repayment</button>';
+  }
+  var big='<div class="acr-big"><div class="acr-label">'+esc(lab)+'</div><div class="acr-val'+(neg?' neg':'')+'">'+val+'</div><div class="acr-sub">'+sub+'</div></div>';
+  var mini='<div class="acr-mini"><span><small>'+esc(lab)+'</small><b class="'+(neg?'neg':'')+'">'+val+'</b></span></div>';
+  return '<div class="card acr-hero acr-always" id="acrHero"><div class="acr-hrow"><span class="acr-ic">'+ico(tyIco(a))+'</span>'
+    +'<div class="acr-tt"><b>'+esc(a.name)+'</b><small>'+esc(a.type||'')+(a.locked?' · view only':'')+'</small></div></div>'
+    +(pills?'<div class="acr-pills">'+pills+'</div>':'')
+    +big+mini
+    +(acts?'<div class="acr-acts">'+acts+'</div>':'')
+    +'</div>';
+}
+
+/* ---------- banners (the hidden-balance banner stays the app's own, tagged acr-always) ---------- */
+function bansHTML(g){
+  var a=g.a,h='',viewOnly=permFor59(g.acc)==='view'||accLocked(g.acc),ended=endedOf(a);
+  if(ended){var st=V63.statusOf(a);
+    h+='<div class="acr-banner w">'+ico('info')+'<span>This account is '+esc((ST_L[st]||st).toLowerCase())+(a.closedDate?' from '+dLabelY(a.closedDate):'')+'. History stays available; adding or editing is turned off.</span></div>';}
+  if(viewOnly)h+='<div class="acr-banner n">'+ico('info')+'<span>You have view-only access to this account. Actions are turned off.</span></div>';
+  return h?'<div class="acr-bans acr-always" id="acrBans">'+h+'</div>':'';
+}
+
+/* ---------- sticky tabs ---------- */
+function tabsHTML(){
+  return '<div class="acr-tabs acr-always" id="acrTabs" role="tablist" aria-label="Account page views">'
+    +'<button type="button" role="tab" aria-selected="true" data-act="acrtab" data-t="ov">Overview</button>'
+    +'<button type="button" role="tab" aria-selected="false" data-act="acrtab" data-t="ac">Activity</button></div>';
+}
+
+/* ---------- this-month metrics ---------- */
+function metsHTML(g){
+  var k=todayISO().slice(0,7);
+  var rows=g.use.filter(function(x){return x.date.slice(0,7)===k;});
+  var cells;
+  if(g.val){
+    var i=0,o=0;rows.forEach(function(x){if(x.type==='Income')i+=x.amount;else if(x.type==='Expense')o+=x.amount;});
+    i=Math.round(i*100)/100;o=Math.round(o*100)/100;var n=Math.round((i-o)*100)/100;
+    cells=[U.stat('Income',money(i),i>0?'pos':''),U.stat('Costs',money(o),o>0?'neg':''),U.stat('Net',(n>0?'+':'')+money(n),n<0?'neg':(n>0?'pos':''))];
+  }else{
+    var L=g.liab?['Repaid / credits','Charges','Net change']:['Money in','Money out','Net'];
+    var s=U.sums(rows,g.acc);
+    cells=[U.stat(L[0],money(s.i),s.i>0?'pos':''),U.stat(L[1],money(s.o),s.o>0?'neg':''),U.stat(L[2],(s.n>0?'+':'')+money(s.n),s.n<0?'neg':(s.n>0?'pos':''))];
+  }
+  return '<div class="acr-mets" id="acrMets"><div class="acr-mline"><span>This month · '+MONTHS[+k.slice(5)-1]+' '+k.slice(0,4)+', to date</span></div><div class="stats">'+cells.join('')+'</div></div>';
+}
+
+/* ---------- recent activity preview (mockup: own period chips + Filter › + See all) ---------- */
+function prevRows(tl,acc,rb,n,useRule){
+  var seen={},out=[],list=tl.slice().reverse();
+  for(var i=0;i<list.length&&out.length<n;i++){
+    var t=list[i];
+    var foreign=useRule&&!txnTouchesAcc(t,acc); /* beta 38 rule row: lives on another account */
+    if(t.group&&!foreign){
+      if(seen[t.group])continue;
+      var legs=tl.filter(function(x){return x.group===t.group&&x.date===t.date;});
+      if(legs.length>1){seen[t.group]=1;var lb;legs.forEach(function(x){if(isFinite(rb.tx[x.id]))lb=rb.tx[x.id];});out.push(cycGrpRow(t.group,legs,acc,lb));continue;}
+    }
+    if(foreign){out.push(accTxnRow(t,t.account));continue;} /* signed amount from its own account, no Bal */
+    var b=rb.tx[t.id];out.push(accTxnRow(t,acc,isFinite(b)?b:undefined));
+  }
+  return out.join('');
+}
+function recentInner(g){
+  var rp=(DRILL.acrrp==='7d'||DRILL.acrrp==='3m')?DRILL.acrrp:'30d';
+  var r=AF.range({period:rp});
+  var rows=g.use.filter(function(x){return (!r[0]||x.date>=r[0])&&(!r[1]||x.date<=r[1]);});
+  var chips=[['7d','7 days'],['30d','30 days'],['3m','3 months']].map(function(p){
+    return '<button type="button" class="chip'+(rp===p[0]?' on':'')+'" data-act="acrrp" data-p="'+p[0]+'" aria-pressed="'+(rp===p[0])+'">'+p[1]+'</button>';
+  }).join('');
+  var list=rows.length
+    ?('<div class="acr-rows">'+prevRows(rows,g.acc,g.rb,4,g.rule)+'</div>'
+      +(rows.length>4?'<button type="button" class="btn ghost acr-seeall" data-act="acrsee">See all '+rows.length+' in Activity ›</button>':''))
+    :'<div class="help" style="padding:14px 2px">No activity in this period.</div>';
+  return '<h2>'+ico('repeat')+' Recent activity<span class="sub"><button type="button" class="acr-flink" data-act="acrsee">Filter ›</button></span></h2>'
+    +'<div class="acr-rchips">'+chips+'</div>'+list;
+}
+function recentHTML(g){return '<div class="card acr-recent" id="acrRecent">'+recentInner(g)+'</div>';}
+
+/* ---------- details card ---------- */
+function detHTML(g){
+  var a=g.a,rows=[];
+  function fl(lb,v,tap){
+    if(tap)return '<button type="button" class="fline acr-nav" data-act="acc" data-n="'+esc(tap)+'"><span>'+lb+'</span><b>'+v+' '+ico('chevright')+'</b></button>';
+    return '<div class="fline"><span>'+lb+'</span><b>'+v+'</b></div>';
+  }
+  var sub=a.type==='Property'?(a.propType||''):(a.type==='Vehicle'?(a.vehicleType||''):'');
+  rows.push(fl('Account type',esc(a.type||'')+(sub?' · '+esc(sub):'')));
+  if(a.owner)rows.push(fl('Owner',esc(a.owner)));
+  rows.push(fl('Visible to',a.vis==='me'?(ico('lock')+' Only me'):(isCouple()?'Shared with your partner':'On this device')));
+  if(a.l4)rows.push(fl('Account number','•••• '+esc(a.l4)));
+  if(!g.val&&isFinite(g.bal))rows.push(fl('Opening balance',money(a.start)));
+  if(g.cyc){
+    rows.push(fl('Statement day',ordDay(g.cyc)+' of each month'));
+    rows.push(fl('Payment due','within '+(a.dueDays||20)+' days of the statement'));
+  }
+  if(g.loan){
+    if(a.rate)rows.push(fl('Interest rate',esc(a.rate)+'% p.a.'));
+    if(a.instalment>0)rows.push(fl('Instalment',money(a.instalment)));
+    if(a.remDue)rows.push(fl('Next instalment due',dLabelY(a.remDue)));
+    if(a.linkedAsset&&acct(a.linkedAsset))rows.push(fl('Linked asset',esc(a.linkedAsset),a.linkedAsset));
+  }
+  if(g.val){
+    rows.push(fl('Purchase price'+(a.purchaseDate?' · '+dLabelY(a.purchaseDate):''),money(purchaseOf(a))));
+    if(+a.ownPct>0&&+a.ownPct<100)rows.push(fl('Ownership share',esc(a.ownPct)+'%'+(a.ownMode==='gross'?' of full value':'')));
+    var loans=window.AF37?AF37.linkedLoans(a):[];
+    loans.forEach(function(l){rows.push(fl('Linked financing',esc(l.name),l.name));});
+  }
+  if(a.notes)rows.push(fl('Notes',esc(a.notes)));
+  var st=V63.statusOf(a);
+  if(st!=='active')rows.push(fl('Status',esc(ST_L[st]||st)+(a.closedDate?' · '+dLabelY(a.closedDate):'')));
+  return '<div class="card acr-det" id="acrDet"><h2>'+ico('info')+' Details</h2><div class="rows">'+rows.join('')+'</div></div>';
+}
+
+/* ---------- recorded-value chart (Property / Vehicle / Other asset) ---------- */
+function vSeries(a,n){
+  var out=[],cur=todayISO().slice(0,7);
+  var hist=valHist(a),minD=a.purchaseDate||(hist[0]&&hist[0].date)||'';
+  var k=addMonthsISO(cur+'-01',-(n-1)).slice(0,7),guard=0;
+  while(k<=cur&&guard++<48){
+    var e=k+'-'+pad2(daysInMonth(+k.slice(0,4),+k.slice(5,7)));
+    if(!minD||e>=minD)out.push({k:k,e:e,v:Math.round(valueAsOf(a,e)*100)/100});
+    k=addMonthsISO(k+'-01',1).slice(0,7);
+  }
+  return out;
+}
+function vchartHTML(g){
+  var a=g.a;if(g.hid)return '';
+  var st=DRILL.acrvn===12?12:6;
+  var pts=vSeries(a,st);if(pts.length<2)return '';
+  if(!DRILL.acrvsel||!pts.some(function(p){return p.k===DRILL.acrvsel;}))DRILL.acrvsel=pts[pts.length-1].k;
+  var sel=pts.filter(function(p){return p.k===DRILL.acrvsel;})[0];
+  var mx=Math.max.apply(null,pts.map(function(p){return Math.abs(p.v);}).concat([1]));
+  var bars=pts.map(function(p){
+    var h=Math.max(6,Math.round(Math.abs(p.v)/mx*86)),lab=MONTHS[(+p.k.slice(5))-1];
+    var aria=lab+' '+p.k.slice(0,4)+': '+money(p.v);
+    return '<button type="button" class="afb-bar'+(p.k===DRILL.acrvsel?' sel':'')+'" data-act="acrvsel" data-k="'+p.k+'" aria-label="'+esc(aria)+'" aria-pressed="'+(p.k===DRILL.acrvsel)+'">'
+      +'<span class="afb-v">'+esc((window.AF35?AF35.compact(p.v):String(Math.round(p.v))))+'</span><span class="afb-col" style="height:'+h+'px"></span><span class="afb-m">'+lab+'</span></button>';
+  }).join('');
+  var lv=lastVal(a);
+  return '<div class="card afb-card acr-chart" id="acrVC"><h2>'+ico(tyIco(a))+' Recorded value at month-end<span class="sub"><span class="afb-n">'
+    +[6,12].map(function(n){return '<button type="button" class="'+(st===n?'on':'')+'" data-act="acrvn" data-n="'+n+'" aria-pressed="'+(st===n)+'">'+n+'M</button>';}).join('')
+    +'</span></span></h2><div class="afb-bars" role="group" aria-label="Recorded value at month-end">'+bars+'</div>'
+    +'<div class="afb-det"><div><b>'+money(sel.v)+'</b><small>'+MONTHS[(+sel.k.slice(5))-1]+' '+sel.k.slice(0,4)+(lv?' · last updated '+dLabelY(lv.date):' · purchase price')+'</small></div></div>'
+    +'<div class="help small afb-note">Recorded value at the end of each month, from your value history. Value changes never count as income or spending.</div></div>';
+}
+
+/* ---------- tagging: slot the existing cards into the two tabs ---------- */
+function tag(){
+  qa('#drillBody > .card, #drillBody > .btn, #drillBody > button.btn').forEach(function(el){
+    if(el.id&&/^acr/.test(el.id))return;
+    if(el.id==='afCard'){el.classList.add('acr-ac');return;}
+    if(el.id==='afBal'){el.classList.add('acr-chart');return;}
+    if(el.classList.contains('card')&&el.classList.contains('help')){el.classList.add('acr-always');return;} /* hidden-balance banner */
+    var h=(el.querySelector('h2')||{}).textContent||'';
+    if(/Billing periods/.test(h))el.classList.add('acr-ac'); /* credit cards: statements live on Activity */
+  });
+}
+
+/* ---------- tab painting ---------- */
+function paint(){
+  var body=$('drillBody');if(!body||!body.classList.contains('acr-on'))return;
+  var ac=X.tab()==='ac';
+  body.classList.toggle('acr-mode-ac',ac);
+  body.classList.toggle('acr-mode-ov',!ac);
+  qa('#drillBody .acr-tabs button').forEach(function(b){
+    var on=(b.dataset.t||'ov')===DRILL.acrtab;
+    b.classList.toggle('on',on);b.setAttribute('aria-selected',on?'true':'false');
+  });
+}
+X.paint=paint;
+
+/* ---------- partial refreshes ---------- */
+function refreshRecent(){var el=$('acrRecent');if(!el)return;var g=AF.priv(gather);el.innerHTML=recentInner(g);}
+function refreshVC(){
+  var el=$('acrVC');if(!el)return;
+  var h=AF.priv(function(){var a=acct(DRILL.acc);return (a&&isVal(a))?vchartHTML({a:a,val:true,hid:isBalHidden(DRILL.acc)}):'';});
+  if(h){el.insertAdjacentHTML('beforebegin',h);el.remove();}else el.remove();
+}
+
+/* ---------- mount ---------- */
+X.mount=function(){
+  var body=$('drillBody');if(!body)return;
+  body.classList.remove('acr-on','acr-mode-ov','acr-mode-ac');
+  ['acrHero','acrBans','acrTabs','acrMets','acrRecent','acrDet','acrVC'].forEach(function(id){var e=$(id);if(e)e.remove();});
+  try{
+    if(!(DRILL.open&&DRILL.level==='accmonth'&&DRILL.acc))return;
+    var a=acct(DRILL.acc);
+    if(!a||isLedger20(a)||isRecvAcc(a.name))return;      /* ledgers keep their beta 37 page */
+    if(AF.simple())return;                                /* Simple Experience keeps its page */
+    var fc=$('afCard');if(fc&&fc.dataset.mode)return;     /* statement / ledger filter sub-view */
+    var g=AF.priv(gather);
+    var hero=heroHTML(g),bans=bansHTML(g),tabs=tabsHTML();
+    var mets=metsHTML(g),recent=recentHTML(g),det=detHTML(g);
+    var vc=g.val?vchartHTML(g):'';
+    body.insertAdjacentHTML('afterbegin',hero+(bans||'')+tabs);
+    var tabsEl=$('acrTabs');
+    if(tabsEl)tabsEl.insertAdjacentHTML('afterend',mets+recent+det+vc);
+    else body.insertAdjacentHTML('afterbegin',mets+recent+det+vc);
+    tag();
+    body.classList.add('acr-on');
+    paint();
+  }catch(e){DIAG.note(e,'af39:build');}
+};
+
+/* ---------- actions ---------- */
+function pickAcc(sel,n){if(!sel)return;for(var i=0;i<sel.options.length;i++){if(sel.options[i].value===n){sel.value=n;return;}}}
+ACT.on('b39-account-ia',{
+'acrtab':function(el){DRILL.acrtab=el.dataset.t==='ac'?'ac':'ov';paint();var p=$('pageDrill');if(p)p.scrollTop=0;},
+'acrrp':function(el){DRILL.acrrp=el.dataset.p;refreshRecent();},
+'acrsee':function(el){
+  DRILL.acrtab='ac';paint();
+  var c=$('afCard')||$('acrTabs');if(c&&c.scrollIntoView)c.scrollIntoView({block:'start'});
+},
+'acradd':function(el){var n=el.dataset.n;openSheet();pickAcc($('fAccount'),n);},
+'acrtrf':function(el){
+  var n=el.dataset.n,a=acct(n)||{};
+  openSheet();setFormType('Transfer');
+  if(accTypeKind(a.type)==='liability')pickAcc($('fTo'),n);else pickAcc($('fAccount'),n);
+},
+'acrvn':function(el){DRILL.acrvn=+el.dataset.n===12?12:6;refreshVC();},
+'acrvsel':function(el){DRILL.acrvsel=el.dataset.k;refreshVC();},
+/* beta 35's refresh rebuilds #afBal — keep its overview tab tag */
+'afbsel':function(el,next){var r=next(el);var e=$('afBal');if(e)e.classList.add('acr-chart');return r;},
+'afbn':function(el,next){var r=next(el);var e=$('afBal');if(e)e.classList.add('acr-chart');return r;},
+/* the chart's "View activity ›" lands on the Activity tab */
+'afbgo':function(el,next){var b=$('drillBody');if(b&&b.classList.contains('acr-on')){DRILL.acrtab='ac';paint();}return next(el);}
+});
+
+/* ---------- wiring ---------- */
+SCREEN.after('renderDrill',ORDER,{call:'none',ret:false},function(){try{X.mount();}catch(e){DIAG.note(e,'af39:mount');}});
+SCREEN.on('renderDrill',ORDER);
+SCREEN.before('openAccount',ORDER,{call:'apply',ret:true},function(){DRILL.acrtab='ov';DRILL.acrrp='30d';DRILL.acrvn=6;DRILL.acrvsel='';});
+SCREEN.on('openAccount',ORDER);
+
+/* ---------- version + release note (beta 39) ---------- */
+try{if(window.pinVer36)window.pinVer36('1.60 beta 39');}catch(e){}
+try{
+  if(!window.__B39RN){
+    var ol=q('#pageSet details.help ol')||q('#view-settings details.help ol');
+    if(ol){ol.insertAdjacentHTML('beforeend','<li><b>Account page, restyled (beta 39):</b> every account now opens on a hero card — its balance or recorded value, who owns it, whether it is shared or view-only, closed or hidden — with Overview and Activity tabs. Overview holds this month&rsquo;s figures, the month-end chart, a recent-activity preview with 7&nbsp;days / 30&nbsp;days / 3&nbsp;months chips, and account details; Activity holds the filters. Quick actions (add, transfer, pay, update value) sit in the hero and switch off for view-only or closed accounts.</li>');window.__B39RN=1;}
+  }
+}catch(e){}
+})();
+
+/* ===================================================================================
+   ##### SECTION: v160b40 — v1.60 beta 40 · add transaction v2.1 (mockup updates)
+   ===================================================================================
+   Updates the Add / Edit / Copy form and the shared keypad to the latest
+   "add-transaction-ui-mockup-v2" gallery:
+
+     1. AMOUNT HERO — 46 px, the Refund chip moves inline to the right of the amount,
+        a caret blinks while the keypad is open, long values shrink to 34 px.
+     2. ACCOUNT ROW — the read-only owner chip sits on a second line under the account
+        name (Expense / Income / Edit / Copy); Advanced Couple private accounts show a
+        "Private account" hint. The editable owner select keeps its own row.
+     3. TRANSFER — From ⇄ To flow tiles with the owner chip under each account;
+        the Between Us entry is created automatically when the owners differ
+        (Couple + Advanced Couple) — the checkbox retires, an info line explains it.
+     4. CATEGORY — tapping the selected tile again clears it; switching type resets
+        the category; a fresh Add opens with no pre-selected category (the button
+        says what is missing).
+     5. KEYPAD — one pad, docked INSIDE the open sheet (never above the nav, never
+        over a footer); dim, ✕ and Back close the keypad first, then the sheet.
+     6. ONE MONEY-FIELD STYLE — standard (.af40) for starting balance / goal target /
+        goal contribution, cell (.cell40) for budget cells; "RM" lives inside the
+        field instead of the label; every pad opens with a "Field · Item" label
+        (data-kp). Simple and Full experience render the form identically — it
+        depends on the mode only.
+
+   Additive layer: reuses every id and action; nothing is rewritten.
+   =================================================================================== */
+(function(){
+'use strict';
+if(!window.DB&&!window.$)return; /* the app must be up */
+var ORDER=900000060;
+function $(id){return document.getElementById(id);}
+function qa(sel,root){return [].slice.call((root||document).querySelectorAll(sel));}
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+
+/* ---------- 1. one-time form restructure ---------- */
+function build40(){
+  var sheet=$('sheet');
+  if(!sheet||!sheet.dataset.v61)return; /* the v1.61 form layer must be present */
+  /* amount hero: amount + refund chip on one line, caret at the end */
+  var amtRow=$('fAmount')?$('fAmount').closest('.ad-amt61'):null;
+  if(amtRow&&!amtRow.dataset.b40){
+    amtRow.dataset.b40='1';
+    var wrap=amtRow.querySelector('.amt-wrap');
+    if(wrap){
+      var line=document.createElement('div');line.className='ad-line61';
+      amtRow.insertBefore(line,wrap);line.appendChild(wrap);
+      var sgn=$('fSign');
+      if(sgn){line.appendChild(sgn);sgn.classList.add('ad-chip61');sgn.innerHTML=ico40('undog')+'<span>Refund</span>';}
+      var caret=document.createElement('i');caret.id='fCaret40';caret.className='caret40';caret.style.display='none';
+      wrap.appendChild(caret);
+    }
+    var sub=$('fAmtSub61');if(sub)sub.hidden=true;
+  }
+  /* account row: select + owner chip (+ private hint) stack as a right column */
+  [['fAccRow61','fAccount','fOwnChip61','fAccCol61'],['fToRow','fTo','fOwnToChip61','fToCol61']].forEach(function(cfg){
+    var row=$(cfg[0]);if(!row||row.dataset.b40)return;row.dataset.b40='1';
+    var sel=$(cfg[1]),chip=$(cfg[2]);if(!sel)return;
+    var col=document.createElement('span');col.className='acc-col61';col.id=cfg[3];
+    row.insertBefore(col,chip||sel.nextSibling);
+    col.appendChild(sel);if(chip)col.appendChild(chip);
+    if(cfg[0]==='fAccRow61'){
+      var orow=$('fOwnerRow');
+      if(orow)col.appendChild(orow); /* editable owner becomes the second line too */
+      var pv=document.createElement('small');pv.className='pv40';pv.id='fPrivHint40';pv.hidden=true;
+      col.appendChild(pv);
+    }
+  });
+}
+function ico40(n){try{return window.ico?ico(n):'';}catch(e){return '';}}
+
+/* ---------- 2. transfer flow tiles + owner second line ---------- */
+function layout40(){
+  try{
+    var card=$('fCard61'),from=$('fAccRow61'),to=$('fToRow');
+    if(!card||!from||!to)return;
+    var trf=F.type==='Transfer',swap=$('fSwap61'),flowRow=$('fFlowRow61');
+    if(trf){
+      if(!flowRow||!flowRow.parentNode){
+        flowRow=document.createElement('div');flowRow.id='fFlowRow61';
+        flowRow.innerHTML='<div class="ad-lb61"><label>Accounts</label></div><div class="ad-flow61" id="fFlow61"></div>';
+        card.parentNode.insertBefore(flowRow,card);
+      }
+      var fl=$('fFlow61');if(!fl)return;
+      if(from.parentNode!==fl)fl.appendChild(from);
+      if(to.parentNode!==fl)fl.appendChild(to);
+      if(swap&&swap.parentNode!==fl)fl.insertBefore(swap,to);
+      var lbTo=to.querySelector('label');if(lbTo)lbTo.textContent='To';
+    }else{
+      if(flowRow&&flowRow.parentNode){
+        var ref=$('fOwedRow')||$('fDateRow')||null;
+        card.insertBefore(from,ref);card.insertBefore(to,ref);
+        if(swap&&!from.contains(swap))from.appendChild(swap);
+        if(flowRow.parentNode)flowRow.parentNode.removeChild(flowRow);
+      }
+      var lbTo2=to.querySelector('label');if(lbTo2)lbTo2.textContent='To account';
+    }
+    sync40();
+  }catch(e){DIAG.note(e,'b40:layout');}
+}
+
+/* ---------- 3. per-render sync: private hint, caret, long amount ---------- */
+function sync40(){
+  try{
+    /* private-account hint (Advanced Couple only) */
+    var pv=$('fPrivHint40');
+    if(pv){
+      var show=false;
+      try{
+        var acc=($('fAccount')||{}).value||'';
+        var a=DB.accounts.filter(function(x){return x.name===acc;})[0];
+        var adv=false;try{adv=typeof ADV==='function'?ADV():false;}catch(e2){adv=false;}
+        show=!!(a&&a.vis==='me'&&adv&&F.type!=='Transfer');
+      }catch(e){}
+      pv.hidden=!show;
+      if(show)pv.innerHTML=ico40('lock')+' Private account';
+    }
+    /* hero caret + focus ring follow the keypad */
+    syncHero40();
+    /* long amount shrinks */
+    var ai=$('fAmount'),hero=ai?ai.closest('.ad-amt61'):null;
+    if(ai&&hero)hero.classList.toggle('long40',String(ai.value||'').replace(/\s/g,'').length>10);
+  }catch(e){DIAG.note(e,'b40:sync');}
+}
+function syncHero40(){
+  try{
+    var ai=$('fAmount'),hero=ai?ai.closest('.ad-amt61'):null;
+    if(!hero)return;
+    var on=!!(window.CALC&&CALC.open&&CALC.el===ai);
+    hero.classList.toggle('focus40',on);
+    var c=$('fCaret40');if(c)c.style.display=on?'':'none';
+  }catch(e){}
+}
+
+/* ---------- 4. keypad: dock inside the open sheet; close-first layering ---------- */
+function dock40(){
+  try{
+    var pad=$('calcPad');if(!pad)return;
+    var el=CALC&&CALC.el?CALC.el:null;
+    var host=el&&el.closest?el.closest('.sheet.on'):null;
+    if(host&&pad.parentNode!==host){pad.classList.add('docked40');host.appendChild(pad);}
+    else if(!host&&pad.classList.contains('docked40')){pad.classList.remove('docked40');document.body.appendChild(pad);}
+  }catch(e){DIAG.note(e,'b40:dock');}
+}
+function undock40(){
+  try{
+    var pad=$('calcPad');
+    if(pad&&pad.classList.contains('docked40')){pad.classList.remove('docked40');document.body.appendChild(pad);}
+  }catch(e){}
+}
+
+/* ---------- 5. one money-field style in the manager sheet ---------- */
+function afWrap40(el,cell,kp,ph){
+  if(!el||!el.parentNode)return;
+  var p=el.parentNode;
+  if(p.classList&&p.classList.contains('af40')){if(kp)el.setAttribute('data-kp',kp);if(ph!==undefined)el.setAttribute('placeholder',ph);return;}
+  var w=document.createElement('span');w.className='af40'+(cell?' cell40':'');
+  p.insertBefore(w,el);w.appendChild(el);
+  var c=document.createElement('small');c.className='cur40';c.textContent=cell?'':'RM';
+  w.insertBefore(c,el);
+  if(kp)el.setAttribute('data-kp',kp);
+  if(ph!==undefined)el.setAttribute('placeholder',ph);
+}
+function cellLabel40(input,txt){
+  try{
+    /* the label is the .mgr-lb sitting directly before the field (flat card or grid cell) */
+    var w=input.parentNode;
+    var lb=w&&w.previousElementSibling;
+    if(!(lb&&lb.classList&&lb.classList.contains('mgr-lb'))&&w){
+      var cell=input.closest('div');
+      lb=cell?cell.querySelector('.mgr-lb'):null;
+      /* only take it when the field is inside that label's own cell */
+      if(lb&&lb.parentNode!==cell)lb=null;
+    }
+    if(lb)lb.textContent=txt;
+  }catch(e){}
+}
+function afy40(){
+  try{
+    /* starting balances (edit + add account) */
+    var es=$('mgrEStart');
+    if(es){afWrap40(es,false,'Starting balance'+((($('mgrEName')||{}).value||'')?' \u00b7 '+esc($('mgrEName').value):''),'0');
+      cellLabel40(es,'Starting balance');}
+    var ns=$('mgrNewStart');
+    if(ns)afWrap40(ns,false,'Starting balance','0');
+    /* goal target (new + edit) */
+    var ga=$('gaT');if(ga){afWrap40(ga,false,'Goal target','0');cellLabel40(ga,'Target');}
+    var ge=$('geT');if(ge){afWrap40(ge,false,'Target'+((($('geN')||{}).value||'')?' \u00b7 '+esc($('geN').value):''),'0');cellLabel40(ge,'Target');}
+    /* goal contribution */
+    var gc=$('gcAmt');
+    if(gc){var g=null;try{g=(window.goalById&&GC.id)?goalById(GC.id):null;}catch(e){}
+      afWrap40(gc,false,'Contribution'+(g&&g.name?' \u00b7 '+esc(g.name):''),'0.00');
+      cellLabel40(gc,'Amount');}
+    /* budget cells */
+    qa('.bgrow input.fin').forEach(function(inp){
+      var k=inp.dataset.k==='f'?'Fixed':(inp.dataset.k==='v'?'Variable':'');
+      var cat=inp.dataset.c||'';
+      afWrap40(inp,true,(k&&cat)?(k+' \u00b7 '+cat):(k||'Amount'),'0');
+    });
+    /* split shares keep their compact field; make sure the pad label is named */
+    qa('#fSplitRows input[data-sf="v"]').forEach(function(inp){
+      var r=(window.SPLIT&&SPLIT.rows)?SPLIT.rows[+inp.dataset.si]:null;
+      if(r&&r.p)inp.setAttribute('data-kp','Split share \u00b7 '+r.p);
+    });
+  }catch(e){DIAG.note(e,'b40:afy');}
+}
+
+/* ---------- 6. owed becomes automatic on transfers between different owners ---------- */
+function owedAuto40(){
+  try{
+    var row=$('fOwedRow'),cb=$('fOwed');if(!row||!cb)return;
+    var trf=F.type==='Transfer',cp=false;
+    try{cp=window.isCouple?isCouple():false;}catch(e){}
+    if(trf&&!row.hidden&&cp){
+      cb.checked=true;row.classList.add('auto40');
+      var sp=row.querySelector('label span');
+      if(sp&&!sp.dataset.b40){sp.dataset.b40='1';sp.innerHTML='Between Us <span style="font-weight:400;color:var(--muted)">\u2014 recorded automatically, the owners differ</span>';}
+    }
+    else row.classList.remove('auto40');
+  }catch(e){DIAG.note(e,'b40:owed');}
+}
+
+/* ---------- 7. wrappers ---------- */
+/* setFormType: re-lay the transfer tiles after every type change */
+var _sft40=setFormType;
+setFormType=function(t){
+  var r=_sft40.apply(this,arguments);
+  try{build40();layout40();}catch(e){DIAG.note(e,'b40:sft');}
+  return r;
+};
+/* calcOpen / calcClose: dock the pad, move the caret */
+var _co40=calcOpen;
+calcOpen=function(el){
+  _co40.apply(this,arguments);
+  try{dock40();syncHero40();}catch(e){DIAG.note(e,'b40:co');}
+};
+var _cc40=calcClose;
+calcClose=function(ev){
+  var r=_cc40.apply(this,arguments);
+  try{undock40();syncHero40();}catch(e){DIAG.note(e,'b40:cc');}
+  return r;
+};
+/* owner UI: automatic owed + per-render sync (runs before the v1.61 chain, which re-runs syncForm61) */
+var _uo40=updateOwnerUI;
+updateOwnerUI=function(){
+  var r=_uo40.apply(this,arguments);
+  try{owedAuto40();sync40();}catch(e){DIAG.note(e,'b40:uo');}
+  return r;
+};
+/* Back / Esc: the keypad closes before the sheet */
+var _nc40=navClose;
+navClose=function(){
+  if(window.CALC&&CALC.open){calcClose(true);return;}
+  return _nc40.apply(this,arguments);
+};
+/* amount typing: keep the hero sized + show the typed calculation live */
+document.addEventListener('input',function(e){
+  if(!e.target||e.target.id!=='fAmount')return;
+  var hero=e.target.closest('.ad-amt61');
+  if(hero)hero.classList.toggle('long40',String(e.target.value||'').replace(/\s/g,'').length>10);
+});
+
+/* ---------- 8. actions ---------- */
+ACT.on('b40-add-v21',{
+  /* ✕ / dim: keypad first, then the sheet */
+  'closesheet':function(el,next){
+    if(window.CALC&&CALC.open){calcClose(true);return;}
+    return next(el);
+  },
+  /* type switch keeps amount, date and note; resets the category */
+  'ftype':function(el,next){
+    var t=el.dataset.t,was=F.type,r=next(el);
+    try{if(t!==was)renderFormCats('');}catch(e){DIAG.note(e,'b40:ftype');}
+    return r;
+  },
+  /* tapping the selected category tile again clears it */
+  'fcat':function(el,next){
+    if(el.dataset.c===F.cat){F.cat='';F.sub='';renderFormCats('');return;}
+    return next(el);
+  },
+  /* opening a sub-screen (Split / Repeat) or the date picker retires the keypad first */
+  'fsplit61':function(el,next){var r=next(el);try{if(window.CALC&&CALC.open)calcClose(true);}catch(e){}return r;},
+  'frep61':function(el,next){var r=next(el);try{if(window.CALC&&CALC.open)calcClose(true);}catch(e){}return r;},
+  'fdate61':function(el,next){var r=next(el);try{if(window.CALC&&CALC.open)calcClose(true);}catch(e){}return r;}
+});
+
+/* ---------- 9. screen steps ---------- */
+/* openSheet: a fresh Add starts with no category (the button says what is missing) */
+SCREEN.after('openSheet',ORDER,{call:'apply',ret:false},function(id){
+  try{
+    build40();layout40();
+    if(!id&&!F.gid&&$('sheet').classList.contains('on')&&F.type!=='Transfer')renderFormCats('');
+    sync40();
+  }catch(e){DIAG.note(e,'b40:open');}
+});
+SCREEN.on('openSheet',ORDER);
+/* closeSheet: the pad always returns to the body */
+SCREEN.after('closeSheet',ORDER,{call:'none',ret:false},function(){try{undock40();}catch(e){}});
+SCREEN.on('closeSheet',ORDER);
+/* manager sheet re-renders: apply the one field style */
+SCREEN.after('renderMgr',ORDER,{call:'none',ret:false},function(){try{afy40();}catch(e){DIAG.note(e,'b40:mgr');}});
+SCREEN.on('renderMgr',ORDER);
+
+/* ---------- 10. boot ---------- */
+try{build40();layout40();afy40();}catch(e){DIAG.note(e,'b40:boot');}
+
+/* ---------- 11. version + release note (beta 40) ---------- */
+try{if(window.pinVer36)window.pinVer36('1.60 beta 40');}catch(e){}
+try{
+  if(!window.__B40RN){
+    var ol=q('#pageSet details.help ol')||q('#view-settings details.help ol');
+    if(ol){ol.insertAdjacentHTML('beforeend','<li><b>Add transaction, updated (beta 40):</b> the refund chip now sits beside the amount, the owner chip moves under the account name, transfers use From&nbsp;&rarr;&nbsp;To tiles and record the Between Us entry automatically when the owners differ, and the keypad docks inside the sheet on every money field — starting balances, goal targets, contributions and budget cells now share one field style with a &ldquo;Field&nbsp;\u00b7&nbsp;Item&rdquo; label. Simple and Full experience render the form identically.</li>');window.__B40RN=1;}
+  }
+}catch(e){}
+})();
