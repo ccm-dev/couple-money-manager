@@ -1,6 +1,6 @@
 /* Couple Money Manager service worker.
    Bump VERSION each time you upload a new index.html so phones pick up the update. */
-const VERSION = 'cmm-v1.60-beta33';
+const VERSION = 'cmm-v1.60-beta34';
 const APP_SHELL = [
   './',
   './index.html',
@@ -31,7 +31,14 @@ self.addEventListener('activate', event => {
 });
 
 self.addEventListener('message', event => {
-  if (event.data === 'skipWaiting') self.skipWaiting();
+  if (event.data === 'skipWaiting') { self.skipWaiting(); return; }
+  /* the app (or a test) can ask for an immediate reminder check */
+  if (event.data && event.data.type === 'cmm-rem-check') {
+    const done = reminderCheck().then(shown => {
+      if (event.source && event.source.postMessage) event.source.postMessage({ type: 'cmm-rem-checked', shown });
+    });
+    if (event.waitUntil) event.waitUntil(done);
+  }
 });
 
 self.addEventListener('fetch', event => {
@@ -73,13 +80,84 @@ self.addEventListener('fetch', event => {
   }
 });
 
-/* Payment reminders: tapping a notification opens (or focuses) the app. */
+/* ---------- Payment reminders while the app is closed (v1.60 beta 32) ----------
+   The page keeps a reminder schedule in IndexedDB ('cmm-reminders' / 'kv' / 'schedule') and
+   registers Periodic Background Sync (tag 'cmm-reminders'). On each sync this worker shows
+   every reminder that is due today and has not been shown today by the page or the worker
+   (shared log 'kv' / 'sent'). The schedule never contains partner-private reminders, and holds
+   no names or amounts when the app lock or "Hide amounts in notifications" is on. */
+const REM_DB = 'cmm-reminders', REM_STORE = 'kv', REM_TAG = 'cmm-reminders';
+
+function remIdb() {
+  return new Promise((resolve, reject) => {
+    const r = indexedDB.open(REM_DB, 1);
+    r.onupgradeneeded = () => r.result.createObjectStore(REM_STORE);
+    r.onsuccess = () => resolve(r.result);
+    r.onerror = () => reject(r.error);
+  });
+}
+function remGet(key) {
+  return remIdb().then(db => new Promise((resolve, reject) => {
+    const tx = db.transaction(REM_STORE, 'readonly'), q = tx.objectStore(REM_STORE).get(key);
+    q.onsuccess = () => resolve(q.result);
+    tx.oncomplete = () => db.close();
+    tx.onerror = () => { db.close(); reject(tx.error); };
+  }));
+}
+function remPut(key, value) {
+  return remIdb().then(db => new Promise((resolve, reject) => {
+    const tx = db.transaction(REM_STORE, 'readwrite');
+    tx.objectStore(REM_STORE).put(value, key);
+    tx.oncomplete = () => { db.close(); resolve(); };
+    tx.onerror = () => { db.close(); reject(tx.error); };
+  }));
+}
+function remToday() {
+  const d = new Date(), p = n => (n < 10 ? '0' : '') + n;
+  return d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate());
+}
+function reminderCheck() {
+  const td = remToday();
+  return Promise.all([remGet('schedule'), remGet('sent')]).then(([sc, sentIn]) => {
+    if (!sc || !Array.isArray(sc.items) || !sc.items.length) return 0;
+    const sent = {}, pageSent = sc.sentToday || {}, jobs = [];
+    Object.keys(sentIn || {}).forEach(k => { if (sentIn[k] === td) sent[k] = td; });   /* keep today only */
+    sc.items.forEach(it => {
+      if (td < it.from || td > it.until) return;
+      if (sent[it.key] === td || pageSent[it.key] === td) return;                       /* once a day */
+      const over = td > it.due;
+      sent[it.key] = td;
+      jobs.push(self.registration.showNotification(over ? it.overdueTitle : it.title, {
+        body: over ? it.overdueBody : it.body,
+        tag: 'cmm32|' + it.key,
+        renotify: false,
+        data: { cmm32: true, remKey: it.remKey, url: sc.url || self.registration.scope }
+      }));
+    });
+    return Promise.all(jobs).then(() => remPut('sent', sent)).then(() => jobs.length);
+  }).catch(() => 0);
+}
+
+self.addEventListener('periodicsync', event => {
+  if (event.tag === REM_TAG) event.waitUntil(reminderCheck());
+});
+
+/* Payment reminders: tapping a notification opens (or focuses) the app on the payment.
+   Background reminders carry the payment key; reminders shown by the open page have none,
+   so they open the Reminder centre. */
 self.addEventListener('notificationclick', event => {
+  const data = (event.notification && event.notification.data) || {};
+  const remKey = data.cmm32 ? (data.remKey || '') : '';
   event.notification.close();
   event.waitUntil(
     self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then(list => {
-      for (const c of list) { if ('focus' in c) return c.focus(); }
-      return self.clients.openWindow('./index.html');
+      for (const c of list) {
+        if ('focus' in c) {
+          c.postMessage({ type: 'cmm-open-reminder', remKey });
+          return c.focus();
+        }
+      }
+      return self.clients.openWindow('./index.html#rem=' + encodeURIComponent(remKey));
     })
   );
 });
