@@ -15247,7 +15247,7 @@ function cardB(head,body,sub){return '<div class="card"><h2>'+head+(sub?' <span 
 
 /* ---------------- X63 · per-user experience state (doc §10/§11) ---------------- */
 var X63=window.X63={
-  ver:'1.60 beta 28.1',
+  ver:'1.60 beta 30',
   cfg:{
     simple:{defaultTab:'money',reports:'essential',terminology:'plain-language',forms:'progressive',contributionAnalysis:'hidden-by-default',advancedMetrics:'hidden'},
     full:{defaultTab:'wealth',reports:'complete',terminology:'standard-with-explanations',forms:'progressive',contributionAnalysis:'available',advancedMetrics:'visible'},
@@ -16107,7 +16107,7 @@ window.b20doAdd=b20doAdd; /* used by js/screens */
 window.log20=log20; /* used by js/screens */
 window.isLedger20=isLedger20; /* used by js/screens */
 var $=function(id){return document.getElementById(id);};
-var B20=window.B20={ver:'1.60 beta 28.1',pv:null,disc:false};
+var B20=window.B20={ver:'1.60 beta 30',pv:null,disc:false};
 function adv20(){try{return (typeof B3.mode==='function')?B3.mode()==='adv':DB.meta.usage==='adv';}catch(e){return DB&&DB.meta&&DB.meta.usage==='adv';}}
 function cpl20(){try{return isCouple();}catch(e){return false;}}
 function simple20(){try{return X63.isSimple();}catch(e){return false;}}
@@ -16835,9 +16835,9 @@ ACT.on('v160-b20-advanced-couple',{
 SCREEN.on('B3.renderModeSub',260050821);
 
 /* ---------- 25 · boot + version ---------- */
-V59.ver='1.60 beta 28.1';
-V63.ver='1.60 beta 28.1';
-document.title='v1.60 beta 28.1 · Couple Money Manager';
+V59.ver='1.60 beta 30';
+V63.ver='1.60 beta 30';
+document.title='v1.60 beta 30 · Couple Money Manager';
 document.querySelectorAll('.sub').forEach(function(e){if(/1\.60 beta 19/.test(e.textContent))e.textContent='v1.60 beta 21';});
 try{
   var ol20=document.querySelector('#relNotes ol,#relList ol,main ol');
@@ -17305,10 +17305,10 @@ window.addEventListener('offline',function(){if(B3.cur==='data')paint();});
 setInterval(function(){if(B3.cur==='data'&&!document.hidden)paintStatus();},60000);
 
 /* ---------- 7 · version + in-app release notes ---------- */
-V59.ver='1.60 beta 28.1';
-try{V63.ver='1.60 beta 28.1';}catch(e){DIAG.note(e,"44-v160-b22-data-sync:239");}
-try{if(window.B20)B20.ver='1.60 beta 28.1';}catch(e){DIAG.note(e,"44-v160-b22-data-sync:240");}
-document.title='v1.60 beta 28.1 · Couple Money Manager';
+V59.ver='1.60 beta 30';
+try{V63.ver='1.60 beta 30';}catch(e){DIAG.note(e,"44-v160-b22-data-sync:239");}
+try{if(window.B20)B20.ver='1.60 beta 30';}catch(e){DIAG.note(e,"44-v160-b22-data-sync:240");}
+document.title='v1.60 beta 30 · Couple Money Manager';
 qa('.sub').forEach(function(e){if(/1\.60 beta 21/.test(e.textContent))e.textContent=e.textContent.replace(/1\.60 beta 21/,'1.60 beta 22');});
 var ol=document.querySelector('#view-settings details.help ol');
 if(ol)ol.insertAdjacentHTML('beforeend','<li><b>Data &amp; Sync, simplified (v1.60 beta 22):</b> the page opens on one Status card \u2014 health, safety snapshots, where your data lives and the last backup or sync \u2014 with <b>Back up now</b> (and <b>Sync now</b> on Couple Money Cloud). Storage choices appear only after you tap <b>Change</b>. Preferences holds the few real choices (backup reminder, AI notes). Import &amp; export and Restore sit in one collapsed section. Advanced (Full experience) holds backup history, the household folder preview and sync diagnostics; Advanced Couple adds partner activity and a shortcut to partner access. Simple experience shows only Status and Import &amp; export.</li>');
@@ -17335,7 +17335,7 @@ window.psFixed=psFixed; /* used by js/screens */
 function $(id){return document.getElementById(id);}
 function qa(sel,el){return [].slice.call((el||document).querySelectorAll(sel));}
 function txt(el){return (el&&el.textContent||'').replace(/\s+/g,' ').trim();}
-var VER='1.60 beta 28.1';
+var VER='1.60 beta 30';
 
 /* ---------- 2 · Privacy Screen: one switch ---------- */
 function psFixed(){
@@ -19301,7 +19301,7 @@ function cmm291StripExperienceMeta(db){
 (function(){
 'use strict';
 var B28=window.B28=window.B28||{};
-var VERSION='1.60 beta 28.1',SCHEMA_VERSION=29;
+var VERSION='1.60 beta 30',SCHEMA_VERSION=29;
 function $28(id){return document.getElementById(id);}
 function clone28(v){return JSON.parse(JSON.stringify(v));}
 function safe28(fn,fallback){try{return fn();}catch(e){try{DIAG.note(e,'b28-review');}catch(x){}return fallback;}}
@@ -19627,7 +19627,7 @@ boot28();
 /* ================= v1.60 beta 28.1 · verified correction layer =================
    Runs inside the beta 28 module scope on purpose: it replaces beta 28 functions (existing28, fullWelcome28,
    simpleCoupleHTML28, privateManifest28 …) and calls its helpers (safe28, prefGet28 …), none of which are global. */
-var VERSION291='1.60 beta 28.1',SCHEMA291=SCHEMA_VERSION;
+var VERSION291='1.60 beta 30',SCHEMA291=SCHEMA_VERSION;
 var N291={unsubA:null,unsubT:null,unsubS:null,remoteA:{},remoteT:{},state:null,readyA:false,readyT:false,readyS:false,applying:false,migrating:false,pushing:false,again:false};
 function members291(){return (HH.info&&HH.info.members||[]).slice();}
 function profiles291(){return (HH.info&&HH.info.memberProfiles)||{};}
@@ -19759,7 +19759,7 @@ bkFileGo=function(){var pw=(($('bkPw')||{}).value||''),pw2=(($('bkPw2')||{}).val
 /* Partner preview: authoritative shared view, genuine latest activity. */
 if(window.B20)B20.pvData=function(){var me=safe28(function(){return meName();},''),P=safe28(function(){return partnerName();},'your partner'),v=buildSharedView(DB,{purpose:'preview'}),m=v.__sharedView||{},accSet={};(v.accounts||[]).forEach(function(a){if(a&&!a.locked&&!a.recv&&!/^.+ owes .+$/.test(a.name||''))accSet[a.name]=1;});var asc=cmm291Latest(v.txns||[],200).reverse();return {me:me,P:P,accs:(v.accounts||[]).filter(function(a){return accSet[a.name];}),txns:asc,relabel:function(n){return (m.labels||{})[n]||n;},anyPn:m.privateNames||{},accSet:accSet};};
 
-function finish291(){if(!DB)return setTimeout(finish291,30);prefMigrated291();ensureIds291();migrateVals291();cmm291StripExperienceMeta(DB);DB.meta.schemaVersion=SCHEMA291;if(window.experienceConfig){experienceConfig.version=VERSION291;experienceConfig.schemaVersion=SCHEMA291;}if(window.advancedCoupleConfig){advancedCoupleConfig.version=VERSION291;advancedCoupleConfig.schemaVersion=SCHEMA291;}save();document.title='v'+VERSION291+' · Couple Money Manager';var mv=document.querySelector('meta[name="app-version"]');if(mv)mv.content='1.60-beta.28.1';document.querySelectorAll('.sub').forEach(function(el){el.textContent=el.textContent.replace(/v?1\.60 beta 28(?!\.1)/g,'v'+VERSION291);});if(X63.isSimple()&&V63.itab==='wealth')V63.itab='cash';renderAll();}
+function finish291(){if(!DB)return setTimeout(finish291,30);prefMigrated291();ensureIds291();migrateVals291();cmm291StripExperienceMeta(DB);DB.meta.schemaVersion=SCHEMA291;if(window.experienceConfig){experienceConfig.version=VERSION291;experienceConfig.schemaVersion=SCHEMA291;}if(window.advancedCoupleConfig){advancedCoupleConfig.version=VERSION291;advancedCoupleConfig.schemaVersion=SCHEMA291;}save();document.title='v'+VERSION291+' · Couple Money Manager';var mv=document.querySelector('meta[name="app-version"]');if(mv)mv.content='1.60-beta.30';document.querySelectorAll('.sub').forEach(function(el){el.textContent=el.textContent.replace(/v?1\.60 beta 28(\.\d+)?/g,'v'+VERSION291);});if(X63.isSimple()&&V63.itab==='wealth')V63.itab='cash';renderAll();}
 setTimeout(finish291,0);
 window.CMM_VERSION=VERSION291;window.CMM_SCHEMA_VERSION=SCHEMA291;
 })();
