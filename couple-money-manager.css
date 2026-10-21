@@ -2037,9 +2037,10 @@ body.calc-on .sheet.on .sheet-foot{visibility:hidden}
 
 /* ---- 50-v160-b29-header-menu.css ---- */
 
-/* ================= v1.60 beta 29 — header: logo + full app name + one hamburger =================
-   Everything else (profile, settings, reminders, assistant, privacy eye, sync status) lives in a compact
-   vertical icon rail that opens under the hamburger. */
+/* ================= v1.60 beta 30 — header redesign (per mockup) =================
+   Full brand on the left (logo + name + "Your money, together"), one hamburger action on
+   the right. Everything else (profile, settings, reminders, assistant, privacy eye, sync
+   status) lives in the compact vertical icon rail that opens under the hamburger. */
 header.hdr h1{font-size:var(--fs-15)!important;font-weight:800;letter-spacing:-.25px;flex:1 1 auto!important;width:auto!important;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .hdr .hmenu{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;flex:none;position:relative;color:var(--ink);background:transparent;transition:background .18s ease,color .18s ease,transform .12s ease}
 .hdr .hmenu svg.icn{width:19px;height:19px;vertical-align:0;transition:transform .2s ease}
@@ -2053,8 +2054,8 @@ header.hdr h1{font-size:var(--fs-15)!important;font-weight:800;letter-spacing:-.
 .hscrim{position:fixed;inset:0;z-index:39;background:rgba(10,14,26,.22);opacity:0;visibility:hidden;transition:opacity .18s ease,visibility 0s linear .18s}
 .hscrim.on{opacity:1;visibility:visible;transition-delay:0s}
 
-/* the vertical icon rail */
-.hrail{position:fixed;z-index:41;right:10px;top:calc(66px + env(safe-area-inset-top));width:52px;padding:5px 4px;border-radius:17px;overflow:visible;
+/* the vertical icon rail — b30: anchored under the top-right hamburger, sliding in from the right */
+.hrail{position:fixed;z-index:41;right:10px;left:auto;top:calc(74px + env(safe-area-inset-top));width:52px;padding:5px 4px;border-radius:17px;overflow:visible;
   background:color-mix(in srgb,var(--card) 96%,transparent);-webkit-backdrop-filter:saturate(1.6) blur(18px);backdrop-filter:saturate(1.6) blur(18px);
   border:1px solid var(--hair);box-shadow:var(--shadow);
   transform:translateX(14px) scale(.96);transform-origin:top right;opacity:0;visibility:hidden;
@@ -2070,9 +2071,24 @@ header.hdr h1{font-size:var(--fs-15)!important;font-weight:800;letter-spacing:-.
 #hdrRail #syncChip .sic25 .icn{width:18px;height:18px}
 #hdrRail #syncChip.bad .sic25{color:var(--exp)}
 #hdrRail #syncChip .dot{position:absolute;right:6px;top:6px;width:9px;height:9px}
-/* label on hover / keyboard focus */
-#hdrRail .rbtn::after{content:attr(data-tip);position:absolute;right:calc(100% + 8px);top:50%;transform:translateY(-50%) translateX(5px);white-space:nowrap;background:#172033;color:#fff;border-radius:9px;padding:7px 10px;font-size:var(--fs-12);font-weight:700;opacity:0;pointer-events:none;transition:opacity .14s ease,transform .14s ease;box-shadow:0 5px 16px rgba(0,0,0,.22)}
+/* label on hover / keyboard focus — b30: opens to the left of the button (the rail sits on the right) */
+#hdrRail .rbtn::after{content:attr(data-tip);position:absolute;right:calc(100% + 8px);left:auto;top:50%;transform:translateY(-50%) translateX(5px);white-space:nowrap;background:#172033;color:#fff;border-radius:9px;padding:7px 10px;font-size:var(--fs-12);font-weight:700;opacity:0;pointer-events:none;transition:opacity .14s ease,transform .14s ease;box-shadow:0 5px 16px rgba(0,0,0,.22)}
 #hdrRail .rbtn:focus-visible::after{opacity:1;transform:translateY(-50%)}
 @media (hover:hover){#hdrRail .rbtn:hover::after{opacity:1;transform:translateY(-50%)}}
 @media(max-width:350px){header.hdr h1{font-size:var(--fs-14)!important}.hdr{gap:8px;padding-left:10px;padding-right:8px}}
 @media(prefers-reduced-motion:reduce){.hrail,.hscrim,.hdr .hmenu,.hdr .hmenu svg.icn,#hdrRail .rbtn{transition:none!important}}
+
+/* ================= v1.60 beta 30 — header redesign layer (per mockup) =================
+   Layout: [38px logo] [brand: name + tagline] [hamburger, right] · 64px tall bar.
+   The taller header shifts everything that hangs below it (+10px): main content,
+   sticky tab bar, sticky day headers. Brand keeps its ellipsis at every width;
+   the tagline drops away below 350px. */
+.hdr{min-height:64px;padding:10px 12px;padding-top:calc(10px + env(safe-area-inset-top))}
+.hdr .logo{width:38px;height:38px;border-radius:12px}
+.hdr .brand{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;justify-content:center;gap:1px}
+.hdr .brand h1{flex:0 0 auto!important;line-height:1.15;font-size:15.5px!important}
+.hdr .brand .brand-sub{font-size:10.5px;font-weight:650;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+main{padding-top:calc(78px + env(safe-area-inset-top))}
+.stab{top:calc(66px + env(safe-area-inset-top))}
+#txList .dayg>.day-h{top:calc(73px + env(safe-area-inset-top))}
+@media(max-width:350px){.hdr .brand .brand-sub{display:none}.hdr .logo{width:36px;height:36px}.hdr{gap:8px;padding:10px 9px;padding-top:calc(10px + env(safe-area-inset-top))}}
