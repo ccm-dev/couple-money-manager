@@ -2310,3 +2310,164 @@ main{padding-top:calc(78px + env(safe-area-inset-top))}
 .afi-card .afi-taken small{font-weight:600;margin-left:3px}
 .afi-card .mhead{flex-wrap:wrap;gap:2px 8px}
 .afi-card .mhead > span:last-child{margin-left:auto;text-align:right}
+
+/* ===== v1.60 beta 39 · account page IA per mockup — hero · banners · Overview/Activity tabs =====
+   Scoped to #drillBody. The page DOM stays single-column; the two tabs are CSS views over it
+   (#drillBody.acr-mode-ov / .acr-mode-ac hide-and-order the cards). Cards tagged by the mount:
+   .acr-always (both tabs) · .acr-ac (Activity tab) · .acr-chart (overview chart, order 5). */
+#drillBody.acr-on{display:flex;flex-direction:column;align-items:stretch}
+#drillBody.acr-on>*{order:10;min-width:0}
+#drillBody.acr-on>.acr-hero{order:1}
+#drillBody.acr-on>.acr-bans{order:2}
+#drillBody.acr-on>.acr-tabs{order:3}
+#drillBody.acr-on>.acr-mets{order:4}
+#drillBody.acr-on>.acr-chart{order:5}
+#drillBody.acr-on>.acr-recent{order:6}
+#drillBody.acr-on>.acr-det{order:7}
+#drillBody.acr-mode-ov>.acr-ac{display:none}
+#drillBody.acr-mode-ac>*:not(.acr-always):not(.acr-ac){display:none}
+/* hero */
+.acr-hero .acr-hrow{display:flex;gap:11px;align-items:center}
+.acr-ic{width:42px;height:42px;border-radius:13px;background:var(--accent-soft);color:var(--accent);display:flex;align-items:center;justify-content:center;flex:none}
+.acr-ic svg{width:22px;height:22px}
+.acr-tt{flex:1;min-width:0}
+.acr-tt b{display:block;font-size:var(--fs-16);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.acr-tt small{font-size:var(--fs-12);color:var(--muted)}
+.acr-pills{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0 2px}
+.pill.acr-n{background:var(--bg);color:var(--muted)}
+.pill.acr-b{background:var(--accent-soft);color:var(--accent)}
+.pill.acr-w{background:color-mix(in srgb,var(--warn) 14%,transparent);color:var(--warn)}
+.pill svg{width:12px;height:12px;vertical-align:-2px}
+.acr-label{font-size:var(--fs-12);color:var(--muted);font-weight:700;margin-top:12px}
+.acr-big .acr-val{font-size:var(--fs-28);font-weight:800;letter-spacing:-.5px;line-height:1.15}
+.acr-big .acr-val.neg{color:var(--exp)}
+.acr-sub{font-size:var(--fs-12);color:var(--muted);margin-top:2px;line-height:1.45}
+.acr-sub .pos{font-weight:700}.acr-sub .neg{font-weight:700}
+.acr-mini{display:none;align-items:center;justify-content:space-between;gap:10px}
+.acr-mini small{display:block;font-size:var(--fs-11);font-weight:700;color:var(--muted)}
+.acr-mini b{font-size:var(--fs-18);font-weight:800;white-space:nowrap}
+.acr-mini b.neg{color:var(--exp)}
+#drillBody.acr-mode-ac .acr-big{display:none}
+#drillBody.acr-mode-ac .acr-mini{display:flex}
+#drillBody.acr-mode-ov .acr-mini{display:none}
+.acr-acts{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.acr-acts .btn{flex:1;min-width:120px;display:inline-flex;align-items:center;justify-content:center;gap:6px}
+.acr-acts .btn[disabled]{opacity:.45;cursor:not-allowed}
+/* banners */
+.acr-banner{border-radius:12px;padding:10px 12px;font-size:var(--fs-13);line-height:1.5;margin-bottom:10px;display:flex;gap:8px;align-items:flex-start}
+.acr-banner svg{flex:none;margin-top:1px;width:16px;height:16px}
+.acr-banner.w{background:color-mix(in srgb,var(--warn) 14%,transparent);color:var(--warn)}
+.acr-banner.n{background:var(--accent-soft);color:var(--accent)}
+/* sticky tab bar */
+.acr-tabs{position:sticky;top:calc(62px + env(safe-area-inset-top));z-index:30;display:flex;background:var(--bg);border:1px solid var(--line);border-radius:13px;padding:3px;gap:3px;margin:2px 0 10px;box-shadow:0 6px 14px -8px rgba(23,32,58,.25)}
+.acr-tabs button{flex:1;min-height:40px;border:0;background:none;font:inherit;font-size:var(--fs-13);font-weight:800;color:var(--muted);border-radius:10px;text-align:center;cursor:pointer;padding:4px}
+.acr-tabs button.on{background:var(--card);color:var(--ink);box-shadow:var(--shadow)}
+/* overview metrics */
+.acr-mets .acr-mline{display:flex;justify-content:space-between;gap:8px;font-size:var(--fs-12);color:var(--muted);font-weight:600;margin:2px 2px 8px}
+.acr-mets .stats{margin:0 0 12px}
+/* recent preview */
+.acr-recent h2{align-items:center}
+.acr-recent .acr-rchips{display:flex;gap:6px;margin:0 0 6px}
+.acr-recent .txn:first-of-type{border-top:1px solid var(--line)}
+/* details card */
+.acr-det .fline span{min-width:0}
+.acr-det .fline b{text-align:right}
+button.fline.acr-nav{color:inherit}
+button.fline.acr-nav span{color:var(--muted)}
+button.fline.acr-nav b{color:var(--accent);font-weight:700}
+button.fline.acr-nav:active{opacity:.65}
+/* value chart reuses .afb-* internals; the card itself is #acrVC */
+#acrVC h2{align-items:center}
+#acrVC h2 .sub{margin-left:auto}
+#acrVC .afb-n{display:inline-flex;margin:0;padding:2px;gap:2px;border-radius:9px}
+#acrVC .afb-n button{flex:none;padding:4px 9px;font-size:var(--fs-11);border-radius:7px;text-transform:none;letter-spacing:0}
+@media (max-width:360px){.acr-acts .btn{min-width:100%}}
+/* ===== v1.60 beta 39 · addenda ===== */
+.acr-flink{flex:none;color:var(--accent);font-weight:700;font-size:var(--fs-13);background:none;border:0;padding:8px 2px;min-height:40px;cursor:pointer}
+.acr-mini{justify-content:flex-end;text-align:right;margin-top:8px}
+.acr-mini span{text-align:right}
+.acr-seeall{margin-top:10px}
+.acr-recent .acr-rchips .chip{min-height:36px}
+
+/* ================= v1.60 beta 40 — add transaction v2.1 (mockup updates) =================
+   1. Amount hero: 46 px, refund chip inline to the right, caret while the keypad is open,
+      long values shrink to 34 px.
+   2. Account row: the read-only owner chip moves to a second line under the account name;
+      Advanced Couple private accounts show a "Private account" hint.
+   3. Transfer: From ⇄ To flow tiles (owner chip under each), the Between Us entry is
+      created automatically when the owners differ — no checkbox.
+   4. ONE keypad, docked inside the open sheet (never above the nav, never over a footer);
+      dim / ✕ / Back close the keypad first, then the sheet.
+   5. ONE money-field style (.af40 family): standard for starting balance / goal target /
+      contribution, cell for budget cells — "RM" lives in the field, not the label;
+      every pad opens with a "Field · Item" label via data-kp. */
+
+/* ---- amount hero ---- */
+#sheet.form61 .ad-amt61{padding:12px 14px}
+#sheet.form61 .ad-amt61 .ad-line61{display:flex;align-items:center;justify-content:center;gap:12px;min-width:0}
+#sheet.form61 .ad-amt61 .amt-wrap{font-size:46px;flex:none;max-width:100%}
+#sheet.form61 .ad-amt61 #fAmount{font-size:46px;letter-spacing:-1.4px}
+#sheet.form61 .ad-amt61.long40 .amt-wrap{font-size:34px}
+#sheet.form61 .ad-amt61.long40 #fAmount{font-size:34px;letter-spacing:-.8px}
+#sheet.form61 .ad-amt61 .sgn.ad-chip61{position:static;transform:none;height:auto;min-width:0;display:inline-flex;align-items:center;gap:5px;padding:5px 11px;border:0;border-radius:999px;
+  font-size:var(--fs-12);font-weight:700;color:var(--muted);background:var(--card);box-shadow:inset 0 0 0 1px var(--hair);flex:none;white-space:nowrap}
+#sheet.form61 .ad-amt61 .sgn.ad-chip61 svg{width:13px;height:13px}
+#sheet.form61 .ad-amt61 .sgn.ad-chip61.on{background:var(--accent-soft);color:var(--accent);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--accent) 35%,transparent)}
+.caret40{display:inline-block;width:2.5px;height:.78em;background:var(--accent);margin-left:2px;vertical-align:-.06em;border-radius:2px;animation:bl40 1s steps(1) infinite}
+@keyframes bl40{50%{opacity:0}}
+#sheet.form61 .ad-amt61.focus40{border-color:var(--accent);box-shadow:var(--ring)}
+#ad-amtsub61,#fAmtSub61:empty{display:none}
+
+/* ---- account row: owner chip on its own line under the account name ---- */
+#sheet.form61 .ad-card61>.row61>.acc-col61{flex:1;min-width:0;display:flex;flex-direction:column;align-items:flex-end;gap:4px}
+#sheet.form61 .ad-card61>.row61>.acc-col61 select.fin{width:100%}
+#sheet.form61 .ad-card61>.row61>.acc-col61 .own61{max-width:100%}
+.pv40{display:inline-flex;align-items:center;gap:4px;font-size:var(--fs-11);font-weight:700;color:var(--warn);white-space:nowrap}
+.pv40 svg{width:11px;height:11px}
+
+/* ---- transfer: From ⇄ To tiles ---- */
+#sheet.form61 .ad-flow61{display:flex;align-items:stretch;gap:8px;margin-bottom:14px}
+#sheet.form61 .ad-flow61>.row61{flex:1;min-width:0;flex-direction:column;align-items:stretch;gap:3px;
+  background:color-mix(in srgb,var(--bg) 55%,var(--card));border:1px solid var(--hair);border-radius:16px;padding:10px 12px;min-height:64px;justify-content:center;margin:0}
+#sheet.form61 .ad-flow61>.row61>label{width:auto!important;flex:none!important;margin:0 0 1px!important;font-size:var(--fs-11)!important;font-weight:800!important;text-transform:uppercase;letter-spacing:.5px}
+#sheet.form61 .ad-flow61>.row61>.acc-col61{align-items:flex-start;text-align:left}
+#sheet.form61 .ad-flow61>.row61>.acc-col61 select.fin{text-align:left;text-align-last:left;padding:2px 0}
+#sheet.form61 .ad-flow61>.row61 .chev61{display:none}
+#sheet.form61 .ad-flow61 .swap61{align-self:center;width:36px;height:36px;border-radius:50%;flex:none}
+
+/* ---- owed: automatic between different owners — the checkbox retires, the hint stays ---- */
+#fOwedRow.auto40{background:transparent}
+#fOwedRow.auto40>label{cursor:default}
+#fOwedRow.auto40 input[type=checkbox]{display:none}
+#sheet.form61 #fOwedRow.auto40{color:var(--ink)}
+
+/* ---- keypad: docked inside the open sheet ---- */
+#calcPad.docked40{position:absolute;left:0;right:0;bottom:0;max-width:none;margin:0;z-index:20;border-radius:20px 20px 0 0}
+body.calc-on .sheet.on{padding-bottom:0}
+body.calc-on #sheet.on{padding-bottom:0}
+body.calc-on #mgrSheet #mgrBody{padding-bottom:315px}
+#ad-amtsub61:empty,#fAmtSub61:empty{display:none}
+
+/* ---- one money-field style: standard / cell ---- */
+.af40{display:flex;align-items:center;gap:8px;min-height:52px;padding:0 14px;border-radius:14px;background:var(--card);box-shadow:inset 0 0 0 1.5px var(--line);transition:box-shadow .15s;width:100%}
+.af40 .cur40{font-size:var(--fs-13);font-weight:800;color:var(--muted);flex:none}
+.af40 input.fin{flex:1;min-width:0;width:100%;border:0!important;background:transparent!important;box-shadow:none!important;outline:none!important;padding:0!important;text-align:right;font-size:var(--fs-18);font-weight:800;letter-spacing:-.3px;color:var(--ink);min-height:0!important;height:auto!important}
+.af40 input.fin::placeholder{color:color-mix(in srgb,var(--muted) 55%,transparent);font-weight:700}
+.af40:focus-within{box-shadow:inset 0 0 0 1.5px var(--accent),var(--ring)}
+.af40.cell40{min-height:40px;border-radius:10px;padding:0 9px;gap:0}
+.af40.cell40 input.fin{font-size:var(--fs-14);font-weight:700;letter-spacing:0}
+.bgrow .af40{min-height:40px;background:var(--card)}
+
+/* beta 40: the editable owner select lives on the account row's second line */
+#sheet.form61 .ad-card61>.row61>.acc-col61 #fOwnerRow{flex-direction:row;align-items:center;gap:6px;min-height:0;border:0;background:transparent;padding:0;margin:0;width:100%;display:flex}
+#sheet.form61 .ad-card61>.row61>.acc-col61 #fOwnerRow[hidden]{display:none}
+#sheet.form61 .acc-col61 #fOwnerRow>label,#sheet.form61 .acc-col61 #fOwnerRow>svg{display:none}
+#sheet.form61 .acc-col61 #fOwnerSel{flex:1;min-width:0;border:0!important;background:transparent!important;box-shadow:none!important;padding:2px 0!important;font-size:var(--fs-12);font-weight:700;color:var(--muted);text-align:right;text-align-last:right;height:auto!important}
+#sheet.form61 .acc-col61 #fOwner{font-size:var(--fs-12);min-height:0}
+
+/* beta 40 fixes: chips and tiles */
+#sheet.form61 .ad-flow61 .own61{max-width:100%}
+#sheet.form61 .ad-flow61>.row61>svg{display:none}
+
+/* beta 40: one caret — hide the native one while the custom keypad caret shows */
+#sheet.form61 .ad-amt61.focus40 #fAmount{caret-color:transparent}
