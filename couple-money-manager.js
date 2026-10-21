@@ -3944,7 +3944,7 @@ TOURS.split=function(){var has=function(){return DB.txns.some(function(t){return
   {pre:function(){gotoView('overview');},sel:'.nadd button',tx:'Tap <b>+</b> to add the bill.',ok:function(){return sheetOpen()||has();}},
   {sel:'#fAmount',tx:'Type the <b>total</b> of the bill.',ok:has,soft:function(){return parseAmt($('fAmount').value)>0&&document.activeElement!==$('fAmount');}},
   {sel:'#fCatChips',tx:'Pick a category.',ok:has,soft:function(){return !!F.cat;}},
-  {sel:'#fSplitBox',tx:'In <b>Split this bill</b>, tap <b>Split between people</b>, add your partner, then <b>Split equally</b>.',ok:has,soft:function(){return SPLIT.rows.length>=2&&SPLIT.rows.every(function(r){return parseAmt(r.v)>0;});}},
+  {sel:'#fSplitBox',tx:'Tap the <b>Split</b> option, check both shares (Equal is the default), then <b>Done</b>.',ok:has,soft:function(){return SPLIT.rows.length>=2&&SPLIT.rows.every(function(r){return parseAmt(r.v)>0;});}},
   {sel:'#sheet [data-act=savetxn]',tx:'Tap <b>Save transaction</b>. Your partner’s share goes to “Between Us”.',ok:function(){return has()&&!sheetOpen();}}];};
 /* ---------- 5. sign in with Google / Microsoft / Apple, then ask about cloud sync, then the guide ---------- */
 var OAUTH_NAME={google:'Google',ms:'Microsoft',apple:'Apple'};
@@ -7376,7 +7376,9 @@ try{
         if(br)br.insertAdjacentHTML('beforeend','<button class="btn sm ghost" data-act="v63remset" data-n="'+esc(a.name)+'">'+ico('bell')+' Payment details</button>');
         else lc.insertAdjacentHTML('beforeend','<div class="btnrow"><button class="btn sm ghost" data-act="v63remset" data-n="'+esc(a.name)+'">'+ico('bell')+' Payment details</button></div>');
       }
-      if(accTypeKind(a.type)==='liability'&&!isLoan(a)){
+    }
+    if(accTypeKind(a.type)==='liability'&&!isLoan(a)&&!isRecvAcc(a.name)){ /* beta 32 (RM-07): card branch is reachable */
+      {
         var cc=null;body.querySelectorAll('.card').forEach(function(c){var t=(c.querySelector('h2')||{}).textContent||'';if(!cc&&/Statement|Balance owed/i.test(t))cc=c;});
         if(cc&&!cc.querySelector('[data-act=v63remset]'))cc.insertAdjacentHTML('beforeend','<div class="btnrow" style="margin-top:10px"><button class="btn sm ghost" data-act="v63remset" data-n="'+esc(a.name)+'">'+ico('bell')+' Payment details &amp; reminders</button></div>');
       }
@@ -10923,7 +10925,7 @@ xFields59=function(p,type,a){
     }
     h+='<div class="mgr-lb">Next instalment due (optional)</div><input type="date" class="fin" id="'+id('RD')+'" value="'+esc(a.remDue||'')+'" style="margin-bottom:7px">'
       +'<div class="mgr-lb">Remind me</div><select class="fin" id="'+id('RL')+'">'
-      +[[0,'On the day'],[1,'1 day before'],[3,'3 days before'],[7,'A week before']].map(function(o){return '<option value="'+o[0]+'"'+((+a.remLead||0)===o[0]?' selected':'')+'>'+o[1]+'</option>';}).join('')+'</select>';
+      +(V63.leadOptions?V63.leadOptions(a):'')+'</select>';
   }
   return h;
 };
@@ -10942,7 +10944,7 @@ x59Apply=function(a){
   if(a.instType==='variable')delete a.instalment; /* variable loans start blank */
   if($('x59e_FQ'))a.freq=g('x59e_FQ')||'m';
   if($('x59e_RD'))a.remDue=g('x59e_RD')||'';
-  if($('x59e_RL'))a.remLead=+g('x59e_RL')||0;
+  if($('x59e_RL'))a.remLead=g('x59e_RL')===''?null:(+g('x59e_RL')||0);
 };
 
 
@@ -11012,7 +11014,7 @@ loanCard59=function(l){
     +'<div class="fline eq"><span><b>Outstanding</b></span><b class="neg">'+money(Math.abs(bal))+'</b></div>';
   if(+l.rate>0)h+='<div class="fline"><span>Interest rate</span><b>'+esc(l.rate)+'% p.a.</b></div>';
   if(l.instType!=='variable'&&+l.instalment>0)h+='<div class="fline"><span>Fixed instalment</span><b>'+money(l.instalment)+(l.freq?' · '+B3.freqL(l.freq):'')+'</b></div>';
-  if(l.remDue)h+='<div class="fline"><span>Next instalment due</span><b>'+dLabelY(l.remDue)+((+l.remLead>0)?' · reminds '+(l.remLead===1?'1 day':l.remLead+' days')+' before':' · reminds on the day')+'</b></div>';
+  if(l.remDue)h+='<div class="fline"><span>Next instalment due</span><b>'+dLabelY(l.remDue)+(function(){var ld=V63.leadOf?V63.leadOf(l):(+l.remLead||0);return ld>0?' · reminds '+(ld===1?'1 day':ld+' days')+' before':' · reminds on the day';})()+'</b></div>';
   if(as&&isVal(as)){var av=valueAsOf(as,todayISO());h+='<div class="fline"><span>'+esc(as.name)+' · recorded value</span><b>'+money(av)+'</b></div><div class="fline eq"><span><b>Net asset position</b></span><b class="'+(av+bal<0?'neg':'pos')+'">'+money(av+bal)+'</b></div>';}
   h+='</div><div class="btnrow" style="margin-top:10px"><button class="btn sm" data-act="loanopen" data-n="'+esc(l.name)+'">'+ico('plus')+' Record repayment</button>'
     +(l.type!=='Hire Purchase'?'<button class="btn sm ghost" data-act="loanint" data-n="'+esc(l.name)+'">'+ico('bank')+' Record interest / charge</button>':'')+'</div>'
@@ -11024,7 +11026,7 @@ B3.loansDue=function(){
   (DB.accounts||[]).forEach(function(a){
     if(!isLoan(a)||!a.remDue)return;
     var dl=Math.round((Date.parse(a.remDue+'T12:00:00Z')-Date.parse(td+'T12:00:00Z'))/864e5);
-    if(dl<=((+a.remLead||0)||3)&&dl>=-30)out.push({a:a,dl:dl});
+    if(dl<=(V63.leadOf?V63.leadOf(a):((+a.remLead||0)||3))&&dl>=-30)out.push({a:a,dl:dl});
   });
   return out;
 };
@@ -13798,7 +13800,7 @@ SCREEN.on('gotoView',220021635);
 
 /* ================= Insights hub (plan §3, mock-ups S1/S2/S3) ================= */
 function attHTML16(){
-  var up=[];try{up=V63.calc.upcoming(90).filter(function(x){return x.dl<=3&&!x.autopay;});}catch(e){DIAG.note(e,"35-v160-b16-insights-reports:365");}
+  var up=[];try{up=V63.calc.upcoming(90).filter(function(x){return (V63.needsAtt?V63.needsAtt(x):(x.dl<=3&&!x.autopay));});}catch(e){DIAG.note(e,"35-v160-b16-insights-reports:365");}
   if(!up.length)return '';
   return '<div class="card" style="border:1.5px solid color-mix(in srgb,var(--warn) 45%,transparent)"><h2 style="color:var(--warn)">'+ico('bell')+' Attention needed</h2>'
     +up.slice(0,4).map(function(x){return V63.UPROW(x,true);}).join('')
@@ -13984,7 +13986,7 @@ function cInsight16(){
   /* self-contained prioritised couple observation (View report + Dismiss) */
   var it=null;
   try{
-    var up=V63.calc.upcoming(30).filter(function(x){return x.dl<=3;});
+    var up=V63.calc.upcoming(30).filter(function(x){return (V63.needsAtt?V63.needsAtt(x):(x.dl<=3&&!x.autopay));});
     if(up.length)it={title:up[0].dl<0?'Payment overdue':'Payment '+(up[0].dl===0?'due today':'due soon'),txt:up[0].name+' — '+dueTxt({dl:up[0].dl,due:up[0].due})+(up[0].amt>0?' · '+money(up[0].amt):'')+'.',q:null,rep:'f_loans'};
   }catch(e){DIAG.note(e,"35-v160-b16-insights-reports:566");}
   if(!it)try{
@@ -14655,7 +14657,7 @@ V56.mgr.v63remset=function(){
     +'<div class="mgr-lb" style="margin-top:7px">Autopay from (optional)</div><select class="fin" id="rs16autoacc" style="margin-bottom:7px"><option value="">—</option>'
     +DB.accounts.filter(function(x){return !x.locked&&!isRecvAcc(x.name)&&!isVal(x)&&accTypeKind(x.type)!=='liability';}).map(function(x){return '<option'+(a.autopayAcc===x.name?' selected':'')+'>'+esc(x.name)+'</option>';}).join('')+'</select>'
     +'<div class="mgr-lb">Remind me</div><select class="fin" id="rs16lead" style="margin-bottom:7px">'
-    +[[0,'On the day'],[1,'1 day before'],[3,'3 days before'],[7,'A week before']].map(function(o){return '<option value="'+o[0]+'"'+((+a.remLead||0)===o[0]?' selected':'')+'>'+o[1]+'</option>';}).join('')+'</select>'
+    +(V63.leadOptions?V63.leadOptions(a):'')+'</select>'
     +'<div class="mgr-lb">Notify</div><select class="fin" id="rs16who" style="margin-bottom:8px"><option value="owner"'+((a.remWho||'owner')==='owner'?' selected':'')+'>Account owner only</option><option value="both"'+(a.remWho==='both'?' selected':'')+'>Both partners</option></select>'
     +'<div class="help small" style="margin-bottom:10px">Changing a reminder never creates, edits or deletes transactions. Marking a payment as paid happens through the posted payment.</div>'
     +'<button class="btn" data-act="v63remsetsave">Save reminder</button>';
@@ -14678,7 +14680,7 @@ V63.remsetSave=function(){
   var fx=parseAmt(g('rs16fix'));if(fx>0)a.remFixed=Math.round(fx*100)/100;else delete a.remFixed;
   a.autopay=!!($('rs16auto')||{}).checked;
   a.autopayAcc=g('rs16autoacc')||'';
-  a.remLead=+g('rs16lead')||0;
+  a.remLead=g('rs16lead')===''?null:(+g('rs16lead')||0); /* beta 32: blank = follow the default */
   a.remWho=g('rs16who')||'owner';
   touch();renderMgr();toast('Reminder saved ✓');
 };
@@ -15247,7 +15249,7 @@ function cardB(head,body,sub){return '<div class="card"><h2>'+head+(sub?' <span 
 
 /* ---------------- X63 · per-user experience state (doc §10/§11) ---------------- */
 var X63=window.X63={
-  ver:'1.60 beta 30',
+  ver:'1.60 beta 32',
   cfg:{
     simple:{defaultTab:'money',reports:'essential',terminology:'plain-language',forms:'progressive',contributionAnalysis:'hidden-by-default',advancedMetrics:'hidden'},
     full:{defaultTab:'wealth',reports:'complete',terminology:'standard-with-explanations',forms:'progressive',contributionAnalysis:'available',advancedMetrics:'visible'},
@@ -15324,14 +15326,14 @@ X63.moneyHTML=function(){
     +mTile('changeincash','Change in Cash',sgnB(ncf),ncf<0?'neg':'pos')
     +'</div><div class="help small" style="margin-top:8px">Money Left = Money In minus everyday Money Spent. Change in Cash shows how your bank, cash and e-Wallet balances actually moved — card purchases do not move it until you settle the card.</div>');
   /* payments need attention — only due-soon / due-today / overdue */
-  var att=[];try{att=V63.calc.upcoming(90).filter(function(x){return x.dl<=3&&!x.autopay;});}catch(e){DIAG.note(e,"37-v160-b18-tiles-experience:391");}
+  var att=[];try{att=V63.calc.upcoming(90).filter(function(x){return (V63.needsAtt?V63.needsAtt(x):(x.dl<=3&&!x.autopay));});}catch(e){DIAG.note(e,"37-v160-b18-tiles-experience:391");}
   if(att.length)h+=cardB(ico('bell')+' Payments Need Attention',att.slice(0,4).map(function(x){return V63.UPROW(x,true);}).join('')
     +(att.length>4?'<button class="btn ghost sm" data-act="v63remctr" style="width:100%;margin-top:8px">Open reminder centre</button>':''));
   /* upcoming payments */
-  var up=[];try{up=V63.calc.upcoming(30);}catch(e){DIAG.note(e,"37-v160-b18-tiles-experience:395");}
+  var up=[];try{up=V63.calc.upcoming(30).filter(function(x){return !(att.length&&(V63.needsAtt?V63.needsAtt(x):(x.dl<=3&&!x.autopay)));});}catch(e){DIAG.note(e,"37-v160-b18-tiles-experience:395");}
   h+=cardB(ico('bell')+' Upcoming Payments <span class="sub">next 30 days</span>'+(up.length?'<button class="det26" data-act="v63remctr">See all ›</button>':''),
     up.length?up.slice(0,6).map(function(x){return V63.UPROW(x,true);}).join('')
-    :'<div class="help">No payments due in the next 30 days.</div>');
+    :'<div class="help">'+(att.length?'Nothing else due in the next 30 days.':'No payments due in the next 30 days.')+'</div>');
   /* top spending — top three horizontal bars */
   var cb=catBreakdown(L,'Expense').filter(function(x){return x.value>0;}).slice(0,3);
   if(cb.length){
@@ -16107,7 +16109,7 @@ window.b20doAdd=b20doAdd; /* used by js/screens */
 window.log20=log20; /* used by js/screens */
 window.isLedger20=isLedger20; /* used by js/screens */
 var $=function(id){return document.getElementById(id);};
-var B20=window.B20={ver:'1.60 beta 30',pv:null,disc:false};
+var B20=window.B20={ver:'1.60 beta 32',pv:null,disc:false};
 function adv20(){try{return (typeof B3.mode==='function')?B3.mode()==='adv':DB.meta.usage==='adv';}catch(e){return DB&&DB.meta&&DB.meta.usage==='adv';}}
 function cpl20(){try{return isCouple();}catch(e){return false;}}
 function simple20(){try{return X63.isSimple();}catch(e){return false;}}
@@ -16835,9 +16837,9 @@ ACT.on('v160-b20-advanced-couple',{
 SCREEN.on('B3.renderModeSub',260050821);
 
 /* ---------- 25 · boot + version ---------- */
-V59.ver='1.60 beta 30';
-V63.ver='1.60 beta 30';
-document.title='v1.60 beta 30 · Couple Money Manager';
+V59.ver='1.60 beta 32';
+V63.ver='1.60 beta 32';
+document.title='v1.60 beta 32 · Couple Money Manager';
 document.querySelectorAll('.sub').forEach(function(e){if(/1\.60 beta 19/.test(e.textContent))e.textContent='v1.60 beta 21';});
 try{
   var ol20=document.querySelector('#relNotes ol,#relList ol,main ol');
@@ -17305,10 +17307,10 @@ window.addEventListener('offline',function(){if(B3.cur==='data')paint();});
 setInterval(function(){if(B3.cur==='data'&&!document.hidden)paintStatus();},60000);
 
 /* ---------- 7 · version + in-app release notes ---------- */
-V59.ver='1.60 beta 30';
-try{V63.ver='1.60 beta 30';}catch(e){DIAG.note(e,"44-v160-b22-data-sync:239");}
-try{if(window.B20)B20.ver='1.60 beta 30';}catch(e){DIAG.note(e,"44-v160-b22-data-sync:240");}
-document.title='v1.60 beta 30 · Couple Money Manager';
+V59.ver='1.60 beta 32';
+try{V63.ver='1.60 beta 32';}catch(e){DIAG.note(e,"44-v160-b22-data-sync:239");}
+try{if(window.B20)B20.ver='1.60 beta 32';}catch(e){DIAG.note(e,"44-v160-b22-data-sync:240");}
+document.title='v1.60 beta 32 · Couple Money Manager';
 qa('.sub').forEach(function(e){if(/1\.60 beta 21/.test(e.textContent))e.textContent=e.textContent.replace(/1\.60 beta 21/,'1.60 beta 22');});
 var ol=document.querySelector('#view-settings details.help ol');
 if(ol)ol.insertAdjacentHTML('beforeend','<li><b>Data &amp; Sync, simplified (v1.60 beta 22):</b> the page opens on one Status card \u2014 health, safety snapshots, where your data lives and the last backup or sync \u2014 with <b>Back up now</b> (and <b>Sync now</b> on Couple Money Cloud). Storage choices appear only after you tap <b>Change</b>. Preferences holds the few real choices (backup reminder, AI notes). Import &amp; export and Restore sit in one collapsed section. Advanced (Full experience) holds backup history, the household folder preview and sync diagnostics; Advanced Couple adds partner activity and a shortcut to partner access. Simple experience shows only Status and Import &amp; export.</li>');
@@ -17335,7 +17337,7 @@ window.psFixed=psFixed; /* used by js/screens */
 function $(id){return document.getElementById(id);}
 function qa(sel,el){return [].slice.call((el||document).querySelectorAll(sel));}
 function txt(el){return (el&&el.textContent||'').replace(/\s+/g,' ').trim();}
-var VER='1.60 beta 30';
+var VER='1.60 beta 32';
 
 /* ---------- 2 · Privacy Screen: one switch ---------- */
 function psFixed(){
@@ -17355,7 +17357,7 @@ function rc(){
   var c=remCfg();
   if(c.badge===undefined)c.badge=true;
   if([1,3,5,7].indexOf(+c.days)<0)c.days=3;
-  c.qf=0;c.qt=0;c.maskAmt=false;          /* quiet hours and masked notifications were removed */
+  c.qf=0;c.qt=0;if(c.maskAmt===undefined)c.maskAmt=false; /* beta 32 (RM-03): keep the user's Hide-amounts choice */
   return c;
 }
 renderRem=function(){
@@ -19164,6 +19166,17 @@ SCREEN.afterDraw(function(){try{drillEdit();}catch(e){}});
 
   buildForm();
   convertAll();
+  /* v1.60 beta 31 — split-bill layer integration hook.
+     Lets the appended layer (a) wrap renderTx61 so EVERY internal caller
+     (openTx61, the Edit/Copy pop-back) renders the whole-bill view for
+     grouped bills, (b) reuse the push transition, and (c) build hero tiles
+     with the same glyph mapping. */
+  window.__v61hook={
+    get renderTx61(){return renderTx61;},
+    set renderTx61(f){renderTx61=f;},
+    pushForm:pushForm,glyphOf:glyphOf,tileHTML:tileHTML,
+    people:people61,couple:couple61,longDate:longDate
+  };
 })();
 
 /* ##################################################################
@@ -19301,7 +19314,7 @@ function cmm291StripExperienceMeta(db){
 (function(){
 'use strict';
 var B28=window.B28=window.B28||{};
-var VERSION='1.60 beta 30',SCHEMA_VERSION=29;
+var VERSION='1.60 beta 32',SCHEMA_VERSION=29;
 function $28(id){return document.getElementById(id);}
 function clone28(v){return JSON.parse(JSON.stringify(v));}
 function safe28(fn,fallback){try{return fn();}catch(e){try{DIAG.note(e,'b28-review');}catch(x){}return fallback;}}
@@ -19534,7 +19547,7 @@ var _coupleHTML28=V63.coupleHTML;V63.coupleHTML=function(){return X63&&X63.isSim
 /* eligible-cash shortfall joins Payments Need Attention */
 var _moneyHTML28=X63.moneyHTML;X63.moneyHTML=function(){
   var h=_moneyHTML28(),r=perRange(),asd=nwAsAt(r),names=Object.keys(V63.liqSet(whoOK())),cash=0;names.forEach(function(n){var b=accountBalAsOf(n,asd);if(isFinite(b))cash+=Math.max(0,b);});
-  var due=safe28(function(){return V63.calc.upcoming(90).filter(function(x){return x.dl<=3&&!x.autopay;});},[]),need=due.reduce(function(s,x){return s+Math.max(0,+x.amt||0);},0);
+  var due=safe28(function(){return V63.calc.upcoming(90).filter(function(x){return V63.dueSoon?V63.dueSoon(x):(x.dl<=3&&!x.autopay);});},[]),need=due.reduce(function(s,x){return s+Math.max(0,+x.amt||0);},0);
   if(need<=cash+0.004)return h;
   var shortage=need-cash,row='<div class="paybox b28-short"><span class="pic">'+ico('warn')+'</span><span class="ptx"><b>Eligible cash may be short</b><small>Payments due soon total '+money(need)+'; eligible cash is '+money(cash)+'. Shortfall '+money(shortage)+'.</small></span></div>';
   if(h.indexOf('Payments Need Attention')>=0)return h.replace(/(<h2[^>]*>[^<]*<svg[\s\S]*?Payments Need Attention[^<]*<\/h2>)/,function(m){return m+row;});
@@ -19627,7 +19640,7 @@ boot28();
 /* ================= v1.60 beta 28.1 · verified correction layer =================
    Runs inside the beta 28 module scope on purpose: it replaces beta 28 functions (existing28, fullWelcome28,
    simpleCoupleHTML28, privateManifest28 …) and calls its helpers (safe28, prefGet28 …), none of which are global. */
-var VERSION291='1.60 beta 30',SCHEMA291=SCHEMA_VERSION;
+var VERSION291='1.60 beta 32',SCHEMA291=SCHEMA_VERSION;
 var N291={unsubA:null,unsubT:null,unsubS:null,remoteA:{},remoteT:{},state:null,readyA:false,readyT:false,readyS:false,applying:false,migrating:false,pushing:false,again:false};
 function members291(){return (HH.info&&HH.info.members||[]).slice();}
 function profiles291(){return (HH.info&&HH.info.memberProfiles)||{};}
@@ -19759,7 +19772,866 @@ bkFileGo=function(){var pw=(($('bkPw')||{}).value||''),pw2=(($('bkPw2')||{}).val
 /* Partner preview: authoritative shared view, genuine latest activity. */
 if(window.B20)B20.pvData=function(){var me=safe28(function(){return meName();},''),P=safe28(function(){return partnerName();},'your partner'),v=buildSharedView(DB,{purpose:'preview'}),m=v.__sharedView||{},accSet={};(v.accounts||[]).forEach(function(a){if(a&&!a.locked&&!a.recv&&!/^.+ owes .+$/.test(a.name||''))accSet[a.name]=1;});var asc=cmm291Latest(v.txns||[],200).reverse();return {me:me,P:P,accs:(v.accounts||[]).filter(function(a){return accSet[a.name];}),txns:asc,relabel:function(n){return (m.labels||{})[n]||n;},anyPn:m.privateNames||{},accSet:accSet};};
 
-function finish291(){if(!DB)return setTimeout(finish291,30);prefMigrated291();ensureIds291();migrateVals291();cmm291StripExperienceMeta(DB);DB.meta.schemaVersion=SCHEMA291;if(window.experienceConfig){experienceConfig.version=VERSION291;experienceConfig.schemaVersion=SCHEMA291;}if(window.advancedCoupleConfig){advancedCoupleConfig.version=VERSION291;advancedCoupleConfig.schemaVersion=SCHEMA291;}save();document.title='v'+VERSION291+' · Couple Money Manager';var mv=document.querySelector('meta[name="app-version"]');if(mv)mv.content='1.60-beta.30';document.querySelectorAll('.sub').forEach(function(el){el.textContent=el.textContent.replace(/v?1\.60 beta 28(\.\d+)?/g,'v'+VERSION291);});if(X63.isSimple()&&V63.itab==='wealth')V63.itab='cash';renderAll();}
+function finish291(){if(!DB)return setTimeout(finish291,30);prefMigrated291();ensureIds291();migrateVals291();cmm291StripExperienceMeta(DB);DB.meta.schemaVersion=SCHEMA291;if(window.experienceConfig){experienceConfig.version=VERSION291;experienceConfig.schemaVersion=SCHEMA291;}if(window.advancedCoupleConfig){advancedCoupleConfig.version=VERSION291;advancedCoupleConfig.schemaVersion=SCHEMA291;}save();document.title='v'+VERSION291+' · Couple Money Manager';var mv=document.querySelector('meta[name="app-version"]');if(mv)mv.content='1.60-beta.31';document.querySelectorAll('.sub').forEach(function(el){el.textContent=el.textContent.replace(/v?1\.60 beta 28(\.\d+)?/g,'v'+VERSION291);});if(X63.isSimple()&&V63.itab==='wealth')V63.itab='cash';renderAll();}
 setTimeout(finish291,0);
 window.CMM_VERSION=VERSION291;window.CMM_SCHEMA_VERSION=SCHEMA291;
+})();
+
+/* ===================================================================================
+   v1.60 beta 31 — Split bill transactions (split-bill-transactions-mockup)
+   Builds on the v1.61 sheet layer. One journey, one stable sheet:
+     1. the grouped row NEVER expands inline — it opens whole-bill Details
+     2. Details renders the WHOLE bill: total hero · account/payer/note · shares
+        with % of the bill · Between Us ledger effect · whole-bill actions
+     3. Edit and Copy push inside the same sheet and act on the whole bill;
+        Copy keeps the split, sets the date to today, omits Repeat, saves as a
+        new linked bill
+     4. the Split sub-screen is Equal / Custom: preselected participants, the
+        shared keypad on a share ("Split share · <person>"), live balance
+        feedback, "100% to <partner>", and a Between Us preview before saving
+     5. Delete asks once and removes every linked share (the Between Us entry
+        is reversed) with an Undo toast
+   =================================================================================== */
+(function(){
+  var H61=window.__v61hook;
+  if(!H61||!window.V61)return; /* the v1.61 layer must be present */
+
+  /* ---------- helpers ---------- */
+  function txById(id){for(var i=0;i<DB.txns.length;i++)if(DB.txns[i].id===id)return DB.txns[i];return null;}
+  function legsOf(gid){return DB.txns.filter(function(x){return x.group===gid;});}
+  function groupOf(id){var t=txById(id);return (t&&t.group)?t.group:null;}
+  function wholeLegs(id){var g=groupOf(id);if(!g)return null;var l=legsOf(g);return l.length>1?l:null;}
+  function money62(n){return money(Math.round(Math.abs(n)*100)/100);}
+  function recvOf(l){return (l&&l.to&&isRecvAcc(l.to))?l:null;}
+  function payerLeg(legs){for(var i=0;i<legs.length;i++)if(!recvOf(legs[i]))return legs[i];return legs[0];}
+  var FQ62={day:'Daily',week:'Weekly',month:'Monthly',year:'Yearly'};
+
+  /* =============================================================
+     1. Details — whole-bill rendering for grouped split bills
+     ============================================================= */
+  var WBKEY='';
+  function renderWhole62(){
+    var t=txById(V61.txId);if(!t)return;
+    var legs=legsOf(t.group);if(legs.length<2)return;
+    var t0=legs[0],payer=payerLeg(legs);
+    var tot=0;legs.forEach(function(l){tot+=Math.abs(+l.amount||0);});tot=Math.round(tot*100)/100;
+    var redn=t0.type==='Expense'&&tot<0;
+    var cls=(t0.type==='Income'||redn)?'pos':'neg',sg=(t0.type==='Income'||redn)?'+':'\u2212';
+    var c=cur(),people=H61.people();
+    var pills=['<span class="dt-pill '+(t0.type==='Income'?'inc':'exp')+'">'+(redn?'Refund':esc(t0.type))+'</span>'
+      ,'<span class="dt-pill">'+ico('users')+'Split \u00b7 '+legs.length+'</span>'];
+    var rr=(t0.recur&&DB.recur)?DB.recur.filter(function(x){return x.id===t0.recur;})[0]:null;
+    if(rr)pills.push('<span class="dt-pill">'+ico('repeat')+esc(FQ62[rr.freq]||'Repeat')+(rr.every>1?' · '+rr.every:'')+'</span>');
+    if(legs.some(function(l){return l.priv;}))pills.push('<span class="dt-pill lk">'+ico('lock')+'Private</span>');
+    var g=H61.glyphOf(t0.category,t0.subcategory,t0.type);
+    var h='<div class="dt-hero"><span class="txr-ic big'+(t0.type==='Income'?' in':'')+'" aria-hidden="true">'
+      +(g?ico(g):'<b class="lt61">'+esc(String(t0.category||'S').charAt(0).toUpperCase())+'</b>')
+      +'<i class="txr-who sp">'+ico('users')+'</i></span>'
+      +'<div class="dt-cat">'+esc(t0.category||'')+(t0.subcategory?' \u00b7 '+esc(t0.subcategory):'')+'</div>'
+      +'<div class="dt-amt '+cls+'">'+sg+(c?'<small>'+esc(c)+'</small>':'')+fmt(tot)+'</div>'
+      +'<div class="dt-date">'+esc(H61.longDate(t0.date))+'</div>'
+      +'<div class="dt-pills">'+pills.join('')+'</div></div>';
+    function drow(icn,k,v,sm){return v?'<div class="dt-row">'+ico(icn)+'<span class="dt-k">'+k+'</span><span class="dt-v">'+v+(sm?'<small>'+sm+'</small>':'')+'</span></div>':'';}
+    var ow=ownerOf(t0.account);
+    h+='<div class="dt-card">'
+      +drow('bank','Account',esc(t0.account),(H61.couple()&&ow)?esc(ow)+'\u2019s account':'')
+      +drow('user','Paid by',esc(payer.person||''))
+      +drow('doc','Note',t0.note?esc(t0.note):'')+'</div>';
+    /* shares — every leg, the payer first, each with its % of the bill */
+    var ordered=legs.slice().sort(function(a,b){return (a===payer?0:1)-(b===payer?0:1);});
+    h+='<div class="dt-card"><h3><span>Split between people</span><span>'+money(tot)+'</span></h3>'
+      +ordered.map(function(l){var i=people.indexOf(l.person);
+        return '<div class="dt-who"><span class="av'+(i===1?' b':'')+'">'+esc(String(l.person||'\u2014').charAt(0).toUpperCase())+'</span>'
+        +'<span class="nm">'+esc(l.person||'\u2014')+'<small>'+Math.round(Math.abs(+l.amount||0)/(tot||1)*100)+'% of the bill'+(l===payer?' \u00b7 payer':'')+'</small></span>'
+        +'<span class="am">'+money(Math.abs(+l.amount||0))+'</span></div>';}).join('')+'</div>';
+    /* Between Us effect — each receivable leg is one "X owes Y" entry */
+    var debtors=legs.filter(recvOf);
+    if(debtors.length){
+      h+='<div class="dt-ledger62">'+ico('scale')+'<span><b>Between Us</b><br>'
+        +debtors.map(function(l){return esc(l.person||'')+' owes '+esc(payer.person||'')+' '+money62(+l.amount||0)+' for this bill.';}).join('<br>')+'</span></div>';
+    }
+    /* audit line */
+    var meta='';
+    try{
+      var d=document.createElement('div');d.innerHTML=aud59(t0);
+      var kv=qa('.kvr',d).map(function(k){var a=k.querySelector('.k'),b=k.querySelector('.v');return ((a&&a.textContent)||'')+' '+((b&&b.textContent)||'');}).filter(Boolean);
+      meta=kv.join(' \u00b7 ');
+    }catch(e){}
+    if(meta)h+='<div class="dt-meta">'+esc(meta)+'</div>';
+    var can=true;try{if(typeof canEditTxn59==='function')can=canEditTxn59(t0).ok;}catch(e){}
+    if(can)h+='<button class="dt-del" data-act="txdel62">'+ico('trash')+' Delete split bill</button>';
+    $('txBody61').innerHTML=h;$('txBody61').scrollTop=0;
+    var eb=$('txFoot61').querySelector('[data-act=txedit61]');if(eb)eb.hidden=!can;
+    $('txBody61').setAttribute('data-wb62','1');
+    WBKEY=V61.txId+'|'+(DB.meta.changedAt||0);
+  }
+  /* wrap renderTx61: grouped bills render as the whole bill (every caller) */
+  var _rt61=H61.renderTx61;
+  H61.renderTx61=function(){
+    var t=V61.txId?txById(V61.txId):null;
+    if(t&&t.group&&legsOf(t.group).length>1)return renderWhole62();
+    return _rt61.apply(this,arguments);
+  };
+  /* safety net: any other path that leaves a single-leg render for a group,
+     and the undo edge (a whole-bill update undone after the sheet popped back) */
+  SCREEN.afterDraw(function(){
+    try{
+      if(!$('txSheet61').classList.contains('on')||!V61.txId)return;
+      var t=txById(V61.txId);
+      if(!t){
+        if(PREV62&&txById(PREV62)){V61.txId=PREV62;renderWhole62();}
+        return;
+      }
+      if(!t.group||legsOf(t.group).length<2)return;
+      if($('txBody61').getAttribute('data-wb62')==='1'&&WBKEY===V61.txId+'|'+(DB.meta.changedAt||0))return;
+      renderWhole62();
+    }catch(e){}
+  });
+
+  /* =============================================================
+     2. rows: tap a grouped row → whole-bill Details (no inline expand)
+     ============================================================= */
+  /* chevrons are retired via CSS (.gchev61 / .gchev are display:none) */
+
+  /* =============================================================
+     3. save / close dance — after a whole-bill Edit save the sheet pops
+        back to Details of the NEW group (the save rebuilds every leg)
+     ============================================================= */
+  var SB62=null,PREV62='';
+  var _sv62=saveTxn;
+  saveTxn=function(){
+    var fromDetails=!!($('txSheet61').classList.contains('on')&&$('sheet').classList.contains('on')&&F.gid&&F.gmode==='all');
+    if(!fromDetails)return _sv62.apply(this,arguments);
+    var before={};DB.txns.forEach(function(t){before[t.id]=1;});
+    SB62={before:before};
+    try{return _sv62.apply(this,arguments);}finally{SB62=null;}
+  };
+  var _cs62=closeSheet;
+  closeSheet=function(){
+    try{
+      if(SB62&&V61.pushed&&$('sheet').classList.contains('on')){
+        var nl=DB.txns.filter(function(t){return t.group&&!SB62.before[t.id];});
+        if(nl.length){PREV62=V61.txId;V61.txId=nl[0].id; /* first new leg = the payer */}
+      }
+    }catch(e){}
+    return _cs62.apply(this,arguments);
+  };
+  /* Undo of a whole-bill update while its Details is open: re-point Details at
+     the restored legs before the draw pass can notice the deleted ones */
+  var _un62=undoNow;
+  undoNow=function(){
+    var txOpen=false;
+    try{txOpen=$('txSheet61').classList.contains('on');}catch(e){}
+    _un62.apply(this,arguments);
+    try{
+      if(txOpen&&PREV62&&txById(PREV62)&&$('txSheet61').classList.contains('on')){V61.txId=PREV62;renderWhole62();}
+    }catch(e){}
+  };
+
+  /* =============================================================
+     4. Split sub-screen — Equal / Custom, one keypad, live balance
+     ============================================================= */
+  var V62={man:null}; /* null = auto (equal when shares are equal), 'equal' | 'custom' after a tap */
+
+  function initSplit62(){
+    var body=$('fSplitBody61');if(!body||body.dataset.s62)return;
+    body.dataset.s62='1';
+    var hint=$('fSplitHint');if(hint)hint.hidden=true;
+    body.insertAdjacentHTML('beforeend',
+      '<div class="sp-pay62" id="spPay62"></div>'
+     +'<div class="sp-seg62" id="spSeg62">'
+     +'<button type="button" data-act="spmode62" data-m="equal">Equal</button>'
+     +'<button type="button" data-act="spmode62" data-m="custom">Custom</button></div>'
+     +'<div class="sp-wrap62" id="spWrap62"></div>'
+     +'<div class="sp-bal62" id="spBal62"></div>'
+     +'<div class="sp-tools62" id="spTools62"></div>'
+     +'<div class="sp-hint62" id="spHint62"></div>');
+    var wrap=$('spWrap62'),box=$('fSplitBox');
+    if(box&&wrap)wrap.appendChild(box);
+  }
+  function splitEq62(){
+    var amt=Math.abs(parseAmt($('fAmount').value)||0);
+    if(!(amt>0)||SPLIT.rows.length<2)return false;
+    /* Equal = every share within one cent of an even cut (the remainder cent
+       can sit on any participant, exactly like splitEven assigns it) */
+    var each=amt/SPLIT.rows.length;
+    return SPLIT.rows.every(function(r){return Math.abs(Math.abs(parseAmt(r.v)||0)-each)<=0.011;});
+  }
+  function splitMode62(){return ((V62.man==='equal')||(V62.man===null&&splitEq62()))?'equal':'custom';}
+  function spSoft62(){
+    var body=$('fSplitBody61');if(!body||!body.dataset.s62)return;
+    var amt=Math.abs(parseAmt(($('fAmount')&&$('fAmount').value)||0)||0);
+    var el=$('fSplitTot61');if(el)el.textContent=money(amt);
+    var acc=($('fAccount')&&$('fAccount').value)||'';
+    var payer=ownerOf(acc)||DB.people[0]||'';
+    var pay=$('spPay62');
+    if(pay)pay.innerHTML=ico('bank')+'<span>Paid from '+esc(acc||'\u2014')+'</span><b>'+esc(payer)+' fronts the bill</b>';
+    var mode=splitMode62(),seg=$('spSeg62');
+    if(seg)qa('button',seg).forEach(function(b){b.classList.toggle('on',b.dataset.m===mode);});
+    /* per-row % + payer tag */
+    if(amt>0)qa('.sp-row62',body).forEach(function(row,i){
+      var r=SPLIT.rows[i];if(!r)return;
+      var pc=row.querySelector('.pc62');if(!pc)return;
+      var p=(r.p||'').trim();
+      pc.textContent=Math.round(Math.abs(parseAmt(r.v)||0)/amt*100)+'% of the bill'+(p===payer?' \u00b7 payer':'');
+    });
+    /* balance line */
+    var sum=0;SPLIT.rows.forEach(function(r){sum+=Math.abs(parseAmt(r.v)||0);});
+    sum=Math.round(sum*100)/100;
+    var left=Math.round((amt-sum)*100)/100,bal=$('spBal62');
+    if(bal){
+      if(!SPLIT.rows.length){bal.className='sp-bal62';bal.innerHTML='';}
+      else if(Math.abs(left)<0.005){bal.className='sp-bal62 ok';bal.innerHTML=ico('check')+'Balanced \u2014 '+money(0)+' left';}
+      else if(left>0){bal.className='sp-bal62 warn';bal.innerHTML=ico('warn')+money(left)+' left to assign';}
+      else{bal.className='sp-bal62 bad';bal.innerHTML=ico('warn')+money(-left)+' over the bill';}
+    }
+    /* Between Us preview */
+    var hn=$('spHint62');
+    if(hn){
+      var raw=parseAmt($('fAmount').value),refund=F.type==='Expense'&&raw<0,inc=F.type==='Income',lines=[];
+      if(left>=-0.004)SPLIT.rows.forEach(function(r){
+        var p=(r.p||'').trim(),v=Math.abs(parseAmt(r.v)||0);
+        if(!p||p===payer||!(v>0))return;
+        if(inc)lines.push(esc(payer)+' will owe '+esc(p)+' '+money(v)+' (their share)');
+        else if(refund)lines.push(esc(p)+' owes '+esc(payer)+' '+money(v)+' less');
+        else lines.push(esc(p)+' owes '+esc(payer)+' '+money(v)+' after saving.');
+      });
+      hn.innerHTML=lines.join('<br>');
+    }
+  }
+  var _rsOld=renderSplitRows;
+  renderSplitRows=function(){
+    initSplit62();
+    var box=$('fSplitRows');
+    if(!box)return _rsOld.apply(this,arguments);
+    var people=H61.people();
+    if(!DB.people||DB.people.length<2){
+      box.innerHTML='<div class="help small" style="text-align:center;padding:6px 0">Add a second person in Settings to split a bill.</div>';
+      var tl=$('spTools62');if(tl)tl.innerHTML='';
+      spSoft62();syncForm61();return;
+    }
+    if(!SPLIT.rows.length){
+      box.innerHTML='<button type="button" class="btn ghost sp-empty62" data-act="splitadd">'+ico('users')+' Split between people</button>';
+      var t2=$('spTools62');if(t2)t2.innerHTML='';
+      spSoft62();syncForm61();return;
+    }
+    var amt=Math.abs(parseAmt($('fAmount').value)||0);
+    var ro=splitMode62()==='equal';
+    var payer=ownerOf(($('fAccount')&&$('fAccount').value)||'')||DB.people[0]||'';
+    box.innerHTML=SPLIT.rows.map(function(r,i){
+      var p=(r.p||'').trim()||('Person '+(i+1));
+      var pi=people.indexOf(p);
+      return '<div class="sp-row62">'
+        +'<span class="av62'+(pi===1?' b':'')+'" aria-hidden="true">'+esc(p.charAt(0).toUpperCase())+'</span>'
+        +'<span class="nm62">'+esc(p)+'<small class="pc62">'+(amt>0?Math.round(Math.abs(parseAmt(r.v)||0)/amt*100):0)+'% of the bill'+(p===payer?' \u00b7 payer':'')+'</small></span>'
+        +(SPLIT.rows.length>2?'<button type="button" class="sp-x62" data-act="splitdel" data-i="'+i+'" aria-label="Remove '+esc(p)+'">'+ico('x')+'</button>':'')
+        +'<label class="spin62'+(ro?' ro':'')+'">'+(cur()?'<small>'+esc(cur())+'</small>':'')
+        +'<input data-si="'+i+'" data-sf="v" value="'+esc(r.v==null?'':String(r.v))+'" placeholder="0.00" inputmode="decimal"'+(ro?' disabled':'')+' oninput="splitEdit(this)" aria-label="Share for '+esc(p)+'"></label>'
+        +'</div>';
+    }).join('');
+    /* tools: 100% to partner · add person */
+    var tools=[];
+    if(SPLIT.rows.length===2){
+      var other='';
+      SPLIT.rows.forEach(function(r){var p=(r.p||'').trim();if(p&&p!==payer)other=p;});
+      if(other)tools.push('<button type="button" class="sp-all62" data-act="spall62">'+ico('users')+' 100% to '+esc(other)+'</button>');
+    }
+    if(people.length>SPLIT.rows.length)tools.push('<button type="button" class="sp-add62" data-act="splitadd">'+ico('plus')+' Add person</button>');
+    var tw=$('spTools62');if(tw)tw.innerHTML=tools.join('');
+    spSoft62();
+    try{calcMark();}catch(e){}
+    syncForm61();
+  };
+  var _seOld=splitEdit;
+  splitEdit=function(el){
+    var v=el&&el.dataset&&el.dataset.sf==='v';
+    if(v)V62.man='custom';
+    _seOld.apply(this,arguments);
+    if(v)spSoft62();
+  };
+  var _saOld=splitAdd;
+  splitAdd=function(){V62.man=null;_saOld.apply(this,arguments);};
+  var _sdOld=splitDel;
+  splitDel=function(i){V62.man=null;_sdOld.apply(this,arguments);};
+  updateSplitHint=function(){spSoft62();};
+  document.addEventListener('change',function(e){
+    if(e.target&&e.target.closest&&e.target.closest('#sheet'))setTimeout(spSoft62,0);
+  });
+
+  /* =============================================================
+     5. actions
+     ============================================================= */
+  ACT.on('v160-b31-splitbill',{
+    /* grouped row → whole-bill Details */
+    'txgrp':function(el,next){
+      if(BSEL.on)return next(el);
+      var legs=legsOf(el.dataset.g);
+      if(legs.length<2)return next(el);
+      openTx61(payerLeg(legs).id);
+    },
+    'dgrp':function(el,next){
+      var legs=legsOf(el.dataset.g);
+      if(legs.length<2)return next(el);
+      openTx61(payerLeg(legs).id);
+    },
+    /* Edit — pushed inside Details; acts on the WHOLE bill */
+    'txedit61':function(el,next){
+      var legs=V61.txId?wholeLegs(V61.txId):null;
+      if(!legs)return next(el);
+      H61.pushForm(function(){
+        openSheet(legs[0].id);
+        loadWholeBill();
+        var gn=$('fGroupNote');if(gn)gn.hidden=true;
+        var ttl=$('sheetTitle');if(ttl)ttl.textContent='Edit transaction';
+      });
+    },
+    /* Copy — pushed inside Details; keeps the split, date today, no Repeat */
+    'txcopy61':function(el,next){
+      var legs=V61.txId?wholeLegs(V61.txId):null;
+      if(!legs)return next(el);
+      var t0=legs[0];
+      H61.pushForm(function(){
+        F.id=t0.id;
+        dupTxn();
+        var tot=0;legs.forEach(function(l){tot+=Math.abs(+l.amount||0);});tot=Math.round(tot*100)/100;
+        var fA=$('fAmount');if(fA)fA.value=String(tot);
+        SPLIT.rows=legs.map(function(l){return {p:l.person,v:Math.abs(+l.amount||0),a:''};});
+        F.gid=null;F.gmode=null;F.legId=null;
+        var gn=$('fGroupNote');if(gn)gn.hidden=true;
+        var cn=$('fCopyTxt61');
+        if(cn)cn.innerHTML='<b>Copying '+esc(t0.category||'Transaction')+(t0.subcategory?' \u00b7 '+esc(t0.subcategory):'')+'.</b> A new split bill will be added; the original stays unchanged. Date is set to today and Repeat is not copied.';
+        renderSplitRows();
+        if(typeof updateOwnerUI==='function')updateOwnerUI();
+        if(typeof signUI==='function')signUI();
+      });
+    },
+    /* Delete split bill — one confirmation, all shares, ledger reversed */
+    'txdel62':function(){
+      var t=txById(V61.txId);if(!t||!t.group)return;
+      var legs=legsOf(t.group);if(!legs.length)return;
+      var recv=legs.filter(recvOf).reduce(function(s,l){return s+Math.abs(+l.amount||0);},0);
+      askConfirm('Delete split bill? This removes all '+legs.length+' linked shares'+(recv>0.004?(' and reverses the '+money62(recv)+' Between Us entry'):'')+'. This can be undone immediately after deletion.','Delete split bill',function(){
+        var g=t.group,snap=legs.map(function(x){return Object.assign({},x);});
+        DB.txns=DB.txns.filter(function(x){return x.group!==g;});
+        closeTx61();touch();
+        toastAct('Split bill deleted \u2014 undo?',function(){undoRestoreTxns(snap);});
+      });
+    },
+    /* Equal / Custom segmented control */
+    'spmode62':function(el){
+      if(el.dataset.m==='equal'){
+        var amt=Math.abs(parseAmt($('fAmount').value)||0);
+        if(!(amt>0)){toast('Enter the amount first');return;}
+        if(!SPLIT.rows.length){splitAdd();splitAdd();}
+        V62.man='equal';
+        splitEven();
+      }else{
+        V62.man='custom';
+        renderSplitRows();
+      }
+    },
+    /* 100% to the partner — the payer automatically becomes 0.00 */
+    'spall62':function(){
+      if(SPLIT.rows.length!==2)return;
+      var amt=Math.abs(parseAmt($('fAmount').value)||0);
+      if(!(amt>0)){toast('Enter the amount first');return;}
+      var payer=ownerOf(($('fAccount')&&$('fAccount').value)||'')||DB.people[0]||'';
+      var other='';
+      SPLIT.rows.forEach(function(r){var p=(r.p||'').trim();if(p&&p!==payer)other=p;});
+      if(!other)return;
+      SPLIT.rows.forEach(function(r){var p=(r.p||'').trim();if(p===other)r.v=String(amt);else if(p===payer)r.v='0.00';});
+      V62.man='custom';
+      renderSplitRows();
+    }
+  });
+
+  initSplit62();
+})();
+
+/* ===================================================================================
+   v1.60 beta 32 — Payment reminders (payment-reminder-mockup + payment-reminder-review)
+   One reminder model, one row, one payment sheet:
+     1. every reminder carries src (card · loan · recur), a stable occurrence key and the
+        effective lead time (account override → global default). Badge, Needs attention,
+        Insights cards, the shortfall check and notifications all use V63.needsAtt / dueSoon.
+     2. one row (V63.UPROW) everywhere: the whole row is the action. Cards and loans open the
+        Add transaction sheet prefilled as a Transfer; recurring items (which post themselves
+        on the due date) offer “Record it now” or “Edit schedule” so nothing is recorded twice.
+     3. the payment sheet shows a context banner (due state, amount basis, money available in
+        the paying account, shortfall warning) and hides Add & new. Saving advances a loan /
+        hire-purchase due date, tags the payment with its occurrence key and returns to the
+        Reminder centre at the same scroll position and filter.
+     4. Reminder centre: summary, filter chips (All · Needs attention · Upcoming · Automatic),
+        groups Needs attention / Next 30 days / Later / Autopay & automatic, a collapsed
+        Recently completed list built from saved payments, and a setup-led empty state.
+   Builds on: V63.calc.upcoming, openCardPay, openSheet / saveTxn / closeSheet pipelines,
+   B3.advanceReminder, materializeRecur’s occurrence ids. No new data fields except
+   txn.remKey (occurrence key) and the optional account.remLead = null (use default).
+   =================================================================================== */
+(function(){
+  if(!window.V63||!V63.calc||!V63.calc.upcoming)return;
+  var REM={idx:Object.create(null),f:'all',ctx:null,tick:0};
+  window.REM32=REM;
+
+  /* ---------- 1 · model ---------- */
+  function defLead(){var c=remCfg(),d=+c.days;return [1,3,5,7].indexOf(d)>=0?d:3;}
+  function leadOf(a){return (a&&a.remLead!=null&&a.remLead!=='')?Math.max(0,+a.remLead||0):defLead();}
+  V63.defLead=defLead;V63.leadOf=leadOf;
+  V63.leadOptions=function(a){
+    var d=defLead(),set=a&&a.remLead!=null&&a.remLead!=='';
+    return '<option value=""'+(set?'':' selected')+'>Use default ('+(d===1?'1 day':d+' days')+' before)</option>'
+      +[[0,'On the day'],[1,'1 day before'],[3,'3 days before'],[5,'5 days before'],[7,'A week before']].map(function(o){
+        return '<option value="'+o[0]+'"'+(set&&+a.remLead===o[0]?' selected':'')+'>'+o[1]+'</option>';}).join('');
+  };
+  function srcOf(x){return x.act==='v63cardpay'?'card':(x.act==='v63loanpay'?'loan':'recur');}
+  function recById(id){return (DB.recur||[]).filter(function(r){return r&&r.id===id;})[0]||null;}
+  function enrich(x){
+    if(x.__r32)return x;
+    var src=srcOf(x),a=src==='recur'?null:a59(x.name),rc=src==='recur'?recById(x.rec):null;
+    var acc=a||(rc&&rc.tpl?a59(rc.tpl.account):null);
+    x.src=src;
+    x.key=src+'|'+(src==='recur'?x.rec:((a&&a.id)||x.name))+'|'+x.due;
+    x.lead=leadOf(acc);
+    x.auto=!!x.autopay||src==='recur';
+    if(src==='loan'&&a&&a.type==='Hire Purchase')x.kind='Car financing / Hire Purchase instalment';
+    if(src==='card'&&a){var b=a.remBasis||'statement';x.basis=b;
+      if(b==='min'&&+a.minPay>0)x.amt=Math.min(+a.minPay,x.amt||+a.minPay);
+      else if(b==='fixed'&&+a.remFixed>0)x.amt=+a.remFixed;}
+    if(src==='loan'&&a){x.basis=a.remBasis||'instalment';if(x.basis==='fixed'&&+a.remFixed>0)x.amt=+a.remFixed;}
+    if(x.basis==='date')x.amt=0;
+    x.autoFrom=a&&a.autopayAcc||'';
+    x.__r32=1;REM.idx[x.key]=x;
+    return x;
+  }
+  var _up32=V63.calc.upcoming;
+  V63.calc.upcoming=function(h,who){return _up32.apply(this,arguments).map(enrich);};
+  /* overdue (even with autopay: the payment did not happen) or manual and inside its lead time */
+  V63.needsAtt=function(x){enrich(x);if(x.dl<0)return true;if(x.auto)return false;return x.dl<=x.lead;};
+  /* cash needed soon, automatic or not (shortfall check) */
+  V63.dueSoon=function(x){enrich(x);return x.dl<=x.lead;};
+  V63.upStatus=function(x){enrich(x);
+    if(x.dl<0)return {t:'Overdue',c:'over'};
+    if(x.dl===0)return {t:'Due today',c:'today'};
+    if(x.autopay)return {t:'Autopay scheduled',c:'soft'};
+    if(x.dl<=x.lead)return {t:'Due soon',c:'soon'};
+    return {t:'Upcoming',c:'soft'};};
+
+  /* ---------- 2 · the row ---------- */
+  function icoOf(x){return ico(x.src==='card'?'card':(x.src==='loan'?(/Hire/.test(x.kind)?'car':'bank'):'repeat'));}
+  function metaOf(x){
+    var t=[];
+    if(x.src==='recur')t.push('Records automatically');
+    else if(x.autopay)t.push('Autopay'+(x.autoFrom?' from '+x.autoFrom:''));
+    return t.length?'<small class="r32tag">'+esc(t.join(' · '))+'</small>':'';
+  }
+  V63.UPROW=function(x){
+    enrich(x);
+    var amt=x.amt>0?money(x.amt):'<span class="r32na">Amount needed</span>';
+    var lbl=(x.src==='recur'?'Recurring payment ':'Add payment for ')+x.name+', '+(x.amt>0?money(x.amt).replace(/<[^>]+>/g,''):'amount needed')+', '+dueTxt({dl:x.dl,due:x.due});
+    return '<button type="button" class="rem25row rem32 s-'+(x.dl<0?'over':(x.dl===0?'today':(V63.needsAtt(x)?'soon':'up')))+'" data-act="rempay" data-k="'+esc(x.key)+'" aria-label="'+esc(lbl)+'">'
+      +'<span class="r32ic" aria-hidden="true">'+icoOf(x)+'</span>'
+      +'<span class="nm"><b>'+esc(x.name)+'</b><small><span class="r32due">'+esc(dueTxt({dl:x.dl,due:x.due}))+'</span> · '+esc(x.kind)+'</small>'+metaOf(x)+'</span>'
+      +'<span class="amt">'+amt+'</span><span class="chev" aria-hidden="true">'+ico('chevright')+'</span></button>';
+  };
+
+  /* ---------- 3 · badge (same rule as Needs attention) ---------- */
+  V63.bellBadge=function(){
+    var el=$('bellN16'),m=$('hmenuBadge');if(!el)return;
+    var c=remCfg(),n=0;
+    if(c.badge!==false){try{V63.calc.upcoming(90).forEach(function(x){if(V63.needsAtt(x))n++;});}catch(e){DIAG.note(e,'b32:badge');}}
+    el.hidden=!n;el.textContent=n>9?'9+':String(n);
+    if(m){m.hidden=el.hidden;m.textContent=el.textContent;}
+    var bb=$('hdrBell16');if(bb)bb.setAttribute('aria-label','Reminder centre'+(n?', '+n+(n===1?' payment needs':' payments need')+' attention':''));
+    try{HDR.paint();}catch(e){DIAG.note(e,'b32:badgepaint');}
+  };
+
+  /* ---------- 4 · Reminder centre ---------- */
+  function completed(){
+    var lim=addDaysISO(todayISO(),-45),out=[];
+    DB.txns.slice().sort(function(a,b){if(a.date!==b.date)return a.date<b.date?1:-1;var ca=+(a.createdAt||a.u||0),cb=+(b.createdAt||b.u||0);return cb-ca;}).some(function(t){
+      if(t.date<lim)return true;
+      if(t.date>todayISO())return false;
+      try{if(isHiddenFor(t)||t.pvx)return false;}catch(e){}
+      var to=t.type==='Transfer'&&t.to?a59(t.to):null,kind='';
+      if(t.remKey&&/^recur\|/.test(t.remKey))kind='Recorded early';
+      else if(to&&accTypeKind(to.type)==='liability'&&!isRecvAcc(to.name))kind=isLoan(to)?(to.type==='Hire Purchase'?'Instalment paid':'Repayment'):'Card payment';
+      else if(/^R.+_\d+$/.test(t.id||'')&&recById(String(t.id).replace(/^R(.+)_\d+$/,'$1')))kind='Recorded automatically';
+      if(kind)out.push({t:t,kind:kind,name:to?to.name:(t.category||t.note||'Recurring')});
+      return out.length>=8;
+    });
+    return out;
+  }
+  function needsSetup(){
+    return (DB.accounts||[]).filter(function(a){
+      if(a.locked||isRecvAcc(a.name)||accTypeKind(a.type)!=='liability'||/^(closed|archived)$/.test(a.status||''))return false;
+      if(a.vis==='me'&&(a.pvby||a.owner)&&(a.pvby||a.owner)!==meName())return false;
+      return isLoan(a)?!a.remDue:!accCycleFor(a);
+    });
+  }
+  function box(title,cls,n,body,id){return '<section class="rem25box '+cls+'"'+(id?' id="'+id+'"':'')+'><div class="rem25h"><span>'+title+'</span>'+(n?'<span class="n">'+n+'</span>':'')+'</div>'+body+'</section>';}
+  MGR_TITLE.v63remctr=ico('bell')+' Reminder centre'+info25('rem');
+  try{INFO25.rem[1]='<p class="info23p">Card statements, loan and hire-purchase instalments and recurring payments due in the next 90 days.</p><p class="info23p">Tap a payment to record it — the payment form opens filled in. Recurring payments record themselves on their date; tap one to record it early or change its schedule.</p><p class="info23p">The badge, Needs attention and phone notifications all use the same timing: the account’s own reminder, otherwise your default in Settings → Preferences.</p>';}catch(e){DIAG.note(e,'b32:info');}
+  V56.mgr.v63remctr=function(){
+    var up=V63.calc.upcoming(90),att=[],auto=[],next=[],later=[];
+    up.forEach(function(x){if(V63.needsAtt(x))att.push(x);else if(x.auto)auto.push(x);else if(x.dl<=30)next.push(x);else later.push(x);});
+    var f=REM.f,row=function(x){return V63.UPROW(x);};
+    var h='<div class="r32sum" role="status"><b>'+(att.length?att.length+(att.length===1?' needs':' need')+' attention':'Nothing needs attention')+'</b><span>'+((next.length+later.length+auto.length)?(next.length+later.length+auto.length)+' more due in the next 90 days':'Nothing else due in the next 90 days')+'</span></div>';
+    if(up.length)h+='<div class="r32chips" role="tablist" aria-label="Filter payments">'+[['all','All'],['att','Needs attention'],['up','Upcoming'],['auto','Automatic']].map(function(o){
+      var n=o[0]==='att'?att.length:(o[0]==='up'?next.length+later.length:(o[0]==='auto'?auto.length:up.length));
+      return '<button type="button" role="tab" aria-selected="'+(f===o[0])+'" class="'+(f===o[0]?'on':'')+'" data-act="remf32" data-f="'+o[0]+'">'+o[1]+(n&&o[0]!=='all'?' <i>'+n+'</i>':'')+'</button>';}).join('')+'</div>';
+    var body='';
+    if((f==='all'||f==='att')&&att.length)body+=box('Needs attention','bad',att.length,att.map(row).join(''));
+    if((f==='all'||f==='up')&&next.length)body+=box('Next 30 days','',next.length,next.map(row).join(''));
+    if((f==='all'||f==='up')&&later.length)body+=box('Later · 31–90 days','',later.length,later.map(row).join(''));
+    if((f==='all'||f==='auto')&&auto.length)body+=box('Autopay &amp; automatic','soft',auto.length,auto.map(row).join('')+'<div class="r32note">These are paid or recorded automatically. They move to Needs attention only if they become overdue.</div>');
+    if(up.length&&!body)body='<div class="rem25empty">Nothing in this view.</div>';
+    if(!up.length){
+      var ns=needsSetup();
+      body='<div class="r32empty"><span class="r32eic" aria-hidden="true">'+ico('check')+'</span><b>No payments due in the next 90 days</b><span>Nothing is overdue.</span>'
+        +(ns.length?'<span class="r32esub">Missing a card or loan payment? Add its payment details:</span>'+ns.slice(0,4).map(function(a){return '<button type="button" class="btn sm ghost" data-act="v63remset" data-n="'+esc(a.name)+'">'+ico(isLoan(a)?'bank':'card')+' '+esc(a.name)+'</button>';}).join('')
+          :'<button type="button" class="btn sm ghost" data-act="rem32setup">'+ico('plus')+' Set up payment details</button>')+'</div>';
+    }
+    h+=body;
+    var done=completed();
+    if(done.length&&(f==='all'))h+='<details class="r32done"'+(REM.openDone?' open':'')+'><summary>Recently completed <span class="n">'+done.length+'</span></summary>'
+      +done.map(function(d){return '<button type="button" class="rem25row r32drow" data-act="remtx32" data-id="'+esc(d.t.id)+'"><span class="r32ic ok" aria-hidden="true">'+ico('check')+'</span><span class="nm"><b>'+esc(d.name)+'</b><small>'+esc(d.kind)+' · '+esc(dLabelW(d.t.date))+'</small></span><span class="amt">'+money(d.t.amount)+'</span><span class="chev" aria-hidden="true">'+ico('chevright')+'</span></button>';}).join('')+'</details>';
+    $('mgrBody').innerHTML=h;
+    var dt=$('mgrBody').querySelector('.r32done');if(dt)dt.addEventListener('toggle',function(){REM.openDone=dt.open;});
+  };
+
+  /* ---------- 5 · payment sheet ---------- */
+  function eligibleSources(exclude){
+    return DB.accounts.filter(function(x){
+      return x.name!==exclude&&!x.locked&&!isRecvAcc(x.name)&&!isVal(x)&&accTypeKind(x.type)!=='liability'&&!LBL_RE.test(x.name)
+        &&!/^(closed|archived)$/.test(x.status||'')&&(typeof canAdd59!=='function'||canAdd59(x.name));});
+  }
+  function bestSource(target,x){
+    var src=eligibleSources(target.name);if(!src.length)return null;
+    if(x.autoFrom){var ap=src.filter(function(s){return s.name===x.autoFrom;})[0];if(ap)return ap;}
+    function bal(s){var b=accountBalAsOf(s.name,todayISO());return isFinite(b)?b:0;}
+    var own=String(target.owner||'').split(' & ');
+    var mine=src.filter(function(s){return own.indexOf(s.owner)>=0||s.owner===target.owner;});
+    var pool=(mine.length?mine:src).slice().sort(function(a,b){
+      var ab=bal(a),bb=bal(b),need=+x.amt||0;
+      var ca=ab>=need,cb=bb>=need;if(ca!==cb)return ca?-1:1;     /* can cover the payment first */
+      var pa=a.vis!=='me',pb=b.vis!=='me';if(target.vis!=='me'&&pa!==pb)return pa?-1:1; /* shared debt: prefer shared money */
+      return bb-ab;});
+    return pool[0];
+  }
+  function setOpts(id,name){var el=$(id);if(!el)return;el.innerHTML=accOptions(name);el.value=name;}
+  function bannerHTML(){
+    var c=REM.ctx;if(!c)return '';var x=c.x;
+    var st=x.basis==='early'?'Statement already paid':x.noDue?'No due date set':(x.dl<0?'Overdue since '+dLabelW(x.due):(x.dl===0?'Due today':'Due '+dLabelW(x.due)+' · in '+x.dl+' day'+(x.dl===1?'':'s')));
+    var basis={full:'Full balance',early:'Paying early',statement:'Statement balance',min:'Minimum payment',fixed:'Fixed amount',instalment:'Regular instalment',date:'Date only — enter the amount'}[x.basis||'']||'';
+    var from=($('fAccount')||{}).value,amt=Math.abs(parseAmt(($('fAmount')||{}).value)||0),bal=from?accountBalAsOf(from,todayISO()):NaN,line='';
+    if(from&&isFinite(bal)){
+      line='<div class="p32bal'+(amt>bal+0.004?' short':'')+'"><span>Available in '+esc(from)+'</span><b>'+money(bal)+'</b></div>';
+      if(amt>bal+0.004)line+='<div class="p32warn" role="status">'+ico('warn')+'<span>This leaves '+esc(from)+' short by '+money(Math.round((amt-bal)*100)/100)+'. You can still save it.</span></div>';
+    }
+    return '<div class="p32head s-'+(x.noDue||x.basis==='early'?'none':(x.dl<0?'over':(x.dl===0?'today':(x.dl<=x.lead?'soon':'none'))))+'"><span class="r32ic" aria-hidden="true">'+icoOf(x)+'</span><span class="p32tx"><b>'+esc(x.name)+'</b><small>'+esc(st)+(basis?' · '+esc(basis):'')+'</small></span>'
+      +'<button type="button" class="p32edit" data-act="rem32edit">'+ico('bell')+'<span>Edit reminder</span></button></div>'+line;
+  }
+  function paint(){
+    var c=REM.ctx,sh=$('sheet');if(!c||!sh)return;
+    if(!sh.classList.contains('on')){return;}
+    var b=$('pay32ctx');
+    if(!b){b=document.createElement('div');b.id='pay32ctx';b.className='pay32ctx';b.setAttribute('aria-live','polite');
+      var t=$('sheetTitle'),anchor=t&&t.parentElement&&t.parentElement.parentElement===sh?t.parentElement:null;
+      if(anchor)anchor.insertAdjacentElement('afterend',b);else sh.insertBefore(b,sh.children[1]||null);}
+    var html=bannerHTML();if(b.__h!==html){b.innerHTML=html;b.__h=html;}
+    sh.classList.add('pay32');
+    var pb=sh.querySelector('.sheet-foot [data-act=savetxn]');
+    if(pb&&!pb.__p32){pb.__p32=new MutationObserver(function(){if(!REM.ctx)return;pb.__p32.disconnect();relabel(pb);pb.__p32.observe(pb,{childList:true,subtree:true,characterData:true});});pb.__p32.observe(pb,{childList:true,subtree:true,characterData:true});}
+    if(pb)relabel(pb);
+    var t2=$('sheetTitle');if(t2&&t2.textContent!=='Add payment')t2.textContent='Add payment';
+  }
+  function relabel(pb){if(!REM.ctx)return;var w=document.createTreeWalker(pb,NodeFilter.SHOW_TEXT),n;while((n=w.nextNode())){if(/^\s*Transfer\b/.test(n.nodeValue))n.nodeValue=n.nodeValue.replace(/^(\s*)Transfer\b/,'$1Save payment');}}
+  function cleanup(){
+    var b=$('pay32ctx');if(b)b.remove();
+    var sh=$('sheet');if(sh)sh.classList.remove('pay32');
+    clearInterval(REM.tick);REM.tick=0;
+  }
+  function backToCentre(c,flash){
+    if(!c||!c.fromCentre)return;
+    setTimeout(function(){
+      if(flash)REM.openDone=true;
+      REM.f=c.f||REM.f;openMgr('v63remctr');
+      var ms=$('mgrSheet');if(ms)ms.scrollTop=c.scroll||0;
+      if(flash){var d=$('mgrBody').querySelector('.r32drow');if(d){d.classList.add('r32new');d.focus({preventScroll:true});}}
+      else{var r=$('mgrBody').querySelector('[data-k="'+(window.CSS&&CSS.escape?CSS.escape(c.key):c.key)+'"]');if(r)r.focus({preventScroll:true});}
+    },320);
+  }
+  function openPay(x,fromCentre){
+    var target=a59(x.name);if(!target){toast('This account is no longer available');return;}
+    var src=bestSource(target,x);if(!src){toast('Add a bank, cash or e-Wallet account to pay from first');return;}
+    REM.ctx={key:x.key,x:x,fromCentre:fromCentre,f:REM.f,scroll:fromCentre?($('mgrSheet')||{}).scrollTop:0,saving:false};
+    if(fromCentre)closeMgr();
+    var amt=x.amt>0?Math.round(x.amt*100)/100:'';
+    var pd=x.noDue?todayISO():x.due,period=MONTHS[+pd.slice(5,7)-1]+' '+pd.slice(0,4);
+    if(x.src==='card'){
+      openCardPay(target.name,amt);
+      var cs=cardStatus(target);$('fNote').value=x.basis==='early'?'Card payment · early':(x.basis==='full'&&!x.noDue?'Card payment · full balance':'Card payment · statement '+(cs&&cs.le?dLabel(cs.le):period));
+    }else{
+      openSheet();setFormType('Transfer');
+      $('fAmount').value=amt;$('fNote').value=(target.type==='Hire Purchase'?'Instalment':'Repayment')+' · '+period;
+    }
+    setOpts('fAccount',src.name);setOpts('fTo',target.name);
+    try{updateOwnerUI();}catch(e){DIAG.note(e,'b32:owner');}
+    if(!(amt>0))setTimeout(function(){try{$('fAmount').focus();}catch(e){}},350);
+    paint();
+    clearInterval(REM.tick);REM.tick=setInterval(paint,350);
+  }
+  function recordRecurNow(x,fromCentre){
+    var rc=recById(x.rec);if(!rc||!rc.tpl){toast('This schedule has changed');return;}
+    var id='R'+rc.id+'_'+((rc.seq||0)+1);
+    if(DB.txns.some(function(t){return t.id===id;})){toast('This payment is already recorded');return;}
+    var t=mkTxn({date:todayISO(),type:rc.tpl.type,category:rc.tpl.category,sub:rc.tpl.subcategory,account:rc.tpl.account,to:rc.tpl.to,person:rc.tpl.person,note:rc.tpl.note,amount:rc.tpl.amount,split:rc.tpl.split,owedAcc:rc.tpl.owedAcc,owedAmt:rc.tpl.owedAmt});
+    t.id=id;t.remKey=x.key;DB.txns.push(t);
+    rc.seq=(rc.seq||0)+1;rc.next=advanceOcc(rc.anchor,rc.freq,rc.every||1,rc.seq+1);
+    touch();
+    toast(x.name+' recorded · '+money(t.amount)+' · next on '+dLabelW(rc.next));
+    if(fromCentre){REM.openDone=true;renderMgr();}
+  }
+  function payFor(key){
+    var x=REM.idx[key];
+    if(!x){try{V63.calc.upcoming(90);}catch(e){}x=REM.idx[key];}
+    if(!x){toast('This payment has changed — reopen the reminder centre');return;}
+    var fromCentre=$('mgrSheet').classList.contains('on')&&MGR.kind==='v63remctr';
+    if(x.src==='recur'){
+      askChoice(x.name+' ('+(x.amt>0?money(x.amt).replace(/<[^>]+>/g,''):'no amount')+') records itself automatically on '+dLabelW(x.due)+'. Record it now instead?',[
+        {l:'Record it now',c:'btn',f:function(){recordRecurNow(x,fromCentre);}},
+        {l:'Edit schedule',c:'btn ghost',f:function(){if(fromCentre)closeMgr();setTimeout(function(){openMgr('recur');},fromCentre?250:0);}}]);
+      return;
+    }
+    var prev=DB.txns.filter(function(t){return t.remKey===key;})[0];
+    if(prev){askConfirm('You already recorded this payment on '+dLabelW(prev.date)+' ('+money(prev.amount).replace(/<[^>]+>/g,'')+'). Record another one?','Record another',function(){openPay(x,fromCentre);});return;}
+    openPay(x,fromCentre);
+  }
+
+  /* save: tag the payment, advance loan / hire-purchase due date, return to the centre */
+  SCREEN.around('saveTxn',999032001,function(prev){return function(){
+    /* the form only exists while the sheet is open: a second tap / call after a successful
+       save would otherwise re-save the values still left in the closed form (duplicate) */
+    var sh=$('sheet');if(!sh||!sh.classList.contains('on'))return;
+    if(REM.lastSave&&Date.now()-REM.lastSave<1200)return;
+    var c=REM.ctx;if(!c){var n0=DB.txns.length,r0=prev.apply(this,arguments);if(DB.txns.length!==n0||!sh.classList.contains('on'))REM.lastSave=Date.now();return r0;}
+    if(c.saving)return;                                  /* double tap while saving */
+    var before=Object.create(null);DB.txns.forEach(function(t){before[t.id]=1;});
+    c.saving=true;var r;
+    try{r=prev.apply(this,arguments);}finally{c.saving=false;}
+    var added=DB.txns.filter(function(t){return !before[t.id];});
+    if(!added.length)return r;                           /* validation kept the sheet open */
+    var target=a59(c.x.name),pay=added.filter(function(t){return t.type==='Transfer'&&t.to===c.x.name;})[0]||added[0];
+    pay.remKey=c.key;REM.lastSave=Date.now();
+    if(c.x.src==='loan'&&target&&target.remDue&&pay.to===target.name){try{B3.advanceReminder(target);}catch(e){DIAG.note(e,'b32:advance');}}
+    REM.ctx=null;cleanup();touch();
+    try{V63.bellBadge();}catch(e){DIAG.note(e,'b32:badge2');}
+    toast('Payment saved · '+money(pay.amount).replace(/<[^>]+>/g,'')+(c.x.src==='loan'&&target&&target.remDue?' · next due '+dLabelW(target.remDue):''));
+    backToCentre(c,true);
+    return r;
+  };});
+  SCREEN.after('closeSheet',999032002,{call:'apply',ret:false},function(){
+    var c=REM.ctx;if(!c||c.saving)return;
+    REM.ctx=null;cleanup();backToCentre(c,false);
+  });
+
+  /* ---------- 6 · notifications: same lead rule, recurring included ---------- */
+  var _rc32=remCheck;
+  remCheck=function(){
+    if(!DB)return;
+    /* the beta 28.1 dispatcher treats a missing loan lead as “on the day”; give it the effective lead */
+    var tmp=[];(DB.accounts||[]).forEach(function(a){if(isLoan(a)&&(a.remLead==null||a.remLead==='')){tmp.push(a);a.remLead=defLead();}});
+    try{_rc32.apply(this,arguments);}finally{tmp.forEach(function(a){delete a.remLead;});}
+    try{
+      var c=remCfg();if(!c.on||typeof Notification==='undefined'||Notification.permission!=='granted')return;
+      var td=todayISO(),me=meName(),n=0;
+      /* name-based entitlement, used only where no stable-UID ownership exists on the account
+         (device-only / personal-backup storage). UID-governed accounts stay with the beta 28.1 dispatcher. */
+      var allowed=function(a){
+        var owner=a.pvby||a.owner||'',who=a.remWho||'owner',mine=!owner||owner===me||String(owner).split(' & ').indexOf(me)>=0;
+        if(a.vis==='me')return mine;
+        if(who==='both')return true;if(who==='owner')return mine;if(who==='person:'+me)return true;
+        return false;};
+      var hasUids=function(a){return !!(a&&a.ownerUids&&a.ownerUids.length);};
+      var mask=function(b){return (c.maskAmt||psActive())?b.replace(/[+-]?\d[\d,]*\.\d{2}/g,'•••'):b;};
+      var plain=function(v){return money(v).replace(/<[^>]+>/g,'');};
+      V63.calc.upcoming(30).forEach(function(x){
+        if(x.src==='recur'){
+          if(x.dl>x.lead||x.dl<0)return;
+          var rc=recById(x.rec),ra=rc&&rc.tpl?a59(rc.tpl.account):null;if(!ra||!allowed(ra))return;
+          if(c.sent[x.key]===td)return;c.sent[x.key]=td;n++;
+          notify('Scheduled payment '+(x.dl===0?'today':'coming up'),mask(x.name+': '+(x.amt>0?plain(x.amt)+' ':'')+'records automatically '+dLabelW(x.due)));
+          return;
+        }
+        /* cards and loans the 28.1 dispatcher could not evaluate (no owner UIDs on this device) */
+        var a=a59(x.name);if(!a||hasUids(a)||/^uid:/.test(a.remWho||''))return;
+        if(x.dl>x.lead||x.dl<-30||(x.autopay&&x.dl>0)||!allowed(a))return;
+        var k=(a.id||a.name)+'|'+x.due;if(c.sent[k]===td)return;c.sent[k]=td;n++;
+        if(x.src==='card')notify('Card payment '+(x.dl<0?'overdue':'due'),mask(a.name+': '+(x.amt>0?plain(x.amt)+' ':'')+dueTxt({dl:x.dl,due:x.due})));
+        else notify((a.type==='Hire Purchase'?'Car financing / Hire Purchase':'Loan')+' payment '+(x.dl<0?'overdue':'due'),mask(a.name+': '+(x.amt>0?plain(x.amt)+' ':'')+'due '+dLabelW(x.due)));
+      });
+      if(n)save();
+    }catch(e){DIAG.note(e,'b32:notify');}
+  };
+
+  /* ---------- 7 · actions ---------- */
+  /* ---------- 8 · account pages use the same payment sheet (card Pay statement / Pay full, loan Record repayment) ---------- */
+  function daysTo(d){return Math.round((Date.parse(d+'T12:00:00Z')-Date.parse(todayISO()+'T12:00:00Z'))/864e5);}
+  function cardItem(a,amt){
+    var cs=cardStatus(a),hasCyc=!!accCycleFor(a),stmt=+cs.stillDue||0;
+    var full=Math.abs(amt-stmt)>=0.005;
+    var due=hasCyc&&cs.due?cs.due:todayISO();
+    var x={act:'v63cardpay',name:a.name,owner:a.owner,due:due,dl:daysTo(due),amt:amt,kind:'Credit card payment',autopay:!!a.autopay};
+    enrich(x);
+    if(!hasCyc){x.noDue=true;x.basis='full';}
+    else if(full){x.basis=stmt<0.005?'early':'full';x.key+='|'+x.basis+'|'+todayISO();}
+    x.amt=amt;
+    return x;
+  }
+  function loanItem(a){
+    var due=a.remDue||todayISO(),pre=(a.instType!=='variable'&&+a.instalment>0)?+a.instalment:0;
+    var x={act:'v63loanpay',name:a.name,owner:a.owner,due:due,dl:daysTo(due),amt:pre,kind:(a.type==='Hire Purchase'?'Hire purchase instalment':'Loan instalment'),autopay:!!a.autopay};
+    enrich(x);
+    if(!a.remDue){x.noDue=true;}
+    if(a.instType==='variable')x.basis='date';
+    x.amt=x.basis==='date'?0:x.amt;
+    return x;
+  }
+  function payAccount(name,amt){
+    var a=a59(name);if(!a)return false;
+    var x=isLoan(a)?loanItem(a):cardItem(a,+amt||0);
+    var prev=DB.txns.filter(function(t){return t.remKey===x.key;})[0];
+    if(prev&&!x.noDue&&!(x.basis==='full'||x.basis==='early')){askConfirm('You already recorded this payment on '+dLabelW(prev.date)+' ('+money(prev.amount).replace(/<[^>]+>/g,'')+'). Record another one?','Record another',function(){openPay(x,false);});return true;}
+    openPay(x,false);return true;
+  }
+  REM.payAccount=payAccount;REM.payFor=payFor;REM.recById=recById;
+  ACT.on('b32-account-pay',{
+    'ccpay':function(el,next){if(!payAccount(el.dataset.n,+el.dataset.a))return next(el);},
+    'loanopen':function(el,next){var a=a59(el.dataset.n);if(!a||!isLoan(a))return next(el);payAccount(a.name);},
+    'v63loanpay':function(el,next){var a=a59(el.dataset.n);if(!a||!isLoan(a))return next(el);payAccount(a.name);},
+    'v63cardpay':function(el,next){var a=a59(el.dataset.n);if(!a)return next(el);var cs=cardStatus(a);payAccount(a.name,+cs.stillDue||0);}
+  });
+
+  /* ---------- 9 · account page back link names the screen it was opened from ---------- */
+  SCREEN.around('openAccount',999032010,function(prev){return function(n){
+    var lbl='';
+    try{
+      var at=$('pageAT18');
+      if(REPORT&&REPORT.open)lbl='';
+      else if($('mgrSheet').classList.contains('on'))lbl=(($('mgrTitle')||{}).textContent||'').trim();
+      else if(at&&at.classList.contains('on')){var h=at.querySelector('.hdrrow b, .hdrrow h2, .hdrrow .crumb, h1, h2');lbl=h?h.textContent.trim():'';}
+    }catch(e){DIAG.note(e,'b32:from');}
+    REM.from=lbl?{acc:n,label:lbl.replace(/\s+/g,' ').slice(0,28)}:null;
+    return prev.apply(this,arguments);
+  };});
+  var _df32=drillFrom;
+  drillFrom=function(){
+    if(REM.from&&DRILL&&DRILL.acc===REM.from.acc&&DRILL.level==='accmonth'&&!(REPORT&&REPORT.open))return esc(REM.from.label);
+    return _df32.apply(this,arguments);
+  };
+
+  ACT.on('b32-reminders',{
+    'rempay':function(el){payFor(el.dataset.k);},
+    'remf32':function(el){REM.f=el.dataset.f||'all';renderMgr();var b=$('mgrBody').querySelector('[data-act=remf32].on');if(b)b.focus();},
+    'remtx32':function(el){var id=el.dataset.id;closeMgr();setTimeout(function(){var b=document.createElement('button');b.dataset.act='txn';b.dataset.id=id;ACT.dispatch(b);},250);},
+    'rem32edit':function(){var c=REM.ctx;if(!c)return;var n=c.x.name;REM.ctx=null;cleanup();closeSheet();V63.remAcc=n;setTimeout(function(){openMgr('v63remset');},250);},
+    'rem32setup':function(){closeMgr();try{gotoView('accounts');}catch(e){DIAG.note(e,'b32:setup');}toast('Open a card or loan, then choose Payment details & reminders');}
+  });
+  /* the old account-first route stays for anything else that uses it (e.g. Reports rows) */
+  try{V63.bellBadge();}catch(e){DIAG.note(e,'b32:boot');}
+  V63.ver32='1.60 beta 32';
+})();
+
+/* ===================================================================================
+   v1.60 beta 32 — background payment reminders (RM-09)
+   The page checks reminders at start-up and hourly while it is open. To remind when the app
+   is closed, the page now writes a small reminder schedule to IndexedDB and asks the browser
+   for Periodic Background Sync. reminder-sw.js (imported by service-worker.js) reads the
+   schedule and shows due notifications; tapping one opens the payment in the app.
+   Privacy: with an app-lock PIN, or Hide amounts in notifications, the stored text never
+   contains account names / amounts (“A payment is due — open the app”). Partner-private
+   reminders are never scheduled (same filters as the in-app list). Turning reminders off,
+   or losing notification permission, clears the schedule.
+   =================================================================================== */
+(function(){
+  var REM=window.REM32;if(!REM||!window.V63)return;
+  var DBN='cmm-reminders',ST='kv',TAG='cmm-reminders';
+  function idb(){return new Promise(function(res,rej){if(!window.indexedDB)return rej(new Error('no idb'));var r=indexedDB.open(DBN,1);
+    r.onupgradeneeded=function(){r.result.createObjectStore(ST);};r.onsuccess=function(){res(r.result);};r.onerror=function(){rej(r.error);};});}
+  function kv(mode,fn){return idb().then(function(db){return new Promise(function(res,rej){var tx=db.transaction(ST,mode),st=tx.objectStore(ST),out=fn(st);
+    tx.oncomplete=function(){db.close();res(out&&out.result!==undefined?out.result:undefined);};tx.onerror=function(){db.close();rej(tx.error);};});});}
+  REM.kv=kv;
+  var hasUids=function(a){return !!(a&&a.ownerUids&&a.ownerUids.length);};
+  function myUid(){try{return (window.FB&&FB.user&&FB.user.uid)||localStorage.getItem('cmm_stable_user_id:'+String((sessGet()||{}).email||'').toLowerCase())||'';}catch(e){return '';}}
+  function allowed(a){
+    if(!a)return false;
+    if(hasUids(a)){try{return cmm291ReminderAllowed(a,myUid());}catch(e){return false;}}
+    var me=meName(),owner=a.pvby||a.owner||'',who=a.remWho||'owner',mine=!owner||owner===me||String(owner).split(' & ').indexOf(me)>=0;
+    if(a.vis==='me')return mine;if(who==='both')return true;if(who==='owner')return mine;return who==='person:'+me;
+  }
+  function plain(v){return money(v).replace(/<[^>]+>/g,'');}
+  /* one entry per occurrence: notify daily from (due − lead) until it is paid or 30 days overdue */
+  REM.buildSchedule=function(){
+    var c=remCfg(),locked=!!(lockCfg()||{}).h,hideAmt=!!c.maskAmt||locked,hideName=locked,items=[];
+    if(c.on&&typeof Notification!=='undefined'&&Notification.permission==='granted'){
+      V63.calc.upcoming(60).forEach(function(x){
+        var a=x.src==='recur'?(function(){var rc=REM.recById(x.rec);return rc&&rc.tpl?a59(rc.tpl.account):null;})():a59(x.name);
+        if(!a||!allowed(a))return;
+        if(x.src!=='recur'&&x.autopay&&x.dl>=0)return;           /* autopay: only if it becomes overdue */
+        var from=addDaysISO(x.due,-x.lead),until=x.src==='recur'?x.due:addDaysISO(x.due,30);
+        if(x.autopay&&x.src!=='recur')from=addDaysISO(x.due,1);
+        var title,body,key=x.src==='recur'?x.key:((a.id||a.name)+'|'+x.due);
+        if(x.src==='recur'){title='Scheduled payment coming up';body=(hideName?'A scheduled payment':x.name)+(hideAmt||!(x.amt>0)?'':': '+plain(x.amt))+' records automatically '+dLabelW(x.due);}
+        else{var t=x.src==='card'?'Card payment':(/Hire/.test(x.kind)?'Car financing / Hire Purchase payment':'Loan payment');
+          title=hideName?'Payment reminder':t+' due';
+          body=(hideName?'A payment':a.name)+(hideAmt||!(x.amt>0)?'':': '+plain(x.amt))+' is due '+dLabelW(x.due)+'.';}
+        items.push({key:key,remKey:x.key,from:from,until:until,due:x.due,title:title,body:body,overdueTitle:hideName?'Payment reminder':title.replace(/ due$/,' overdue'),
+          overdueBody:(hideName?'A payment':(x.src==='recur'?x.name:a.name))+(hideAmt||!(x.amt>0)?'':': '+plain(x.amt))+' was due '+dLabelW(x.due)+'.'});
+      });
+    }
+    var sent={};try{Object.keys(c.sent||{}).forEach(function(k){if(c.sent[k]===todayISO())sent[k]=c.sent[k];});}catch(e){}
+    return {v:1,built:Date.now(),appName:'Couple Money Manager',url:location.href.split('#')[0],items:items,sentToday:sent};
+  };
+  var t=0;
+  REM.syncSchedule=function(){clearTimeout(t);t=setTimeout(function(){
+    try{var sc=REM.buildSchedule();kv('readwrite',function(st){st.put(sc,'schedule');}).catch(function(e){DIAG.note(e,'b32:idb');});}catch(e){DIAG.note(e,'b32:sched');}
+    var on=!!remCfg().on;if(on!==REM.bgWasOn){REM.bgWasOn=on;REM.registerBg().then(function(){try{renderRem();}catch(e){}});}
+  },600);};
+  /* merge what the service worker already sent today, so the page does not repeat it */
+  REM.loadSwSent=function(){return kv('readonly',function(st){return st.get('sent');}).then(function(v){
+    var c=remCfg(),td=todayISO(),n=0;if(v&&typeof v==='object')Object.keys(v).forEach(function(k){if(v[k]===td&&c.sent[k]!==td){c.sent[k]=td;n++;}});return n;}).catch(function(){return 0;});};
+  /* periodic background sync: available for installed apps on Chromium (Android / desktop) */
+  REM.bgState='none';
+  REM.registerBg=function(){
+    if(!('serviceWorker' in navigator)||!/^https?:$/.test(location.protocol)){REM.bgState='none';return Promise.resolve('none');}
+    return navigator.serviceWorker.ready.then(function(reg){
+      if(!reg.periodicSync){REM.bgState='unsupported';return REM.bgState;}
+      var c=remCfg();
+      if(!c.on){return reg.periodicSync.unregister(TAG).catch(function(){}).then(function(){REM.bgState='off';return 'off';});}
+      return (navigator.permissions&&navigator.permissions.query?navigator.permissions.query({name:'periodic-background-sync'}).catch(function(){return {state:'prompt'};}):Promise.resolve({state:'prompt'}))
+        .then(function(p){if(p.state!=='granted'){REM.bgState='needs-install';return REM.bgState;}
+          return reg.periodicSync.register(TAG,{minInterval:6*3600*1000}).then(function(){REM.bgState='on';return 'on';}).catch(function(){REM.bgState='needs-install';return REM.bgState;});});
+    }).catch(function(){REM.bgState='none';return 'none';});
+  };
+  var _touch32=touch;touch=function(){var r=_touch32.apply(this,arguments);try{REM.syncSchedule();}catch(e){}return r;};
+  var _rc32b=remCheck;remCheck=function(){var self=this,args=arguments;
+    REM.loadSwSent().then(function(){try{_rc32b.apply(self,args);}catch(e){DIAG.note(e,'b32:rc');}REM.syncSchedule();});};
+  /* Settings → Preferences → Payment reminders: say honestly when reminders can arrive */
+  if(typeof renderRem==='function'){var _rr32=renderRem;renderRem=function(){var r=_rr32.apply(this,arguments);
+    try{var b=$('remBody');if(!b)return r;var o=$('rem32bg');if(o)o.remove();var c=remCfg();if(!c.on)return r;
+      var st=REM.bgState,txt=st==='on'?'Reminders can arrive while the app is closed. Your phone decides the exact time, usually once or twice a day.'
+        :st==='needs-install'?'Reminders arrive when the app is open. Install the app to your home screen to also get them while it is closed.'
+        :'Reminders arrive when the app is open or running in the background. This browser cannot check while the app is closed.';
+      b.insertAdjacentHTML('beforeend','<div class="help small" id="rem32bg" style="margin-top:8px">'+ico('bell')+' '+esc(txt)+'</div>');}catch(e){DIAG.note(e,'b32:remtxt');}
+    return r;};}
+  /* tapping a notification opens the matching payment */
+  function openFromNotification(remKey){
+    var go=function(){try{if(!$('authScr').hidden||!$('lockScr').hidden){return setTimeout(go,600);}
+      openMgr('v63remctr');if(remKey)setTimeout(function(){REM.payFor(remKey);},350);}catch(e){DIAG.note(e,'b32:open');}};
+    go();
+  }
+  if('serviceWorker' in navigator)navigator.serviceWorker.addEventListener('message',function(e){var d=e.data||{};if(d&&d.type==='cmm-open-reminder')openFromNotification(d.remKey||'');});
+  try{var m=/[#&]rem=([^&]*)/.exec(location.hash||'');if(m){history.replaceState(null,'',location.pathname);setTimeout(function(){openFromNotification(decodeURIComponent(m[1]));},1200);}}catch(e){}
+  REM.openFromNotification=openFromNotification;
+  setTimeout(function(){REM.registerBg().then(function(){try{renderRem();}catch(e){}});REM.syncSchedule();},1500);
 })();
