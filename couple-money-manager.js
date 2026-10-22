@@ -3738,7 +3738,7 @@ var TOURS={
     {sel:'#mgrBody [data-act=mgradd]',tx:'Tap <b>Add</b>.',ok:function(){return DB.people.length>n0;}},
     {sel:'#mgrSheet [data-act=mgrclose]',tx:'Done! Close this list.',ok:function(){return !$('mgrSheet').classList.contains('on');}}];},
   account:function(){var n0=DB.accounts.length;return [
-    {pre:function(){gotoView('accounts');},sel:'[data-act=accaddq]',tx:'Tap <b>Add account</b>.',ok:function(){return mgrOpen('accs');}},
+    {pre:function(){gotoView('accounts');},sel:'#acc48home [data-act=a48add],[data-act=accaddq]',tx:'Tap <b>+</b> to add an account.',ok:function(){return mgrOpen('accs')||mgrOpen('a48add');}}, /* beta 48.1: Add opens the new Add sheet */
     {sel:'#mgrNewName',tx:'Name it, e.g. <b>Maybank</b> or <b>Touch ’n Go</b>.',ok:function(){return DB.accounts.length>n0;},soft:function(){return (($('mgrNewName')||{}).value||'').trim().length>1;}},
     {sel:'#mgrNewOwner',tx:'Choose who owns it.',ok:function(){return DB.accounts.length>n0;},soft:function(){return !!(($('mgrNewOwner')||{}).value);}},
     {sel:'#mgrNewAType',tx:'Pick the type (bank, card, e-wallet…).',ok:function(){return DB.accounts.length>n0;},next:1},
@@ -11143,8 +11143,8 @@ var SET_HTML=''
     +'<div class="card"><h2>About <span class="sub" id="aboutSubB3"></span></h2>'
     +'<div class="help"><b>Couple Money Manager</b> is a single-file app for couples that works offline. Your data lives on this device and cloud sync is opt-in.</div></div>'
     +'<div class="card"><details class="help"><summary>Help &amp; tips</summary>'+(HELP_OL||'<ol><li>No tips yet.</li></ol>')+'</details></div>'
-    +'<div class="card" id="diagB24"></div>'
-    +'<div class="card"><h2>Support</h2><div class="help small">Before updating or switching phones, download a full backup from <b>Data &amp; Sync</b>. Every change is captured in Backup history, so recent mistakes can be undone. Version and diagnostics: <b id="diagVerB3"></b>.</div></div>'
+    /* beta 48.2: the Diagnostics card was removed from Help & About (errors are still collected in DIAG) */
+    +'<div class="card"><h2>Support</h2><div class="help small">Before updating or switching phones, download a full backup from <b>Data &amp; Sync</b>. Every change is captured in Backup history, so recent mistakes can be undone. Version: <b id="diagVerB3"></b>.</div></div>'
   +'</section>'
   /* Danger zone (plan §9/§10) */
   +'<section class="setsub" data-sub="danger" hidden><div class="card"><h2 style="color:var(--exp)">'+ico('warn')+' Danger zone</h2>'
@@ -20408,7 +20408,7 @@ window.CMM_VERSION=VERSION291;window.CMM_SCHEMA_VERSION=SCHEMA291;
     if(x.src==='recur'){
       askChoice(x.name+' ('+(x.amt>0?money(x.amt).replace(/<[^>]+>/g,''):'no amount')+') records itself automatically on '+dLabelW(x.due)+'. Record it now instead?',[
         {l:'Record it now',c:'btn',f:function(){recordRecurNow(x,fromCentre);}},
-        {l:'Edit schedule',c:'btn ghost',f:function(){if(fromCentre)closeMgr();setTimeout(function(){openMgr('recur');},fromCentre?250:0);}}]);
+        {l:'Edit schedule',c:'btn ghost',f:function(){if(fromCentre){if(REM.setRet)REM.setRet('recur');closeMgr();} /* beta 47 (D1): Back returns to the centre */setTimeout(function(){openMgr('recur');},fromCentre?250:0);}}]);
       return;
     }
     var prev=DB.txns.filter(function(t){return t.remKey===key;})[0];
@@ -24076,6 +24076,1179 @@ try{
   if(!window.__B46RN){
     var ol46=document.querySelector('#pageSet details.help ol')||document.querySelector('#view-settings details.help ol');
     if(ol46){ol46.insertAdjacentHTML('beforeend','<li><b>Ready for public release (beta 46):</b> the Google Drive household folder now asks Google only for access to the files the app creates or that you pick (no full Drive access). Usage statistics are off unless you switch them on in Privacy &amp; Security. Privacy policy and terms are linked in Help &amp; About.</li>');window.__B46RN=1;}
+  }
+}catch(e){}
+})();
+
+/* ===================================================================================
+   ##### SECTION: v160b47 — v1.60 beta 47 · Reminder centre back navigation
+   ===================================================================================
+   Implements Reminder_Centre_Back_Navigation_Review (22 Oct 2026), defects D1–D4:
+     · one return target, REM.ret = {kind, f (filter), own (Household/Mine), scroll, openDone,
+       seen}, set by every flow that leaves the centre for another screen:
+         D1 Edit schedule (recurring) · D2 Edit reminder from the payment form (only when the
+         payment was opened from the centre) · D4 Recently completed → transaction details
+     · returnToCentre() reopens the centre with the same filter, owner chip, scroll position and
+       Recently completed state. It runs once the screen the user went to has opened and then
+       every overlay is closed again — whether by Back, ✕, Esc or Save — so Edit → Back → Back
+       from transaction details lands on the details, then the centre (T6).
+     · D3 Payment details & reminders opened from the centre's empty state stays in the same
+       sheet as a sub-screen: a Back chevron in its header, the system Back / Esc goes one step
+       to the centre (navSync re-arms the spare history entry), Save returns to the centre.
+     · REM.ret is cleared when the user switches tab or opens the centre some other way, so a
+       stale target never reopens it uninvited. Opening the payment form from anywhere but the
+       centre sets no target (T7).
+     · D5 (Set up payment details → Accounts tab) is an accepted exception: unchanged.
+   No history.back()/pushState here — only the existing navSync() funnel.
+   =================================================================================== */
+(function(){
+'use strict';
+var REM=window.REM32;
+if(!REM){try{DIAG.note(new Error('beta 47 needs beta 32'),'b47:boot');}catch(e){}return;}
+function $(id){return document.getElementById(id);}
+function n47(e,t){try{DIAG.note(e,t);}catch(x){}}
+function on(id){var e=$(id);return !!(e&&e.classList.contains('on'));}
+function centreOpen(){return on('mgrSheet')&&MGR.kind==='v63remctr';}
+/* the overlays a flow from the centre can open: manager sheet, add/edit sheet, transaction
+   details and dialogs. Base pages (account page, report) under the centre are not counted. */
+function overlayOpen(){return on('mgrOvl')||on('ovl')||on('txSheet61')||on('cmodal')||on('chmodal')||on('clrmodal')||!!(window.CALC&&CALC.open);}
+var timer=0;
+function setRet(kind,o){
+  o=o||{};
+  REM.ret={kind:kind,f:o.f!=null?o.f:REM.f,own:o.own!=null?o.own:REM.own,scroll:o.scroll!=null?o.scroll:(($('mgrSheet')||{}).scrollTop||0),
+    openDone:o.openDone!=null?!!o.openDone:!!REM.openDone,seen:false,at:Date.now()};
+  watch();
+}
+REM.setRet=setRet;
+function watch(){
+  clearInterval(timer);
+  timer=setInterval(function(){
+    var r=REM.ret;if(!r||r.kind==='remset-in'){clearInterval(timer);timer=0;return;}
+    if(overlayOpen()){if(!centreOpen())r.seen=true;return;}
+    if(r.seen)returnToCentre();
+    else if(Date.now()-r.at>4000){REM.ret=null;clearInterval(timer);timer=0;}  /* the target never opened */
+  },120);
+}
+function restore(r){
+  REM.f=r.f||'all';REM.own=r.own||REM.own||'all';REM.openDone=!!r.openDone;
+}
+function afterOpen(r){
+  setTimeout(function(){
+    try{var ms=$('mgrSheet');if(ms)ms.scrollTop=r.scroll||0;
+      var d=$('mgrBody').querySelector('.r32done');if(d&&r.openDone&&!d.open)d.open=true;}catch(e){n47(e,'b47:restore');}
+  },40);
+}
+function returnToCentre(){
+  var r=REM.ret;if(!r)return;REM.ret=null;clearInterval(timer);timer=0;
+  restore(r);
+  RET47=true;try{openMgr('v63remctr');}finally{RET47=false;}
+  afterOpen(r);
+}
+REM.returnToCentre=returnToCentre;
+var RET47=false;
+
+/* clear stale targets: another tab, or the centre opened some other way */
+SCREEN.before('gotoView',900000100,{call:'apply',ret:true},function(){ /* beta 47.1: 'apply' — 'none' dropped the view argument and broke tab switching */if(REM.ret&&REM.ret.kind!=='remset-in'){REM.ret=null;}});
+SCREEN.on('gotoView',900000100);
+SCREEN.before('openMgr',900000101,{call:'apply',ret:true},function(k){
+  if(k==='v63remctr'&&!RET47&&REM.ret)REM.ret=null;
+});
+SCREEN.on('openMgr',900000101);
+
+/* D1 / D2 — leaving the payment form for Edit schedule / Edit reminder */
+ACT.on('b47-back',{
+  'rem32edit':function(el,next){
+    var c=REM.ctx;
+    if(c&&c.fromCentre)setRet(c.recur?'recur':'remset',{f:c.f,scroll:c.scroll});
+    return next(el);
+  },
+  /* D4 — Recently completed → transaction details */
+  'remtx32':function(el,next){if(centreOpen())setRet('tx',{openDone:true});return next(el);},
+  /* D3 — Payment details & reminders from the centre opens as a sub-screen of the centre */
+  'v63remset':function(el,next){
+    if(centreOpen()){REM.ret={kind:'remset-in',f:REM.f,own:REM.own,scroll:($('mgrSheet')||{}).scrollTop||0,openDone:!!REM.openDone,seen:true,at:Date.now()};}
+    return next(el);
+  },
+  'rem47back':function(){remsetBack();}
+});
+function remsetBack(){
+  var r=REM.ret;
+  if(r&&r.kind==='remset-in'){REM.ret=null;restore(r);RET47=true;try{openMgr('v63remctr');}finally{RET47=false;}afterOpen(r);return;}
+  closeMgr();                                   /* separate sheet: the watcher reopens the centre */
+}
+/* Back chevron on the reminder settings screen whenever it has somewhere to go back to */
+SCREEN.after('openMgr',900000102,{call:'apply',ret:false},function(k){
+  try{
+    if(k!=='v63remset'||!REM.ret)return;
+    var t=$('mgrTitle');if(!t||t.querySelector('.m27back'))return;
+    t.insertAdjacentHTML('afterbegin','<button class="m27back" data-act="rem47back" aria-label="Back to Reminder centre">'+ico('chevleft')+'</button>');
+  }catch(e){n47(e,'b47:chev');}
+});
+SCREEN.on('openMgr',900000102);
+/* ✕ on the in-sheet settings closes the whole sheet, as on other screens */
+SCREEN.before('closeMgr',900000103,{call:'none',ret:false},function(){if(REM.ret&&REM.ret.kind==='remset-in')REM.ret=null;});
+SCREEN.on('closeMgr',900000103);
+/* system Back / Esc on the in-sheet settings goes one step, to the centre */
+var _nc47=navClose;
+navClose=function(){
+  var modal=on('cmodal')||on('chmodal')||on('clrmodal')||!!(window.CALC&&CALC.open);
+  try{if(!modal&&window.HDR&&HDR.isOpen&&HDR.isOpen())modal=true;}catch(e){}
+  if(!modal&&on('mgrOvl')&&MGR.kind==='v63remset'&&REM.ret&&REM.ret.kind==='remset-in'){remsetBack();navSync();return;}
+  return _nc47.apply(this,arguments);
+};
+/* Save on reminder settings returns to the centre when it was opened from there */
+if(typeof V63.remsetSave==='function'){
+  var _rs47=V63.remsetSave;
+  V63.remsetSave=function(){
+    var r=REM.ret,res=_rs47.apply(this,arguments);
+    try{if(r&&REM.ret===r&&(r.kind==='remset-in'||r.kind==='remset'))remsetBack();}catch(e){n47(e,'b47:save');}
+    return res;
+  };
+}
+REM.b47={overlayOpen:overlayOpen,watch:watch};
+
+/* ---------- version + release note (beta 47) ---------- */
+try{if(window.pinVer36)window.pinVer36('1.60 beta 47');}catch(e){}
+try{
+  if(!window.__B47RN){
+    var ol47=document.querySelector('#pageSet details.help ol')||document.querySelector('#view-settings details.help ol');
+    if(ol47){ol47.insertAdjacentHTML('beforeend','<li><b>Reminder centre Back (beta 47):</b> Back now returns to the Reminder centre — with the same filter and scroll — from Edit schedule, Edit reminder, payment details &amp; reminders and a Recently completed transaction. Saving reminder settings opened from the centre also returns there.</li>');window.__B47RN=1;}
+  }
+}catch(e){}
+})();
+
+/* ===================================================================================
+   ##### SECTION: v160b48 — v1.60 beta 48 · Accounts tab redesign (Accounts_Before_After_Mockup 4)
+   ===================================================================================
+   Replaces the Accounts tab and the account page with the "After" prototype:
+     HOME   one net-worth headline (You have / You owe), scope chips (Everyone · me · partner ·
+            Joint, Couple modes only), two sections — You have (Money · Investments · Properties ·
+            Vehicles · Other assets) and You owe (Credit cards · Loans · Hire purchase) — each a
+            collapsible group card with one row per account (owner bubble, lock for Private, due
+            pills), Between Us rows with Settle up, one collapsed "Closed & archived" row with
+            Bring back, and Add (+) at the top. Any account opens in one tap.
+     PAGE   (#pageAcc48, replaces the drill-down account page for every entry point) — sticky
+            header with ⋯ menu, one hero per kind with the kind's own primary action:
+              bank / cash / e-wallet / investment → Add transaction · Transfer
+              credit card  → Pay <statement> · Add purchase
+              loan         → Record repayment · Interest      (progress bar, next instalment)
+              hire purchase→ Record repayment · Payment plan
+              property / vehicle → Update value · Income / cost (change since purchase)
+              Between Us   → Settle up
+            Overview / Activity tabs. Overview holds at most 4 cards (chart only when the balance
+            moved; Statement & payment; Payment plan; Value history; recent activity; collapsed
+            Account details with change history). Activity filters fit the kind: In · Out ·
+            Transfers (ledgers), Purchases · Payments grouped by billing cycle (cards),
+            Repayments · Interest & charges by month (loans / HP), Value · Costs · Income by year
+            (property / vehicle, costs & income from the beta 38 category rule).
+     SHEETS Add account (plain-language type chooser → 4 fields + More details + "Counts toward"
+            line), Edit account (one Save; Close / archive and Delete as separate steps; Delete
+            only when there is no history), Close / sell / archive (one decision, one Confirm,
+            Undo), account ⋯ menu. Card payment and loan repayment reuse the beta 32 payment
+            sheet: a card payment gets Statement / Minimum / Full choices, a loan repayment gets
+            "Part of this was interest" (records the interest as a Loan interest charge).
+     MIN PAYMENT is calculated, not typed: 5% of the statement balance (or the balance owed when
+            there is no statement), at least RM 50, never more than what is owed. Used by the
+            Statement card, the pay choices, reminders and the reminder settings sheet.
+   Everything is computed inside AF34.priv (partner hide-details masked, partner-private
+   accounts absent). Hidden balances show •••• and are left out of totals.
+   =================================================================================== */
+(function(){
+'use strict';
+if(!window.AF34||!AF34.priv){try{DIAG.note(new Error('beta 48 needs beta 34'),'b48:boot');}catch(e){}return;}
+var X=window.ACC48={on:true,scope:'all',coll:{},showClosed:false,acc:'',tab:'ov',det:false,act:{k:'all',per:null,q:'',search:false},flash:'',sheet:null};
+function $(id){return document.getElementById(id);}
+function onEl(id){var e=$(id);return !!(e&&e.classList.contains('on'));}
+function n48(e,t){try{DIAG.note(e,t);}catch(x){}}
+function priv(fn){try{return AF34.priv(fn);}catch(e){n48(e,'b48:priv');return fn();}}
+function me(){try{return meName()||'';}catch(e){return '';}}
+function pn(){try{return partnerName()||'';}catch(e){return '';}}
+function couple(){try{return isCouple();}catch(e){return false;}}
+function adv(){try{return B3.mode()==='adv';}catch(e){return false;}}
+function td(){return todayISO();}
+function M(n){return esc(money(n));}
+function MA(n){return esc(money(Math.abs(n||0)));}
+function rel(dl){return dl<0?'overdue':(dl===0?'today':(dl===1?'tomorrow':'in '+dl+' days'));}
+try{
+  ICONS.dots=ICONS.dots||'<circle cx="5" cy="12" r="1.2"/><circle cx="12" cy="12" r="1.2"/><circle cx="19" cy="12" r="1.2"/>';
+  ICONS.back48='<path d="M19 12H5"/><path d="M11 18l-6-6 6-6"/>';
+  ICONS.scale=ICONS.scale||'<path d="M12 3v18"/><path d="M5 7h14"/><path d="M5 7l-3 7a4 4 0 0 0 6 0z"/><path d="M19 7l-3 7a4 4 0 0 0 6 0z"/>';
+  ICONS.carplus=ICONS.carplus||ICONS.car;
+  ICONS.box=ICONS.box||'<path d="M21 8 12 3 3 8v8l9 5 9-5Z"/><path d="M3 8l9 5 9-5"/><path d="M12 13v8"/>';
+}catch(e){}
+
+/* ---------- 1 · account model ---------- */
+function fam(a){
+  if(!a)return 'bank';
+  try{if(isLedger20(a)||isRecvAcc(a.name))return 'bu';}catch(e){}
+  if(accTypeKind(a.type)==='liability'){if(isLoan(a))return /hire\s*purchase/i.test(a.type||'')?'hp':'loan';return 'card';}
+  if(isVal(a))return a.type==='Other Asset'?'other':'prop';
+  return 'bank';
+}
+function catOf(a){
+  var f=fam(a);
+  return {card:'Credit cards',loan:'Loans',hp:'Hire purchase',other:'Other assets',bu:'Between Us'}[f]
+    ||(f==='prop'?(a.type==='Vehicle'?'Vehicles':'Properties'):(a.type==='Investment'?'Investments':'Money'));
+}
+var HAVE_G=[['Money','cash'],['Investments','trend'],['Properties','home'],['Vehicles','car'],['Other assets','box']];
+var OWE_G=[['Credit cards','card'],['Loans','bank'],['Hire purchase','carplus']];
+var TIC={Bank:'bank',Cash:'cash','e-Wallet':'wallet',eWallet:'wallet',Investment:'trend',Property:'home',Vehicle:'car','Other Asset':'box',Card:'card','Credit Card':'card','Hire Purchase':'carplus','Car / Hire Purchase Loan':'carplus'};
+function icOf(a){var f=fam(a);return TIC[a.type]||({card:'card',loan:'bank',hp:'carplus',prop:'home',other:'box',bu:'scale'}[f])||'wallet';}
+function owe(a){var f=fam(a);return f==='card'||f==='loan'||f==='hp';}
+function stOf(a){try{return V63.statusOf(a)||'active';}catch(e){return a.status||'active';}}
+function hid(a){try{return isBalHidden(a.name);}catch(e){return false;}}
+function balOf(a){
+  try{
+    if(isVal(a)){var v=valueAsOf(a,td());return isFinite(v)?v:0;}
+    var b=accountBalAsOf(a.name,td());return isFinite(b)?b:0;
+  }catch(e){return 0;}
+}
+function ownerKind(a){
+  var o=String(a.owner||''),m=me();
+  if(/ & /.test(o))return 'joint';
+  if(!o||o===m)return 'me';
+  return 'partner';
+}
+function inScope(a){var s=X.scope;if(!couple()||s==='all')return true;return ownerKind(a)===s;}
+function initials(n){return esc(String(n||'?').trim().charAt(0).toUpperCase()||'?');}
+function whoBubble(a){
+  if(!couple())return '';
+  var o=String(a.owner||'');
+  if(/ & /.test(o)){var p=o.split(' & ');return '<span class="a48who j"><b>'+initials(p[0])+'</b><b class="b">'+initials(p[1])+'</b></span>';}
+  var mine=ownerKind(a)==='me';
+  return '<span class="a48who'+(mine?'':' b')+'">'+initials(o||me())+'</span>';
+}
+function isPrivate(a){return a.vis==='me';}
+function subOf(a){
+  var f=fam(a),p=isPrivate(a)?'Private · ':'';
+  if(f==='bank'||f==='other')return p+(a.type||'')+(a.l4?' · ••'+esc(a.l4):'');
+  if(f==='card')return 'Credit card'+(a.l4?' · ••'+esc(a.l4):'');
+  if(f==='loan')return (a.type||'Loan')+(+a.rate>0?' · '+esc(a.rate)+'% p.a.':'');
+  if(f==='hp')return 'Hire purchase'+(+a.instalment>0?' · '+MA(a.instalment)+'/mo':'');
+  if(f==='prop')return p+(a.type||'')+(a.propType&&a.propType!=='Other property'?' · '+esc(a.propType):'')+(a.vehicleType&&a.vehicleType!=='Other vehicle'?' · '+esc(a.vehicleType):'');
+  return esc(a.type||'');
+}
+function cardInfo(a){try{var cs=cardStatus(a)||{};return {cyc:accCycleFor(a),stmt:+cs.stillDue||0,stmtAmt:+cs.stmt||0,due:cs.due||'',dl:isFinite(+cs.dl)?+cs.dl:null,le:cs.le||'',status:cs.status||''};}catch(e){return {cyc:0,stmt:0,stmtAmt:0,due:'',dl:null,le:'',status:''};}}
+/* minimum payment: calculated, never typed — 5% of the statement (or of what is owed), at least RM 50, never above what is owed */
+function minPay(a){
+  var owed=Math.abs(balOf(a)),ci=cardInfo(a),base=ci.stmt>0.004?ci.stmt:owed;
+  if(!(owed>0.004))return 0;
+  return Math.round(Math.min(owed,Math.max(base*0.05,50))*100)/100;
+}
+X.minPay=minPay;
+function dueDays(d){return Math.round((Date.parse(d+'T12:00:00Z')-Date.parse(td()+'T12:00:00Z'))/864e5);}
+function dueHTML(a){
+  var f=fam(a);
+  if(stOf(a)!=='active')return '';
+  if(f==='card'){var ci=cardInfo(a);if(ci.stmt>=0.005&&ci.dl!=null&&ci.dl<=7)return '<span class="a48pill '+(ci.dl<0?'o':'w')+'">'+(ci.dl<0?'Overdue':'Due '+rel(ci.dl))+'</span>';}
+  if((f==='loan'||f==='hp')&&a.remDue){var dl=dueDays(a.remDue);if(dl<=14)return '<span class="a48pill '+(dl<0?'o':(dl<=3?'w':'n'))+'">'+(dl<0?'Overdue':'Due '+rel(dl))+'</span>';}
+  return '';
+}
+
+/* ---------- 2 · home ---------- */
+function visAccounts(){
+  return DB.accounts.filter(function(a){
+    if(!a||!a.name)return false;
+    if(fam(a)==='bu')return false;
+    if(stOf(a)!=='active')return false;
+    if(a.vis==='me'&&(a.pvby||a.owner)&&(a.pvby||a.owner)!==me())return false;   /* never a partner's private */
+    return true;
+  });
+}
+function rowHTML(a){
+  var o=owe(a),b=balOf(a),h=hid(a);
+  var amt=h?'••••':(o?MA(b):M(b));
+  return '<button type="button" class="a48row'+(X.flash===a.name?' flash':'')+'" data-act="a48open" data-n="'+esc(a.name)+'">'
+    +'<span class="a48ti'+(o?' o':'')+'">'+ico(icOf(a))+(isPrivate(a)?'<span class="a48lock">'+ico('lock')+'</span>':'')+whoBubble(a)+'</span>'
+    +'<span class="a48mid"><b>'+esc(a.name)+'</b><small>'+subOf(a)+'</small></span>'
+    +'<span class="a48end"><b class="'+(o&&!h?'o':'')+'">'+amt+'</b>'+(dueHTML(a)?'<small>'+dueHTML(a)+'</small>':'')+'</span></button>';
+}
+function groupHTML(g,list,oweSide){
+  var key=(oweSide?'o:':'h:')+g[0],open=!X.coll[key];
+  var tot=list.reduce(function(s,a){return s+(hid(a)?0:Math.abs(balOf(a)));},0);
+  return '<div class="a48grp"><button type="button" class="a48gh'+(open?' open':'')+'" data-act="a48grp" data-k="'+esc(key)+'" aria-expanded="'+open+'">'
+    +'<span class="a48gi">'+ico(g[1])+'</span><b>'+esc(g[0])+'<small>'+list.length+'</small></b><span class="a48gt'+(oweSide?' o':'')+'">'+MA(tot)+'</span><span class="a48cv">'+ico('chevright')+'</span></button>'
+    +(open?list.map(rowHTML).join(''):'')+'</div>';
+}
+function buRows(){
+  var ls=[];try{ls=ledgers()||[];}catch(e){}
+  return ls.filter(function(l){return l&&Math.abs(+l.amt||+l.bal||0)>=0.005;});
+}
+function homeHTML(){
+  var vis=visAccounts().filter(inScope),have=vis.filter(function(a){return !owe(a);}),ow=vis.filter(owe);
+  var anyHid=vis.some(hid);
+  var sa=have.reduce(function(s,a){return s+(hid(a)?0:balOf(a));},0),so=ow.reduce(function(s,a){return s+(hid(a)?0:Math.abs(balOf(a)));},0),net=sa-so;
+  var pct=sa+so>0?Math.max(0,Math.min(100,sa/(sa+so)*100)):0;
+  var cp=couple(),P=pn(),m=me();
+  var scLab={all:'Everyone',me:m||'Me',partner:P||'Partner',joint:'Joint'};
+  var h='<div class="a48pt"><h1>Accounts</h1><button type="button" class="a48plus" data-act="a48add" aria-label="Add account">'+ico('plus')+'</button></div>';
+  h+='<div class="a48card a48nw"><div class="l">Net worth'+(cp&&X.scope!=='all'?' · '+esc(scLab[X.scope]):'')+'</div><div class="big'+(net<0?' o':'')+'">'+M(net)+'</div>'
+    +'<div class="a48bar"><i style="width:'+pct.toFixed(1)+'%"></i></div>'
+    +'<div class="a48hl2"><div><i class="g"></i>You have<b>'+MA(sa)+'</b></div><div style="text-align:right"><i class="r"></i>You owe<b>'+MA(so)+'</b></div></div>'
+    +(anyHid?'<div class="a48note">Balances your partner hid are not included.</div>':'')+'</div>';
+  if(cp){
+    var sc=['all','me','partner','joint'];
+    h+='<div class="a48chips" role="group" aria-label="Whose accounts">'+sc.map(function(s){return '<button type="button" class="a48chip'+(X.scope===s?' on':'')+'" aria-pressed="'+(X.scope===s)+'" data-act="a48scope" data-s="'+s+'">'+esc(scLab[s])+'</button>';}).join('')+'</div>';
+  }
+  h+='<div class="a48sec"><b>You have</b><span>'+MA(sa)+'</span></div>';
+  var any=false;
+  HAVE_G.forEach(function(g){var l=have.filter(function(a){return catOf(a)===g[0];});if(l.length){any=true;h+=groupHTML(g,l,false);}});
+  if(!any)h+='<div class="a48grp"><div class="a48empty"><b>Nothing here yet</b>Add an account with the + button.</div></div>';
+  h+='<div class="a48sec"><b>You owe</b><span class="o">'+MA(so)+'</span></div>';
+  var anyO=false;
+  OWE_G.forEach(function(g){var l=ow.filter(function(a){return catOf(a)===g[0];});if(l.length){anyO=true;h+=groupHTML(g,l,true);}});
+  if(!anyO)h+='<div class="a48grp"><div class="a48empty"><b>No debts</b>Cards, loans and hire purchase appear here.</div></div>';
+  if(cp&&(X.scope==='all'||X.scope==='joint')){
+    var bus=buRows();
+    h+='<div class="a48sec"><b>Between Us</b></div><div class="a48grp">';
+    if(!bus.length)h+='<div class="a48bu"><span class="a48ti n">'+ico('scale')+'</span><span class="a48mid"><b>All settled up</b><small>Nothing to settle</small></span></div>';
+    else h+=bus.map(function(l){
+      var amt=Math.abs(+l.amt||+l.bal||0),cr=l.creditor,db=l.debtor;
+      var t=cr===m?esc(db)+' owes you '+MA(amt):(db===m?'You owe '+esc(cr)+' '+MA(amt):esc(db)+' owes '+esc(cr)+' '+MA(amt));
+      return '<div class="a48bu"><button type="button" class="a48bul" data-act="a48open" data-n="'+esc(l.name)+'"><span class="a48ti n">'+ico('scale')+'</span><span class="a48mid"><b>'+t+'</b><small>From shared items · tap for history</small></span></button>'
+        +'<button type="button" class="a48btn sm" data-act="settle" data-n="'+esc(l.name)+'">Settle up</button></div>';}).join('');
+    h+='</div>';
+  }
+  var closed=DB.accounts.filter(function(a){if(!a||fam(a)==='bu'||stOf(a)==='active')return false;if(a.vis==='me'&&(a.pvby||a.owner)&&(a.pvby||a.owner)!==me())return false;return inScope(a);});
+  if(closed.length){
+    h+='<div class="a48grp" style="margin-top:4px"><button type="button" class="a48gh'+(X.showClosed?' open':'')+'" data-act="a48closed" aria-expanded="'+X.showClosed+'"><span class="a48gi">'+ico('folder')+'</span><b>Closed &amp; archived<small>'+closed.length+'</small></b><span class="a48cv">'+ico('chevright')+'</span></button>'
+      +(X.showClosed?closed.map(function(a){var st=stOf(a);return '<div class="a48row a48off"><span class="a48ti n">'+ico(icOf(a))+'</span><span class="a48mid"><b>'+esc(a.name)+'</b><small>'+({archived:'Archived',sold:'Sold',closed:'Closed'}[st]||'Closed')+(a.closedDate?' '+esc(dLabelY(a.closedDate)):'')+'</small></span>'
+        +(permFor59(a.name)==='owner'?'<button type="button" class="a48lnk" data-act="a48reopen" data-n="'+esc(a.name)+'">Bring back</button>':'')+'<button type="button" class="a48lnk" data-act="a48open" data-n="'+esc(a.name)+'" aria-label="Open '+esc(a.name)+'">'+ico('chevright')+'</button></div>';}).join(''):'')+'</div>';
+  }
+  return h;
+}
+function renderHome(){
+  var v=$('view-accounts');if(!v)return;
+  var box=$('acc48home');
+  if(!box){box=document.createElement('div');box.id='acc48home';box.className='acc48';v.insertBefore(box,v.firstChild);}
+  [].slice.call(v.children).forEach(function(c){if(c!==box)c.classList.add('a48gone');});
+  box.innerHTML=priv(homeHTML);
+  if(X.flash){var f=box.querySelector('.a48row.flash');if(f&&f.scrollIntoView)setTimeout(function(){f.scrollIntoView({block:'center'});},60);X.flash='';}
+}
+X.renderHome=renderHome;
+SCREEN.after('renderAccounts',900000110,{call:'apply',ret:false},function(){if(X.on)try{renderHome();}catch(e){n48(e,'b48:home');}});
+SCREEN.on('renderAccounts',900000110);
+
+/* ---------- 3 · transactions of one account ---------- */
+function deltaFor(t,acc){
+  var d=0;
+  if(t.type==='Transfer'){if(t.account===acc)d-=+t.amount||0;if(t.to===acc)d+=+t.amount||0;}
+  else{if(t.account===acc)d+=(t.type==='Income'?1:-1)*(+t.amount||0);if(t.to===acc)d+=legDelta(t);}
+  if(t.owedAcc===acc)d+=(+t.owedAmt||0);
+  return Math.round(d*100)/100;
+}
+function txList(a){
+  var rb={};try{rb=accRunningBals(a.name).tx||{};}catch(e){}
+  var n=a.name;
+  return allTxns().filter(function(t){return txnTouchesAcc(t,n);}).map(function(t){return {t:t,d:deltaFor(t,n),b:rb[t.id]};})
+    .sort(function(x,y){if(x.t.date!==y.t.date)return x.t.date<y.t.date?1:-1;return (+(y.t.createdAt||0))-(+(x.t.createdAt||0));});
+}
+var ICAT=[[/transfer/i,'swap'],[/interest|charge/i,'warn'],[/groc/i,'bag'],[/food|din/i,'receipt'],[/salar|income|wage/i,'trend'],[/bill|util|internet|phone/i,'receipt'],[/shop/i,'tag'],[/health|medic/i,'shield'],[/travel/i,'calendar'],[/transport|petrol|fuel|car/i,'car']];
+function icFor(t){if(t.type==='Transfer')return 'swap';var c=String(t.category||'');for(var i=0;i<ICAT.length;i++)if(ICAT[i][0].test(c))return ICAT[i][1];return 'list';}
+function txTitle(t,a){
+  var f=fam(a);
+  if(t.masked)return 'Private';
+  if(t.type==='Transfer'){
+    if(t.to===a.name&&(f==='loan'||f==='hp'))return 'Repayment';
+    if(t.to===a.name&&f==='card')return 'Card payment';
+    if(f==='bu')return 'Settled';
+    return 'Transfer';
+  }
+  if(t.lcharge||t.category==='Loan interest')return 'Interest & charges';
+  return t.category||t.type;
+}
+function txRowHTML(x,a){
+  var t=x.t,isT=t.type==='Transfer',pos=x.d>0;
+  var sub=t.masked?'Details hidden':(isT?esc(t.account)+' → '+esc(t.to||'?'):esc(t.note||t.subcategory||''));
+  var bal=(x.b!=null&&isFinite(x.b)&&!hid(a))?'<small>Bal '+M(x.b)+'</small>':'';
+  return '<button type="button" class="a48tx" data-act="txn" data-id="'+esc(t.id)+'"><span class="a48ti '+(isT?'n':(pos&&!owe(a)?'in':''))+'">'+ico(icFor(t))+'</span>'
+    +'<span class="a48mid"><b>'+esc(txTitle(t,a))+'</b><small>'+(sub?sub+' · ':'')+esc(dLabel(t.date))+'</small></span>'
+    +'<span class="a48end"><b class="'+(pos?'p':'')+'">'+(pos?'+':'−')+MA(x.d)+'</b>'+bal+'</span></button>';
+}
+
+/* ---------- 4 · account page ---------- */
+function page(){
+  var p=$('pageAcc48');
+  if(!p){p=document.createElement('div');p.className='page acc48';p.id='pageAcc48';p.setAttribute('role','region');p.setAttribute('aria-label','Account');document.body.appendChild(p);}
+  return p;
+}
+function cardH(ic,title,right,body,cls,id){return '<div class="a48card blk '+(cls||'')+'"'+(id?' id="'+id+'"':'')+'><div class="a48ch">'+ico(ic)+'<span>'+title+'</span>'+(right||'')+'</div>'+body+'</div>';}
+function tagWho(a){
+  if(!couple())return '';
+  var o=String(a.owner||me());
+  if(/ & /.test(o))return '<span class="a48tg sh">'+ico('users')+'Joint · '+esc(o)+'</span>';
+  return '<span class="a48tg"><i class="'+(ownerKind(a)==='me'?'':'b')+'">'+initials(o)+'</i>'+esc(o)+'</span>';
+}
+function visTag(a){
+  if(!couple()||/ & /.test(String(a.owner||'')))return '';
+  if(isPrivate(a))return '<span class="a48tg pv">'+ico('lock')+'Private · only you</span>';
+  var P=pn();return '<span class="a48tg sh">'+ico('users')+(ownerKind(a)==='partner'?'Shared by '+esc(a.owner):'Shared with '+esc(P||'your partner'))+'</span>';
+}
+function stateTags(a){
+  var t='',st=stOf(a),perm='owner';try{perm=permFor59(a.name);}catch(e){}
+  if(st!=='active')t+='<span class="a48tg o">'+({archived:'Archived',sold:'Sold',closed:'Closed'}[st]||'Closed')+'</span>';
+  if(perm==='view'||a.locked)t+='<span class="a48tg">'+ico('eye')+'View only</span>';
+  if(hid(a))t+='<span class="a48tg">'+ico('eyeoff')+'Balance hidden</span>';
+  return t;
+}
+function monthNet(a){
+  var m=td().slice(0,7),n=a.name,s=0;
+  allTxns().forEach(function(t){if(t.date.slice(0,7)===m&&txnTouchesAcc(t,n))s+=deltaFor(t,n);});
+  return Math.round(s*100)/100;
+}
+function linkedOf(a){
+  var f=fam(a),out=[];
+  if(f==='loan'||f==='hp'){if(a.linkedAsset&&a59(a.linkedAsset))out.push(a59(a.linkedAsset));}
+  else if(f==='prop'){
+    (a.linkedLoans||[]).forEach(function(n){var l=a59(n);if(l&&out.indexOf(l)<0)out.push(l);});
+    DB.accounts.forEach(function(l){if(l&&l.linkedAsset===a.name&&isLoan(l)&&out.indexOf(l)<0)out.push(l);});
+  }
+  return out.filter(function(x){return stOf(x)==='active';});
+}
+function eqRows(a){
+  var f=fam(a);
+  return linkedOf(a).map(function(l){
+    var asset=f==='prop'?a:l,debts=f==='prop'?[l]:[a];
+    var eq=balOf(asset)-debts.reduce(function(s,d){return s+Math.abs(balOf(d));},0);
+    return '<button type="button" class="a48eq" data-act="a48open" data-n="'+esc(l.name)+'">'+ico(icOf(l))+'<span>'+(f==='prop'?'Equity after '+esc(l.name):'Equity in '+esc(l.name))+'</span><b class="'+(eq<0?'o':'')+'">'+(hid(a)||hid(l)?'••••':M(eq))+'</b>'+ico('chevright')+'</button>';
+  }).join('');
+}
+function heroHTML(a,compact){
+  var f=fam(a),o=owe(a),b=balOf(a),h=hid(a),st=stOf(a);
+  var perm='owner';try{perm=permFor59(a.name);}catch(e){}
+  var can=st==='active'&&!a.locked&&perm!=='view'&&perm!=='none'&&canAdd59(a.name);
+  var lab=o?'You owe':(f==='prop'||f==='other'?'Recorded value':(a.type==='Investment'?'Current value':'Balance'));
+  var fig=h?'••••':(o?MA(b):M(b));
+  if(compact)return '<div class="a48card blk a48hc"><span class="a48ti'+(o?' o':'')+'">'+ico(icOf(a))+'</span><div class="a48mid"><b>'+esc(a.name)+'</b><small>'+subOf(a)+'</small></div><div class="a48hb"><small>'+lab+'</small><b class="'+(o&&!h?'o':'')+'">'+fig+'</b></div></div>';
+  var hh='<div class="a48card blk a48hero"><div class="a48hr"><span class="a48ti'+(o?' o':'')+'">'+ico(icOf(a))+'</span><div class="a48nm"><b>'+esc(a.name)+'</b><small>'+subOf(a)+'</small></div></div>'
+    +'<div class="a48tags">'+tagWho(a)+visTag(a)+stateTags(a)+'</div><div class="a48lab">'+lab+'</div><div class="a48fig'+(o&&!h?' o':'')+'">'+fig+'</div>';
+  var sub='',acts='';
+  if(f==='bank'){
+    var d=monthNet(a);sub=h?'':(Math.abs(d)>=0.005?'<b class="'+(d>=0?'p':'o')+'">'+(d>=0?'▲':'▼')+' '+MA(d)+'</b> this month':'No movement this month');
+    if(can)acts='<button type="button" class="a48btn" data-act="acradd" data-n="'+esc(a.name)+'">'+ico('plus')+'Add transaction</button><button type="button" class="a48btn ghost" data-act="acrtrf" data-n="'+esc(a.name)+'">'+ico('swap')+'Transfer</button>';
+  }else if(f==='card'){
+    var ci=cardInfo(a);
+    if(!ci.cyc)sub='<span class="a48pill n">No statement day set</span>';
+    else if(ci.stmt>=0.005)sub='<span class="a48pill '+(ci.dl!=null&&ci.dl<0?'o':'w')+'">Statement '+MA(ci.stmt)+(ci.dl!=null?(ci.dl<0?' · overdue':' due '+rel(ci.dl)):'')+'</span>';
+    else sub='<span class="a48pill g">Statement paid ✓</span>';
+    if(can){
+      var owed=Math.abs(b);
+      acts=(owed>=0.005?'<button type="button" class="a48btn" data-act="a48pay" data-n="'+esc(a.name)+'">'+(ci.stmt>=0.005&&!h?'Pay '+MA(ci.stmt):'Pay card')+'</button>':'')
+        +'<button type="button" class="a48btn ghost" data-act="acradd" data-n="'+esc(a.name)+'">'+ico('plus')+'Add purchase</button>';
+    }
+  }else if(f==='loan'||f==='hp'){
+    var owedL=Math.abs(b),orig=Math.abs(+a.start||0);if(orig<owedL)orig=owedL;
+    var paid=Math.max(0,orig-owedL),pc=orig?paid/orig*100:0;
+    hh+=h?'':'<div class="a48prog"><i style="width:'+Math.max(pc,1.2).toFixed(1)+'%"></i></div>';
+    sub=h?'':'<b>'+pc.toFixed(1)+'%</b> repaid of '+MA(orig)+(a.remDue&&+a.instalment>0?' · next '+MA(a.instalment)+' on '+esc(dLabel(a.remDue)):(a.remDue?' · next due '+esc(dLabel(a.remDue)):''));
+    if(can)acts='<button type="button" class="a48btn" data-act="a48repay" data-n="'+esc(a.name)+'">Record repayment</button>'
+      +(f==='loan'?'<button type="button" class="a48btn ghost" data-act="a48int" data-n="'+esc(a.name)+'">'+ico('plus')+'Interest</button>'
+        :'<button type="button" class="a48btn ghost" data-act="a48plan" data-n="'+esc(a.name)+'">Payment plan</button>');
+  }else if(f==='prop'||f==='other'){
+    var pp=0;try{pp=purchaseOf(a);}catch(e){}
+    var dv=b-pp,pcv=pp?dv/pp*100:0,vh=[];try{vh=valHist(a).slice().sort(function(x,y){return x.date<y.date?-1:1;});}catch(e){}
+    var last=vh.length?vh[vh.length-1]:null;
+    sub=h?'':((Math.abs(dv)<0.5?'Unchanged since purchase':'<b class="'+(dv>=0?'p':'o')+'">'+(dv>=0?'▲':'▼')+' '+MA(dv)+' ('+Math.abs(pcv).toFixed(1)+'%)</b> since purchase')+(last?' · updated '+esc(dLabelY(last.date)):''));
+    if(can)acts='<button type="button" class="a48btn" data-act="valopen" data-n="'+esc(a.name)+'">Update value</button><button type="button" class="a48btn ghost" data-act="a48costinc" data-n="'+esc(a.name)+'">'+ico('plus')+'Income / cost</button>';
+  }
+  if(st!=='active'&&perm==='owner')acts='<button type="button" class="a48btn ghost" data-act="a48reopen" data-n="'+esc(a.name)+'">'+ico('refresh')+'Bring back</button>';
+  hh+=(sub?'<div class="a48sub">'+sub+'</div>':'')+(acts?'<div class="a48acts">'+acts+'</div>':'')+eqRows(a)+'</div>';
+  return hh;
+}
+function tabsHTML(){
+  return '<div class="a48tabs" role="tablist"><button type="button" role="tab" aria-selected="'+(X.tab==='ov')+'" class="'+(X.tab==='ov'?'on':'')+'" data-act="a48tab" data-t="ov">Overview</button>'
+    +'<button type="button" role="tab" aria-selected="'+(X.tab==='ac')+'" class="'+(X.tab==='ac'?'on':'')+'" data-act="a48tab" data-t="ac">Activity</button></div>';
+}
+function monthEnds(n){var out=[],cur=td().slice(0,7)+'-01';for(var i=n-1;i>=0;i--){var m0=addMonthsISO(cur,-i),y=+m0.slice(0,4),mm=+m0.slice(5,7);var e=m0.slice(0,8)+pad2(daysInMonth(y,mm));out.push({k:m0.slice(0,7),e:e>td()?td():e,lab:MONTHS[mm-1].slice(0,3)});}return out;}
+function shortAmt(v){v=Math.abs(v);return v>=1000?(v/1000).toFixed(v>=10000?0:1)+'k':String(Math.round(v));}
+function chartCard(a,title){
+  if(hid(a))return '';
+  var ms=monthEnds(6),vals=ms.map(function(m){var b=0;try{b=isVal(a)?valueAsOf(a,m.e):accountBalAsOf(a.name,m.e);}catch(e){}return isFinite(b)?Math.abs(b):0;});
+  var distinct={};vals.forEach(function(v){distinct[Math.round(v)]=1;});
+  if(Object.keys(distinct).length<2)return '';
+  var mx=Math.max.apply(null,vals)||1;
+  var body='<div class="a48chart">'+ms.map(function(m,i){return '<div class="c'+(i===ms.length-1?' on':'')+'"><em>'+shortAmt(vals[i])+'</em><i style="height:'+Math.max(6,vals[i]/mx*70).toFixed(0)+'px"></i><span>'+esc(m.lab)+'</span></div>';}).join('')+'</div>';
+  return cardH('chart',title,'',body);
+}
+function recentCard(a,title,cta,list){
+  var all=list||txList(a),t=all.slice(0,3);
+  var body=t.length?t.map(function(x){return txRowHTML(x,a);}).join('')+'<button type="button" class="a48lnk blk2" data-act="a48tab" data-t="ac">See all '+all.length+' in Activity ›</button>'
+    :'<div class="a48empty"><b>No activity yet</b>'+(cta||'Transactions you add will show here.')+'</div>';
+  return cardH('repeat',title||'Recent activity','',body);
+}
+function kv(l,v,cls){return '<div class="a48kv"><span>'+l+'</span><b class="'+(cls||'')+'">'+v+'</b></div>';}
+function detailsCard(a){
+  var open=X.det,f=fam(a),rows=[];
+  rows.push(kv('Type',esc(a.type||'')));
+  if(f==='prop'||f==='other'){var pp=0;try{pp=purchaseOf(a);}catch(e){}rows.push(kv('Purchase price',MA(pp)));if(a.purchaseDate)rows.push(kv('Purchase date',esc(dLabelY(a.purchaseDate))));
+    if(a.propType)rows.push(kv('Property type',esc(a.propType)));if(a.vehicleType)rows.push(kv('Vehicle type',esc(a.vehicleType)));if(+a.ownPct>0&&+a.ownPct<100)rows.push(kv('Ownership share',esc(a.ownPct)+'%'));}
+  else{if(a.l4)rows.push(kv(f==='card'?'Card number':'Account number','•••• '+esc(a.l4)));if(f==='bank'||f==='card')rows.push(kv('Opening balance',M(+a.start||0)));}
+  if(couple()){
+    rows.push(kv('Owner',/ & /.test(String(a.owner||''))?'Joint · '+esc(a.owner):esc(a.owner||me())));
+    var perm='owner';try{perm=permFor59(a.name);}catch(e){}
+    var PL={view:'View only',add:'Add transactions',full:'Full transaction access',admin:'Account administrator'};
+    rows.push(isPrivate(a)?kv('Visible to','Only you'):(/ & /.test(String(a.owner||''))?kv('Access','Both of you'):(perm!=='owner'?kv('Your access',esc(PL[perm]||perm)):kv(esc(pn()||'Partner')+' can',esc(PL[a.partnerAccess||'add']||'Add transactions')))));
+  }
+  if(a.notes)rows.push(kv('Notes',esc(a.notes)));
+  var st=stOf(a);if(st!=='active')rows.push(kv('Status',({archived:'Archived',sold:'Sold',closed:'Closed'}[st]||st)+(a.closedDate?' · '+esc(dLabelY(a.closedDate)):'')));
+  var hist='';try{if(window.REM32&&REM32.hist44){var hh=REM32.hist44.histHTML(a);if(hh)hist=hh.replace('class="card hist44"','class="hist44 a48hist"').replace(' id="hist44"','');}}catch(e){}
+  var body=open?'<div class="a48detb">'+rows.join('')+(canEdit(a)?'<button type="button" class="a48lnk blk2" data-act="a48edit" data-n="'+esc(a.name)+'">Edit details ›</button>':'')+hist+'</div>':'';
+  return '<div class="a48card blk a48det"><button type="button" class="a48gh'+(open?' open':'')+'" data-act="a48det" aria-expanded="'+open+'"><span class="a48gi">'+ico('info')+'</span><b>Account details</b><span class="a48cv">'+ico('chevright')+'</span></button>'+body+'</div>';
+}
+function remLeadTxt(a){
+  try{var d=V63.leadOf(a),own=a.remLead!=null&&a.remLead!=='';return (d===0?'On the day':(d===7?'A week before':d+' day'+(d===1?'':'s')+' before'))+(own?'':' (default)');}catch(e){return '—';}
+}
+function stmtCard(a){
+  var ci=cardInfo(a),owed=Math.abs(balOf(a)),h=hid(a);
+  if(!ci.cyc)return cardH('card','Statement &amp; payment',canEdit(a)?'<button type="button" class="a48r" data-act="a48plan" data-n="'+esc(a.name)+'">Set up</button>':'',
+    '<div class="a48empty"><b>No statement day yet</b>Add the statement day and payment terms to see what is due and get a reminder.</div>'+kv('Minimum payment',h?'••••':MA(minPay(a))+' <small class="a48auto">auto</small>'));
+  var newS=Math.max(0,owed-ci.stmt),sp=owed?Math.min(100,ci.stmt/owed*100):0;
+  var body='<div class="a48g2"><div><div class="a48mini">Statement · '+(ci.le?esc(dLabel(ci.le)):'')+'</div><div class="a48mbig">'+(h?'••••':MA(ci.stmt))+'</div><div style="margin-top:4px">'+(ci.stmt>=0.005?'<span class="a48pill '+(ci.dl!=null&&ci.dl<0?'o':'w')+'">'+(ci.due?'Due '+esc(dLabelW(ci.due)):'Due')+'</span>':'<span class="a48pill g">Paid ✓</span>')+'</div></div>'
+    +'<div><div class="a48mini">New spending</div><div class="a48mbig">'+(h?'••••':MA(newS))+'</div><div class="a48mini2">Goes on the next statement</div></div></div>'
+    +(h?'':'<div class="a48bar cc"><i style="width:'+sp.toFixed(1)+'%"></i></div>')
+    +kv('Minimum payment',h?'••••':MA(minPay(a))+' <small class="a48auto">auto</small>')
+    +kv('Statement day',esc(ordinal(ci.cyc))+' of each month')+kv('Pay within',esc(a.dueDays||20)+' days of the statement')+kv('Reminder',esc(remLeadTxt(a)))
+    +'<div class="a48hp">Minimum payment is calculated — 5% of the statement balance, or RM 50, whichever is higher.</div>';
+  return cardH('card','Statement &amp; payment',canEdit(a)?'<button type="button" class="a48r" data-act="a48plan" data-n="'+esc(a.name)+'">Edit plan</button>':'',body);
+}
+function ordinal(n){n=+n;return n+((n%10===1&&n!==11)?'st':(n%10===2&&n!==12)?'nd':(n%10===3&&n!==13)?'rd':'th');}
+function planCard(a){
+  var f=fam(a),ls=linkedOf(a),h=hid(a);
+  var link=ls.map(function(l){return '<button type="button" class="a48kv a48kvb" data-act="a48open" data-n="'+esc(l.name)+'"><span>'+(f==='hp'?'Vehicle':'Secures')+'</span><b class="a48acc">'+esc(l.name)+' ›</b></button>';}).join('');
+  var edit=canEdit(a)?'<button type="button" class="a48r" data-act="a48plan" data-n="'+esc(a.name)+'">Edit plan</button>':'';
+  if(!a.remDue)return cardH('calendar','Payment plan',edit,(+a.instalment>0?kv('Regular instalment',(h?'••••':MA(a.instalment))+' / month'):'')
+    +'<div class="a48empty"><b>No due date yet</b>Add one to get a reminder before each instalment.</div>'+(canEdit(a)?'<button type="button" class="a48btn sm cen" data-act="a48plan" data-n="'+esc(a.name)+'">Set up payment plan</button>':'')+link);
+  var FQ={m:'monthly',w:'weekly',f:'fortnightly',q:'quarterly',y:'yearly'};
+  var dl=dueDays(a.remDue);
+  var rows=kv('Next instalment',esc(dLabelY(a.remDue))+' · '+rel(dl))+(+a.instalment>0?kv('Instalment',(h?'••••':MA(a.instalment))+' · '+(FQ[a.freq||'m']||'monthly')):'')
+    +(+a.rate>0?kv('Interest rate',esc(a.rate)+'% p.a.'):'')+kv('Reminder',esc(remLeadTxt(a)))+(Math.abs(+a.start||0)>0?kv('Original amount',h?'••••':MA(a.start)):'');
+  return cardH('calendar','Payment plan',edit,rows+link);
+}
+function valueCard(a){
+  var vh=[];try{vh=valHist(a).slice().sort(function(x,y){return x.date<y.date?-1:1;});}catch(e){}
+  var pp=0;try{pp=purchaseOf(a);}catch(e){}
+  var pts=[{d:a.purchaseDate||'',v:pp,l:'Bought'}].concat(vh.map(function(v){return {d:v.date,v:+v.value,l:MONTHS[+v.date.slice(5,7)-1].slice(0,3)+' '+v.date.slice(2,4)};}));
+  var distinct={};pts.forEach(function(x){distinct[Math.round(x.v)]=1;});
+  var upd=canAdd59(a.name)&&stOf(a)==='active'?'<button type="button" class="a48r" data-act="valopen" data-n="'+esc(a.name)+'">Update</button>':'';
+  if(hid(a)||Object.keys(distinct).length<2)return cardH('trend','Value history',upd,'<div class="a48empty"><b>Value has not changed</b>Update the recorded value when a valuation or market check changes it.</div>');
+  pts=pts.slice(-6);var mx=Math.max.apply(null,pts.map(function(x){return x.v;}))||1;
+  return cardH('trend','Value history',upd,'<div class="a48chart">'+pts.map(function(x,i){return '<div class="c'+(i===pts.length-1?' on':'')+'"><em>'+shortAmt(x.v)+'</em><i style="height:'+Math.max(6,x.v/mx*70).toFixed(0)+'px"></i><span>'+esc(x.l)+'</span></div>';}).join('')+'</div>');
+}
+/* property / vehicle: value timeline + costs & income from the beta 38 category rule */
+function ruleTxns(a){
+  try{if(window.AF38){var r=AF38.rule(a);if(r&&((r.Income||[]).length||(r.Expense||[]).length))return allTxns().filter(function(t){return AF38.matches(t,r);});}}catch(e){}
+  return allTxns().filter(function(t){return txnTouchesAcc(t,a.name)&&t.type!=='Transfer';});
+}
+function propEvents(a){
+  var out=[],pp=0;try{pp=purchaseOf(a);}catch(e){}
+  var vh=[];try{vh=valHist(a).slice().sort(function(x,y){return x.date<y.date?-1:1;});}catch(e){}
+  var prev=pp;
+  vh.forEach(function(v){if(a.purchaseDate&&v.date===a.purchaseDate&&+v.value===pp)return;var nv=+v.value;out.push({k:'val',d:v.date,n:v.note||'Value updated',from:prev,to:nv,e:nv-prev,pc:prev?(nv-prev)/prev*100:0});prev=nv;});
+  ruleTxns(a).forEach(function(t){out.push({k:'cost',d:t.date,t:t,e:t.type==='Income'?+t.amount:-(+t.amount)});});
+  out.push({k:'buy',d:a.purchaseDate||'',e:pp});
+  out.sort(function(x,y){return (x.d||'0000')<(y.d||'0000')?1:((x.d||'0000')>(y.d||'0000')?-1:0);});
+  return out;
+}
+function propRow(x,a){
+  var isV=a.type==='Vehicle',h=hid(a);
+  if(x.k==='buy')return '<div class="a48tx"><span class="a48ti n">'+ico(isV?'car':'home')+'</span><span class="a48mid"><b>Purchased</b><small>'+(x.d?esc(dLabelY(x.d)):'Date not set')+'</small></span><span class="a48end"><b>'+(h?'••••':MA(x.e))+'</b><small>Purchase price</small></span></div>';
+  if(x.k==='val')return '<div class="a48tx"><span class="a48ti">'+ico('trend')+'</span><span class="a48mid"><b>'+esc(x.n)+'</b><small>'+esc(dLabelY(x.d))+(h?'':' · '+MA(x.from)+' → '+MA(x.to))+'</small></span><span class="a48end"><b class="'+(x.e>=0?'p':'o')+'">'+(h?'••••':(x.e>=0?'+':'−')+MA(x.e))+'</b><small>'+(x.e>=0?'+':'−')+Math.abs(x.pc).toFixed(1)+'%</small></span></div>';
+  var t=x.t,inc=x.e>0;
+  return '<button type="button" class="a48tx" data-act="txn" data-id="'+esc(t.id)+'"><span class="a48ti '+(inc?'in':'o')+'">'+ico(inc?'trend':'tag')+'</span><span class="a48mid"><b>'+esc(t.masked?'Private':(t.category||t.type))+'</b><small>'+esc(dLabel(t.date))+' · '+esc(t.account||'')+(t.note&&!t.masked?' · '+esc(t.note):'')+'</small></span><span class="a48end"><b class="'+(inc?'p':'')+'">'+(inc?'+':'−')+MA(x.e)+'</b><small>'+(inc?'Income':'Cost')+'</small></span></button>';
+}
+function propRecent(a){
+  var e=propEvents(a).filter(function(x){return x.k==='cost';}).slice(0,3),isV=a.type==='Vehicle';
+  var body=e.length?e.map(function(x){return propRow(x,a);}).join('')+'<button type="button" class="a48lnk blk2" data-act="a48tab" data-t="ac">See value history and all costs ›</button>'
+    :'<div class="a48empty"><b>No costs or income yet</b>'+(isV?'Road tax, insurance and service costs you record show here.':'Assessment, maintenance or rent you record show here.')+(window.AF38?' Choose their categories under Income &amp; costs on the account details.':'')+'</div>';
+  return cardH('tag','Recent costs &amp; income','',body);
+}
+function overviewHTML(a){
+  var f=fam(a);
+  if(f==='card'){var ci=cardInfo(a),cyc=txList(a).filter(function(x){return !ci.le||x.t.date>ci.le;});return stmtCard(a)+recentCard(a,'This billing cycle','Purchases on this card since the last statement show here.',cyc)+detailsCard(a);}
+  if(f==='loan'||f==='hp')return planCard(a)+chartCard(a,'Owed at month-end')+recentCard(a,'Repayments &amp; charges','Repayments you record will show here.')+detailsCard(a);
+  if(f==='prop'||f==='other')return valueCard(a)+propRecent(a)+detailsCard(a);
+  return chartCard(a,a.type==='Investment'?'Value over time':'Balance over time')+recentCard(a)+detailsCard(a);
+}
+/* ---------- activity ---------- */
+var PER={7:'7 days',30:'30 days',90:'3 months',0:'All time'};
+function perOf(a){var f=fam(a);return X.act.per==null?((f==='card'||f==='loan'||f==='hp')?90:30):X.act.per;}
+function cutoff(p){return p?addDaysISO(td(),-p):'0000';}
+function toolbar(filters,withSearch,a,extra){
+  var k=X.act.k;
+  var h='<div class="a48tb"><div class="a48seg" role="tablist">'+filters.map(function(x){return '<button type="button" role="tab" aria-selected="'+(k===x[0])+'" class="'+(k===x[0]?'on':'')+'" data-act="a48af" data-k="'+x[0]+'">'+x[1]+'</button>';}).join('')+'</div>'
+    +(withSearch?'<button type="button" class="a48ib'+(X.act.search?' on':'')+'" data-act="a48as" aria-label="Search">'+ico('search')+'</button>':'')+'</div>';
+  if(a)h+='<div class="a48tb a48tb2"><button type="button" class="a48per" data-act="a48per">'+ico('calendar')+esc(PER[perOf(a)])+'</button><span class="sp"></span>'+(extra||'')+'</div>';
+  if(withSearch&&X.act.search)h+='<div class="a48srch"><input class="fin" id="a48q" placeholder="Search note, category…" value="'+esc(X.act.q)+'" autocomplete="off"></div>';
+  return h;
+}
+function qMatch(x){var q=X.act.q.trim().toLowerCase();if(!q)return true;var t=x.t;return ((t.note||'')+' '+(t.category||'')+' '+(t.account||'')+' '+(t.to||'')).toLowerCase().indexOf(q)>=0;}
+function emptyBox(m){return '<div class="a48card"><div class="a48empty"><b>'+m[0]+'</b>'+m[1]+'</div></div>';}
+function monthLab(k){var y=k.slice(0,4),m=+k.slice(5,7);return MONTHS[m-1]+' '+y;}
+function importLnk(a){return canAdd59(a.name)?'<button type="button" class="a48lnk" data-act="stmfor" data-n="'+esc(a.name)+'">'+ico('receipt')+' Import statement</button>':'';}
+function bankActivity(a){
+  var k=X.act.k,c=cutoff(perOf(a));
+  var tx=txList(a).filter(function(x){return x.t.date>=c;});
+  if(k==='in')tx=tx.filter(function(x){return x.d>0&&x.t.type!=='Transfer';});
+  if(k==='out')tx=tx.filter(function(x){return x.d<0&&x.t.type!=='Transfer';});
+  if(k==='trf')tx=tx.filter(function(x){return x.t.type==='Transfer';});
+  tx=tx.filter(qMatch);
+  var h=toolbar([['all','All'],['in','In'],['out','Out'],['trf','Transfers']],true,a,importLnk(a));
+  if(!tx.length)return h+emptyBox({in:['No money in','Income and transfers into this account show here.'],out:['No money out','Spending and transfers out of this account show here.'],trf:['No transfers','Transfers to or from your own accounts show here.']}[k]||['No activity in this period','Try a longer period.']);
+  var by={},order=[];tx.forEach(function(x){var m=x.t.date.slice(0,7);if(!by[m]){by[m]=[];order.push(m);}by[m].push(x);});
+  order.forEach(function(m){var net=by[m].reduce(function(s,x){return s+x.d;},0);
+    h+='<div class="a48mhd"><span>'+esc(monthLab(m))+'</span><span class="'+(net>=0?'p':'o')+'">net '+(net>=0?'+':'−')+MA(net)+'</span></div><div class="a48card a48list">'+by[m].map(function(x){return txRowHTML(x,a);}).join('')+'</div>';});
+  return h;
+}
+function cycleEnd(d,cyc){
+  var y=+d.slice(0,4),m=+d.slice(5,7),day=+d.slice(8,10);
+  var e=Math.min(cyc,daysInMonth(y,m));
+  if(day>e){m++;if(m>12){m=1;y++;}e=Math.min(cyc,daysInMonth(y,m));}
+  return y+'-'+pad2(m)+'-'+pad2(e);
+}
+function cardActivity(a){
+  var k=X.act.k,c=cutoff(perOf(a)),ci=cardInfo(a);
+  var tx=txList(a).filter(function(x){return x.t.date>=c;});
+  if(k==='buy')tx=tx.filter(function(x){return x.t.type!=='Transfer';});
+  if(k==='pay')tx=tx.filter(function(x){return x.t.type==='Transfer'&&x.t.to===a.name;});
+  tx=tx.filter(qMatch);
+  var h=toolbar([['all','All'],['buy','Purchases'],['pay','Payments']],true,a,importLnk(a));
+  if(!tx.length)return h+emptyBox({buy:['No purchases in this period','Try a longer period.'],pay:['No payments in this period','Payments you make toward this card show here.']}[k]||['No activity in this period','Try a longer period.']);
+  var cyc=ci.cyc,by={},order=[];
+  tx.forEach(function(x){var key=cyc?cycleEnd(x.t.date,cyc):x.t.date.slice(0,7);if(!by[key]){by[key]=[];order.push(key);}by[key].push(x);});
+  order.forEach(function(key){
+    var L=by[key],spent=L.reduce(function(s,x){return s+(x.t.type!=='Transfer'&&x.d<0?-x.d:0);},0),paid=L.reduce(function(s,x){return s+(x.t.type==='Transfer'&&x.d>0?x.d:0);},0);
+    var cur=cyc&&key>=td(),lab,cls='';
+    if(k==='pay'){lab=paid?'paid '+MA(paid):'';cls='p';}
+    else{lab=(cur?'spent ':'')+MA(spent)+(!cur&&cyc&&ci.le===key&&ci.stmt>=0.005&&ci.due?' · due '+esc(dLabel(ci.due)):'');cls=cur?'':'o';}
+    var title=cyc?(cur?'Current cycle':'Statement')+' · '+esc(dLabel(key)):esc(monthLab(key));
+    h+='<div class="a48mhd"><span>'+title+'</span><span class="'+cls+'">'+lab+'</span></div><div class="a48card a48list">'+L.map(function(x){return txRowHTML(x,a);}).join('')+'</div>';
+  });
+  return h;
+}
+function isCharge(t,a){return t.type!=='Transfer'&&t.account===a.name;}
+function loanActivity(a){
+  var k=X.act.k,c=cutoff(perOf(a));
+  var tx=txList(a).filter(function(x){return x.t.date>=c;});
+  if(k==='repay')tx=tx.filter(function(x){return x.t.type==='Transfer'&&x.t.to===a.name;});
+  if(k==='charge')tx=tx.filter(function(x){return isCharge(x.t,a);});
+  var h=toolbar([['all','All'],['repay','Repayments'],['charge','Interest &amp; charges']],false,a,'');
+  if(!tx.length)h+=emptyBox({repay:['No repayments in this period','Record a repayment from Overview to see it here.'],charge:['No interest or charges','Interest charged to this loan shows here.']}[k]||['No activity in this period','Try a longer period.']);
+  else{
+    var by={},order=[];tx.forEach(function(x){var m=x.t.date.slice(0,7);if(!by[m]){by[m]=[];order.push(m);}by[m].push(x);});
+    order.forEach(function(m){
+      var paid=by[m].reduce(function(s,x){return s+(x.t.type==='Transfer'&&x.d>0?x.d:0);},0),chg=by[m].reduce(function(s,x){return s+(isCharge(x.t,a)?Math.abs(x.d):0);},0);
+      var lab=paid?'repaid '+MA(paid):(chg?'charged '+MA(chg):'');
+      h+='<div class="a48mhd"><span>'+esc(monthLab(m))+'</span><span class="'+(paid?'p':'o')+'">'+lab+'</span></div><div class="a48card a48list">'+by[m].map(function(x){return txRowHTML(x,a);}).join('')+'</div>';
+    });
+  }
+  if(k==='all')linkedOf(a).forEach(function(l){h+='<button type="button" class="a48eq" data-act="a48open" data-n="'+esc(l.name)+'">'+ico(icOf(l))+'<span>'+esc(l.name)+' is '+(fam(a)==='hp'?'financed':'secured')+' by this '+(fam(a)==='hp'?'hire purchase':'loan')+'</span>'+ico('chevright')+'</button>';});
+  return h;
+}
+function propActivity(a){
+  var k=X.act.k==='all'||X.act.k==='val'||X.act.k==='cost'||X.act.k==='inc'?X.act.k:'all',isV=a.type==='Vehicle';
+  var ev=propEvents(a);
+  if(k==='val')ev=ev.filter(function(x){return x.k==='val'||x.k==='buy';});
+  if(k==='cost')ev=ev.filter(function(x){return x.k==='cost'&&x.e<0;});
+  if(k==='inc')ev=ev.filter(function(x){return x.k==='cost'&&x.e>0;});
+  var can=canAdd59(a.name)&&stOf(a)==='active';
+  var h=toolbar([['all','All'],['val','Value'],['cost','Costs'],['inc','Income']],false,null);
+  if(can)h+='<div class="a48tb a48tb2"><button type="button" class="a48btn sm" data-act="valopen" data-n="'+esc(a.name)+'">'+ico('trend')+'Update value</button><button type="button" class="a48btn sm ghost" data-act="a48costinc" data-n="'+esc(a.name)+'">'+ico('plus')+'Cost or income</button></div>';
+  if(!ev.length)return h+emptyBox({cost:['No costs yet',isV?'Road tax, insurance, service and repairs you record show here.':'Assessment, quit rent, maintenance and repairs you record show here.'],inc:['No income yet',isV?'Income from this vehicle would show here.':'Rental income you record against this property shows here.'],val:['No value changes','Update the recorded value when a valuation changes it.']}[k]||['Nothing yet','']);
+  var by={},order=[];ev.forEach(function(x){var y=x.d?x.d.slice(0,4):'Undated';if(!by[y]){by[y]=[];order.push(y);}by[y].push(x);});
+  order.sort(function(p,q){return p==='Undated'?1:(q==='Undated'?-1:(p<q?1:-1));}).forEach(function(y){
+    var costs=by[y].reduce(function(s,x){return s+(x.k==='cost'&&x.e<0?-x.e:0);},0);
+    h+='<div class="a48mhd"><span>'+esc(y)+'</span><span class="o">'+(costs?'costs '+MA(costs):'')+'</span></div><div class="a48card a48list">'+by[y].map(function(x){return propRow(x,a);}).join('')+'</div>';
+  });
+  if(k==='all')linkedOf(a).forEach(function(l){h+='<button type="button" class="a48eq" data-act="a48open" data-n="'+esc(l.name)+'">'+ico(icOf(l))+'<span>'+esc(l.name)+' repayments are on the '+(fam(l)==='hp'?'hire purchase':'loan')+' page</span>'+ico('chevright')+'</button>';});
+  return h;
+}
+function activityHTML(a){var f=fam(a);if(f==='prop'||f==='other')return propActivity(a);if(f==='loan'||f==='hp')return loanActivity(a);if(f==='card')return cardActivity(a);return bankActivity(a);}
+function buView(a){
+  var ls=buRows().concat([]),l=null;try{l=(ledgers()||[]).filter(function(x){return x.name===a.name;})[0]||null;}catch(e){}
+  var amt=l?Math.abs(+l.amt||+l.bal||0):0,ok=amt<0.005,m=me();
+  var t=ok?'You are even':(l.creditor===m?esc(l.debtor)+' owes you':(l.debtor===m?'You owe '+esc(l.creditor):esc(l.debtor)+' owes '+esc(l.creditor)));
+  var h='<div class="a48card blk a48hero"><div class="a48hr"><span class="a48ti n">'+ico('scale')+'</span><div class="a48nm"><b>Between Us</b><small>'+esc(a.owner||a.name)+'</small></div></div>'
+    +'<div class="a48lab">'+t+'</div><div class="a48fig'+(ok?'':(l.creditor===m?' p':' o'))+'">'+MA(amt)+'</div><div class="a48sub">'+(ok?'Nothing to settle right now.':'From split bills and money fronted for each other.')+'</div>'
+    +(ok?'':'<div class="a48acts"><button type="button" class="a48btn" data-act="settle" data-n="'+esc(a.name)+'">Settle up '+MA(amt)+'</button></div>')+'</div>';
+  var items=txList(a).slice(0,8);
+  h+=cardH('list','History','',items.length?items.map(function(x){return txRowHTML(x,a);}).join(''):'<div class="a48empty"><b>No history</b>Items appear when you split a bill or lend money.</div>');
+  h+='<div class="a48cnt">'+ico('info')+'<span>Between Us changes when you split a bill or lend money, and returns to zero when you settle up.</span></div>';
+  return h;
+}
+function canEdit(a){var p='owner';try{p=permFor59(a.name);}catch(e){}return p==='owner'||(p==='admin');}
+function pageHTML(){
+  var a=a59(X.acc);if(!a)return '<div class="a48empty"><b>This account is no longer available</b></div>';
+  var f=fam(a);
+  var head='<div class="a48ph"><button type="button" class="a48bk" data-act="a48back" aria-label="Back">'+ico('back48')+'</button><div class="a48tt"><small>Accounts</small><b>'+esc(a.name)+'</b></div>'
+    +(f==='bu'?'<span style="width:42px"></span>':'<button type="button" class="a48mo" data-act="a48menu" data-n="'+esc(a.name)+'" aria-label="More actions">'+ico('dots')+'</button>')+'</div>';
+  if(f==='bu')return head+'<div class="a48body">'+buView(a)+'</div>';
+  return head+'<div class="a48body">'+heroHTML(a,X.tab==='ac')+tabsHTML()+(X.tab==='ov'?overviewHTML(a):activityHTML(a))+'</div>';
+}
+function renderPage(keep){
+  var p=page(),y=keep?p.scrollTop:0;
+  p.innerHTML=priv(pageHTML);
+  p.scrollTop=y;
+}
+X.renderPage=renderPage;
+function openPage(n){
+  X.acc=n;X.tab='ov';X.det=false;X.act={k:'all',per:null,q:'',search:false};
+  renderPage(false);
+  var p=page();p.classList.add('on');p.scrollTop=0;
+  try{navSync();}catch(e){}
+  setTimeout(function(){var b=p.querySelector('.a48bk');if(b)try{b.focus({preventScroll:true});}catch(e){}},260);
+}
+function closePage(){var p=$('pageAcc48');if(p)p.classList.remove('on');X.acc='';try{navSync();}catch(e){}}
+X.openPage=openPage;X.closePage=closePage;
+X.openEdit=function(n,plan){openEdit(n,plan);};
+X.openAdd=function(){X.sheet={kind:'add',step:1,type:null,f:{name:'',owner:me(),amt:'',vis:adv()?'me':'shared',pa:'add',more:{},moreOpen:false}};openMgr('a48add');};
+/* every entry point that opens an account (rows, Insights tiles, reports, reminders) opens the new page */
+SCREEN.around('openAccount',900000111,function(prev){return function(n){
+  if(!X.on||!a59(n))return prev.apply(this,arguments);
+  try{if(DRILL.open&&typeof hidePage==='function'){DRILL.open=false;hidePage();}}catch(e){}
+  openPage(n);
+};});
+SCREEN.on('openAccount',900000111);
+/* the page is one Back-closable layer */
+var _alo48=anyLayerOpen;anyLayerOpen=function(){return onEl('pageAcc48')||_alo48.apply(this,arguments);};
+var _nc48=navClose;
+navClose=function(){
+  var higher=onEl('cmodal')||onEl('chmodal')||onEl('clrmodal')||onEl('mgrOvl')||onEl('ovl')||onEl('txSheet61')||!!(window.CALC&&CALC.open);
+  try{if(window.HDR&&HDR.isOpen&&HDR.isOpen())higher=true;}catch(e){}
+  if(!higher&&onEl('pageAcc48')){closePage();return;}
+  return _nc48.apply(this,arguments);
+};
+SCREEN.before('gotoView',900000112,{call:'apply',ret:true},function(){if(onEl('pageAcc48')){var p=$('pageAcc48');p.classList.remove('on');X.acc='';}});
+SCREEN.on('gotoView',900000112);
+/* keep the open page current after any save / sync */
+var _ra48=null;
+SCREEN.after('renderAll',900000113,{call:'apply',ret:false},function(){
+  try{if(onEl('pageAcc48')&&X.acc){if(!a59(X.acc)){closePage();return;}renderPage(true);}}catch(e){n48(e,'b48:refresh');}
+});
+SCREEN.on('renderAll',900000113);
+
+/* ---------- 5 · sheets (manager sheet) ---------- */
+var TYPES={
+  bank:{label:'Bank account',ic:'bank',ex:'Current, savings, fixed deposit',amt:'Balance today',ph:'e.g. Maybank savings',t:'Bank',more:['l4']},
+  cash:{label:'Cash',ic:'cash',ex:'Wallet, petty cash',amt:'Cash on hand',ph:'e.g. Cash wallet',t:'Cash',more:[]},
+  ewallet:{label:'e-Wallet',ic:'wallet',ex:'Touch ’n Go, GrabPay',amt:'Balance today',ph:'e.g. TnG eWallet',t:'e-Wallet',more:[]},
+  invest:{label:'Investment',ic:'trend',ex:'Shares, unit trust, EPF',amt:'Value today',ph:'e.g. ASB',t:'Investment',more:[]},
+  property:{label:'Property',ic:'home',ex:'Home, apartment, land',amt:'Purchase price',ph:'e.g. Condo KL',t:'Property',more:['ptype','pdate']},
+  vehicle:{label:'Vehicle',ic:'car',ex:'Car, motorcycle, van',amt:'Purchase price',ph:'e.g. Myvi',t:'Vehicle',more:['vtype','pdate']},
+  other:{label:'Other asset',ic:'box',ex:'Gold, collectibles',amt:'Value today',ph:'e.g. Gold bars',t:'Other Asset',more:[]},
+  card:{label:'Credit card',ic:'card',ex:'Credit card, charge card',amt:'You owe today',ph:'e.g. CIMB Visa',owe:1,t:'Card',more:['l4','stmtDay','minPay']},
+  loan:{label:'Loan',ic:'bank',ex:'Housing, personal, education',amt:'You owe today',ph:'e.g. Home Loan',owe:1,t:'Loan',more:['rate','inst','next','link']},
+  hp:{label:'Hire purchase',ic:'carplus',ex:'Vehicle or equipment',amt:'You owe today',ph:'e.g. Myvi HP',owe:1,t:'Hire Purchase',more:['inst','next','link']}
+};
+function typeKeyOf(a){var f=fam(a);if(f==='card')return 'card';if(f==='loan')return 'loan';if(f==='hp')return 'hp';if(a.type==='Property')return 'property';if(a.type==='Vehicle')return 'vehicle';if(a.type==='Other Asset')return 'other';if(a.type==='Cash')return 'cash';if(/wallet/i.test(a.type||''))return 'ewallet';if(a.type==='Investment')return 'invest';return 'bank';}
+function ensureType(t,owe){
+  if(DB.accTypes.indexOf(t)<0){DB.accTypes.push(t);}
+  DB.accTypeMeta=DB.accTypeMeta||{};
+  if(!DB.accTypeMeta[t])DB.accTypeMeta[t]={kind:owe?'liability':'asset',cycle:0};
+}
+function ownerChoices(){var m=me(),P=pn();if(!couple()||!P)return [m||''];return [m,P,jointPair(m,P)];}
+function f48(){return X.sheet;}
+function seg(field,val,opts){return '<div class="a48seg2">'+opts.map(function(o){return '<button type="button" class="'+(val===o[0]?'on':'')+'" data-act="a48fseg" data-f="'+field+'" data-v="'+esc(o[0])+'">'+o[1]+'</button>';}).join('')+'</div>';}
+function moreField(k,F,T,a){
+  var g=function(n){return esc(F.more[n]==null?'':F.more[n]);};
+  switch(k){
+    case 'l4':return '<div class="a48fld"><label for="a48m_l4">Last 4 digits (optional)</label><input class="fin" id="a48m_l4" data-m="l4" inputmode="numeric" maxlength="4" placeholder="Helps match statements" value="'+g('l4')+'"></div>';
+    case 'stmtDay':return '<div class="a48g2"><div class="a48fld"><label for="a48m_sd">Statement day</label><input class="fin" id="a48m_sd" data-m="stmtDay" inputmode="numeric" placeholder="1–31" value="'+g('stmtDay')+'"></div><div class="a48fld"><label for="a48m_dd">Pay within (days)</label><input class="fin" id="a48m_dd" data-m="dueDays" inputmode="numeric" placeholder="20" value="'+g('dueDays')+'"></div></div>';
+    case 'minPay':{var base=a?minPay(a):Math.max(Math.abs(parseAmt(F.amt)||0)*0.05,50);return '<div class="a48fld"><label>Minimum payment</label><div class="a48autocalc"><span>Auto-calculated</span><b>'+MA(base)+'</b></div><div class="a48hp">5% of the statement balance, or RM 50 — whichever is higher. Recalculated every statement.</div></div>';}
+    case 'rate':return '<div class="a48fld"><label for="a48m_rate">Interest rate % (optional)</label><input class="fin" id="a48m_rate" data-m="rate" inputmode="decimal" placeholder="e.g. 4.35" value="'+g('rate')+'"></div>';
+    case 'inst':return '<div class="a48fld"><label for="a48m_inst">Instalment amount (optional)</label><input class="fin" id="a48m_inst" data-m="inst" inputmode="decimal" placeholder="0.00" value="'+g('inst')+'"></div>';
+    case 'next':return '<div class="a48fld"><label for="a48m_next">Next due date (optional)</label><input class="fin" type="date" id="a48m_next" data-m="next" value="'+g('next')+'"></div>';
+    case 'link':{
+      var want=T===TYPES.hp?'Vehicle':'Property',opts=DB.accounts.filter(function(x){return x.type===want&&stOf(x)==='active';}),v=F.more.link||'';
+      return '<div class="a48fld"><label for="a48m_link">'+(T===TYPES.hp?'Vehicle it is for':'Property it secures')+' (optional)</label><select class="fin" id="a48m_link" data-m="link"><option value="">None</option>'+opts.map(function(o){return '<option value="'+esc(o.name)+'"'+(v===o.name?' selected':'')+'>'+esc(o.name)+'</option>';}).join('')+'</select></div>';}
+    case 'ptype':{var pv=F.more.ptype||'Home';return '<div class="a48fld"><label for="a48m_pt">Property type</label><select class="fin" id="a48m_pt" data-m="ptype">'+['Home','Apartment / Condominium','Land','Commercial property','Investment property','Other property'].map(function(x){return '<option'+(pv===x?' selected':'')+'>'+x+'</option>';}).join('')+'</select></div>';}
+    case 'vtype':{var vv=F.more.vtype||'Car';return '<div class="a48fld"><label for="a48m_vt">Vehicle type</label><select class="fin" id="a48m_vt" data-m="vtype">'+['Car','Motorcycle','Van','Commercial vehicle','Other vehicle'].map(function(x){return '<option'+(vv===x?' selected':'')+'>'+x+'</option>';}).join('')+'</select></div>';}
+    case 'pdate':return '<div class="a48fld"><label for="a48m_pd">Purchase date (optional)</label><input class="fin" type="date" id="a48m_pd" data-m="pdate" value="'+g('pdate')+'"></div>';
+  }
+  return '';
+}
+var MORE_L={l4:'last 4 digits',stmtDay:'statement day',minPay:'minimum payment',rate:'rate',inst:'instalment',next:'due date',link:'linked asset',ptype:'type',vtype:'type',pdate:'purchase date'};
+function formBody(F,T,mode,a){
+  var h='',owners=ownerChoices(),cp=couple(),P=pn();
+  h+='<div class="a48fld"><label for="a48f_name">Name</label><input class="fin'+(F.err==='name'?' err':'')+'" id="a48f_name" data-f="name" placeholder="'+esc(T.ph)+'" value="'+esc(F.name||'')+'" autocomplete="off" maxlength="40">'+(F.err==='name'?'<div class="a48errt">'+esc(F.errMsg||'Give the account a name')+'</div>':'')+'</div>';
+  if(cp&&owners.length===3)h+='<div class="a48fld"><label>Owner</label>'+seg('owner',F.owner,[[owners[0],esc(owners[0]||'Me')],[owners[1],esc(owners[1])],[owners[2],'Joint']])+'</div>';
+  var amtLabel=mode==='edit'?(T.owe?'Original amount owed':(T===TYPES.property||T===TYPES.vehicle?'Purchase price':'Opening balance')):T.amt;
+  h+='<div class="a48fld"><label for="a48f_amt">'+amtLabel+'</label><div class="a48mi'+(F.err==='amt'?' err':'')+'"><span>'+esc(cur()||'RM')+'</span><input id="a48f_amt" data-f="amt" inputmode="decimal" placeholder="0.00" value="'+esc(F.amt||'')+'"></div>'+(T.owe?'<div class="a48hp">Enter it as a positive number.</div>':'')+(F.err==='amt'?'<div class="a48errt">Enter an amount, or 0</div>':'')+'</div>';
+  if(cp){
+    var joint=/ & /.test(F.owner||''),shared=F.vis!=='me',other=F.owner===P?me():P;
+    if(joint)h+='<div class="a48fld"><label>Who can see this</label><div class="a48cnt">'+ico('users')+'<span>Both of you — joint accounts are always shared.</span></div></div>';
+    else if(adv()&&F.owner===me()){
+      h+='<div class="a48fld"><label>Who can see this</label>'+seg('vis',shared?'shared':'me',[['me',ico('lock')+' Only me'],['shared','Shared with '+esc(P||'partner')]]);
+      h+=shared?'<div class="a48fld" style="margin:10px 0 0"><label for="a48f_pa">'+esc(P||'Partner')+' can</label><select class="fin" id="a48f_pa" data-f="pa">'+[['view','View only'],['add','Add transactions'],['full','Full transaction access'],['admin','Account administrator']].map(function(o){return '<option value="'+o[0]+'"'+((F.pa||'add')===o[0]?' selected':'')+'>'+o[1]+'</option>';}).join('')+'</select></div>':'<div class="a48hp">Private accounts stay on your phone. You can share it later.</div>';
+      h+='</div>';
+    }else if(F.owner===me()){
+      h+='<div class="a48fld"><label for="a48f_pa">'+esc(P||'Partner')+' can</label><select class="fin" id="a48f_pa" data-f="pa">'+[['view','View only'],['add','Add transactions'],['full','Full transaction access'],['admin','Account administrator']].map(function(o){return '<option value="'+o[0]+'"'+((F.pa||'add')===o[0]?' selected':'')+'>'+o[1]+'</option>';}).join('')+'</select></div>';
+    }else h+='<div class="a48fld"><label>Who can see this</label><div class="a48cnt">'+ico('users')+'<span>Shared with you — '+esc(other||'')+' set this up for '+esc(F.owner||'')+'.</span></div></div>';
+  }
+  var keys=T.more.slice();
+  if(keys.length){
+    h+='<div class="a48more'+(F.moreOpen?' open':'')+'"><button type="button" data-act="a48moreTog" aria-expanded="'+!!F.moreOpen+'">'+ico('chevright')+(F.moreOpen?'Hide details':'More details')+' <span>· '+keys.slice(0,3).map(function(k){return MORE_L[k];}).join(', ')+(keys.length>3?'…':'')+'</span></button><div class="a48mb">'+keys.map(function(k){return moreField(k,F,T,a);}).join('')+'</div></div>';
+  }
+  return h;
+}
+function sheetFoot(html){return '<div class="a48sf">'+html+'</div>';}
+function readForm(){
+  var F=X.sheet&&X.sheet.f;if(!F)return;
+  [].slice.call(document.querySelectorAll('#mgrBody [data-f],#mgrBody [data-m]')).forEach(function(el){
+    if(el.dataset.f&&el.tagName!=='BUTTON')F[el.dataset.f]=el.value;
+    if(el.dataset.m)F.more[el.dataset.m]=el.value;
+  });
+}
+MGR_TITLE.a48add=ico('plus')+' Add account';
+MGR_TITLE.a48edit=ico('pencil')+' Edit account';
+MGR_TITLE.a48close=ico('folder')+' Close or archive';
+MGR_TITLE.a48menu=ico('dots')+' Account';
+MGR_TITLE.a48pick=ico('card')+' Pay card';
+V56.mgr.a48add=function(){
+  var S=X.sheet;if(!S||S.kind!=='add'){S=X.sheet={kind:'add',step:1,type:null,f:{name:'',owner:me(),amt:'',vis:adv()?'me':'shared',pa:'add',more:{},moreOpen:false}};}
+  var b=$('mgrBody');if(!b)return;
+  if(S.step===1){
+    var grp=function(title,keys,ow){return '<div class="a48ol">'+title+'</div><div class="a48opt">'+keys.map(function(k){var T=TYPES[k];return '<button type="button" class="a48oc'+(ow?' o':'')+'" data-act="a48type" data-t="'+k+'"><span class="a48ti">'+ico(T.ic)+'</span><span><b>'+T.label+'</b><small>'+T.ex+'</small></span></button>';}).join('')+'</div>';};
+    b.innerHTML='<div class="a48lead">What are you adding?</div>'+grp('Money you have',['bank','cash','ewallet','invest','property','vehicle','other'],false)+grp('Money you owe',['card','loan','hp'],true);
+    setTitle(MGR_TITLE.a48add);
+    return;
+  }
+  var T=TYPES[S.type];
+  setTitle('<button type="button" class="m27back" data-act="a48addBack" aria-label="Back to account types">'+ico('chevleft')+'</button> New '+esc(T.label.toLowerCase()));
+  b.innerHTML=formBody(S.f,T,'add',null)+sheetFoot('<div class="a48cnt">'+ico('check')+'<span>Counts toward <b>'+(T.owe?'What you owe':esc(catOf({type:T.t,name:''})))+'</b> in your net worth</span></div><button type="button" class="btn" data-act="a48saveAdd" style="width:100%">Add '+esc(T.label.toLowerCase())+'</button>');
+};
+function setTitle(h){var t=$('mgrTitle');if(t)t.innerHTML=h;}
+function nameErr(n,except){
+  if(!n)return 'Give the account a name';
+  if(n.length>40)return 'Keep the name under 40 characters';
+  try{var r=B20.reservedName(n);if(r)return r;}catch(e){}
+  if(DB.accounts.some(function(x){return x.name===n&&x.name!==except;}))return 'Pick a different name. “'+n+'” already exists.';
+  return '';
+}
+function saveAdd(){
+  readForm();
+  var S=X.sheet,F=S.f,T=TYPES[S.type],n=String(F.name||'').trim(),ne=nameErr(n,null);
+  if(ne){F.err='name';F.errMsg=ne;V56.mgr.a48add();var i=$('a48f_name');if(i)i.focus();return;}
+  var amt=parseAmt(F.amt);if(String(F.amt||'').trim()==='')amt=0;
+  if(!isFinite(amt)){F.err='amt';V56.mgr.a48add();return;}
+  amt=Math.abs(amt);
+  ensureType(T.t,!!T.owe);
+  var owner=couple()?(F.owner||me()):(me()||'');
+  var a={id:'ac'+Math.random().toString(36).slice(2,8)+String(Date.now()).slice(-4),name:n,type:T.t,owner:owner,start:T.owe?-amt:amt,cycle:0,dueDays:20};
+  if(T===TYPES.property||T===TYPES.vehicle||T===TYPES.other)a.purchasePrice=amt;
+  if(couple()&&!/ & /.test(owner)&&owner===me()){
+    if(adv()&&F.vis==='me'){a.vis='me';a.pvby=me();}
+    else a.partnerAccess=F.pa||'add';
+  }
+  applyMore(a,F,T);
+  DB.accounts.push(a);
+  X.sheet=null;closeMgr();touch();
+  X.flash=n;X.coll[(T.owe?'o:':'h:')+catOf(a)]=false;
+  toast('Added “'+n+'” · counts toward '+(T.owe?'what you owe':catOf(a)));
+  try{if(VIEWNAV.cur!=='accounts'&&!onEl('pageAcc48'))gotoView('accounts');else renderHome();}catch(e){renderHome();}
+}
+function applyMore(a,F,T){
+  var m=F.more||{};
+  if(m.l4!==undefined)a.l4=String(m.l4||'').replace(/\D/g,'').slice(0,4)||undefined;
+  if(T===TYPES.card){var c=parseInt(m.stmtDay,10);if(c>=1&&c<=31)a.cycle=c;else if(m.stmtDay==='')a.cycle=0;var dd=parseInt(m.dueDays,10);if(dd>=1&&dd<=60)a.dueDays=dd;delete a.minPay;}
+  if(T===TYPES.loan||T===TYPES.hp){
+    var r=parseFloat(m.rate);if(T===TYPES.loan){if(r>0)a.rate=r;else if(m.rate==='')delete a.rate;}
+    var inst=parseAmt(m.inst);if(inst>0)a.instalment=Math.round(inst*100)/100;else if(m.inst==='')delete a.instalment;
+    if(m.next)a.remDue=m.next;else if(m.next==='')delete a.remDue;
+    if(m.link!==undefined){
+      if(m.link){a.linkedAsset=m.link;var as=a59(m.link);if(as){as.linkedLoans=as.linkedLoans||[];if(as.linkedLoans.indexOf(a.name)<0)as.linkedLoans.push(a.name);}}
+      else delete a.linkedAsset;
+    }
+  }
+  if(T===TYPES.property){a.propType=m.ptype||a.propType||'Home';if(m.pdate)a.purchaseDate=m.pdate;}
+  if(T===TYPES.vehicle){a.vehicleType=m.vtype||a.vehicleType||'Car';if(m.pdate)a.purchaseDate=m.pdate;}
+  if(a.l4===undefined)delete a.l4;
+}
+function openEdit(n,plan){
+  var a=a59(n);if(!a)return;
+  if(!canEdit(a)){toast('Only the account owner can change this account');return;}
+  var T=TYPES[typeKeyOf(a)];
+  X.sheet={kind:'edit',acc:n,plan:!!plan,f:{name:a.name,owner:a.owner||me(),amt:String(T.owe?Math.abs(+a.start||0):((T===TYPES.property||T===TYPES.vehicle||T===TYPES.other)?(function(){try{return purchaseOf(a);}catch(e){return +a.start||0;}})():(+a.start||0))),
+    vis:a.vis==='me'?'me':'shared',pa:a.partnerAccess||'add',moreOpen:!!plan,
+    more:{l4:a.l4||'',stmtDay:a.cycle||'',dueDays:a.dueDays||'',rate:a.rate||'',inst:a.instalment||'',next:a.remDue||'',link:a.linkedAsset||'',ptype:a.propType||'Home',vtype:a.vehicleType||'Car',pdate:a.purchaseDate||''}}};
+  openMgr('a48edit');
+}
+V56.mgr.a48edit=function(){
+  var S=X.sheet,b=$('mgrBody');if(!S||!b)return;
+  var a=a59(S.acc);if(!a){b.innerHTML='<div class="a48empty"><b>This account is no longer available</b></div>';return;}
+  var T=TYPES[typeKeyOf(a)],cnt=txList(a).length,owner=permFor59(a.name)==='owner';
+  var ctx='<div class="a48ctx"><span class="a48ti'+(owe(a)?' o':'')+'">'+ico(icOf(a))+'</span><div><b>'+esc(S.plan?a.name:a.type)+'</b><small>'+cnt+' transaction'+(cnt===1?'':'s')+' · '+(owe(a)?'you owe '+MA(balOf(a)):(fam(a)==='prop'?'value '+MA(balOf(a)):'balance '+M(balOf(a))))+'</small></div></div>';
+  if(S.plan){
+    var keys=T.more.filter(function(k){return ['l4','ptype','vtype','pdate'].indexOf(k)<0;});
+    setTitle(ico('calendar')+' Payment plan');
+    b.innerHTML=ctx+keys.map(function(k){return moreField(k,S.f,T,a);}).join('')
+      +'<div class="a48fld"><label>Reminder</label><button type="button" class="a48kv a48kvb" data-act="a48remset" data-n="'+esc(a.name)+'"><span>'+esc(remLeadTxt(a))+(a.autopay?' · Autopay':'')+'</span><b class="a48acc">Reminder &amp; autopay ›</b></button></div>'
+      +'<button type="button" class="a48lnk" data-act="a48planFull">Edit other details ›</button>'
+      +sheetFoot('<button type="button" class="btn" data-act="a48saveEdit" style="width:100%">Save plan</button>');
+    return;
+  }
+  setTitle(MGR_TITLE.a48edit);
+  var dang=owner?'<div class="a48ol">Other</div><div class="a48dng"><button type="button" data-act="a48close" data-n="'+esc(a.name)+'">'+ico('swap')+(fam(a)==='prop'?'Sell, close or archive':'Close or archive')+'<span class="cv">'+ico('chevright')+'</span></button>'
+    +'<button type="button" class="d" data-act="a48del" data-n="'+esc(a.name)+'">'+ico('trash')+'Delete account<span class="cv">'+ico('chevright')+'</span></button></div>':'';
+  b.innerHTML=ctx+formBody(S.f,T,'edit',a)+dang+sheetFoot('<button type="button" class="btn" data-act="a48saveEdit" style="width:100%">'+'Save changes</button>');
+};
+function saveEdit(){
+  readForm();
+  var S=X.sheet,F=S.f,a=a59(S.acc);if(!a){closeMgr();return;}
+  var T=TYPES[typeKeyOf(a)];
+  if(!S.plan){
+    var n=String(F.name||'').trim(),ne=nameErr(n,a.name);
+    if(ne){F.err='name';F.errMsg=ne;V56.mgr.a48edit();return;}
+    var amt=parseAmt(F.amt);if(String(F.amt||'').trim()==='')amt=0;
+    if(!isFinite(amt)){F.err='amt';V56.mgr.a48edit();return;}
+    var old=a.name;
+    if(n!==old){a.name=n;try{B20.renameEverywhere(old,n);}catch(e){n48(e,'b48:rename');}}
+    if(couple()&&permFor59(a.name)==='owner'){
+      var ow=F.owner||a.owner;a.owner=ow;
+      if(/ & /.test(ow)){delete a.vis;delete a.pvby;}
+      else if(ow===me()){
+        if(adv()&&F.vis==='me'){a.vis='me';a.pvby=me();delete a.partnerAccess;}
+        else{delete a.vis;delete a.pvby;a.partnerAccess=F.pa||a.partnerAccess||'add';}
+      }
+    }
+    amt=Math.abs(amt);
+    if(T.owe)a.start=-amt;
+    else if(T===TYPES.property||T===TYPES.vehicle||T===TYPES.other){a.purchasePrice=amt;a.start=amt;}
+    else a.start=amt;
+  }
+  applyMore(a,F,T);
+  var plan=S.plan;X.sheet=null;closeMgr();touch();
+  toast(plan?'Payment plan saved':'Saved “'+a.name+'”');
+  if(onEl('pageAcc48')){X.acc=a.name;renderPage(true);}
+}
+function openClose(n){
+  var a=a59(n);if(!a)return;
+  if(permFor59(a.name)!=='owner'){toast('Only the account owner can close, archive or sell an account');return;}
+  X.sheet={kind:'close',acc:n,f:{mode:fam(a)==='prop'?'sold':'closed',date:td(),reason:''}};
+  openMgr('a48close');
+}
+V56.mgr.a48close=function(){
+  var S=X.sheet,b=$('mgrBody');if(!S||!b)return;var a=a59(S.acc);if(!a)return;
+  var sold=fam(a)==='prop',F=S.f,opts=[];
+  if(sold)opts.push(['sold','Sold or disposed','Leaves your net worth from the date you pick. A linked loan stays open.']);
+  opts.push(['closed','Close it','Stays listed under “Closed & archived”.']);
+  if(!isVal(a))opts.push(['archived','Close and hide it','Also hidden from lists and pickers.']);
+  setTitle(MGR_TITLE.a48close.replace('Close or archive',sold?'Sell, close or archive':'Close or archive'));
+  b.innerHTML='<div class="a48ctx"><span class="a48ti">'+ico(icOf(a))+'</span><div><b>'+esc(a.name)+'</b><small>'+(owe(a)?'You owe '+MA(balOf(a)):(sold?'Value '+MA(balOf(a)):'Balance '+M(balOf(a))))+'</small></div></div>'
+    +'<div role="radiogroup" aria-label="What happens to it">'+opts.map(function(o){return '<button type="button" role="radio" aria-checked="'+(F.mode===o[0])+'" class="a48rad'+(F.mode===o[0]?' on':'')+'" data-act="a48cmode" data-v="'+o[0]+'"><span class="dot"></span><span><b>'+o[1]+'</b><small>'+o[2]+'</small></span></button>';}).join('')+'</div>'
+    +'<div class="a48g2" style="margin-top:12px"><div class="a48fld"><label for="a48c_date">Date</label><input class="fin" type="date" id="a48c_date" value="'+esc(F.date)+'"></div><div class="a48fld"><label for="a48c_r">Reason (optional)</label><select class="fin" id="a48c_r">'
+    +(sold?[['sold','Sold'],['traded-in','Traded in'],['written-off','Written off'],['other','Other']]:[['','No reason'],['paid-off','Paid off'],['cancelled','Cancelled'],['no longer used','No longer used'],['other','Other']]).map(function(x){return '<option value="'+x[0]+'"'+(F.reason===x[0]?' selected':'')+'>'+x[1]+'</option>';}).join('')+'</select></div></div>'
+    +'<div class="a48hp">From the date you pick, '+(sold?'it leaves':'it stops counting in')+' your net worth and its reminders stop. History stays, and you can bring it back any time.</div>'
+    +sheetFoot('<button type="button" class="btn" data-act="a48confirmClose" style="width:100%">Confirm</button>');
+};
+/* same status rules as the beta 20 Close / archive sheet (b20apply20 lives inside its own section) */
+function applyStatus(a,st,d,reason){
+  var log=function(w){try{window.log20(a,w);}catch(e){}};
+  if(st==='active'){delete a.status;delete a.statusDate;delete a.disposalDate;delete a.closedDate;delete a.closeReason;delete a.archivedAt;log('Restored to active');}
+  else if(st==='archived'){a.status='archived';a.closedDate=d;a.archivedAt=d;if(reason)a.closeReason=reason;delete a.statusDate;delete a.disposalDate;log('Archived from '+d);}
+  else if(st==='sold'){a.status='sold';a.statusDate=d;a.disposalDate=d;a.closedDate=d;a.closeReason=reason||'sold';delete a.archivedAt;log('Marked sold from '+d);}
+  else{a.status='closed';a.closedDate=d;if(reason)a.closeReason=reason;delete a.archivedAt;delete a.statusDate;delete a.disposalDate;log('Closed from '+d);}
+}
+function confirmClose(){
+  var S=X.sheet,a=a59(S.acc);if(!a)return;
+  var d=($('a48c_date')||{}).value||td(),r=($('a48c_r')||{}).value||'';
+  if(a.purchaseDate&&d<a.purchaseDate){toast('That date is before the purchase date — choose a later date');return;}
+  var snap=JSON.parse(JSON.stringify(a)),mode=S.f.mode;
+  applyStatus(a,mode,d,r);
+  X.sheet=null;closeMgr();closePage();touch();
+  try{toastAct('“'+a.name+'” '+(mode==='archived'?'archived':(mode==='sold'?'marked as sold':'closed'))+' · leaves your net worth',function(){var cur=a59(snap.name);if(cur){Object.keys(cur).forEach(function(k){delete cur[k];});Object.assign(cur,snap);touch();}});}
+  catch(e){toast('“'+a.name+'” closed');}
+}
+function reopen(n){
+  var a=a59(n);if(!a)return;
+  if(permFor59(a.name)!=='owner'){toast('Only the account owner can bring it back');return;}
+  applyStatus(a,'active');X.flash=a.name;touch();toast('Brought back “'+a.name+'”');
+  if(onEl('pageAcc48'))renderPage(true);
+}
+function delAcc(n){
+  var a=a59(n);if(!a)return;
+  if(permFor59(a.name)!=='owner'){toast('Only the account owner can delete an account');return;}
+  var why=[];try{why=(B20.deleteReasons(n)||[]).filter(Boolean);}catch(e){}
+  if(!why.length&&txList(a).length)why.push(txList(a).length+' transactions');
+  if(why.length){
+    askChoice('Can’t delete “'+n+'”. It still has '+why.join(' and ')+', and deleting would erase that history. Close it instead — its history stays and it leaves your net worth.',[
+      {c:'btn',l:'Close it instead',f:function(){X.sheet=null;closeMgr();setTimeout(function(){openClose(n);},260);}},
+      {c:'btn ghost',l:'Cancel',f:function(){}}]);
+    return;
+  }
+  X.sheet=null;closeMgr();
+  setTimeout(function(){try{accDel(n);}catch(e){n48(e,'b48:del');}var w=setInterval(function(){if(!a59(n)){clearInterval(w);closePage();renderHome();}},300);setTimeout(function(){clearInterval(w);},20000);},260);
+}
+V56.mgr.a48menu=function(){
+  var b=$('mgrBody'),a=a59(X.menuAcc);if(!b||!a)return;
+  var f=fam(a),owner=permFor59(a.name)==='owner',ed=canEdit(a),st=stOf(a);
+  setTitle(ico('dots')+' '+esc(a.name));
+  var rows='';
+  if(ed&&st==='active')rows+='<button type="button" data-act="a48edit" data-n="'+esc(a.name)+'">'+ico('pencil')+'Edit details</button>';
+  if((f==='card'||f==='loan'||f==='hp')&&ed&&st==='active')rows+='<button type="button" data-act="a48plan" data-n="'+esc(a.name)+'">'+ico('calendar')+'Payment plan &amp; reminder</button>';
+  if((f==='bank'||f==='card')&&canAdd59(a.name)&&st==='active')rows+='<button type="button" data-act="stmfor" data-n="'+esc(a.name)+'">'+ico('receipt')+'Import a statement</button>';
+  if(owner)rows+=st==='active'?'<button type="button" data-act="a48close" data-n="'+esc(a.name)+'">'+ico('swap')+(f==='prop'?'Sell, close or archive':'Close or archive')+'</button>'
+    :'<button type="button" data-act="a48reopen" data-n="'+esc(a.name)+'">'+ico('refresh')+'Bring back</button>';
+  b.innerHTML='<div class="a48menu">'+(rows||'<div class="a48empty"><b>Nothing to change</b>You can view this account but not change it.</div>')+'</div>';
+};
+
+/* ---------- 6 · card payment choices and loan interest inside the beta 32 payment sheet ---------- */
+var PAY={tick:0,loanInt:null};
+function payExtras(){
+  var R=window.REM32,c=R&&R.ctx,host=$('pay32ctx');
+  var old=$('pay48x');
+  if(!c||!host||!$('sheet').classList.contains('on')){if(old)old.remove();return;}
+  var a=a59(c.x.name);if(!a){if(old)old.remove();return;}
+  var f=fam(a),h='';
+  if(f==='card'){
+    var ci=cardInfo(a),owed=Math.abs(balOf(a)),curA=Math.round((parseAmt(($('fAmount')||{}).value)||0)*100)/100,opts=[],hit=false;
+    if(ci.stmt>=0.005)opts.push(['stmt','Statement balance',ci.stmt]);
+    opts.push(['min','Minimum payment',minPay(a)]);
+    if(owed>=0.005)opts.push(['full','Full outstanding',owed]);
+    h='<div class="a48paych" role="radiogroup" aria-label="How much to pay">'+opts.map(function(o){var on=!hit&&Math.abs(curA-o[2])<0.005;if(on)hit=true;return '<button type="button" role="radio" aria-checked="'+on+'" class="'+(on?'on':'')+'" data-act="a48payamt" data-v="'+o[2]+'"><b>'+o[1]+'</b><small>'+MA(o[2])+'</small></button>';}).join('')+'</div>';
+  }else if(f==='loan'){
+    var L=PAY.loanInt||(PAY.loanInt={on:false,amt:''});
+    h='<div class="a48introw"><label class="a48trow"><span><b>Part of this was interest</b><small>Records the interest as a charge so the balance drops correctly</small></span><input type="checkbox" class="tgl" id="a48int" '+(L.on?'checked':'')+'></label>'
+      +(L.on?'<div class="a48mi sm"><span>'+esc(cur()||'RM')+'</span><input id="a48intamt" inputmode="decimal" placeholder="Interest and charges" value="'+esc(L.amt)+'"></div>':'')+'</div>';
+  }else{if(old)old.remove();return;}
+  if(!old){old=document.createElement('div');old.id='pay48x';old.className='pay48x';host.insertAdjacentElement('afterend',old);}
+  var ae=document.activeElement;if(ae&&old.contains(ae)&&ae.tagName==='INPUT')return;   /* typing the interest */
+  if(old.__h!==h){old.innerHTML=h;old.__h=h;}
+}
+function startPayWatch(){clearInterval(PAY.tick);PAY.tick=setInterval(function(){if(!window.REM32||!REM32.ctx){clearInterval(PAY.tick);PAY.tick=0;var o=$('pay48x');if(o)o.remove();return;}payExtras();},300);}
+/* min basis for reminders uses the calculated minimum */
+try{if(window.REM32&&REM32.enrich){var _en48=REM32.enrich;REM32.enrich=function(x){var r=_en48.apply(this,arguments);try{if(x&&x.src==='card'&&x.basis==='min'){var a=a59(x.name);if(a)x.amt=minPay(a);}}catch(e){}return r;};}}catch(e){}
+SCREEN.around('saveTxn',999048001,function(prev){return function(){
+  var R=window.REM32,c=R&&R.ctx,L=PAY.loanInt,intAmt=0,loan=null;
+  if(c&&c.x&&c.x.src==='loan'&&L&&L.on){var v=parseAmt((($('a48intamt')||{}).value)||L.amt||'');if(v>0){intAmt=Math.round(v*100)/100;loan=a59(c.x.name);}}
+  var payAmt=parseAmt((($('fAmount')||{}).value)||'');
+  if(intAmt>0&&payAmt>0&&intAmt>=payAmt){toast('Interest must be less than the payment');return;}
+  var dateV=(($('fDate')||{}).value)||td(),before=DB.txns.length;
+  var r=prev.apply(this,arguments);
+  try{
+    if(intAmt>0&&loan&&DB.txns.length>before&&!(R&&R.ctx)){
+      if((DB.categories.Expense||[]).indexOf('Loan interest')<0)DB.categories.Expense.push('Loan interest');
+      var t=mkTxn({date:dateV,type:'Expense',category:'Loan interest',sub:loan.name,account:loan.name,person:ownerOf(loan.name)||me()||'',note:'Interest in repayment',amount:intAmt});
+      t.lcharge=1;try{ensureEntities([t]);}catch(e){}DB.txns.push(t);touch();
+      toast('Repayment saved · '+money(intAmt)+' of it recorded as interest');
+    }
+  }catch(e){n48(e,'b48:int');}
+  if(!(R&&R.ctx))PAY.loanInt=null;
+  return r;
+};});
+SCREEN.after('closeSheet',999048002,{call:'none',ret:false},function(){if(!(window.REM32&&REM32.ctx))PAY.loanInt=null;var o=$('pay48x');if(o&&!(window.REM32&&REM32.ctx))o.remove();});
+function payCard(n){
+  var a=a59(n);if(!a)return;
+  var ci=cardInfo(a),amt=ci.stmt>=0.005?ci.stmt:Math.abs(balOf(a));
+  if(!(window.REM32&&REM32.payAccount&&REM32.payAccount(n,amt))){try{openCardPay(n,amt);}catch(e){n48(e,'b48:pay');}}
+  startPayWatch();
+}
+function repay(n){
+  var a=a59(n);if(!a)return;PAY.loanInt={on:false,amt:''};
+  if(!(window.REM32&&REM32.payAccount&&REM32.payAccount(n))){try{V59.loan=n;openMgr('loanpay');}catch(e){n48(e,'b48:repay');}}
+  startPayWatch();
+}
+/* reminder settings: the minimum payment is shown as calculated instead of a typed field */
+SCREEN.after('openMgr',900000114,{call:'apply',ret:false},function(k){
+  try{
+    if(k!=='v63remset')return;
+    var a=a59(V63.remAcc);if(!a||fam(a)!=='card')return;
+    var i=$('rs16min');if(!i||i.dataset.a48)return;
+    i.dataset.a48='1';i.value='';i.type='hidden';
+    var lab=i.previousElementSibling;if(lab&&/min/i.test(lab.textContent||''))lab.style.display='none';
+    i.insertAdjacentHTML('afterend','<div class="a48fld"><label>Minimum payment</label><div class="a48autocalc"><span>Auto-calculated</span><b>'+MA(minPay(a))+'</b></div><div class="a48hp">5% of the statement balance, or RM 50 — whichever is higher.</div></div>');
+  }catch(e){n48(e,'b48:remset');}
+});
+SCREEN.on('openMgr',900000114);
+
+/* ---------- 7 · actions ---------- */
+function openFromPage(fn){if(onEl('pageAcc48')){fn();}else fn();}
+ACT.on('b48-accounts',{
+  'a48open':function(el){openPage(el.dataset.n);},
+  'a48back':function(){closePage();},
+  'a48tab':function(el){X.tab=el.dataset.t==='ac'?'ac':'ov';X.act={k:'all',per:null,q:'',search:false};renderPage(false);var p=page();var t=p.querySelector('.a48tabs');if(t&&X.tab==='ac'&&t.scrollIntoView)t.scrollIntoView({block:'start'});},
+  'a48det':function(){X.det=!X.det;renderPage(true);},
+  'a48af':function(el){X.act.k=el.dataset.k;renderPage(true);},
+  'a48as':function(){X.act.search=!X.act.search;if(!X.act.search)X.act.q='';renderPage(true);if(X.act.search)setTimeout(function(){var i=$('a48q');if(i)i.focus();},30);},
+  'a48per':function(){var a=a59(X.acc),seq=[30,90,0,7],cu=perOf(a);X.act.per=seq[(seq.indexOf(cu)+1)%4];renderPage(true);},
+  'a48scope':function(el){X.scope=el.dataset.s;renderHome();},
+  'a48grp':function(el){X.coll[el.dataset.k]=!X.coll[el.dataset.k];renderHome();},
+  'a48closed':function(){X.showClosed=!X.showClosed;renderHome();},
+  'a48reopen':function(el){if(onEl('mgrOvl'))closeMgr();reopen(el.dataset.n);},
+  'a48add':function(){X.sheet={kind:'add',step:1,type:null,f:{name:'',owner:me(),amt:'',vis:adv()?'me':'shared',pa:'add',more:{},moreOpen:false}};openMgr('a48add');},
+  'a48type':function(el){var S=X.sheet;S.step=2;S.type=el.dataset.t;S.f.more={dueDays:'20'};S.f.moreOpen=false;S.f.err=null;V56.mgr.a48add();setTimeout(function(){var i=$('a48f_name');if(i)i.focus();},60);},
+  'a48addBack':function(){readForm();X.sheet.step=1;V56.mgr.a48add();},
+  'a48fseg':function(el){readForm();var F=X.sheet.f;F[el.dataset.f]=el.dataset.v;if(el.dataset.f==='owner'&&/ & /.test(el.dataset.v))F.vis='shared';(X.sheet.kind==='add'?V56.mgr.a48add:V56.mgr.a48edit)();},
+  'a48moreTog':function(){readForm();X.sheet.f.moreOpen=!X.sheet.f.moreOpen;(X.sheet.kind==='add'?V56.mgr.a48add:V56.mgr.a48edit)();},
+  'a48saveAdd':function(){saveAdd();},
+  'a48edit':function(el){var n=el.dataset.n;if(onEl('mgrOvl')){closeMgr();setTimeout(function(){openEdit(n,false);},260);}else openEdit(n,false);},
+  'a48plan':function(el){var n=el.dataset.n,a=a59(n);if(!a)return;var go=function(){openEdit(n,true);};if(onEl('mgrOvl')){closeMgr();setTimeout(go,260);}else go();},
+  'a48planFull':function(){readForm();X.sheet.plan=false;X.sheet.f.moreOpen=true;V56.mgr.a48edit();},
+  'a48remset':function(el){var n=el.dataset.n;closeMgr();V63.remAcc=n;setTimeout(function(){openMgr('v63remset');},260);},
+  'a48saveEdit':function(){saveEdit();},
+  'a48close':function(el){var n=el.dataset.n;if(onEl('mgrOvl')){closeMgr();setTimeout(function(){openClose(n);},260);}else openClose(n);},
+  'a48cmode':function(el){var F=X.sheet.f;F.date=($('a48c_date')||{}).value||F.date;F.reason=($('a48c_r')||{}).value||F.reason;F.mode=el.dataset.v;V56.mgr.a48close();},
+  'a48confirmClose':function(){confirmClose();},
+  'a48del':function(el){delAcc(el.dataset.n);},
+  'a48menu':function(el){X.menuAcc=el.dataset.n;openMgr('a48menu');},
+  'a48pay':function(el){payCard(el.dataset.n);},
+  'a48repay':function(el){repay(el.dataset.n);},
+  'a48int':function(el){V59.loan=el.dataset.n;openMgr('loanint');},
+  'a48costinc':function(el){
+    var a=a59(el.dataset.n);openSheet();setFormType('Expense');
+    try{if(window.AF38&&a){var r=AF38.rule(a);var c=(r.Expense||[])[0];if(c){F.sub='';renderFormCats(c);}}}catch(e){}
+    toast('Record the cost or income from the account that paid or received it');
+  },
+  'a48payamt':function(el){var i=$('fAmount');if(!i)return;i.value=String(+el.dataset.v);try{i.dispatchEvent(new Event('input',{bubbles:true}));}catch(e){}payExtras();try{if(window.REM32&&REM32.paint)REM32.paint();}catch(e){}}
+});
+/* stmfor / valopen / settle / acradd / acrtrf / loanint from a sheet: close the menu first */
+ACT.on('b48-menu-close',{
+  'stmfor':function(el,next){if(onEl('mgrOvl')&&MGR.kind==='a48menu'){closeMgr();setTimeout(function(){next(el);},260);return;}return next(el);}
+});
+document.addEventListener('change',function(e){
+  var t=e.target;if(!t)return;
+  if(t.id==='a48int'){PAY.loanInt=PAY.loanInt||{on:false,amt:''};PAY.loanInt.on=!!t.checked;var o=$('pay48x');if(o)o.__h='';payExtras();if(t.checked)setTimeout(function(){var i=$('a48intamt');if(i)i.focus();},40);}
+});
+document.addEventListener('input',function(e){
+  var t=e.target;if(!t)return;
+  if(t.id==='a48intamt'){PAY.loanInt=PAY.loanInt||{on:true,amt:''};PAY.loanInt.amt=t.value;}
+  if(t.id==='a48q'){X.act.q=t.value;var pos=t.selectionStart;renderPage(true);var i=$('a48q');if(i){i.focus();try{i.setSelectionRange(pos,pos);}catch(x){}}}
+  if(t.id==='fAmount'&&$('pay48x'))payExtras();
+});
+
+/* ---------- 8 · one way to add, edit, close or delete (beta 48.1) ----------
+   Settings › Accounts and the Accounts manager list stay — they are the maintenance views
+   (flat list, Assets / Liabilities filter, legacy-type sorting). What sits behind them now uses
+   the same sheets as the Accounts tab: Add → the type chooser, Edit → the new Edit sheet (where
+   Close / archive and Delete live), and the Delete button beside Edit is gone. */
+ACT.on('b48-entry-points',{
+  'accaddq':function(){if(onEl('mgrOvl')){closeMgr();setTimeout(X.openAdd,260);}else X.openAdd();},
+  'm27add':function(el,next){if(MGR.kind!=='accs')return next(el);X.openAdd();},
+  'mgredit':function(el,next){
+    if(MGR.kind!=='accs')return next(el);
+    var n=el.dataset.k,a=a59(n);if(!a)return;
+    try{if(isLedger20(a))return next(el);}catch(e){}
+    X.openEdit(n,false);
+  },
+  'm27accedit':function(el,next){var n=X.acc||(window.DRILL&&DRILL.acc);if(!n||!a59(n))return next(el);X.openEdit(n,false);}
+});
+SCREEN.after('renderMgr',900000115,{call:'none',ret:false},function(){
+  try{
+    if(MGR.kind!=='accs')return;
+    [].slice.call(document.querySelectorAll('#mgrBody [data-act=mgrdel]')).forEach(function(b){
+      var a=a59(b.dataset.k);if(a){try{if(isLedger20(a))return;}catch(e){}}
+      b.remove();
+    });
+    if(!$('a48mgrnote')){var body=$('mgrBody');if(body)body.insertAdjacentHTML('beforeend','<div class="help small" id="a48mgrnote" style="margin-top:10px">To close, archive or delete an account, open it with the pencil — those choices are under <b>Other</b> in Edit account.</div>');}
+  }catch(e){n48(e,'b48:mgrlist');}
+});
+SCREEN.on('renderMgr',900000115);
+
+/* ---------- version + release note (beta 48) ---------- */
+try{if(window.pinVer36)window.pinVer36('1.60 beta 48');}catch(e){}
+try{
+  if(!window.__B48RN){
+    var ol48=document.querySelector('#pageSet details.help ol')||document.querySelector('#view-settings details.help ol');
+    if(ol48){ol48.insertAdjacentHTML('beforeend','<li><b>Accounts, redesigned (beta 48):</b> one net-worth headline with You have / You owe, one list grouped by kind with every account one tap away, and (in Couple modes) Everyone · you · your partner · Joint chips. Each account opens on a page built for its kind — Pay for cards, Record repayment for loans, Update value for property — with Overview and Activity. Adding an account starts with a plain-language chooser and four fields. The card minimum payment is now calculated (5% of the statement or RM 50, whichever is higher).</li>');window.__B48RN=1;}
   }
 }catch(e){}
 })();
