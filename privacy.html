@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Privacy Policy · Couple Money Manager</title>
+<meta name="description" content="How Couple Money Manager handles your data.">
+<style>
+:root{--bg:#f4f6fb;--card:#fff;--ink:#14213d;--muted:#5b6478;--line:#e3e7f0;--accent:#2563eb}
+@media (prefers-color-scheme:dark){:root{--bg:#0f1420;--card:#171e2e;--ink:#e8ecf5;--muted:#9aa4b8;--line:#263045;--accent:#7aa2ff}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.6 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+main{max-width:760px;margin:0 auto;padding:24px 16px 64px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:22px 20px;margin-bottom:16px}
+h1{font-size:28px;line-height:1.2;margin:8px 0 4px}
+h2{font-size:19px;margin:26px 0 6px}
+h3{font-size:16px;margin:18px 0 4px}
+p,li{color:var(--ink)}
+.muted{color:var(--muted);font-size:14px}
+a{color:var(--accent)}
+table{width:100%;border-collapse:collapse;font-size:14px;margin:8px 0}
+th,td{text-align:left;vertical-align:top;padding:8px 6px;border-bottom:1px solid var(--line)}
+th{color:var(--muted);font-weight:700}
+.note{background:color-mix(in srgb,var(--accent) 10%,var(--card));border-radius:12px;padding:12px 14px;font-size:14px}
+</style>
+</head>
+<body>
+<main>
+<div class="card">
+<p class="muted"><a href="./">← Back to Couple Money Manager</a></p>
+<h1>Privacy Policy</h1>
+<p class="muted">Effective date: 22 October 2026 · Applies to the Couple Money Manager web app at https://ccm-dev.github.io/couple-money-manager/ and its Android app.</p>
+<p>Couple Money Manager ("the app", "we") is operated by <b>[OPERATOR NAME]</b>. Contact: <b>[CONTACT EMAIL]</b>.</p>
+<p class="note">In short: your financial data is stored on your own device. It only leaves the device when you switch on a feature that needs it: cloud sync, a household folder, an AI assistant or usage statistics. We do not sell your data and the app shows no ads.</p>
+
+<h2>1. Data the app handles</h2>
+<table>
+<tr><th>Data</th><th>Where it is kept</th><th>When it leaves your device</th></tr>
+<tr><td>Accounts, transactions, budgets, goals, notes, categories, people's names</td><td>On your device (browser storage). If you set an app-lock PIN, it is encrypted with a key protected by that PIN.</td><td>Only for the optional features in section 2.</td></tr>
+<tr><td>Private (Only-me) accounts in Advanced Couple mode</td><td>Only on the owner's device, plus any backup the owner makes</td><td>Never sent to your partner, Couple Money Cloud or the household folder.</td></tr>
+<tr><td>Sign-in details (email address, display name, account ID)</td><td>Firebase Authentication (Google)</td><td>Only if you create an account or sign in.</td></tr>
+<tr><td>Backup files</td><td>Wherever you save them</td><td>Only when you download or share a backup yourself. Backups are encrypted with a password you choose.</td></tr>
+</table>
+
+<h2>2. Optional features that send data off your device</h2>
+<h3>Couple Money Cloud (household sync)</h3>
+<p>If you switch on Couple Money Cloud, the household's <i>shared</i> data is stored in Google Cloud Firestore (Firebase) so your partner's device can sync it. This covers shared accounts, shared transactions and household lists. Access is limited to the members of your household by security rules. Private accounts and details your partner has hidden are not uploaded.</p>
+<h3>Household folder in Google Drive or OneDrive</h3>
+<p>If you choose the household folder, the app stores the household's shared data as <b>encrypted files</b> in a folder in one partner's own Google Drive or Microsoft OneDrive. The files are encrypted on the device with a key derived from the household code. The code is never uploaded, so Google and Microsoft store only encrypted content. The app talks to Google or Microsoft directly from your device. We do not run a server that receives your Drive or OneDrive data.</p>
+<ul>
+<li><b>Google Drive:</b> the app requests only the <code>drive.file</code> permission. That lets it open the files it creates and the files you select in the Google Picker. It cannot see the rest of your Drive. It also reads your Google email address and name to show which account is connected.</li>
+<li><b>Microsoft OneDrive:</b> the app requests <code>Files.ReadWrite.All</code> (needed to open a folder another person shared with you), <code>User.Read</code> (your email and name) and <code>offline_access</code> (to stay signed in). It uses these only to read and write the household folder.</li>
+</ul>
+<p>The household folder sign-in token, and the key that opens the folder, are kept in your browser's storage on your device. "Stop on this device" in the app removes them. You can also remove the app's access at any time in your Google Account (Security → Third-party access) or Microsoft account (Privacy → Apps and services).</p>
+<p><b>Google API Services User Data Policy:</b> Couple Money Manager's use and transfer of information received from Google APIs to any other app adheres to the <a href="https://developers.google.com/terms/api-services-user-data-policy" rel="noopener">Google API Services User Data Policy</a>, including the Limited Use requirements. Google user data is used only to provide the household folder feature you turned on. It is not used for advertising, not sold, not transferred to others except as needed to provide that feature or to comply with law, and not read by humans except with your consent, for security purposes or to comply with law.</p>
+<h3>AI assistant</h3>
+<p>If you connect an AI provider (Google Gemini or OpenAI) with your own API key, your questions and a summary of the relevant figures are sent directly from your device to that provider. Transaction notes are included only if you switch on "Send notes to the online AI". For a private transaction, only the amount is included. The provider's own privacy policy applies to that data.</p>
+<h3>PIN reset</h3>
+<p>If you set an app-lock PIN, a recovery copy of the data key is held by our PIN-reset service. It is released only after you prove it is you, with a one-time code sent to your account email or a fresh Google sign-in. The service receives your account ID and email address for this purpose. It never receives your financial data.</p>
+<h3>Usage statistics (off by default)</h3>
+<p>Only if you switch on "Share anonymous usage statistics" in Settings → Privacy &amp; Security, and only while Couple Money Cloud is on, the app sends usage events to Google Analytics for Firebase: which screens and features are used, and app errors. These events never include amounts, account names, notes or other financial details. You can switch it off at any time.</p>
+<h3>Payment reminders</h3>
+<p>Reminder notifications are created on your device. With "Hide amounts in notifications" or an app lock on, notification text contains no account names or amounts.</p>
+
+<h2>3. Sharing with your partner</h2>
+<p>In Couple and Advanced Couple modes, your partner can see what you share with the household, under the permissions you set for each account. In Advanced Couple mode, Private accounts are never shared. Removing a partner stops future sharing. A copy already synced to their device stays on that device.</p>
+
+<h2>4. What we do not do</h2>
+<ul>
+<li>We do not sell, rent or trade your personal data.</li>
+<li>We do not show ads or use your data for advertising.</li>
+<li>We do not access your bank accounts. All data is entered or imported by you.</li>
+</ul>
+
+<h2>5. Service providers</h2>
+<p>Depending on the features you use: Google (Firebase Authentication, Cloud Firestore, Cloud Functions, Google Analytics for Firebase, Google Drive), Microsoft (OneDrive, Microsoft identity platform), the AI provider you connect, and GitHub Pages, which hosts the app's files and may log standard request data such as IP addresses.</p>
+
+<h2 id="delete">6. Keeping and deleting your data</h2>
+<ul>
+<li><b>On your device:</b> Settings → Danger zone → "Delete profile and data" removes everything on the device. Clearing the browser's site data or uninstalling the app does the same.</li>
+<li><b>Couple Money Cloud and your account:</b> Settings → Danger zone → "Delete household cloud data" deletes the shared cloud copy. "Delete profile and data" deletes the data on the device, your household cloud copy (if you own it) and your sign-in account, after you confirm your sign-in. Without the app, you can ask us to delete your account and cloud data by emailing <b>[CONTACT EMAIL]</b> from the account's email address. We complete requests within 30 days.</li>
+<li><b>Household folder:</b> the files live in your own Google Drive or OneDrive. Delete the folder there to remove them. "Stop on this device" removes the app's key and sign-in from the device.</li>
+<li><b>Usage statistics</b> are kept by Google Analytics under its standard retention (up to 14 months).</li>
+</ul>
+
+<h2>7. Security</h2>
+<p>Data on the device can be encrypted with your PIN. Household folder files are encrypted with AES-256-GCM before upload. Couple Money Cloud access is restricted by server-side security rules, and all connections use HTTPS. No method is perfectly secure, so keep a recent backup.</p>
+
+<h2>8. Your rights</h2>
+<p>Depending on where you live, you may have the right to access, correct, delete or export your data, and to object to or restrict processing. Most of this you can do directly in the app: export a backup, edit or delete records, or delete your profile. For anything else, contact <b>[CONTACT EMAIL]</b>. You may also complain to your local data-protection authority.</p>
+
+<h2>9. Children</h2>
+<p>The app is not intended for children under 16. We do not knowingly collect data from them.</p>
+
+<h2>10. Changes</h2>
+<p>We will update this page and its effective date when practices change. Material changes will be announced in the app's release notes.</p>
+
+<h2>11. Contact</h2>
+<p><b>[OPERATOR NAME]</b> · <b>[CONTACT EMAIL]</b> · <b>[POSTAL ADDRESS OR COUNTRY]</b></p>
+</div>
+</main>
+</body>
+</html>
