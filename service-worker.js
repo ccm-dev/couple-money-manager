@@ -1,6 +1,6 @@
 /* Couple Money Manager service worker.
    Bump VERSION each time you upload a new index.html so phones pick up the update. */
-const VERSION = 'cmm-v1.60-beta34';
+const VERSION = 'cmm-v1.60-beta46';
 const APP_SHELL = [
   './',
   './index.html',
@@ -143,8 +143,8 @@ self.addEventListener('periodicsync', event => {
 });
 
 /* Payment reminders: tapping a notification opens (or focuses) the app on the payment.
-   Background reminders carry the payment key; reminders shown by the open page have none,
-   so they open the Reminder centre. */
+   Background reminders and (since beta 43) reminders shown by the open page both carry the
+   payment key; a notification without one opens the Reminder centre. */
 self.addEventListener('notificationclick', event => {
   const data = (event.notification && event.notification.data) || {};
   const remKey = data.cmm32 ? (data.remKey || '') : '';
