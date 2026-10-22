@@ -813,6 +813,10 @@ function rowsFromCSV(text){
     return -1;
   }
   var iD=col('date','日期'),iT=col('income/expense','income / expense','type','收支'),iC=col('category','分类'),iS=col('subcategory','子分类'),iA=col('account','账户'),iP=col('person','member','成员'),iN=col('note','备注','notes'),iM=col('amount','金额'),iSp=col('split','splits','shares','拆分'),iTo=col('to account','to','transfer to');
+  /* v1.60 beta 41: read the owed columns too (the template and the app's own CSV
+     exports carry them) — previously a CSV import silently dropped "X owes Y",
+     which also bypassed the household-name import guard */
+  var iOA=col('owed account','欠款账户'),iOM=col('owed amount','owed');
   var out=[];
   for(var r=1;r<t.length;r++){
     var R=t[r];
@@ -820,7 +824,7 @@ function rowsFromCSV(text){
     function g(i){return i>=0?(R[i]||''):'';}
     var date=excelDate(g(iD)),type=normalizeType(g(iT))||'Expense',amt=parseAmt(g(iM));
     if(!date||!amt)continue;
-    out.push(mkTxn({date:date,type:type,category:g(iC)||'Others',sub:g(iS),account:g(iA),to:g(iTo),person:g(iP),note:g(iN),amount:amt,split:parseSplitStr(g(iSp))}));
+    out.push(mkTxn({date:date,type:type,category:g(iC)||'Others',sub:g(iS),account:g(iA),to:g(iTo),person:g(iP),note:g(iN),amount:amt,split:parseSplitStr(g(iSp)),owedAcc:g(iOA),owedAmt:g(iOM)}));
   }
   return out;
 }
@@ -11575,22 +11579,17 @@ SCREEN.on('txDetailHTML',90060426);
     orow.appendChild(sel);
   }
 })();
-/* owner / paid-by: follows the account owner by default; overridable for plain expenses in couple modes */
+/* owner / paid-by: NOT an editable field — the owner always follows the owner of the
+   account the user chooses (beta 42). The read-only #fOwner box the base layer keeps in
+   sync already shows that owner; the old overridable owner select (#fOwnerSel) is retired:
+   kept in the DOM for id stability, but disabled and hidden on every refresh so the save
+   path can never apply an owner override again. */
 var _uouB3=updateOwnerUI;
 updateOwnerUI=function(){
   _uouB3.apply(this,arguments);
-  var sel=$('fOwnerSel'),box=$('fOwner');if(!sel||!box)return;
-  var trf=F.type==='Transfer',from=($('fAccount')||{}).value||'';
-  var fo=ownerOf(from);
-  var jp=(isCouple()&&DB.people.length>=2)?jointPair(DB.people[0],DB.people[1]):'';
-  var opts=(isCouple()&&DB.people.length>=2)?[DB.people[0],DB.people[1],jp]:DB.people.slice();
-  if(fo&&opts.indexOf(fo)<0)opts.push(fo);
-  sel.innerHTML=opts.map(function(p){return '<option value="'+esc(p)+'"'+(p===fo?' selected':'')+'>'+esc(p===jp?'Joint \u00b7 '+p:p)+'</option>';}).join('');
-  var splitOn=SPLIT.rows&&SPLIT.rows.length>1;
-  var owed=$('fOwedRow')&&!$('fOwedRow').hidden&&$('fOwed').checked;
-  var dis=trf||splitOn||owed||!isCouple();
-  sel.disabled=dis;sel.style.display=dis?'none':'';
-  box.style.display=dis?'':'none';
+  var sel=$('fOwnerSel'),box=$('fOwner');if(!sel)return;
+  sel.disabled=true;sel.style.display='none';
+  if(box)box.style.display='';
 };
 
 SCREEN.on('saveTxn',90064746);
@@ -18906,9 +18905,9 @@ SCREEN.afterDraw(function(){try{drillEdit();}catch(e){}});
     var card=$('fCard61');
     var accRow=$('fAccount').closest('.f-row'),accGrid=accRow.parentNode,toGrid=$('fToRow').parentNode;
     accRow.classList.add('row61');accRow.id='fAccRow61';mv(accRow,card);
-    accRow.insertAdjacentHTML('beforeend','<span class="own61" id="fOwnChip61" hidden></span><span class="chev61">'+ico('chevright')+'</span><button type="button" class="swap61" data-act="fswap61" id="fSwap61" hidden aria-label="Swap accounts">'+ico('swap')+'</button>');
+    accRow.insertAdjacentHTML('beforeend','<span class="own61" id="fOwnChip61" hidden></span><button type="button" class="swap61" data-act="fswap61" id="fSwap61" hidden aria-label="Swap accounts">'+ico('swap')+'</button>');
     var tr=mv($('fToRow'),card);tr.classList.add('row61');
-    tr.insertAdjacentHTML('beforeend','<span class="own61" id="fOwnToChip61" hidden></span><span class="chev61">'+ico('chevright')+'</span>');
+    tr.insertAdjacentHTML('beforeend','<span class="own61" id="fOwnToChip61" hidden></span>');
     var orow=mv($('fOwnerRow'),card);orow.classList.add('row61');
     mv($('fOwnerToRow'),hold);
     var owed=mv($('fOwedRow'),card);owed.classList.add('row61','tg61');
@@ -18985,9 +18984,11 @@ SCREEN.afterDraw(function(){try{drillEdit();}catch(e){}});
       $('fCopyNote61').hidden=V61.mode!=='copy';
       /* account rows */
       $('fAccLabel').textContent=trf?'From':'Account';
-      var oc=$('fOwnChip61'),ot=ownText('fOwner'),selVis=$('fOwnerSel')&&$('fOwnerSel').style.display!=='none';
-      oc.hidden=!(cp&&ot&&!selVis);if(!oc.hidden)oc.innerHTML=ico('user')+'<span>'+esc(ot)+'</span>';
-      $('fOwnerRow').hidden=!(cp&&selVis);
+      /* beta 42: the owner chip is the chosen account's owner — read-only, it follows
+         the account; the owner row is not an editable field any more */
+      var oc=$('fOwnChip61'),ot=ownText('fOwner');
+      oc.hidden=!(cp&&ot);if(!oc.hidden)oc.innerHTML=ico('user')+'<span>'+esc(ot)+'</span>';
+      $('fOwnerRow').hidden=true;
       var otc=$('fOwnToChip61'),ott=ownText('fOwnerTo');otc.hidden=!(cp&&trf&&ott);if(!otc.hidden)otc.innerHTML=ico('user')+'<span>'+esc(ott)+'</span>';
       $('fSwap61').hidden=!trf;
       /* date chips */
@@ -19298,7 +19299,13 @@ function cmm291ReminderAllowed(account,uid){
 }
 function cmm291StripExperienceMeta(db){
   if(!db||!db.meta)return db;
-  ['expLevel','expSelectedAt','expSelectionSource','expTourFull','expOnboarded','simpleWealthVisibility','onboardingRecommendation','onboardingRecommendationReasons'].forEach(function(k){delete db.meta[k];});
+  /* v1.60 beta 41: 'expOnboarded' stays in DB.meta — it is the device-wide "the
+     experience questions were answered or skipped" marker that the beta-18
+     sign-in/boot timers still watch. Stripping it on every save made the flag
+     impossible to persist, so the questions re-appeared at every sign-in.
+     The private experience data (level, source, recommendations) is still
+     stripped here and lives in the per-user preference store. */
+  ['expLevel','expSelectedAt','expSelectionSource','expTourFull','simpleWealthVisibility','onboardingRecommendation','onboardingRecommendationReasons'].forEach(function(k){delete db.meta[k];});
   return db;
 }
 /* CMM_TEST_API_END */
@@ -22290,7 +22297,7 @@ function build40(){
     col.appendChild(sel);if(chip)col.appendChild(chip);
     if(cfg[0]==='fAccRow61'){
       var orow=$('fOwnerRow');
-      if(orow)col.appendChild(orow); /* editable owner becomes the second line too */
+      if(orow)col.appendChild(orow); /* retired owner row — kept for id stability, syncForm61 keeps it hidden (beta 42) */
       var pv=document.createElement('small');pv.className='pv40';pv.id='fPrivHint40';pv.hidden=true;
       col.appendChild(pv);
     }
@@ -22542,3 +22549,330 @@ try{
   }
 }catch(e){}
 })();
+
+/* ##################################################################
+   ##### SECTION: v160b41 — v1.60 beta 41 · household names & onboarding
+   ##################################################################
+   Four user requirements, implemented as one additive layer:
+
+   1. Template import guard — "Do not allow user to import data using the
+      template provided if the owner name in the template cannot match with
+      profile name and collaborator name."
+      -> importOne now validates every row's owner names (Person, Split
+         shares and the "X owes Y" ledger) against the household's own
+         names (Your Profile) BEFORE anything is written, and importFile
+         reports exactly which names were expected. Full JSON backups are
+         not affected (they carry their own people list).
+
+   2. One rename, everywhere — "If the profile name and collaborator name
+      change, all the affected sections (including the owner of the
+      account) in the apps should change together."
+      -> the People-manager rename now runs through B19.rename (the same
+         whole-model rename the Your-Profile save uses), so account
+         owners, joint pairs, "X owes Y" ledgers, transactions, splits,
+         private-transaction authors, budgets, goals, recurring series,
+         Experience keys, the collab identity and the Advanced spaces all
+         follow — from either path.
+
+   3. Invite-first collaborator — "Setting Your profile > Collaborator is
+      an invite button instead of text field in couple mode before invite.
+      After invite successfully, then become text to allow edit
+      collaborator name."
+      -> while no collaborator has accepted an invitation (couple modes
+         only), the partner field is replaced by a full-width
+         "Invite collaborator" button (pending invitations keep the
+         pending note with Manage invite). The editable name field
+         returns the moment the collaborator accepts (beta 33 auto-fill).
+
+   4. Experience questions ask once — "do not keep showing the experience
+      level question everytime when user login the app even after opt to
+      skip the step earlier on."
+      -> root cause: the beta-18 sign-in timer still watched DB.meta
+         .expOnboarded, which the newer skip/finish no longer set. Skip
+         and Finish now stamp BOTH flags, every boot/sign-in reconciles
+         the device flag with the per-user preference store (all stored
+         keys are scanned), and a user who already answered or skipped is
+         never auto-asked again. "Redo the experience questions" in
+         Settings → App Preference still opens the wizard on demand. */
+(function(){
+'use strict';
+function n41(e,site){try{DIAG.note(e,site);}catch(_){}}
+
+/* ================= Req 4 · the experience wizard asks once ================= */
+/* Reconcile the device-wide flag (DB.meta.expOnboarded, watched by the beta-18
+   sign-in timer) with the per-user preference flags (onboardingComplete /
+   experienceSelectedAt, watched by the newer layers). Runs before the boot and
+   sign-in trigger chains, so their 1-second timers always see a settled state. */
+function expReconcile41(){
+  var P=B28&&B28.pref;if(!P)return;
+  /* a pref counts as "answered" only when a person actually acted — the 29.1
+     migration auto-writes experienceSelectedAt with source 'default' or
+     'legacy-private-migration' for households that never saw the questions */
+  function answered(p){return !!(p&&(p.onboardingComplete===true||((p.experienceSelectionSource==='skipped'||p.experienceSelectionSource==='onboarding'||p.experienceSelectionSource==='settings')&&p.experienceSelectedAt)));}
+  var p=P.get();
+  var done=answered(p);
+  if(done&&DB.meta.expOnboarded!==true){DB.meta.expOnboarded=true;try{X63.save();}catch(e){n41(e,'b41:rec-save');}}
+  if(DB.meta.expOnboarded===true&&!p.onboardingComplete){p.onboardingComplete=true;P.set(p);}
+  if(done)return;
+  /* the flag may live under another user's preference key on this device — scan them all */
+  try{
+    for(var i=0;i<localStorage.length;i++){
+      var k=localStorage.key(i);
+      if(!k||k.indexOf('cmm_user_profile_pref:')!==0)continue;
+      var v=null;try{v=JSON.parse(localStorage.getItem(k)||'null');}catch(_){v=null;}
+      if(answered(v)){done=true;break;}
+    }
+  }catch(e){n41(e,'b41:rec-scan');}
+  if(done){
+    DB.meta.expOnboarded=true;try{X63.save();}catch(e){n41(e,'b41:rec-save2');}
+    p=P.get();p.onboardingComplete=true;P.set(p);
+  }
+}
+var _ab41=V63.afterBoot;
+V63.afterBoot=function(){try{expReconcile41();}catch(e){n41(e,'b41:boot');}return _ab41.apply(this,arguments);};
+var _af41=authFinish;
+authFinish=function(){try{expReconcile41();}catch(e){n41(e,'b41:auth');}return _af41.apply(this,arguments);};
+/* skip / finish stamp the device flag too, and survive the beta-20 layer's
+   late (re)assignment of obSkip: start20() runs ~50ms after parse once the DB
+   exists and installs ITS obSkip, which had silently replaced the newer
+   pref-based skip. The accessor below wraps whatever lands in the slot —
+   including that late assignment — so both flag stores stay in sync. */
+function expWrap41(inner){
+  return function(){var r=inner.apply(this,arguments);try{DB.meta.expOnboarded=true;var P=B28&&B28.pref;if(P){var p=P.get();if(!p.onboardingComplete){p.onboardingComplete=true;P.set(p);}}}catch(e){n41(e,'b41:expflag');}return r;};
+}
+function expGuard41(key){
+  try{
+    var cur=X63[key];
+    Object.defineProperty(X63,key,{configurable:true,get:function(){return cur;},set:function(v){cur=expWrap41(v);}});
+    X63[key]=cur; /* install the wrap through the setter */
+  }catch(e){n41(e,'b41:guard'+key);}
+}
+expGuard41('obSkip');
+expGuard41('obFinish');
+
+/* ================= Req 1 · template import must match the household ================= */
+function household41(){
+  var pr=(DB.meta&&DB.meta.profile)||{};
+  var me=String(pr.name||'').trim(),pt='';
+  try{if(isCouple())pt=String(pr.partner||partnerName()||'').trim();}catch(e){n41(e,'b41:hh');}
+  if(pt&&me&&pt.toLowerCase()===me.toLowerCase())pt='';
+  return {
+    me:me,pt:pt,
+    list:function(){return pt?(me+' · '+pt):me;},
+    match:function(n){
+      var s=String(n||'').trim().toLowerCase();if(!s)return true;
+      if(me&&s===me.toLowerCase())return true;
+      return !!(pt&&s===pt.toLowerCase());
+    }
+  };
+}
+function ownersIn41(rows,H){
+  var bad={};
+  function add(n){n=String(n||'').trim();if(n&&!H.match(n))bad[n]=1;}
+  (rows||[]).forEach(function(t){
+    if(!t)return;
+    add(t.person);
+    (Array.isArray(t.split)?t.split:[]).forEach(function(s){if(s)add(s.p);});
+    var oa=String(t.owedAcc||'');
+    if(/^.+ owes .+$/.test(oa))oa.split(' owes ').forEach(add);
+  });
+  return Object.keys(bad);
+}
+function canonical41(H){
+  var map={};
+  if(H.me)map[H.me.toLowerCase()]=H.me;
+  if(H.pt)map[H.pt.toLowerCase()]=H.pt;
+  return map;
+}
+/* fold a case-variant owner name onto the household's exact spelling so the
+   import never fragments the household into 'ali' vs 'Ali' */
+function canonName41(map,n){
+  var s=String(n||'').trim();
+  return map[s.toLowerCase()]||s;
+}
+var _importOne41=importOne;
+importOne=function(f){
+  return rowsFromAnyFile(f).then(function(r){
+    if(r.dbdata)return mergeDBData(r.dbdata); /* full JSON backup — carries its own people */
+    var H=household41();
+    if(H.me){ /* no profile name yet → nothing to compare against */
+      var bad=ownersIn41(r.rows,H);
+      if(bad.length){var e=new Error('owners41');e.names=bad;throw e;}
+      var map=canonical41(H);
+      r.rows.forEach(function(t){
+        if(!t)return;
+        if(t.person)t.person=canonName41(map,t.person);
+        if(Array.isArray(t.split))t.split.forEach(function(s){if(s&&s.p)s.p=canonName41(map,s.p);});
+        var oa=String(t.owedAcc||'');
+        if(/^.+ owes .+$/.test(oa))t.owedAcc=oa.split(' owes ').map(function(x){return canonName41(map,x);}).join(' owes ');
+      });
+    }
+    return importRows(r.rows);
+  });
+};
+var _importFile41=importFile;
+importFile=function(inp){
+  var files=Array.prototype.slice.call(inp.files||[]);
+  inp.value='';
+  if(!files.length)return;
+  var p=Promise.resolve(),tot=0,dup=0,bad=[],blkNames=[],blkFiles=0;
+  files.forEach(function(f){
+    p=p.then(function(){
+      return importOne(f).then(function(r){
+        tot+=r.added;dup+=r.dup;
+        DB.meta.changedAt=Date.now();save();
+      });
+    }).catch(function(e){
+      if(e&&e.message==='owners41'){blkNames=(blkNames||[]).concat(e.names||[]);blkFiles++;return;}
+      console.warn('import '+f.name,e);
+      if(e&&e.message==='collab')toast('That is a collaborator file — open it from Settings → Modes');
+      bad.push(f.name);
+    });
+  });
+  p.then(function(){
+    save();backupSnap('import');cloudPushSoon();renderAll();
+    var m;
+    if(blkFiles){
+      var H=household41(),show=blkNames.slice(0,3).map(function(x){return '\u201c'+x+'\u201d';}).join(', ')+(blkNames.length>3?'…':'');
+      m='Import blocked — owner name'+(blkNames.length===1?'':'s')+' '+show+' '+(blkNames.length===1?'is':'are')+' not in this household'
+        +(H.list()?(' ('+H.list()+')'):'')+'. Fix the Person column in the template, then import again.';
+      if(tot)m+=' · '+tot+' transaction'+(tot===1?'':'s')+' imported from other files';
+    }else{
+      if(!tot&&!dup)m='Nothing new imported';
+      else{m='Imported '+tot+' new transaction'+(tot===1?'':'s')+' ✓';if(dup)m+=' · '+dup+' duplicate'+(dup===1?'':'s')+' skipped';}
+      if(bad.length)m+=' · '+bad.length+' file'+(bad.length===1?'':'s')+' failed';
+    }
+    toast(m);
+  });
+};
+
+/* ================= Req 2 · one rename, everywhere =================
+   The People manager renamed only the beta-1 stores (people, transactions,
+   splits, account owners, owed ledgers). Route it through B19.rename — the
+   same whole-model rename the Your-Profile save uses — so budgets, goals,
+   recurring series, Experience keys, the profile/collaborator identity and
+   the Advanced-mode spaces follow too, from either path. */
+var _rp41=renamePerson;
+renamePerson=function(oldN,newN){
+  newN=(newN||'').trim();
+  if(!newN){toast('Name required');return;}
+  if(newN===oldN){MGR.edit=null;renderMgr();return;}
+  if(DB.people.indexOf(newN)>=0){toast('Name already used');return;}
+  if(DB.people.indexOf(oldN)<0){toast('Person not found');return;}
+  if(!B19.rename(oldN,newN)){return _rp41.apply(this,arguments);}
+  MGR.edit=null;touch();
+  try{renderAll();}catch(e){n41(e,'b41:rp-all');}
+  try{B3.renderProfileSub();B3.rowSummaries();}catch(e){n41(e,'b41:rp-prof');}
+  try{renderMe();}catch(e){n41(e,'b41:rp-me');}
+  renderMgr();
+  toast('Renamed to '+newN+' ✓ — every section follows');
+};
+
+/* ================= Req 3 · invite-first collaborator field =================
+   Runs after the beta-33 step (261000000). Couple modes only — the row is
+   hidden in Personal/solo. State: joined → editable field (beta 33 UI);
+   pending → field hidden, pending note with Manage invite stays;
+   nothing yet → field replaced by a full-width Invite collaborator button. */
+function profCollab41(){
+  var out={joined:false,pending:false,nick:'',email:'',local:false};
+  var I=(typeof HH!=='undefined'&&HH&&HH.info)||null;
+  if(I){
+    var mem=(I.members||[]),inv=(I.invites||[]);
+    if(mem.length>=2){
+      out.joined=true;
+      var cu='';mem.forEach(function(u){if(u&&u!==I.owner)cu=u;});
+      if(cu){var pr2=(I.memberProfiles||{})[cu]||{};out.nick=String(pr2.displayName||'').trim();out.email=String((I.memberEmails||{})[cu]||pr2.email||'').trim();}
+    }else if(inv.length){out.pending=true;out.email=String(inv[0]||'').trim();}
+  }
+  try{
+    var f=pdh59();
+    if(f&&f.acceptedAt){out.joined=true;if(!out.nick&&f.email){out.nick=String(f.email).split('@')[0];out.email=out.email||f.email;}}
+    else if(f&&f.sharedAt&&!f.acceptedAt){out.pending=true;if(f.email)out.email=out.email||f.email;}
+  }catch(e){n41(e,'b41:pdh');}
+  try{if(usageMode()==='adv'){out.joined=true;out.local=true;}}catch(e){n41(e,'b41:adv');}
+  return out;
+}
+SCREEN.after('B3.renderProfileSub',262000000,{call:'apply',ret:false},function(){
+  try{
+    var row=$('profPartRowB3'),pt=$('profPartB3'),cap=$('b19RolePart');
+    if(!row||!pt||row.hidden)return;
+    var c=profCollab41(),wrap=$('b41InvWrap');
+    if(c.joined){ /* editable name field — beta 33's ok-note stays */
+      row.classList.remove('b41inv');
+      pt.style.display='';
+      if(wrap)wrap.remove();
+      return;
+    }
+    row.classList.add('b41inv');
+    pt.style.display='none';
+    if(!wrap){
+      wrap=document.createElement('div');
+      wrap.id='b41InvWrap';wrap.className='b41invwrap';
+      row.appendChild(wrap);
+    }
+    if(c.pending){ /* the beta-33 pending note (with Manage invite) carries this state */
+      wrap.style.display='none';
+      if(cap)cap.innerHTML='<b>Collaborator</b> — invitation pending. The name field appears here once they accept.';
+    }else{
+      wrap.style.display='flex';
+      wrap.innerHTML='<button class="btn b41invbtn" data-act="profpartinv33">'+ico('plus')+' Invite collaborator</button>'
+        +'<div class="help small">Your partner joins as the Collaborator with an invitation — their nickname fills in here the moment they accept.</div>';
+      if(cap)cap.innerHTML='<b>Collaborator</b> — send an invite from Modes; the name field appears here once they accept.';
+    }
+  }catch(e){n41(e,'b41:profsub');}
+});
+SCREEN.on('B3.renderProfileSub',262000000);
+
+/* ================= version + release note (beta 41) ================= */
+try{if(window.pinVer36)window.pinVer36('1.60 beta 41');}catch(e){}
+try{
+  if(!window.__B41RN){
+    var ol41=document.querySelector('#pageSet details.help ol')||document.querySelector('#view-settings details.help ol');
+    if(ol41){ol41.insertAdjacentHTML('beforeend','<li><b>Household names &amp; onboarding (beta 41):</b> imports from the Excel/CSV template are blocked when the owner names in the file are not your profile and collaborator names — the app tells you which names it expected. Renaming a person now follows the name through every section, including account owners, budgets, goals, recurring series and the collaborator identity. Your Profile shows an Invite collaborator button instead of a name field until the invitation is accepted, then the editable field returns. And the experience questions no longer reappear at sign-in once you have answered or skipped them — “Redo the experience questions” in App Preference still opens them on demand.</li>');window.__B41RN=1;}
+  }
+}catch(e){}
+})();
+
+/* ===================================================================================
+   v1.60 beta 42 — add transaction: owner follows the account, no arrow
+   ===================================================================================
+   The Add-transaction sheet no longer offers an editable Owner field:
+     · The owner line under the account is read-only and always shows the owner of
+       the account the user chooses (the base layer's #fOwner box, which follows
+       #fAccount, drives the chip — including Joint accounts "A & B").
+     · The old overridable owner select (#fOwnerSel) is retired — disabled, hidden,
+       never populated — so the save path keeps stamping person = ownerOf(account)
+       (the beta-3 save wrapper only applied an override while the select was
+       visible; it can no longer be).
+     · The small arrow (chevron) beside the account field is removed — the whole
+       row is the picker, transfers included.
+   Editing an existing transaction re-stamps its owner to the current account
+   owner on save, consistent with "the owner follows the account".
+   =================================================================================== */
+(function(){
+'use strict';
+if(!window.DB&&!window.$)return; /* the app must be up */
+function n42(e,tag){try{(window.DIAG&&DIAG.note)?DIAG.note(e,tag):0;}catch(x){}}
+/* belt & braces: any later updateOwnerUI wrapper (future betas) must not resurface
+   the owner select — force the read-only state after every openSheet/render */
+try{
+  if(window.SCREEN&&SCREEN.after)SCREEN.after('openSheet',90065999,{call:'apply',ret:false},function(){
+    try{
+      var sel=document.getElementById('fOwnerSel');
+      if(sel){sel.disabled=true;sel.style.display='none';}
+      var row=document.getElementById('fOwnerRow');
+      if(row&&document.getElementById('sheet'))row.hidden=true;
+    }catch(e){n42(e,'b42:open');}
+  });
+}catch(e){n42(e,'b42:mount');}
+
+/* ================= version + release note (beta 42) ================= */
+try{if(window.pinVer36)window.pinVer36('1.60 beta 42');}catch(e){}
+try{
+  if(!window.__B42RN){
+    var ol42=document.querySelector('#pageSet details.help ol')||document.querySelector('#view-settings details.help ol');
+    if(ol42){ol42.insertAdjacentHTML('beforeend','<li><b>Add transaction (beta 42):</b> the owner is no longer an editable field — it always follows the owner of the account you choose, and the small arrow beside the account field is gone.</li>');window.__B42RN=1;}
+  }
+}catch(e){}
+})();
+
