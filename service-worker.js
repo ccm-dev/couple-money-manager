@@ -1,6 +1,6 @@
 /* Couple Money Manager service worker.
    Bump VERSION each time you upload a new index.html so phones pick up the update. */
-const VERSION = 'cmm-v1.60-beta46';
+const VERSION = 'cmm-v1.60-beta48';
 const APP_SHELL = [
   './',
   './index.html',
