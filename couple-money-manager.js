@@ -8989,7 +8989,7 @@ try{
     if(!b)return;
     var old=b.querySelector('details.pdhdet');if(old)old.remove();
     if(!isCouple()){
-      b.innerHTML='<div class="help small pdhsolo">The personal-drive household folder is a Couple mode feature \u2014 switch modes in <b>Settings → Modes</b>.</div>';
+      b.innerHTML='<div class="help small pdhsolo">The household folder is a Couple mode feature \u2014 switch modes in <b>Settings → Modes</b>.</div>';
       return;
     }
     pdhPanel59();
@@ -10206,7 +10206,7 @@ return;
   V59.ver='1.59 beta 3';
   document.querySelectorAll('.sub').forEach(function(e){if(/v1\.59 beta 2/.test(e.textContent))e.textContent='v1.59 beta 3';});
   var ol=document.querySelector('#view-settings details.help ol');
-  if(ol)ol.insertAdjacentHTML('beforeend','<li><b>Household folder sharing (v1.60 preview):</b> Settings → Data &amp; Sync. As the Household Storage Owner you create the household folder and share it with your partner using read/write access. Shared editing activates only after they accept the invitation and access is confirmed. If access is later revoked, editing is suspended read-only — the app never creates a replacement household folder.</li>');
+  if(ol)ol.insertAdjacentHTML('beforeend','<li><b>Household folder sharing (v1.60):</b> Settings → Data &amp; Sync. As the Household Storage Owner you create the household folder and share it with your partner using read/write access. Shared editing activates only after they accept the invitation and access is confirmed. If access is later revoked, editing is suspended read-only — the app never creates a replacement household folder.</li>');
 })();
 
 ;
@@ -13541,7 +13541,7 @@ V63.calc.upcoming=function(horizon,who){
     if(!isLoan(a)||!a.remDue||a.locked)return;
     if(!ownerHas(a.owner,who))return;
     var dl=Math.round((Date.parse(a.remDue+'T12:00:00Z')-Date.parse(td+'T12:00:00Z'))/864e5);
-    if(dl>=(horizon||90)||dl<-365)return;
+    if(dl>(horizon||90)||dl<-365)return; /* beta 43 (RM-10): inclusive horizon, same as cards and recurring */
     out.push({name:a.name,owner:a.owner,due:a.remDue,dl:dl,amt:(+a.instalment>0?a.instalment:0),kind:(a.type==='Hire Purchase'?'Hire purchase instalment':'Loan instalment'),autopay:!!a.autopay,act:'v63loanpay'});
   });
   (DB.recur||[]).forEach(function(rc){
@@ -17148,7 +17148,7 @@ function build(){
     }
     heads.backups.firstChild&&(heads.backups.firstChild.nodeValue='Backup history · ');
   }
-  advIn.insertAdjacentHTML('beforeend','<div id="ds22Folder"><div class="mgr-sec">Household folder <span class="ds22-pill">Preview</span></div></div>'
+  advIn.insertAdjacentHTML('beforeend','<div id="ds22Folder"><div class="mgr-sec">Household folder</div></div>'
     +'<div id="ds22Couple"></div>'
     +'<div class="mgr-sec">Sync diagnostics</div><div id="ds22Diag"></div>');
   if($('storeBody'))advIn.querySelector('#ds22Folder').appendChild($('storeBody'));
@@ -17312,7 +17312,7 @@ try{if(window.B20)B20.ver='1.60 beta 32';}catch(e){DIAG.note(e,"44-v160-b22-data
 document.title='v1.60 beta 32 · Couple Money Manager';
 qa('.sub').forEach(function(e){if(/1\.60 beta 21/.test(e.textContent))e.textContent=e.textContent.replace(/1\.60 beta 21/,'1.60 beta 22');});
 var ol=document.querySelector('#view-settings details.help ol');
-if(ol)ol.insertAdjacentHTML('beforeend','<li><b>Data &amp; Sync, simplified (v1.60 beta 22):</b> the page opens on one Status card \u2014 health, safety snapshots, where your data lives and the last backup or sync \u2014 with <b>Back up now</b> (and <b>Sync now</b> on Couple Money Cloud). Storage choices appear only after you tap <b>Change</b>. Preferences holds the few real choices (backup reminder, AI notes). Import &amp; export and Restore sit in one collapsed section. Advanced (Full experience) holds backup history, the household folder preview and sync diagnostics; Advanced Couple adds partner activity and a shortcut to partner access. Simple experience shows only Status and Import &amp; export.</li>');
+if(ol)ol.insertAdjacentHTML('beforeend','<li><b>Data &amp; Sync, simplified (v1.60 beta 22):</b> the page opens on one Status card \u2014 health, safety snapshots, where your data lives and the last backup or sync \u2014 with <b>Back up now</b> (and <b>Sync now</b> on Couple Money Cloud). Storage choices appear only after you tap <b>Change</b>. Preferences holds the few real choices (backup reminder, AI notes). Import &amp; export and Restore sit in one collapsed section. Advanced (Full experience) holds backup history, the household folder and sync diagnostics; Advanced Couple adds partner activity and a shortcut to partner access. Simple experience shows only Status and Import &amp; export.</li>');
 
 try{if(B3.cur==='data')B3.renderDataSub();}catch(e){DIAG.note(e,"44-v160-b22-data-sync:246");}
 })();
@@ -19601,7 +19601,7 @@ function reasonCodes28(ob,rec){var a=[];Object.keys(ob&&ob.q1||{}).forEach(funct
 function trackExperience28(name,props){
   var e={event:name,at:Date.now(),schemaVersion:SCHEMA_VERSION};Object.keys(props||{}).forEach(function(k){e[k]=props[k];});
   try{var L=JSON.parse(localStorage.getItem('cmm_experience_analytics')||'[]');L.push(e);localStorage.setItem('cmm_experience_analytics',JSON.stringify(L.slice(-100)));}catch(x){}
-  try{if(FB&&FB.app)dynImport('https://www.gstatic.com/firebasejs/'+FBJS+'/firebase-analytics.js').then(function(A){A.logEvent(A.getAnalytics(FB.app),name,props||{});}).catch(function(){});}catch(x){}
+  try{if(FB&&FB.app&&window.cmmAnalyticsOK&&cmmAnalyticsOK())dynImport('https://www.gstatic.com/firebasejs/'+FBJS+'/firebase-analytics.js').then(function(A){A.logEvent(A.getAnalytics(FB.app),name,props||{});}).catch(function(){});}catch(x){}
 }
 window.trackExperience=trackExperience28;
 var _expGo28=X63.expGo;X63.expGo=function(){var s=X63.sel&&clone28(X63.sel),from=X63.level();var r=_expGo28.apply(this,arguments),to=s&&s.pick||X63.level();if(to!==from){var p=prefGet28();p.experienceLevel=to;p.experienceSelectedAt=Date.now();p.experienceSelectionSource='settings';p.experienceTourComplete=p.experienceTourComplete||{};prefSet28(p);trackExperience28('experience_switched',{from:from,to:to,source:'settings'});if(to==='full'&&!p.experienceTourComplete.full)setTimeout(fullWelcome28,320);}return r;};
@@ -20301,7 +20301,8 @@ window.CMM_VERSION=VERSION291;window.CMM_SCHEMA_VERSION=SCHEMA291;
     h+=body;
     var done=completed();
     if(done.length&&(f==='all'))h+='<details class="r32done"'+(REM.openDone?' open':'')+'><summary>Recently completed <span class="n">'+done.length+'</span></summary>'
-      +done.map(function(d){return '<button type="button" class="rem25row r32drow" data-act="remtx32" data-id="'+esc(d.t.id)+'"><span class="r32ic ok" aria-hidden="true">'+ico('check')+'</span><span class="nm"><b>'+esc(d.name)+'</b><small>'+esc(d.kind)+' · '+esc(dLabelW(d.t.date))+'</small></span><span class="amt">'+money(d.t.amount)+'</span><span class="chev" aria-hidden="true">'+ico('chevright')+'</span></button>';}).join('')+'</details>';
+      +done.map(function(d,i){var gh=(i===0||done[i-1].t.date!==d.t.date)?'<div class="r43dh">'+esc(d.t.date===todayISO()?'Today':(d.t.date===addDaysISO(todayISO(),-1)?'Yesterday':dLabelW(d.t.date)))+'</div>':''; /* beta 43 (RM-15): grouped by date */
+        return gh+'<button type="button" class="rem25row r32drow" data-act="remtx32" data-id="'+esc(d.t.id)+'"><span class="r32ic ok" aria-hidden="true">'+ico('check')+'</span><span class="nm"><b>'+esc(d.name)+'</b><small>'+esc(d.kind)+' · '+esc(dLabelW(d.t.date))+'</small></span><span class="amt">'+money(d.t.amount)+'</span><span class="chev" aria-hidden="true">'+ico('chevright')+'</span></button>';}).join('')+'</details>';
     $('mgrBody').innerHTML=h;
     var dt=$('mgrBody').querySelector('.r32done');if(dt)dt.addEventListener('toggle',function(){REM.openDone=dt.open;});
   };
@@ -20512,6 +20513,7 @@ window.CMM_VERSION=VERSION291;window.CMM_SCHEMA_VERSION=SCHEMA291;
     openPay(x,false);return true;
   }
   REM.payAccount=payAccount;REM.payFor=payFor;REM.recById=recById;
+  REM.enrich=enrich;REM.cardItem=cardItem;REM.loanItem=loanItem;REM.openPay=openPay;REM.paint=paint;REM.cleanup=cleanup;REM.backToCentre=backToCentre;REM.recordRecurNow=recordRecurNow; /* beta 44: recurring payments open the payment sheet */ /* beta 43: used by the account Payment & reminder card */
   ACT.on('b32-account-pay',{
     'ccpay':function(el,next){if(!payAccount(el.dataset.n,+el.dataset.a))return next(el);},
     'loanopen':function(el,next){var a=a59(el.dataset.n);if(!a||!isLoan(a))return next(el);payAccount(a.name);},
@@ -20555,6 +20557,7 @@ window.CMM_VERSION=VERSION291;window.CMM_SCHEMA_VERSION=SCHEMA291;
    is closed, the page now writes a small reminder schedule to IndexedDB and asks the browser
    for Periodic Background Sync. reminder-sw.js (imported by service-worker.js) reads the
    schedule and shows due notifications; tapping one opens the payment in the app.
+   (The worker code lives in service-worker.js itself — there is no separate reminder-sw.js.)
    Privacy: with an app-lock PIN, or Hide amounts in notifications, the stored text never
    contains account names / amounts (“A payment is due — open the app”). Partner-private
    reminders are never scheduled (same filters as the in-app list). Turning reminders off,
@@ -22876,3 +22879,1203 @@ try{
 }catch(e){}
 })();
 
+
+/* ===================================================================================
+   ##### SECTION: v160b43 — v1.60 beta 43 · payment reminders, remaining review items
+   ===================================================================================
+   Closes the payment-reminder review items that beta 32 left open
+   (payment-reminder-review.md §3, §5 and §7):
+
+     1. ACCOUNT PAGE · "Payment & reminder" card (§5 Account detail) — one card for Credit
+        card, Loan and Hire Purchase accounts: next due date and status, amount and its basis,
+        Autopay / manual, the reminder lead time (own or default) and Edit reminder. It carries
+        Add payment (the same prefilled sheet as the Reminder centre) only when the page has no
+        Pay statement / Record repayment button already (hero or statement / loan card). Not shown for closed / archived accounts, Between Us ledgers or
+        statement sub-pages. A card / loan without a due date gets "Set up payment details".
+        The older "Payment details" buttons on the loan / statement cards are removed so
+        there is one entry point.
+     2. NOTIFICATION TAP → PAYMENT (§5 Notification, AC 1 & 11) — reminders shown by the open
+        app now carry the occurrence key, the same as background (service-worker) reminders,
+        so tapping one opens the prefilled Add payment sheet instead of only the centre.
+        The key is read from the "sent today" log the dispatchers already write just before
+        each notification, so no dispatcher is rewritten. Entitlement is unchanged: payFor()
+        only finds occurrences that are in the privacy-filtered upcoming list.
+     3. RM-10 — loan / HP due dates exactly on the horizon (30 / 60 / 90 days) are now
+        included, like cards and recurring payments (fixed in place in V63.calc.upcoming).
+     4. RM-15 — Recently completed is grouped by date (Today · Yesterday · date) (in place,
+        beta 32 Reminder centre).
+   Service worker cache version bumped (it had stayed at beta 34).
+   =================================================================================== */
+(function(){
+'use strict';
+var REM=window.REM32;
+if(!REM||!window.V63||!REM.enrich){try{DIAG.note(new Error('beta 43 needs beta 32'),'b43:boot');}catch(e){}return;}
+function n43(e,t){try{DIAG.note(e,t);}catch(x){}}
+function $(id){return document.getElementById(id);}
+var ORDER=900000060;
+
+/* ---------- 1 · Payment & reminder card ---------- */
+var BASIS={statement:'Statement balance',min:'Minimum payment',fixed:'Fixed amount',full:'Full balance',instalment:'Regular instalment',date:'Enter the amount when you pay'};
+function rel(dl){return dl<0?(-dl)+' day'+(dl===-1?'':'s')+' overdue':(dl===0?'today':'in '+dl+' day'+(dl===1?'':'s'));}
+function leadTxt(a,x){
+  var own=a.remLead!=null&&a.remLead!=='',d=x.lead;
+  return (d===0?'On the day':(d===7?'A week before':d+' day'+(d===1?'':'s')+' before'))+(own?'':' (your default)');
+}
+function cardHTML(a){
+  if(!a||accTypeKind(a.type)!=='liability'||isRecvAcc(a.name))return '';
+  try{if(isLedger20(a))return '';}catch(e){}
+  if(V63.statusOf&&V63.statusOf(a)!=='active')return '';
+  var loan=!!isLoan(a),perm='full';
+  try{perm=permFor59(a.name);}catch(e){}
+  var viewOnly=perm==='view'||perm==='none'||!!a.locked;
+  try{if(accLocked(a.name))viewOnly=true;}catch(e){}
+  var can=!viewOnly&&(typeof canAdd59!=='function'||canAdd59(a.name));
+  var hid=false;try{hid=isBalHidden(a.name);}catch(e){}
+  /* the page already offers Pay statement / Record repayment (hero or statement / loan card):
+     the card does not repeat it — both open the same prefilled payment sheet */
+  var full=!!document.querySelector('#drillBody [data-act=ccpay],#drillBody [data-act=loanopen],#drillBody [data-act=v63loanpay],#drillBody [data-act=v63cardpay]');
+  var setUp=loan?!!a.remDue:!!accCycleFor(a);
+  var head='<h2>'+ico('bell')+' Payment &amp; reminder</h2>';
+  if(!setUp){
+    return '<div class="card pr43" id="pr43">'+head
+      +'<p class="pr43-empty">'+(loan?'Add the next instalment date':'Add the statement day and payment terms')+' to get reminders and a one-tap payment.</p>'
+      +(viewOnly?'':'<div class="btnrow"><button type="button" class="btn sm" data-act="v63remset" data-n="'+esc(a.name)+'">'+ico('plus')+' Set up payment details</button></div>')+'</div>';
+  }
+  var x,paid=false;
+  if(loan){x=REM.loanItem(a);}
+  else{
+    var cs=cardStatus(a)||{};
+    x={act:'v63cardpay',name:a.name,owner:a.owner,due:cs.due||todayISO(),dl:+cs.dl||0,amt:+cs.stillDue||0,kind:'Credit card payment',autopay:!!a.autopay};
+    REM.enrich(x);
+    paid=!(+cs.stillDue>=0.005);
+  }
+  var st=paid?{t:'Nothing to pay',c:'ok'}:(x.dl<0?{t:'Overdue',c:'over'}:(x.dl===0?{t:'Due today',c:'today'}:(x.autopay?{t:'Autopay scheduled',c:'soft'}:(x.dl<=x.lead?{t:'Due soon',c:'soon'}:{t:'Upcoming',c:'soft'}))));
+  function row(l,v){return '<div class="fline"><span>'+l+'</span><b>'+v+'</b></div>';}
+  var rows=[];
+  rows.push(row(loan?'Next instalment':'Next payment',paid?'Statement paid':esc(dLabelY(x.due))+' <small class="pr43-rel">· '+esc(rel(x.dl))+'</small>'));
+  if(!paid)rows.push(row('Amount',(hid?'••••':(x.amt>0?money(x.amt):'<span class="r32na">Amount needed</span>'))+(BASIS[x.basis]?' <small class="pr43-rel">· '+esc(BASIS[x.basis])+'</small>':'')));
+  rows.push(row('Paid by',x.autopay?esc('Autopay'+(x.autoFrom?' from '+x.autoFrom:'')):'You record it'));
+  var c=remCfg();
+  rows.push(row('Reminder',esc(leadTxt(a,x))));
+  var btns='';
+  if(can&&!paid&&!full)btns+='<button type="button" class="btn sm" data-act="pay43" data-n="'+esc(a.name)+'">'+ico(loan?'bank':'card')+' Add payment</button>';
+  if(!viewOnly)btns+='<button type="button" class="btn sm ghost" data-act="v63remset" data-n="'+esc(a.name)+'">'+ico('bell')+' Edit reminder</button>';
+  return '<div class="card pr43 s-'+st.c+'" id="pr43">'+head
+    +'<div class="pr43-st"><span class="pill pr43-pill s-'+st.c+'">'+esc(st.t)+'</span></div>'
+    +'<div class="rows">'+rows.join('')+'</div>'
+    +(c.on?'':'<div class="pr43-note">Phone notifications are off — the badge and Reminder centre still show this payment. Turn them on in Settings → Preferences → Payment reminders.</div>')
+    +(btns?'<div class="btnrow">'+btns+'</div>':'')+'</div>';
+}
+function mount(){
+  var old=$('pr43');if(old)old.remove();
+  try{
+    if(!(window.DRILL&&DRILL.open&&DRILL.level==='accmonth'&&DRILL.acc))return;
+    var fc=$('afCard');if(fc&&fc.dataset.mode)return;   /* statement / ledger sub-view */
+    var a=a59(DRILL.acc);if(!a)return;
+    var h=(window.AF34&&AF34.priv)?AF34.priv(function(){return cardHTML(a);}):cardHTML(a);
+    if(!h)return;
+    var body=$('drillBody');if(!body)return;
+    var anchor=$('acrMets');
+    if(anchor)anchor.insertAdjacentHTML('afterend',h);  /* Full Experience: Overview tab */
+    else{var first=body.querySelector(':scope > .card');if(first)first.insertAdjacentHTML('afterend',h);else body.insertAdjacentHTML('afterbegin',h);}
+    /* one entry point: drop the older injected "Payment details" buttons */
+    body.querySelectorAll('[data-act=v63remset]').forEach(function(b){
+      if(b.closest('#pr43'))return;
+      var r=b.parentElement;b.remove();
+      if(r&&r.classList.contains('btnrow')&&!r.children.length)r.remove();
+    });
+  }catch(e){n43(e,'b43:mount');}
+}
+REM.cardHTML43=cardHTML;REM.mount43=mount;
+SCREEN.after('renderDrill',ORDER,{call:'none',ret:false},function(){mount();});
+SCREEN.on('renderDrill',ORDER);
+ACT.on('b43-reminders',{
+  'pay43':function(el){
+    var a=a59(el.dataset.n);if(!a)return;
+    if(isLoan(a))REM.payAccount(a.name);
+    else{var cs=cardStatus(a)||{};REM.payAccount(a.name,+cs.stillDue||0);}
+  }
+});
+
+/* ---------- 2 · notifications shown by the open app carry the payment key ---------- */
+var snap=null;
+function snapNow(){snap={};try{var c=remCfg(),td=todayISO();Object.keys(c.sent||{}).forEach(function(k){if(c.sent[k]===td)snap[k]=1;});}catch(e){}}
+var _load43=REM.loadSwSent;
+if(_load43)REM.loadSwSent=function(){return _load43.apply(this,arguments).then(function(n){snapNow();return n;},function(){snapNow();return 0;});};
+snapNow();
+function resolve(k){
+  var I=REM.idx;
+  function find(){if(I[k])return k;if(I['card|'+k])return 'card|'+k;if(I['loan|'+k])return 'loan|'+k;return '';}
+  var r=find();if(!r){try{V63.calc.upcoming(90);}catch(e){}r=find();}
+  return r;
+}
+function show(t,b,key){
+  var opt={body:b,tag:t+b,data:{cmm32:true,remKey:key,url:location.href.split('#')[0]}};
+  function plain(){try{var n=new Notification(t,{body:b,tag:t+b});n.onclick=function(){try{window.focus();n.close();}catch(e){}try{REM.openFromNotification(key);}catch(e){}};}catch(e){n43(e,'b43:plain');}}
+  try{
+    if(navigator.serviceWorker&&navigator.serviceWorker.getRegistration){
+      navigator.serviceWorker.getRegistration().then(function(reg){if(reg&&reg.showNotification)reg.showNotification(t,opt);else plain();}).catch(plain);
+    }else plain();
+  }catch(e){plain();}
+}
+var _notify43=notify;
+notify=function(t,b){
+  var key='';
+  try{
+    if(snap){
+      var c=remCfg(),td=todayISO();
+      var ks=Object.keys(c.sent||{}).filter(function(k){return c.sent[k]===td&&!snap[k];});
+      ks.forEach(function(k){snap[k]=1;});
+      if(ks.length)key=resolve(ks[ks.length-1]);   /* the dispatcher logs the key just before notifying */
+    }
+  }catch(e){n43(e,'b43:key');}
+  if(!key)return _notify43.apply(this,arguments);
+  REM.lastNotifyKey=key;
+  show(t,b,key);
+};
+
+/* ---------- version + release note (beta 43) ---------- */
+try{if(window.pinVer36)window.pinVer36('1.60 beta 43');}catch(e){}
+try{
+  if(!window.__B43RN){
+    var ol43=document.querySelector('#pageSet details.help ol')||document.querySelector('#view-settings details.help ol');
+    if(ol43){ol43.insertAdjacentHTML('beforeend','<li><b>Payment reminders (beta 43):</b> card, loan and hire-purchase pages show one <i>Payment &amp; reminder</i> card — next due date, amount, Autopay and when you are reminded, with Edit reminder. Tapping any payment reminder notification now opens the payment form filled in. Loan instalments due exactly 30 / 60 / 90 days ahead are no longer left out, and Recently completed is grouped by date.</li>');window.__B43RN=1;}
+  }
+}catch(e){}
+})();
+
+/* ===================================================================================
+   ##### SECTION: v160b44 — v1.60 beta 44 · reminder open items + audit trail viewer
+   ===================================================================================
+     1. RECURRING PAYMENTS OPEN THE PAYMENT SHEET (review §4.4, AC 1 & 3) — tapping a recurring
+        reminder now opens the same Add payment sheet as cards and loans, prefilled from the
+        schedule's template (type, account / to, category, amount, note) with a note that it
+        would otherwise record itself on its date. Saving ties the transaction to that
+        occurrence (id R<schedule>_<n>) and moves the schedule to its next date, so it can never
+        post twice. Edit reminder opens the schedule. Templates with a split or a Between Us
+        share keep the beta 32 choice (Record it now · Edit schedule), because the sheet cannot
+        rebuild those safely.
+     2. HOUSEHOLD / MINE (review §4.3) — in Couple and Advanced Couple the Reminder centre gets
+        a second chip row when some payments belong to the partner or are joint. "Mine" keeps
+        only payments on accounts the user owns or co-owns. The badge, Needs attention and
+        notifications still count the whole household. A partner's private reminders never
+        appear in either view (they are filtered out before this layer).
+     3. AUDIT TRAIL (AC-AUD-03, AC-MODE-05, AC-VIS-09, AE-ARC-13) — the logs existed but were
+        written on some paths only and could not be seen:
+        · every visibility change (Shared ⇄ Private) and lifecycle change (close, archive,
+          sell, restore) is now logged whatever screen made it — a check runs on each local
+          save and compares with the last drawn state (paths that already log are not
+          logged twice);
+        · mode changes record who switched;
+        · account pages show a collapsed "Change history" card (Overview tab in Full
+          Experience) and Settings → Mode & Partner Access shows "Mode changes" (latest 20).
+        A Private account's history lives on the account itself, which never leaves the
+        owner's device (AC-AUD-04 unchanged).
+   =================================================================================== */
+(function(){
+'use strict';
+var REM=window.REM32;
+if(!REM||!REM.recById||!REM.paint){try{DIAG.note(new Error('beta 44 needs beta 32/43'),'b44:boot');}catch(e){}return;}
+function n44(e,t){try{DIAG.note(e,t);}catch(x){}}
+function $(id){return document.getElementById(id);}
+function isoOf(ms){try{var d=new Date(ms),p=function(n){return (n<10?'0':'')+n;};return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate());}catch(e){return todayISO();}}
+
+/* ---------- 1 · recurring → payment sheet ---------- */
+function simpleTpl(tp){return tp&&!(Array.isArray(tp.split)&&tp.split.length)&&!tp.owedAcc;}
+function nextAfter(rc){try{return advanceOcc(rc.anchor,rc.freq,rc.every||1,(rc.seq||0)+2);}catch(e){return '';}}
+function noteEl(){
+  var c=REM.ctx,el=$('pay44note');
+  if(!c||!c.recur){if(el)el.remove();return;}
+  var host=$('pay32ctx');if(!host)return;
+  var rc=REM.recById(c.recur.id),nx=rc?nextAfter(rc):'';
+  var h=ico('repeat')+'<span>Scheduled to record itself on '+esc(dLabelW(c.x.due))+'. Saving now records this payment instead'+(nx?' and moves the schedule to '+esc(dLabelW(nx)):'')+'.</span>';
+  if(!el){el=document.createElement('div');el.id='pay44note';el.className='p44note';host.insertAdjacentElement('afterend',el);}
+  if(el.__h!==h){el.innerHTML=h;el.__h=h;}
+  /* the primary button says what it does: Save payment (beta 32 relabels Transfer only) */
+  var pb=document.querySelector('#sheet .sheet-foot [data-act=savetxn]');
+  if(pb){var w=document.createTreeWalker(pb,NodeFilter.SHOW_TEXT),n;while((n=w.nextNode())){if(/^\s*(Add|Save|Expense|Income|Transfer)\b(?! payment)/.test(n.nodeValue)){n.nodeValue=n.nodeValue.replace(/^(\s*)(Add|Save|Expense|Income|Transfer)\b/,'$1Save payment');break;}}}
+}
+function payRecur(x,fromCentre){
+  var rc=REM.recById(x.rec);if(!rc||!rc.tpl){toast('This schedule has changed');return true;}
+  var tp=rc.tpl;if(!simpleTpl(tp))return false;
+  var occ='R'+rc.id+'_'+((rc.seq||0)+1);
+  if(DB.txns.some(function(t){return t.id===occ;})){toast('This payment is already recorded');return true;}
+  REM.ctx={key:x.key,x:x,fromCentre:fromCentre,f:REM.f,scroll:fromCentre?($('mgrSheet')||{}).scrollTop:0,saving:false,recur:{id:rc.id,occ:occ}};
+  if(fromCentre)closeMgr();
+  openSheet();
+  var ty=tp.type||'Expense';setFormType(ty);
+  $('fAccount').innerHTML=accOptions(tp.account||'');$('fAccount').value=tp.account||'';
+  if(ty==='Transfer'){$('fTo').innerHTML=accOptions(tp.to||'');$('fTo').value=tp.to||'';}
+  else{F.sub=tp.subcategory||'';try{renderFormCats(tp.category||'');}catch(e){n44(e,'b44:cats');}}
+  $('fAmount').value=+tp.amount>0?tp.amount:'';
+  $('fNote').value=tp.note||'';
+  try{updateOwnerUI();}catch(e){n44(e,'b44:owner');}
+  if(!(+tp.amount>0))setTimeout(function(){try{$('fAmount').focus();}catch(e){}},350);
+  REM.paint();noteEl();
+  clearInterval(REM.tick);REM.tick=setInterval(function(){REM.paint();noteEl();},350);
+  return true;
+}
+function payForKey(key,fromCentre){
+  var x=REM.idx[key];if(!x){try{V63.calc.upcoming(90);}catch(e){}x=REM.idx[key];}
+  if(!x||x.src!=='recur')return false;
+  return payRecur(x,fromCentre);
+}
+var _payFor44=REM.payFor;
+REM.payFor=function(key){
+  var fc=$('mgrSheet')&&$('mgrSheet').classList.contains('on')&&MGR.kind==='v63remctr';
+  if(payForKey(key,fc))return;
+  return _payFor44.apply(this,arguments);
+};
+SCREEN.around('saveTxn',999044001,function(prev){return function(){
+  var c=REM.ctx;if(!c||!c.recur)return prev.apply(this,arguments);
+  var r=prev.apply(this,arguments);
+  try{
+    if(!DB.txns.some(function(t){return t.id===c.recur.occ;})){
+      var t=DB.txns.filter(function(z){return z.remKey===c.key;}).pop();
+      if(t){
+        t.id=c.recur.occ;                                  /* this occurrence is now recorded */
+        var rc=REM.recById(c.recur.id);
+        if(rc){rc.seq=(rc.seq||0)+1;rc.next=advanceOcc(rc.anchor,rc.freq,rc.every||1,rc.seq+1);}
+        touch();try{V63.bellBadge();}catch(e){}
+      }
+    }
+  }catch(e){n44(e,'b44:recsave');}
+  var el=$('pay44note');if(el&&!REM.ctx)el.remove();
+  return r;
+};});
+SCREEN.after('closeSheet',999044002,{call:'apply',ret:false},function(){var el=$('pay44note');if(el)el.remove();});
+
+try{INFO25.rem[1]='<p class="info23p">Card statements, loan and hire-purchase instalments and recurring payments due in the next 90 days.</p><p class="info23p">Tap a payment to record it — the payment form opens filled in. Recurring payments record themselves on their date; recording one from here records it early and moves its schedule on.</p><p class="info23p">The badge, Needs attention and phone notifications all use the same timing: the account’s own reminder, otherwise your default in Settings → Preferences.</p>';}catch(e){n44(e,'b44:info');}
+
+/* ---------- 2 · Household / Mine ---------- */
+REM.own=REM.own||'all';
+function mine(x){var me=meName(),o=String(x.owner||'');return !o||o===me||o.split(' & ').indexOf(me)>=0;}
+var _ctr44=V56.mgr.v63remctr;
+V56.mgr.v63remctr=function(){
+  var all=[];try{all=V63.calc.upcoming(90);}catch(e){n44(e,'b44:ctr');}
+  var couple=false;try{couple=isCouple();}catch(e){}
+  var show=couple&&(all.some(function(x){return !mine(x);})||REM.own==='mine');
+  if(!show)REM.own='all';
+  var filt=show&&REM.own==='mine',up=V63.calc.upcoming;
+  if(filt)V63.calc.upcoming=function(){return up.apply(this,arguments).filter(mine);};
+  try{_ctr44.apply(this,arguments);}finally{V63.calc.upcoming=up;}
+  if(!show)return;
+  var mb=$('mgrBody');if(!mb)return;
+  var chips='<div class="r44own" role="group" aria-label="Whose payments">'+[['all','Household'],['mine','Mine']].map(function(o){
+    return '<button type="button" aria-pressed="'+(REM.own===o[0])+'" class="'+(REM.own===o[0]?'on':'')+'" data-act="remown44" data-o="'+o[0]+'">'+o[1]+'</button>';}).join('')+'</div>';
+  var sum=mb.querySelector('.r32sum');if(sum)sum.insertAdjacentHTML('afterend',chips);else mb.insertAdjacentHTML('afterbegin',chips);
+  if(filt&&!all.some(mine)){
+    var em=mb.querySelector('.r32empty');
+    if(em)em.outerHTML='<div class="r32empty"><span class="r32eic" aria-hidden="true">'+ico('check')+'</span><b>None of the upcoming payments are yours</b><span>'+all.length+' household payment'+(all.length===1?' is':'s are')+' due in the next 90 days.</span><button type="button" class="btn sm ghost" data-act="remown44" data-o="all">Show Household</button></div>';
+  }
+};
+ACT.on('b44-reminders',{
+  'rempay':function(el,next){
+    var fc=$('mgrSheet')&&$('mgrSheet').classList.contains('on')&&MGR.kind==='v63remctr';
+    if(payForKey(el.dataset.k,fc))return;
+    return next(el);
+  },
+  'rem32edit':function(el,next){
+    var c=REM.ctx;if(!c||!c.recur)return next(el);
+    REM.ctx=null;REM.cleanup();closeSheet();setTimeout(function(){openMgr('recur');},250);
+  },
+  'remown44':function(el){REM.own=el.dataset.o==='mine'?'mine':'all';renderMgr();var b=$('mgrBody').querySelector('[data-act=remown44].on');if(b)b.focus();}
+});
+
+/* ---------- 3 · audit trail: catch every visibility / lifecycle / mode change ---------- */
+var SNAP=null,SNAPDB=null;
+function keyOf(a){return a.id||('n:'+a.name);}
+function stOf(a){try{return V63.statusOf(a)||'active';}catch(e){return a.status||'active';}}
+function visOf(a){return a.vis==='me'?'me':'shared';}
+function snap(){if(!window.DB||!DB.accounts)return;SNAP={};SNAPDB=DB;DB.accounts.forEach(function(a){if(a)SNAP[keyOf(a)]={v:visOf(a),s:stOf(a)};});}
+var ST_TXT={active:'Restored to active',closed:'Closed',archived:'Archived',sold:'Marked sold'};
+function detect(){
+  if(!SNAP||!window.DB||!DB.accounts)return;
+  if(SNAPDB!==DB){snap();return;}                     /* data was reloaded / restored: nothing to attribute */
+  var now=Date.now(),me=meName(),couple=false;try{couple=isCouple();}catch(e){}
+  DB.accounts.forEach(function(a){
+    if(!a)return;var o=SNAP[keyOf(a)];if(!o)return;      /* new account: nothing to compare */
+    var v=visOf(a);
+    if(couple&&v!==o.v){
+      var L=a.visLog||(a.visLog=[]),last=L[L.length-1];
+      if(!(last&&now-last.at<5000&&last.to===v)){L.push({at:now,by:me,from:o.v,to:v});if(L.length>20)a.visLog=L.slice(-20);}
+    }
+    var s=stOf(a);
+    if(s!==o.s){
+      var C=a.changeLog||[],lc=C[C.length-1];
+      if(!(lc&&now-lc.at<5000)){try{window.log20(a,ST_TXT[s]||('Status: '+s));}catch(e){n44(e,'b44:log');}}
+    }
+  });
+  try{var v59=m59(),m0=v59.modes&&v59.modes[0];if(m0&&!m0.by&&now-m0.at<15000)m0.by=me;}catch(e){}
+}
+var _touch44=touch;
+touch=function(){try{detect();}catch(e){n44(e,'b44:detect');}var r=_touch44.apply(this,arguments);try{snap();}catch(e){}return r;};
+try{SCREEN.afterDraw(function(){try{snap();}catch(e){}});}catch(e){n44(e,'b44:draw');}
+setTimeout(snap,0);
+
+var MODE_L={solo:'Personal',couple:'Couple',adv:'Advanced Couple'};
+function visL(v){return v==='me'?'Private (only me)':'Shared';}
+function histHTML(a){
+  var ev=[];
+  (a.changeLog||[]).forEach(function(e){if(e&&e.at)ev.push({at:e.at,by:e.by,what:e.what||''});});
+  (a.visLog||[]).forEach(function(e){if(e&&e.at)ev.push({at:e.at,by:e.by,what:'Visibility: '+visL(e.from)+' → '+visL(e.to)});});
+  if(!ev.length)return '';
+  ev.sort(function(x,y){return y.at-x.at;});
+  return '<details class="card hist44" id="hist44"><summary><span class="h44t">'+ico('clock')+' Change history</span><span class="n">'+ev.length+'</span></summary><div class="rows">'
+    +ev.slice(0,30).map(function(e){return '<div class="fline"><span>'+esc(e.what)+'<small>'+esc(e.by||'—')+'</small></span><b>'+esc(dLabelY(isoOf(e.at)))+'</b></div>';}).join('')
+    +'</div></details>';
+}
+function mountHist(){
+  var old=$('hist44');if(old)old.remove();
+  try{
+    if(!(window.DRILL&&DRILL.open&&DRILL.level==='accmonth'&&DRILL.acc))return;
+    var fc=$('afCard');if(fc&&fc.dataset.mode)return;
+    var a=a59(DRILL.acc);if(!a)return;
+    var h=histHTML(a);if(!h)return;
+    var body=$('drillBody');if(!body)return;
+    var det=$('acrDet');
+    if(det)det.insertAdjacentHTML('afterend',h);
+    else{var last=body.lastElementChild;if(last&&last.classList.contains('btn'))last.insertAdjacentHTML('beforebegin',h);else body.insertAdjacentHTML('beforeend',h);}
+  }catch(e){n44(e,'b44:hist');}
+}
+SCREEN.after('renderDrill',900000061,{call:'none',ret:false},function(){mountHist();});
+SCREEN.on('renderDrill',900000061);
+SCREEN.after('B3.renderModeSub',900000070,{call:'apply',ret:false},function(){
+  try{
+    var old=$('modeHist44');if(old)old.remove();
+    var mb=$('modeBodyB3');if(!mb)return;
+    var L=(m59().modes||[]).filter(function(m){return m&&m.at;});if(!L.length)return;
+    mb.insertAdjacentHTML('beforeend','<details class="hist44 mh44" id="modeHist44"><summary><span class="h44t">'+ico('clock')+' Mode changes</span><span class="n">'+L.length+'</span></summary><div class="rows">'
+      +L.slice(0,20).map(function(m){return '<div class="fline"><span>'+esc((MODE_L[m.from]||m.from||'?')+' → '+(MODE_L[m.to]||m.to||'?'))+'<small>'+esc(m.by||'—')+'</small></span><b>'+esc(dLabelY(isoOf(m.at)))+'</b></div>';}).join('')
+      +'</div></details>');
+  }catch(e){n44(e,'b44:modehist');}
+});
+SCREEN.on('B3.renderModeSub',900000070);
+REM.hist44={detect:detect,snap:snap,histHTML:histHTML};
+
+/* ---------- version + release note (beta 44) ---------- */
+try{if(window.pinVer36)window.pinVer36('1.60 beta 44');}catch(e){}
+try{
+  if(!window.__B44RN){
+    var ol44=document.querySelector('#pageSet details.help ol')||document.querySelector('#view-settings details.help ol');
+    if(ol44){ol44.insertAdjacentHTML('beforeend','<li><b>Reminders &amp; history (beta 44):</b> tapping a recurring payment opens the payment form filled in from its schedule — saving records it early and moves the schedule on. In Couple modes the Reminder centre can show Household or only Mine. Every Shared ⇄ Private change and every close, archive, sale or restore is now recorded; see it under Change history on the account page, and mode switches under Settings → Mode &amp; Partner Access.</li>');window.__B44RN=1;}
+  }
+}catch(e){}
+})();
+
+/* ===================================================================================
+   ##### SECTION: v160b45 — v1.60 beta 45 · household folder live sync (Google Drive / OneDrive)
+   ===================================================================================
+   Turns the "Partner's Drive or OneDrive" household folder from a preview into a working
+   household storage option for Couple and Advanced Couple.
+
+   How it works
+   · The Household Storage Owner connects Google Drive or OneDrive (OAuth, in a pop-up), the
+     app creates the "Couple Money Manager" folder in the owner's own cloud, writes
+     cmm-household.json (salt + an encrypted check value, no financial data) and shows an
+     8-character household code. Sharing uses the provider's own share call (read/write);
+     the owner can also share it by hand in the provider app.
+   · The collaborator connects the same provider, picks the shared folder (or pastes its
+     link) and types the household code. The code never leaves the two phones: it derives
+     the AES-GCM key (PBKDF2-SHA-256, 150 000 rounds) that encrypts every data file.
+   · Data files (all encrypted): meta.cmm (shared accounts, lists, deletions) and one
+     m-YYYY-MM.cmm per month of shared transactions, plus member-*.cmm (who joined). The
+     payload is exactly the Couple Money Cloud shared copy (buildSharedView): Private
+     accounts and partner-hidden details never leave the owner's device (OD-02).
+   · Sync cycle: list the folder → download files whose modified time changed → merge with
+     mergeShared (same merge as Couple Money Cloud: newest edit wins per record, deletions
+     travel as tombstones) → upload only the chunks whose content changed. Runs a few
+     seconds after each local change, every minute while the app is open, on focus and when
+     the phone comes back online.
+   · Access lost (folder unshared / deleted / no permission): editing state shows
+     "Folder access lost"; the app never creates a replacement folder and resumes on its own
+     once the folder is reachable again.
+
+   Configuration (index.html → window.CMM_CONFIG):
+     googleClientId  — Google Cloud OAuth client ID (Web), Drive API + Picker API enabled
+     googleApiKey    — browser API key for the Google Picker (beta 46)
+     googleAppId     — Google Cloud project number (beta 46; lets picked files open with drive.file)
+     msClientId      — Microsoft Entra app (SPA platform) client ID
+     msTenant        — optional, default "common"
+   See HOUSEHOLD_FOLDER_SETUP.md. Without an ID the matching provider shows "not set up".
+
+   Also in this beta: the audit-trail snapshot is refreshed after every merge of data from
+   a partner (mergeShared / mergeDBData) and after a reload / restore, so a partner's change
+   can never be logged under the local user's name (beta 44 limitation).
+   =================================================================================== */
+(function(){
+'use strict';
+function $(id){return document.getElementById(id);}
+function n45(e,t){try{DIAG.note(e,t);}catch(x){}}
+
+/* ---------- 0 · audit attribution fix (beta 44) ---------- */
+(function(){
+  var H=window.REM32&&REM32.hist44;if(!H)return;
+  ['mergeShared','mergeDBData'].forEach(function(fn){
+    var orig=window[fn];if(typeof orig!=='function')return;
+    window[fn]=function(){var r=orig.apply(this,arguments);try{H.snap();}catch(e){}return r;};
+  });
+})();
+
+var CFG=window.CMM_CONFIG||{};
+var FOLDER='Couple Money Manager',HFILE='cmm-household.json';
+var PX=window.PDH45={st:'idle',busy:false,again:false,last:0,err:'',rfiles:{},rmon:{},rhash:{},rmeta:null,rmetaH:'',tok:{},key:null,keyFor:'',found:null,pending:null,timer:0,changed:false};
+function E(kind,msg,code){var e=new Error(msg);e.kind=kind;e.code=code;return e;}
+
+/* ---------- 1 · small crypto + encoding helpers ---------- */
+var TE=new TextEncoder(),TD=new TextDecoder();
+function b64(buf){var a=new Uint8Array(buf),s='';for(var i=0;i<a.length;i++)s+=String.fromCharCode(a[i]);return btoa(s);}
+function ub64(s){var b=atob(s),a=new Uint8Array(b.length);for(var i=0;i<b.length;i++)a[i]=b.charCodeAt(i);return a;}
+function b64url(buf){return b64(buf).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');}
+function rnd(n){var a=new Uint8Array(n);crypto.getRandomValues(a);return a;}
+function normCode(c){return String(c||'').toUpperCase().replace(/[^A-Z0-9]/g,'');}
+function derive(code,salt){
+  return crypto.subtle.importKey('raw',TE.encode(normCode(code)),'PBKDF2',false,['deriveKey']).then(function(k){
+    return crypto.subtle.deriveKey({name:'PBKDF2',salt:ub64(salt),iterations:150000,hash:'SHA-256'},k,{name:'AES-GCM',length:256},true,['encrypt','decrypt']);});
+}
+function seal(key,obj){var iv=rnd(12);return crypto.subtle.encrypt({name:'AES-GCM',iv:iv},key,TE.encode(JSON.stringify(obj))).then(function(ct){return JSON.stringify({cmm:1,iv:b64(iv),ct:b64(ct)});});}
+function unseal(key,text){var o;try{o=JSON.parse(text);}catch(e){return Promise.reject(E('data','Unreadable file'));}
+  return crypto.subtle.decrypt({name:'AES-GCM',iv:ub64(o.iv)},key,ub64(o.ct)).then(function(pt){return JSON.parse(TD.decode(pt));},function(){throw E('key','This file was not encrypted with this household code');});}
+function keyStoreName(ref){return 'cmm_pdh_key:'+(ref&&(ref.driveId?ref.driveId+'!':'')+(ref&&ref.id));}
+function saveKey(ref,key){return crypto.subtle.exportKey('raw',key).then(function(raw){try{localStorage.setItem(keyStoreName(ref),b64(raw));}catch(e){}});}
+function loadKey(ref){
+  var s='';try{s=localStorage.getItem(keyStoreName(ref))||'';}catch(e){}
+  if(!s)return Promise.resolve(null);
+  return crypto.subtle.importKey('raw',ub64(s),{name:'AES-GCM'},true,['encrypt','decrypt']).catch(function(){return null;});
+}
+function sha256(s){return crypto.subtle.digest('SHA-256',TE.encode(s));}
+
+/* ---------- 2 · sign-in ---------- */
+var LOADED45={};
+function loadScript(src){
+  if(LOADED45[src])return LOADED45[src];
+  LOADED45[src]=new Promise(function(res,rej){
+    var s=document.createElement('script');s.src=src;s.async=true;s.dataset.cmm45=src;
+    s.onload=function(){res();};s.onerror=function(){delete LOADED45[src];rej(E('net','Could not reach the sign-in service. Check the connection and try again.'));};
+    document.head.appendChild(s);});
+  return LOADED45[src];
+}
+function ssGet(k){try{return JSON.parse(sessionStorage.getItem(k)||'null');}catch(e){return null;}}
+function ssSet(k,v){try{if(v)sessionStorage.setItem(k,JSON.stringify(v));else sessionStorage.removeItem(k);}catch(e){}}
+function lsGet(k){try{return localStorage.getItem(k)||'';}catch(e){return '';}}
+function lsSet(k,v){try{if(v)localStorage.setItem(k,v);else localStorage.removeItem(k);}catch(e){}}
+var MS_SCOPE='Files.ReadWrite.All offline_access User.Read';
+function configured(prov){return prov==='onedrive'?!!CFG.msClientId:!!CFG.googleClientId;}
+function cfgMsg(prov){return prov==='onedrive'
+  ?'OneDrive is not set up in this copy of the app yet — add your Microsoft app ID as msClientId in CMM_CONFIG (index.html). See HOUSEHOLD_FOLDER_SETUP.md.'
+  :'Google Drive is not set up in this copy of the app yet — add your Google OAuth client ID as googleClientId in CMM_CONFIG (index.html). See HOUSEHOLD_FOLDER_SETUP.md.';}
+function gAuth(){
+  if(!CFG.googleClientId)return Promise.reject(E('config',cfgMsg('drive')));
+  return loadScript('https://accounts.google.com/gsi/client').then(function(){return new Promise(function(res,rej){
+    try{
+      var p=pdh59();
+      var tc=google.accounts.oauth2.initTokenClient({client_id:CFG.googleClientId,scope:'https://www.googleapis.com/auth/drive.file',hint:p.acct||undefined,
+        callback:function(r){if(r&&r.access_token){var t={t:r.access_token,exp:Date.now()+((+r.expires_in||3600)-90)*1000};PX.tok.drive=t;ssSet('cmm_pdh_tok:drive',t);res(t.t);}else rej(E('auth',(r&&(r.error_description||r.error))||'Sign-in was cancelled'));},
+        error_callback:function(e){rej(E('auth',(e&&e.type==='popup_closed')?'Sign-in window closed':'Sign-in was cancelled or blocked (allow pop-ups for this site)'));}});
+      tc.requestAccessToken({prompt:''});
+    }catch(e){rej(E('auth',e.message||'Google sign-in failed'));}
+  });});
+}
+/* Google Picker (beta 46): with the drive.file scope the partner's app can open only the files the
+   partner picks. One pick of the household folder's files is enough — the file set never changes. */
+function gPicker(parentId){
+  if(!CFG.googleApiKey||!CFG.googleAppId)return Promise.reject(E('config','Google Drive needs googleApiKey and googleAppId in CMM_CONFIG (index.html) to open the folder picker. See HOUSEHOLD_FOLDER_SETUP.md.'));
+  return token('drive',true).then(function(t){
+    return loadScript('https://apis.google.com/js/api.js').then(function(){return new Promise(function(res,rej){
+      gapi.load('picker',{callback:function(){
+        try{
+          var G=google.picker;
+          var view=new G.DocsView(G.ViewId.DOCS).setIncludeFolders(true).setSelectFolderEnabled(false).setMode(G.DocsViewMode.LIST);
+          if(parentId)view.setParent(parentId);else view.setOwnedByMe(false);
+          new G.PickerBuilder().setAppId(String(CFG.googleAppId)).setOAuthToken(t).setDeveloperKey(CFG.googleApiKey)
+            .addView(view).enableFeature(G.Feature.MULTISELECT_ENABLED).setOrigin(location.protocol+'//'+location.host)
+            .setTitle('Select all files in the “'+FOLDER+'” folder')
+            .setCallback(function(d){
+              var a=d[G.Response.ACTION];
+              if(a===G.Action.PICKED)res((d[G.Response.DOCUMENTS]||[]).map(function(x){return {id:x[G.Document.ID],parentId:x[G.Document.PARENT_ID]||x.parentId||'',name:x[G.Document.NAME],mime:x[G.Document.MIME_TYPE]};}));
+              else if(a===G.Action.CANCEL)rej(E('auth','Nothing was selected'));
+            }).build().setVisible(true);
+        }catch(e){rej(E('picker',e.message||'Google Picker failed'));}
+      },onerror:function(){rej(E('net','Could not load the Google folder picker'));}});
+    });});
+  });
+}
+function msRedirect(){return CFG.msRedirectUri||(location.origin+location.pathname);}
+function msTokenCall(params){
+  var body=new URLSearchParams(Object.assign({client_id:CFG.msClientId,scope:MS_SCOPE},params));
+  return fetch('https://login.microsoftonline.com/'+(CFG.msTenant||'common')+'/oauth2/v2.0/token',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:body})
+    .then(function(r){return r.json().then(function(j){if(!r.ok||!j.access_token)throw E(params.grant_type==='refresh_token'?'signin':'auth',j.error_description||j.error||('Microsoft sign-in failed ('+r.status+')'));return j;});})
+    .then(function(j){var t={t:j.access_token,exp:Date.now()+((+j.expires_in||3600)-90)*1000};PX.tok.onedrive=t;ssSet('cmm_pdh_tok:onedrive',t);if(j.refresh_token)lsSet('cmm_pdh_ms_rt',j.refresh_token);return t.t;});
+}
+/* the pop-up must open inside the tap, so it opens first and is pointed at Microsoft after */
+function msAuth(){
+  if(!CFG.msClientId)return Promise.reject(E('config',cfgMsg('onedrive')));
+  var w=window.open('about:blank','cmm45ms','width=480,height=680');
+  if(!w)return Promise.reject(E('auth','The sign-in window was blocked — allow pop-ups for this site.'));
+  var ver=b64url(rnd(48)),st='cmm45'+b64url(rnd(12)),ru=msRedirect();
+  return sha256(ver).then(function(h){
+    w.location.href='https://login.microsoftonline.com/'+(CFG.msTenant||'common')+'/oauth2/v2.0/authorize?client_id='+encodeURIComponent(CFG.msClientId)
+      +'&response_type=code&response_mode=query&redirect_uri='+encodeURIComponent(ru)+'&scope='+encodeURIComponent(MS_SCOPE)
+      +'&state='+encodeURIComponent(st)+'&code_challenge='+h+'&code_challenge_method=S256&prompt=select_account';
+    return new Promise(function(res,rej){
+      var done=false;
+      function finish(search){
+        if(done)return;done=true;clearInterval(t);window.removeEventListener('message',onMsg);try{w.close();}catch(e){}
+        var q=new URLSearchParams(search);
+        if(q.get('state')!==st)return rej(E('auth','Sign-in response did not match — try again'));
+        if(q.get('error'))return rej(E('auth',q.get('error_description')||q.get('error')));
+        res(q.get('code'));
+      }
+      function onMsg(ev){if(ev.origin===location.origin&&ev.data&&ev.data.type==='cmm45-ms')finish(ev.data.search||'');}
+      window.addEventListener('message',onMsg);
+      var t=setInterval(function(){
+        if(done)return;
+        if(w.closed){done=true;clearInterval(t);window.removeEventListener('message',onMsg);return rej(E('auth','Sign-in window closed'));}
+        var href='';try{href=w.location.href;}catch(e){return;}
+        if(href&&href.indexOf(ru)===0&&/[?&](code|error)=/.test(href))finish(href.slice(href.indexOf('?')));
+      },300);
+    });
+  }).then(function(code){return msTokenCall({grant_type:'authorization_code',code:code,redirect_uri:ru,code_verifier:ver});});
+}
+function token(prov,interactive){
+  var t=PX.tok[prov]||ssGet('cmm_pdh_tok:'+prov);
+  if(t&&t.t&&t.exp>Date.now()){PX.tok[prov]=t;return Promise.resolve(t.t);}
+  if(!configured(prov))return Promise.reject(E('config',cfgMsg(prov)));
+  if(prov==='onedrive'){
+    var rt=lsGet('cmm_pdh_ms_rt');
+    if(rt)return msTokenCall({grant_type:'refresh_token',refresh_token:rt}).catch(function(e){lsSet('cmm_pdh_ms_rt','');if(interactive)return msAuth();throw E('signin','Sign in to OneDrive again to keep syncing');});
+    return interactive?msAuth():Promise.reject(E('signin','Sign in to OneDrive to sync'));
+  }
+  return interactive?gAuth():Promise.reject(E('signin','Sign in to Google Drive again to keep syncing'));
+}
+function dropToken(prov){delete PX.tok[prov];ssSet('cmm_pdh_tok:'+prov,null);}
+function api(prov,url,opt,retried){
+  opt=opt||{};
+  return token(prov,false).then(function(t){
+    var h=Object.assign({},opt.headers||{},{Authorization:'Bearer '+t});
+    return fetch(url,Object.assign({},opt,{headers:h})).catch(function(){throw E('net','No connection to '+PDH_PROV[prov]);});
+  }).then(function(r){
+    if(r.status===401){dropToken(prov);if(prov==='onedrive'&&!retried)return api(prov,url,opt,true);throw E('signin','Sign in to '+PDH_PROV[prov]+' again to keep syncing');}
+    if(!r.ok)return r.text().then(function(tx){var m='';try{var j=JSON.parse(tx);m=(j.error&&(j.error.message||j.error))||'';}catch(e){}
+      throw E((r.status===403||r.status===404||r.status===410)?'access':'http',(m&&typeof m==='string'?m:PDH_PROV[prov]+' error')+' ('+r.status+')',r.status);});
+    return r;
+  });
+}
+function J(r){return r.json();}
+
+/* ---------- 3 · providers ---------- */
+var GD='https://www.googleapis.com/drive/v3',GU='https://www.googleapis.com/upload/drive/v3',GR='https://graph.microsoft.com/v1.0';
+var PROV={
+  drive:{
+    me:function(){return api('drive',GD+'/about?fields=user(emailAddress,displayName)').then(J).then(function(j){return {email:(j.user||{}).emailAddress||'',name:(j.user||{}).displayName||''};});},
+    create:function(){return api('drive',GD+'/files?fields=id,name',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:FOLDER,mimeType:'application/vnd.google-apps.folder'})}).then(J).then(function(j){return {id:j.id};});},
+    share:function(ref,email){return api('drive',GD+'/files/'+ref.id+'/permissions?sendNotificationEmail=true',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({type:'user',role:'writer',emailAddress:email})}).then(J);},
+    findShared:function(){return gPicker(null).then(docsToFolder);},
+    fromLink:function(s){var m=/folders\/([-\w]{10,})/.exec(s)||/[?&]id=([-\w]{10,})/.exec(s)||/^([-\w]{20,})$/.exec(String(s).trim());
+      if(!m)return Promise.reject(E('link','That does not look like a Google Drive folder link'));
+      return gPicker(m[1]).then(function(docs){var x=docsToFolder(docs)[0];if(x&&!x.ref.id)x.ref.id=m[1];return x;});},
+    list:function(ref){return api('drive',GD+'/files?q='+encodeURIComponent("'"+ref.id+"' in parents and trashed=false")+'&fields=files(id,name,modifiedTime)&pageSize=1000').then(J).then(function(j){
+      return (j.files||[]).map(function(f){return {id:f.id,name:f.name,mod:f.modifiedTime||''};});});},
+    read:function(ref,f){return api('drive',GD+'/files/'+f.id+'?alt=media').then(function(r){return r.text();});},
+    write:function(ref,name,fid,text){
+      if(fid)return api('drive',GU+'/files/'+fid+'?uploadType=media&fields=id,modifiedTime',{method:'PATCH',headers:{'Content-Type':'application/json'},body:text}).then(J).then(function(j){return {id:j.id,mod:j.modifiedTime||''};});
+      var bd='cmm45'+Date.now().toString(36),body='--'+bd+'\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n'+JSON.stringify({name:name,parents:[ref.id],mimeType:'application/json'})+'\r\n--'+bd+'\r\nContent-Type: application/json\r\n\r\n'+text+'\r\n--'+bd+'--';
+      return api('drive',GU+'/files?uploadType=multipart&fields=id,modifiedTime',{method:'POST',headers:{'Content-Type':'multipart/related; boundary='+bd},body:body}).then(J).then(function(j){return {id:j.id,mod:j.modifiedTime||''};});
+    }
+  },
+  onedrive:{
+    me:function(){return api('onedrive',GR+'/me?$select=displayName,mail,userPrincipalName').then(J).then(function(j){return {email:j.mail||j.userPrincipalName||'',name:j.displayName||''};});},
+    create:function(){return api('onedrive',GR+'/me/drive/root/children',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:FOLDER,folder:{},'@microsoft.graph.conflictBehavior':'rename'})}).then(J).then(function(j){return {driveId:(j.parentReference||{}).driveId,id:j.id};});},
+    share:function(ref,email){return api('onedrive',GR+'/drives/'+ref.driveId+'/items/'+ref.id+'/invite',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({recipients:[{email:email}],requireSignIn:true,sendInvitation:true,roles:['write'],message:'Couple Money Manager household folder'})}).then(J);},
+    findShared:function(){return api('onedrive',GR+'/me/drive/sharedWithMe').then(J).then(function(j){
+      return (j.value||[]).filter(function(x){return x.remoteItem&&x.remoteItem.folder;}).map(function(x){var ri=x.remoteItem,o=((ri.shared||{}).owner||{}).user||{};
+        return {ref:{driveId:(ri.parentReference||{}).driveId,id:ri.id},name:ri.name||x.name,owner:o.displayName||o.email||''};});});},
+    fromLink:function(s){s=String(s||'').trim();if(!/^https?:\/\//.test(s))return Promise.reject(E('link','Paste the OneDrive share link (starts with https://)'));
+      return api('onedrive',GR+'/shares/u!'+b64url(TE.encode(s))+'/driveItem').then(J).then(function(j){return {ref:{driveId:(j.parentReference||{}).driveId,id:j.id},name:j.name,owner:''};});},
+    list:function(ref){var out=[];function page(url){return api('onedrive',url).then(J).then(function(j){
+        (j.value||[]).forEach(function(f){if(f.file)out.push({id:f.id,name:f.name,mod:f.lastModifiedDateTime||''});});
+        return j['@odata.nextLink']?page(j['@odata.nextLink']):out;});}
+      return page(GR+'/drives/'+ref.driveId+'/items/'+ref.id+'/children?$select=id,name,lastModifiedDateTime,file&$top=999');},
+    read:function(ref,f){return api('onedrive',GR+'/drives/'+ref.driveId+'/items/'+f.id+'/content').then(function(r){return r.text();});},
+    write:function(ref,name,fid,text){return api('onedrive',GR+'/drives/'+ref.driveId+'/items/'+ref.id+':/'+encodeURIComponent(name)+':/content',{method:'PUT',headers:{'Content-Type':'text/plain'},body:text}).then(J).then(function(j){return {id:j.id,mod:j.lastModifiedDateTime||''};});}
+  }
+};
+PX.PROV=PROV;
+function docsToFolder(docs){
+  var f=(docs||[]).filter(function(d){return d.mime==='application/vnd.google-apps.folder';})[0];
+  var pid=f?f.id:((docs||[]).map(function(d){return d.parentId;}).filter(Boolean)[0]||'');
+  return docs&&docs.length?[{ref:{id:pid},name:FOLDER,owner:'',picked:docs.length}]:[];
+}
+try{if(!ICONS.copy)ICONS.copy='<rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>';}catch(e){}
+
+/* ---------- 4 · state ---------- */
+try{STG_L.pdh='Household folder';}catch(e){}
+var _own45=pdhIsOwner59;
+pdhIsOwner59=function(){var p=pdh59();if(p.role)return p.role==='owner';return _own45.apply(this,arguments);};
+function P(){return pdh59();}
+/* folders recorded by the earlier preview were never created in the provider: start them again */
+function migrate(){var p=P();if(p.createdAt&&!p.ref){['createdAt','sharedAt','acceptedAt','verifiedAt','missingAt','code'].forEach(function(k){delete p[k];});p.fromPreview=1;save();}}
+function ready(p){return !!(p.ref&&p.provider&&PX.key&&PX.keyFor===keyStoreName(p.ref));}
+function syncing(){var p=P();return isCouple()&&ready(p)&&storageMode()==='pdh';}
+PX.syncing=syncing;
+function ensureKey(){var p=P();if(!p.ref)return Promise.resolve(null);if(PX.key&&PX.keyFor===keyStoreName(p.ref))return Promise.resolve(PX.key);
+  return loadKey(p.ref).then(function(k){if(k){PX.key=k;PX.keyFor=keyStoreName(p.ref);}return k;});}
+function useFolder(){
+  var v=m59(),from=v.storage||'device';
+  if(from==='pdh')return;
+  if(from==='household'){DB.meta.cloudSyncOn=false;DB.meta.syncChoice='no';try{hhDetach();}catch(e){}}
+  (v.log=v.log||[]).unshift({at:Date.now(),from:from,to:'pdh'});v.log=v.log.slice(0,20);
+  v.storage='pdh';save();
+}
+function stState(){
+  var p=P(),pn=pdhProvName59(p);
+  if(!p.provider)return {k:'none',cls:'',t:'Not set up',why:'Choose Google Drive or OneDrive to keep the household in one partner’s own cloud.'};
+  if(!configured(p.provider))return {k:'setup',cls:'warn',t:pn+' not set up',why:cfgMsg(p.provider)};
+  if(!p.ref)return {k:'setup',cls:'warn',t:'Not connected yet',why:p.role==='member'?'Connect '+pn+' and pick the folder your partner shared with you.':'Connect '+pn+' and create the household folder.'};
+  if(p.missingAt)return {k:'suspended',cls:'bad',t:'Folder access lost',why:'The household folder cannot be reached (unshared, moved to the bin or no permission). Your data on this phone is safe; syncing resumes as soon as the folder is reachable again. The app never creates a replacement folder.'};
+  if(!PX.key)return {k:'pending',cls:'warn',t:'Household code needed',why:'Enter the household code on this device to unlock the folder.'};
+  if(storageMode()!=='pdh')return {k:'pending',cls:'warn',t:'Folder ready · not in use',why:'Turn on household sync through the folder below.'};
+  if(PX.st==='pick')return {k:'pending',cls:'warn',t:'Give access to the household files',why:'Google only lets the app open files you choose. Tap “Select the household files”, open the folder and select all of its files — needed once per Google account.'};
+  if(PX.st==='signin')return {k:'pending',cls:'warn',t:'Sign in again',why:'Your '+pn+' sign-in has expired. Reconnect to keep syncing.'};
+  if(PX.st==='error'||PX.st==='net')return {k:'pending',cls:'warn',t:'Sync paused',why:PX.err||'Will retry automatically.'};
+  if(p.role==='owner'&&!p.acceptedAt)return {k:'pending',cls:'warn',t:'Syncing · waiting for '+(partnerName()||'your partner'),why:'Your household is in the folder. '+esc(partnerName()||'Your partner')+' joins by picking the shared folder and entering the household code.'};
+  return {k:'active',cls:'ok',t:'Live sync on',why:PX.last?'Last synced '+whenTxt(PX.last)+'.':'Syncing…'};
+}
+function whenTxt(ts){var s=Math.round((Date.now()-ts)/1000);if(s<60)return 'just now';if(s<3600)return Math.round(s/60)+' min ago';var d=new Date(ts);return d.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});}
+pdhState59=function(){var s=stState();return {cls:s.cls,k:s.k,t:s.t,why:s.why};};
+pdhActive59=function(){var p=P();return syncing()&&!p.missingAt;};
+
+/* ---------- 5 · sync engine ---------- */
+var SHARDS=8,FIXED=[HFILE,'meta.cmm','members.cmm'];
+for(var si=0;si<SHARDS;si++)FIXED.push('tx-'+si+'.cmm');
+PX.FIXED=FIXED;
+function shardOf(k){var m=/^(\d{4})-(\d{2})$/.exec(k);if(m)return ((+m[1])*12+(+m[2]-1))%SHARDS;var h=0;for(var i=0;i<k.length;i++)h=(h*31+k.charCodeAt(i))|0;return Math.abs(h)%SHARDS;}
+PX.rshard={};PX.rmembers={};
+function resetRemote(){PX.rfiles={};PX.rshard={};PX.rhash={};PX.rmeta=null;PX.rmetaH='';PX.rmembers={};PX.missing=[];}
+function assemble(){
+  var txns=[],any=false;
+  for(var i=0;i<SHARDS;i++){var sh=PX.rshard[i]||{};Object.keys(sh).sort().forEach(function(k){any=true;txns=txns.concat(sh[k]||[]);});}
+  if(!PX.rmeta&&!any)return null;
+  return Object.assign({},PX.rmeta||{meta:{changedAt:0,del:{}}},{txns:txns});
+}
+function applyRemote(){
+  var R=assemble();if(!R)return false;
+  var before=JSON.stringify(DB);
+  PX.applying=true;
+  try{mergeShared(R);overlayPriv();stampInit();}catch(e){n45(e,'b45:merge');PX.applying=false;return false;}
+  PX.applying=false;
+  if(JSON.stringify(DB)!==before){save();try{renderAll();}catch(e){n45(e,'b45:render');}return true;}
+  return false;
+}
+function noteMembers(mem){
+  var p=P(),changed=false;p.members=p.members||{};
+  Object.keys(mem||{}).forEach(function(email){
+    if(!email||email===p.acct||p.members[email])return;
+    var o=mem[email]||{};p.members[email]={name:o.name||'',at:o.at||Date.now()};changed=true;
+    if(p.role==='owner'&&!p.acceptedAt){p.acceptedAt=o.at||Date.now();p.verifiedAt=Date.now();if(!p.sharedAt)p.sharedAt=p.acceptedAt;toast((o.name||email)+' joined the household folder ✓');}
+  });
+  if(changed)save();
+}
+function needPick(p){return p.provider==='drive'&&p.role==='member';}
+function pull(p,Pv){
+  return Pv.list(p.ref).then(function(files){
+    var names={};files.forEach(function(f){names[f.name]=f;});
+    var missing=FIXED.filter(function(n){return !names[n];});PX.missing=missing;
+    if(missing.length){
+      if(needPick(p))throw E('pick','Give the app access to the household files (select all files in the folder once)');
+      if(missing.indexOf(HFILE)>=0)throw E('access','The household file is missing from the folder');
+      throw E('access','Some household files are missing from the folder: '+missing.join(', '));
+    }
+    var jobs=[];
+    FIXED.forEach(function(n){
+      if(n===HFILE)return;var f=names[n],c=PX.rfiles[n];
+      if(c&&c.mod===f.mod&&c.id===f.id)return;
+      jobs.push(Pv.read(p.ref,f).then(function(tx){return unseal(PX.key,tx);}).then(function(obj){
+        PX.rfiles[n]={id:f.id,mod:f.mod};obj=obj||{};
+        if(n==='meta.cmm'){if(obj.meta){PX.rmeta=obj;PX.rmetaH=metaHash(obj);PX.changed=true;}return;}
+        if(n==='members.cmm'){PX.rmembers=obj.members||{};noteMembers(PX.rmembers);return;}
+        var i=+n.replace(/\D/g,'');PX.rshard[i]=obj.months||{};PX.rhash[i]=hstr(cjson(PX.rshard[i]));PX.changed=true;
+      }));
+    });
+    return Promise.all(jobs);
+  });
+}
+function push(p,Pv){
+  try{stampChanges();}catch(e){n45(e,'b45:stamp');}
+  var now=Date.now(),sp=hhSplit(sharedCopy(now)),writes=[],S={};
+  for(var i=0;i<SHARDS;i++)S[i]={};
+  Object.keys(sp.months).forEach(function(k){S[shardOf(k)][k]=sp.months[k];});
+  Object.keys(S).forEach(function(i){var h=hstr(cjson(S[i]));
+    if(PX.rhash[i]===undefined&&!Object.keys(S[i]).length)return;          /* nothing there, nothing here */
+    if(h!==PX.rhash[i])writes.push({name:'tx-'+i+'.cmm',obj:{months:S[i]},done:function(){PX.rshard[i]=S[i];PX.rhash[i]=h;}});});
+  var mh=metaHash(sp.meta);
+  if(mh!==PX.rmetaH)writes.push({name:'meta.cmm',obj:sp.meta,done:function(){PX.rmeta=sp.meta;PX.rmetaH=mh;}});
+  return writes.reduce(function(pr,w){return pr.then(function(){
+    return seal(PX.key,w.obj).then(function(tx){return Pv.write(p.ref,w.name,(PX.rfiles[w.name]||{}).id,tx);}).then(function(r){PX.rfiles[w.name]={id:r.id,mod:r.mod};w.done();PX.pushed=Date.now();});
+  });},Promise.resolve()).then(function(){return writes.length;});
+}
+function cycle(){
+  if(PX.busy){PX.again=true;return Promise.resolve();}
+  if(!syncing())return Promise.resolve();
+  if(navigator.onLine===false){PX.st='net';PX.err='Offline — will sync when the connection returns.';paint();return Promise.resolve();}
+  var p=P(),Pv=PROV[p.provider];
+  PX.busy=true;PX.st='syncing';
+  return pull(p,Pv).then(function(){
+    if(PX.changed){PX.changed=false;applyRemote();}
+    return push(p,Pv);
+  }).then(function(){
+    if(PX.joinPending){PX.joinPending=false;return addMeToMembers(p,Date.now()).catch(function(e){PX.joinPending=true;throw e;});}
+  }).then(function(){
+    PX.st='ok';PX.err='';PX.last=Date.now();
+    if(p.missingAt){delete p.missingAt;save();toast('Household folder reachable again · syncing resumed');}
+  }).catch(function(e){
+    if(e.kind==='access'){if(!p.missingAt){p.missingAt=Date.now();save();toast('Household folder access lost · your data on this phone is safe');}PX.st='lost';}
+    else if(e.kind==='signin'){PX.st='signin';}
+    else if(e.kind==='pick'){PX.st='pick';}
+    else if(e.kind==='config'){PX.st='config';}
+    else{PX.st=e.kind==='net'?'net':'error';PX.err=e.message||'Sync failed';n45(e,'b45:cycle');}
+  }).then(function(){PX.busy=false;paint();if(PX.again){PX.again=false;soon(1200);}});
+}
+PX.cycle=cycle;
+function soon(ms){clearTimeout(PX.timer);PX.timer=setTimeout(function(){cycle();},ms==null?3000:ms);}
+PX.soon=soon;
+var _touch45=touch;
+touch=function(){var r=_touch45.apply(this,arguments);try{if(syncing()&&!PX.applying)soon(3000);}catch(e){}return r;};
+setInterval(function(){if(document.visibilityState!=='hidden'&&syncing())cycle();},60000);
+document.addEventListener('visibilitychange',function(){if(document.visibilityState==='visible'&&syncing())soon(800);});
+window.addEventListener('online',function(){if(syncing())soon(800);});
+function paint(){
+  try{var b=$('storeBody');if(b&&b.offsetParent!==null){var ae=document.activeElement;if(!(ae&&b.contains(ae)&&/INPUT|SELECT|TEXTAREA/.test(ae.tagName)))pdhPaint59();}}catch(e){}
+  try{if(AU&&AU.mode==='hhfolder')rAuthHHF59();}catch(e){}
+  try{paintStatus59();}catch(e){}
+  try{if(PX.paintDsStatus)PX.paintDsStatus();}catch(e){}
+}
+
+/* ---------- 6 · actions ---------- */
+function busyBtn(el,on){if(!el)return;el.disabled=!!on;if(on){el.dataset.t=el.innerHTML;el.innerHTML='<span class="pdh45spin" aria-hidden="true"></span> Working…';}else if(el.dataset.t){el.innerHTML=el.dataset.t;}}
+function fail(e){toast(e&&e.message?e.message:'Something went wrong');if(e&&e.kind!=='config'&&e.kind!=='auth')n45(e,'b45:act');}
+function connect(el){
+  var p=P();if(!p.provider){toast('Choose Google Drive or OneDrive first');return;}
+  if(!configured(p.provider)){toast(cfgMsg(p.provider));return;}
+  busyBtn(el,true);
+  return token(p.provider,true).then(function(){return PROV[p.provider].me();}).then(function(u){
+    p.acct=u.email;p.acctName=u.name;save();toast('Connected to '+pdhProvName59(p)+(u.email?' as '+u.email:''));
+    if(p.ref&&PX.key){PX.st='idle';soon(200);}
+  }).catch(fail).then(function(){busyBtn(el,false);paint();});
+}
+function createFolder(el){
+  var p=P();if(p.ref){toast('The household folder already exists — the app never creates a replacement.');return;}
+  if(!p.acct){toast('Connect '+pdhProvName59(p)+' first');return;}
+  var Pv=PROV[p.provider],code=pdhCode59(),salt=b64(rnd(16)),key,ref,rf={},now=Date.now();
+  busyBtn(el,true);
+  derive(code,salt).then(function(k){key=k;return Pv.create();}).then(function(r){ref=r;return seal(key,{ok:'cmm-household'});}).then(function(check){
+    var hh={app:'Couple Money Manager',kind:'cmm-household',v:2,layout:'fixed-'+SHARDS,salt:salt,check:check,owner:meName()||'',ownerEmail:p.acct||'',provider:p.provider,createdAt:now};
+    return Pv.write(ref,HFILE,null,JSON.stringify(hh,null,1)).then(function(r){rf[HFILE]=r;});
+  }).then(function(){
+    /* every file exists from the start, so a partner picks the folder's files once and never again */
+    var mem={};mem[p.acct||'owner']={name:meName()||'',at:now,role:'owner'};
+    var init=[['members.cmm',{members:mem}],['meta.cmm',{}]];
+    for(var i=0;i<SHARDS;i++)init.push(['tx-'+i+'.cmm',{months:{}}]);
+    return init.reduce(function(pr,x){return pr.then(function(){return seal(key,x[1]).then(function(tx){return Pv.write(ref,x[0],null,tx);}).then(function(r){rf[x[0]]=r;});});},Promise.resolve());
+  }).then(function(){
+    p.role='owner';p.owner=meName()||'';p.ref=ref;p.folder=FOLDER;p.createdAt=now;p.code=code;p.salt=salt;delete p.fromPreview;delete p.missingAt;
+    PX.key=key;PX.keyFor=keyStoreName(ref);resetRemote();
+    return saveKey(ref,key);
+  }).then(function(){
+    useFolder();save();toast('Household folder created in '+pdhProvName59(p)+' · household code '+code);
+    return cycle();
+  }).catch(fail).then(function(){busyBtn(el,false);paint();});
+}
+function shareFolder(el){
+  var p=P(),em=String((($('pdh45Em')||{}).value)||p.email||'').trim();
+  if(!p.ref){toast('Create the household folder first');return;}
+  if(!emailOK(em)){toast('Enter your partner’s email (the one they use for '+pdhProvName59(p)+')');return;}
+  p.email=em;save();busyBtn(el,true);
+  PROV[p.provider].share(p.ref,em).then(function(){p.sharedAt=Date.now();save();toast('Folder shared with '+em+' · they can edit');})
+    .catch(function(e){toast('Could not share automatically ('+(e.message||'error')+'). Share the folder in '+pdhProvName59(p)+' instead, then tap “I shared it myself”.');})
+    .then(function(){busyBtn(el,false);paint();});
+}
+function findShared(el){
+  var p=P();if(!p.acct){toast('Connect '+pdhProvName59(p)+' first');return;}
+  busyBtn(el,true);
+  PROV[p.provider].findShared().then(function(list){
+    if(p.provider==='drive'){busyBtn(el,false);if(list[0]&&list[0].ref.id)return pick(list[0].ref,list[0].name,el);toast('Open the “'+FOLDER+'” folder in the picker and select all its files');return;}
+    list.sort(function(a,b){return (b.name===FOLDER)-(a.name===FOLDER);});
+    PX.found=list;if(!list.length)toast('No shared folders found yet. Accept your partner’s invitation, or paste the folder link.');
+  }).catch(fail).then(function(){busyBtn(el,false);paint();});
+}
+function pick(ref,name,el){
+  var p=P(),Pv=PROV[p.provider];busyBtn(el,true);
+  Pv.list(ref).then(function(files){
+    var f=files.filter(function(x){return x.name===HFILE;})[0];
+    if(!f)throw E('notcmm',p.provider==='drive'?'Select all the files inside the “'+FOLDER+'” folder (including cmm-household.json), then try again':'“'+(name||'This folder')+'” is not a Couple Money Manager household folder');
+    return Pv.read(ref,f).then(function(tx){var hh=JSON.parse(tx);if(!hh||hh.kind!=='cmm-household'||!hh.salt||!hh.check)throw E('notcmm','The household file in this folder is not valid');PX.pending={ref:ref,name:name||FOLDER,hh:hh};});
+  }).catch(fail).then(function(){busyBtn(el,false);paint();setTimeout(function(){var i=$('pdh45Code');if(i)i.focus();},80);});
+}
+function fromLink(el){
+  var p=P(),s=String((($('pdh45Link')||{}).value)||'').trim();if(!s){toast('Paste the folder link first');return;}
+  busyBtn(el,true);PROV[p.provider].fromLink(s).then(function(x){busyBtn(el,false);pick(x.ref,x.name,el);}).catch(function(e){busyBtn(el,false);fail(e);});
+}
+function join(el){
+  var p=P(),pd=PX.pending,code=(($('pdh45Code')||{}).value)||'';
+  if(!pd){toast('Pick the shared folder first');return;}
+  if(normCode(code).length<8){toast('Enter the 8-character household code');return;}
+  var key;busyBtn(el,true);
+  derive(code,pd.hh.salt).then(function(k){key=k;return unseal(k,pd.hh.check);}).then(function(o){
+    if(!o||o.ok!=='cmm-household')throw E('key','That code does not match this household');
+    var now=Date.now(),c=normCode(code);
+    p.role='member';p.ref=pd.ref;p.folder=pd.name;p.owner=pd.hh.owner||p.owner||'';p.ownerEmail=pd.hh.ownerEmail||'';
+    p.createdAt=pd.hh.createdAt||now;p.sharedAt=now;p.acceptedAt=now;p.verifiedAt=now;p.code=c.slice(0,4)+'-'+c.slice(4,8);delete p.missingAt;delete p.fromPreview;
+    PX.key=key;PX.keyFor=keyStoreName(pd.ref);PX.pending=null;PX.found=null;resetRemote();
+    return saveKey(pd.ref,key).then(function(){return addMeToMembers(p,now).catch(function(e){if(e.kind==='pick'){PX.joinPending=true;return;}throw e;});});
+  }).then(function(){useFolder();save();toast('Joined the household folder ✓ · syncing');return cycle();})
+    .catch(function(e){if(e.kind==='key')toast('That code does not match this household — check it with '+(PX.pending&&PX.pending.hh.owner||'your partner'));else fail(e);})
+    .then(function(){busyBtn(el,false);paint();});
+}
+function addMeToMembers(p,now){
+  var Pv=PROV[p.provider];
+  return Pv.list(p.ref).then(function(files){
+    var f=files.filter(function(x){return x.name==='members.cmm';})[0];
+    if(!f)throw E(needPick(p)?'pick':'access','The household files are not all available yet');
+    return Pv.read(p.ref,f).then(function(tx){return unseal(PX.key,tx);}).then(function(o){
+      o=o||{};o.members=o.members||{};o.members[p.acct||meName()||'member']={name:meName()||'',at:now,role:'member'};
+      return seal(PX.key,o).then(function(tx){return Pv.write(p.ref,'members.cmm',f.id,tx);});
+    });
+  });
+}
+function pickFiles(el){
+  var p=P();if(p.provider!=='drive'||!p.ref)return;busyBtn(el,true);
+  gPicker(p.ref.id).then(function(){PX.rfiles={};return cycle();}).then(function(){if(PX.st==='pick')toast('Some files are still missing — select every file in the folder');else if(PX.st==='ok')toast('Access given · syncing');})
+    .catch(fail).then(function(){busyBtn(el,false);paint();});
+}
+function unlock(el){
+  var p=P(),code=(($('pdh45Code')||{}).value)||'';if(!p.ref)return;
+  busyBtn(el,true);
+  PROV[p.provider].list(p.ref).then(function(files){var f=files.filter(function(x){return x.name===HFILE;})[0];if(!f)throw E('access','The household file is missing');return PROV[p.provider].read(p.ref,f);})
+    .then(function(tx){var hh=JSON.parse(tx);return derive(code||p.code,hh.salt).then(function(k){return unseal(k,hh.check).then(function(){return k;});});})
+    .then(function(k){PX.key=k;PX.keyFor=keyStoreName(p.ref);return saveKey(p.ref,k);}).then(function(){toast('Folder unlocked on this device');return cycle();})
+    .catch(function(e){if(e.kind==='key')toast('That code does not match this household');else fail(e);}).then(function(){busyBtn(el,false);paint();});
+}
+function leave(){
+  var p=P();
+  askConfirm('Stop using the household folder on this device? Your data stays on this phone and in the folder; '+(p.role==='owner'?'the folder is not deleted, and ':'')+'you can reconnect later with the household code.','Stop folder sync',function(){
+    var v=m59();if(v.storage==='pdh'){(v.log=v.log||[]).unshift({at:Date.now(),from:'pdh',to:'device'});v.storage='device';}
+    try{localStorage.removeItem(keyStoreName(p.ref));}catch(e){}
+    dropToken(p.provider);lsSet('cmm_pdh_ms_rt','');
+    var prov=p.provider;Object.keys(p).forEach(function(k){delete p[k];});p.provider=prov;p.owner=meName()||'';
+    PX.key=null;PX.keyFor='';resetRemote();PX.st='idle';
+    save();paint();toast('Folder sync stopped on this device');
+  });
+}
+ACT.on('b45-folder',{
+  'pdhprov':function(el){var p=P();if(p.ref){toast('The provider is fixed once the household folder is connected.');return;}p.provider=el.dataset.v;delete p.acct;save();paint();},
+  'pdh45role':function(el){var p=P();if(p.ref)return;p.role=el.dataset.v==='member'?'member':'owner';if(p.role==='owner')p.owner=meName()||'';save();paint();},
+  'pdh45conn':function(el){connect(el);},
+  'pdhcreate':function(el){createFolder(el);},
+  'pdh45share':function(el){shareFolder(el);},
+  'pdhshare':function(){var p=P();if(!p.ref)return;var em=String((($('pdh45Em')||{}).value)||p.email||'').trim();if(em)p.email=em;p.sharedAt=Date.now();save();paint();toast('Marked as shared');},
+  'pdh45find':function(el){findShared(el);},
+  'pdh45pick':function(el){var x=(PX.found||[])[+el.dataset.i];if(x)pick(x.ref,x.name,el);},
+  'pdh45link':function(el){fromLink(el);},
+  'pdh45join':function(el){join(el);},
+  'pdh45pickfiles':function(el){pickFiles(el);},
+  'pdh45unlock':function(el){unlock(el);},
+  'pdh45use':function(){var p=P();if(!ready(p))return;
+    var go=function(){useFolder();toast('Household sync now runs through the folder');cycle();paint();};
+    if(storageMode()==='household')askConfirm('Switch household sync from Couple Money Cloud to the household folder? Your data stays on this phone.','Use the folder',go);else go();},
+  'pdh45sync':function(el){busyBtn(el,true);cycle().then(function(){busyBtn(el,false);if(PX.st==='ok')toast('Synced');});},
+  'pdh45leave':function(){leave();},
+  'pdh45copy':function(){var p=P();try{navigator.clipboard.writeText(p.code||'');toast('Household code copied');}catch(e){toast(p.code||'');}},
+  'pdhverify':function(el){var p=P();if(p.ref&&!PX.key)unlock(el);else if(PX.pending)join(el);},
+  'pdhmissing':function(){},'pdhaccept':function(){},'pdhrestore':function(){cycle();}
+});
+
+/* ---------- 7 · UI: Settings → Data & Sync and the onboarding step ---------- */
+function provSeg(p,locked){
+  return '<div class="segmini">'+['drive','onedrive'].map(function(k){return '<button type="button" class="'+(p.provider===k?'on':'')+'" data-act="pdhprov" data-v="'+k+'"'+(locked?' disabled':'')+'>'+ico('folder')+' '+PDH_PROV[k]+'</button>';}).join('')+'</div>';
+}
+function step(n,title,body,done){return '<div class="pdhstep"><span class="n'+(done?' dn':'')+'">'+(done?'✓':n)+'</span><div class="b"><b>'+title+(done?' <small>done</small>':'')+'</b>'+body+'</div></div>';}
+function codeBox(p){return '<div class="pdh45code"><span class="pdhcode">'+esc(p.code||'')+'</span><button type="button" class="btn sm ghost" data-act="pdh45copy">'+ico('copy')+' Copy</button></div>';}
+function bodyHTML(){
+  var p=P(),pn=pdhProvName59(p),P2=esc(partnerName()||'your partner'),h='';
+  var st=stState(),dot=st.cls==='ok'?'var(--inc)':(st.cls==='bad'?'var(--exp)':(st.cls==='warn'?'var(--warn)':'var(--muted)'));
+  h+='<div class="ds-status"><span class="dot" style="background:'+dot+'"></span><span><b>'+esc(st.t)+'</b><br><small class="muted" style="font-weight:600">'+st.why+'</small></span></div>';
+  if(p.fromPreview)h+='<div class="help small" style="margin:8px 0">The folder recorded in an earlier test version was never created in your cloud. Set it up again below — it takes a minute.</div>';
+  var cfgOK=p.provider&&configured(p.provider);
+  /* not connected yet */
+  if(!p.ref){
+    if(!p.role){
+      h+='<div class="mgr-lb" style="margin-top:10px">Who sets it up?</div><div class="pdh45roles">'
+        +'<button type="button" class="usecard" data-act="pdh45role" data-v="owner"><span class="aucard-ic">'+ico('folder')+'</span><span style="flex:1"><b>I’ll create the folder</b><small>The household lives in my Google Drive or OneDrive. I share it with '+P2+'.</small></span></button>'
+        +'<button type="button" class="usecard" data-act="pdh45role" data-v="member"><span class="aucard-ic">'+ico('users')+'</span><span style="flex:1"><b>'+P2+' shared a folder with me</b><small>I have the folder invitation and the household code.</small></span></button></div>';
+      return h;
+    }
+    h+=step(1,'Choose the provider',provSeg(p,false)+(p.provider&&!configured(p.provider)?'<div class="plwarn" style="margin-top:8px">'+ico('warn')+' '+esc(cfgMsg(p.provider))+'</div>':''),!!(p.provider&&cfgOK));
+    h+=step(2,p.acct?'Connected':'Connect '+pn,p.acct?'<div class="fline"><span>Signed in as</span><b>'+esc(p.acct)+'</b></div>':'<button type="button" class="btn" data-act="pdh45conn"'+(cfgOK?'':' disabled')+'>'+ico('key')+' Connect '+esc(pn)+'</button><div class="help small" style="margin-top:6px">A '+esc(pn)+' sign-in window opens. The app only uses the household folder.</div>',!!p.acct);
+    if(p.role==='owner'){
+      h+=step(3,'Create the household folder','<button type="button" class="btn" data-act="pdhcreate"'+(p.acct?'':' disabled')+'>'+ico('folder')+' Create “'+FOLDER+'” folder</button><div class="help small" style="margin-top:6px">Created in your own '+esc(pn)+'. You get a household code to give '+P2+'.</div>',false);
+    }else{
+      var fb='';
+      if(p.acct){
+        fb+=p.provider==='drive'
+          ?'<button type="button" class="btn ghost" data-act="pdh45find">'+ico('folderopen')+' Choose the shared folder’s files</button><div class="help small" style="margin-top:6px">In the Google picker open <b>'+FOLDER+'</b> (under Shared with me) and select <b>all '+FIXED.length+' files</b>. Google then lets the app open just those files.</div>'
+          :'<button type="button" class="btn ghost" data-act="pdh45find">'+ico('search')+' Find the shared folder</button>';
+        if(PX.found&&PX.found.length)fb+='<div class="dayg" style="margin-top:8px">'+PX.found.map(function(x,i){return '<button type="button" class="mgr-row pdh45pick" data-act="pdh45pick" data-i="'+i+'"><span class="lb">'+ico('folderopen')+' '+esc(x.name)+'<small>'+(x.owner?'Shared by '+esc(x.owner):'Shared with you')+'</small></span>'+ico('chevright')+'</button>';}).join('')+'</div>';
+        fb+='<div class="mgr-lb" style="margin-top:10px">Or paste the folder link</div><div class="pdh45inl"><input class="fin" id="pdh45Link" autocapitalize="off" placeholder="https://…"><button type="button" class="btn sm" data-act="pdh45link">Open</button></div>';
+      }
+      h+=step(3,PX.pending?'Folder found':'Pick the shared folder',PX.pending?'<div class="fline"><span>'+ico('folderopen')+' '+esc(PX.pending.name)+'</span><b>'+esc(PX.pending.hh.owner||'')+'</b></div>':fb,!!PX.pending);
+      h+=step(4,'Enter the household code',PX.pending?'<input class="fin" id="pdh45Code" autocapitalize="characters" autocomplete="off" autocorrect="off" spellcheck="false" placeholder="XXXX-XXXX" style="text-transform:uppercase;letter-spacing:2px;font-weight:800"><button type="button" class="btn" data-act="pdh45join" style="margin-top:8px">'+ico('shield')+' Join the household</button><div class="help small" style="margin-top:6px">Ask '+esc(PX.pending.hh.owner||'your partner')+' for the code — it unlocks the encrypted files and is never stored in the folder.</div>':'<div class="help small">Pick the folder first.</div>',false);
+    }
+    if(p.role)h+='<button type="button" class="aulink" data-act="pdh45role" data-v="'+(p.role==='owner'?'member':'owner')+'" style="margin-top:8px">'+(p.role==='owner'?esc(partnerName()||'My partner')+' already created a folder':'I’ll create the folder instead')+'</button>';
+    return h;
+  }
+  /* connected */
+  h+='<div class="fline"><span>Folder</span><b>'+ico('folderopen')+' '+esc(p.folder||FOLDER)+' · '+esc(pn)+'</b></div>'
+    +'<div class="fline"><span>Household Storage Owner</span><b>'+esc(p.owner||'')+(p.role==='owner'?' · you':'')+'</b></div>'
+    +(p.acct?'<div class="fline"><span>Signed in as</span><b>'+esc(p.acct)+'</b></div>':'');
+  if(!PX.key){
+    h+='<div class="mgr-lb" style="margin-top:10px">Household code</div><input class="fin" id="pdh45Code" autocapitalize="characters" autocomplete="off" placeholder="XXXX-XXXX" value="'+esc(p.role==='owner'?(p.code||''):'')+'" style="text-transform:uppercase;letter-spacing:2px;font-weight:800"><button type="button" class="btn" data-act="pdh45unlock" style="margin-top:8px">'+ico('shield')+' Unlock on this device</button>';
+  }
+  if(p.role==='owner'){
+    h+='<div class="mgr-lb" style="margin-top:12px">Household code</div>'+codeBox(p)+'<div class="help small">Give this code to '+P2+' in person or by message. It unlocks the encrypted files; it is not stored in the folder.</div>';
+    if(!p.acceptedAt){
+      h+='<div class="mgr-lb" style="margin-top:12px">Share the folder with '+P2+'</div><div class="pdh45inl"><input class="fin" id="pdh45Em" type="email" autocapitalize="off" placeholder="partner@example.com" value="'+esc(p.email||DB.meta.pendingInvite||'')+'"><button type="button" class="btn sm" data-act="pdh45share">'+(p.sharedAt?'Share again':'Share')+'</button></div>'
+        +(p.sharedAt?'<div class="help small" style="margin-top:6px">'+ico('check')+' Shared with '+esc(p.email||'')+' · waiting for '+P2+' to join.</div>':'<div class="help small" style="margin-top:6px">Uses the email '+P2+' signs in to '+esc(pn)+' with. Can edit access is required. <button type="button" class="aulink" data-act="pdhshare">I shared it myself</button></div>');
+    }else{
+      var ms=Object.keys(p.members||{}).map(function(k){return esc((p.members[k].name||k)+' · '+k);}).join(', ');
+      h+='<div class="fline" style="margin-top:8px"><span>Member</span><b>'+(ms||P2)+'</b></div>';
+    }
+  }
+  var btns='';
+  if(PX.key&&storageMode()!=='pdh')btns+='<button type="button" class="btn" data-act="pdh45use">'+ico('refresh')+' Use the folder for household sync</button>';
+  if(PX.key&&PX.st==='pick')btns+='<button type="button" class="btn" data-act="pdh45pickfiles">'+ico('folderopen')+' Select the household files</button>';
+  if(PX.key&&storageMode()==='pdh'){
+    if(PX.st==='signin'||!p.acct)btns+='<button type="button" class="btn" data-act="pdh45conn">'+ico('key')+' Reconnect '+esc(pn)+'</button>';
+    btns+='<button type="button" class="btn ghost" data-act="pdh45sync">'+ico('refresh')+' Sync now</button>';
+  }
+  btns+='<button type="button" class="btn ghost" data-act="pdh45leave">'+ico('cloudoff')+' Stop on this device</button>';
+  h+='<div class="btnrow pdh45btns">'+btns+'</div>';
+  return h;
+}
+function infoHTML(){
+  return '<div class="help small" style="margin-top:12px">'+ico('shield')+' <b>Access:</b> your partner needs edit access to the folder. What they may view, add, edit or manage inside the app is set separately per account (View only, Add transactions, Full access, Account administrator).</div>'
+    +'<div class="help small" style="margin-top:8px">'+ico('lock')+' <b>Encrypted:</b> every data file is encrypted on the phone with a key from the household code, so the provider stores only scrambled data. Shared money is kept in small files — one per month plus the shared accounts — so the two of you rarely touch the same file, and when you do the newest edit of each record wins. Private accounts never go to the folder.</div>';
+}
+pdhPanel59=function(){
+  var b=$('storeBody');if(!b||!isCouple())return;
+  var ae=document.activeElement;if(ae&&b.contains(ae)&&/INPUT|SELECT/.test(ae.tagName))return;
+  migrate();
+  var old=b.querySelector('details.pdhdet');if(old)old.remove();
+  var st=stState();if(V59B3.open===null)V59B3.open=st.k!=='none';
+  b.insertAdjacentHTML('beforeend','<details class="help pdhdet" data-pdh'+(V59B3.open?' open':'')+' ontoggle="V59B3.open=this.open"><summary>'+ico('folderopen')+' Household folder · Google Drive or OneDrive'+pdhPill59()+'</summary><div style="margin-top:10px">'+bodyHTML()+infoHTML()+'</div></details>');
+};
+pdhPill59=function(){
+  var st=stState(),L={none:'Off',setup:'Setup',pending:'Pending',active:'Live',suspended:'No access'};
+  var c=st.k==='active'?'color:var(--inc);background:var(--inc-soft)':(st.k==='suspended'?'color:var(--exp);background:var(--exp-soft)':((st.k==='pending'||st.k==='setup')?'color:var(--warn);background:color-mix(in srgb,var(--warn) 14%,transparent)':'color:var(--muted);background:var(--bg)'));
+  return ' <span class="pvpill" style="'+c+'">'+L[st.k]+'</span>';
+};
+rAuthHHF59=function(){
+  var b=$('auBody'),s=$('auSub');if(!b)return;migrate();
+  if(s)s.textContent='Household folder · optional';
+  var em=(sessGet()||{}).email||'';
+  b.innerHTML='<div class="austep">'+ico('check')+' Signed in'+(em?' as '+esc(em):'')+'</div>'
+    +'<div class="aucard"><div class="aucard-ic">'+ico('folder')+'</div><b>Keep the household in your own cloud</b><p>One partner’s Google Drive or OneDrive can hold the encrypted household and keep both phones in sync. You can also set this up later in Settings → Data &amp; Sync.</p></div>'
+    +'<div class="pdh45au">'+bodyHTML()+'</div>'
+    +'<button class="btn" style="margin-top:12px" data-act="auhhf">'+(P().ref?'Continue':'Skip for now')+'</button>';
+};
+var _cards45=stgCards59;
+stgCards59=function(sel,act){
+  var h=_cards45.apply(this,arguments),st=stState(),on=storageMode()==='pdh';
+  h=h.replace(/Shared household storage in one partner’s own cloud\.[^<]*<\/small>/,'Live household sync through an encrypted folder in one partner’s own Google Drive or OneDrive.</small>');
+  h=h.replace(/<span class="pvpill" style="background:var\(--bg\);color:var\(--muted\)">Preview<\/span><\/div>/,(on?'<span class="pvpill">Current</span>':(st.k==='none'?'':pdhPill59()))+'</div>');
+  h=h.replace('class="usecard pdhcard"','class="usecard pdhcard'+(on?' on':'')+'"');
+  return h;
+};
+
+/* the folder is a storage option, not an advanced tool: its own card on Data & Sync, in Simple and Full */
+SCREEN.after('B3.renderDataSub',900000080,{call:'apply',ret:false},function(){
+  try{
+    var f=$('ds22Folder'),adv=$('ds22Adv');if(!f||!adv||!adv.parentNode)return;
+    var c=$('pdh45Card');
+    if(!c){c=document.createElement('div');c.className='card';c.id='pdh45Card';adv.parentNode.insertBefore(c,adv);}
+    if(f.parentNode!==c)c.appendChild(f);
+    var cp=isCouple();c.hidden=!cp;f.hidden=!cp;
+    var sec=f.querySelector('.mgr-sec');if(sec)sec.innerHTML=ico('folderopen')+' Household folder';
+    if(cp){qa('#storeBody .pdhsolo').forEach(function(x){x.remove();});if(!f.querySelector('details.pdhdet'))pdhPanel59();}
+  }catch(e){n45(e,'b45:card');}
+});
+SCREEN.on('B3.renderDataSub',900000080);
+/* status everywhere (header chip, Data & Sync hero, household tile) follows the folder when it is the storage */
+var _ss45=statusState59;
+statusState59=function(){
+  if(storageMode()!=='pdh')return _ss45.apply(this,arguments);
+  var st=stState(),txt={active:'Synced · household folder',pending:st.t,setup:st.t,suspended:'Folder access lost',none:'Household folder'}[st.k]||st.t;
+  return {cls:st.cls==='ok'?'ok':(st.cls||'warn'),text:txt,why:String(st.why).replace(/<[^>]+>/g,'')};
+};
+function dsChk(cls,icon,label,value,extra){return '<div class="ds22-chk '+(cls||'')+'"><span class="ci">'+ico(icon)+'</span><span class="ct"><span>'+label+'</span><b>'+value+'</b></span>'+(extra||'')+'</div>';}
+function paintDsStatus(){
+  var b=$('ds22Status');if(!b||storageMode()!=='pdh')return;
+  var st=statusState59(),p=P(),n=(window.BK&&BK.log)?BK.log.length:0;
+  var h='<div class="ds22-hero '+(st.cls||'')+'"><span class="hic">'+ico(st.cls==='ok'?'check':(st.cls==='bad'?'cloudoff':'warn'))+'</span><span><b>'+esc(st.text)+'</b><small>'+esc(st.why)+'</small></span></div>'
+    +dsChk('','shield','Safety snapshots · automatic',n?(n+' kept · latest '+esc(bkWhen(BK.log[0].at))):'Taken after every change')
+    +dsChk('info','folderopen','Where your data lives',esc('Household folder · '+pdhProvName59(p)),'<button class="aulink" data-act="ds22stg">Change</button>')
+    +dsChk(PX.st==='ok'||PX.st==='syncing'?'':'warn','refresh','Last sync',PX.last?esc(bkWhen(PX.last)):'Waiting for first sync')
+    +'<div class="ds22-acts"><button class="btn" data-act="pdh45sync">'+ico('refresh')+' Sync now</button></div>';
+  b.innerHTML=h;
+}
+PX.paintDsStatus=paintDsStatus;
+if(window.D22&&D22.paint){var _dp45=D22.paint;D22.paint=function(){var r=_dp45.apply(this,arguments);try{paintDsStatus();}catch(e){n45(e,'b45:ds');}return r;};}
+SCREEN.after('B3.renderDataSub',900000081,{call:'apply',ret:false},function(){try{paintDsStatus();}catch(e){n45(e,'b45:ds2');}});
+SCREEN.on('B3.renderDataSub',900000081);
+
+/* tapping the storage card opens and scrolls to the folder card */
+ACT.on('b45-open',{'pdhopen':function(){if(!isCouple()){toast('The household folder is a Couple mode feature. Switch to Couple mode first.');return;}
+  V59B3.open=true;try{renderStore59();}catch(e){}var d=document.querySelector('#storeBody details.pdhdet');if(!d){try{pdhPanel59();}catch(e){}d=document.querySelector('#storeBody details.pdhdet');}
+  if(d){d.open=true;setTimeout(function(){d.scrollIntoView({block:'start',behavior:'smooth'});},60);}}});
+
+/* ---------- 8 · boot ---------- */
+setTimeout(function(){
+  try{migrate();var p=P();
+    var t=ssGet('cmm_pdh_tok:'+(p.provider||''));if(t)PX.tok[p.provider]=t;
+    ensureKey().then(function(){if(syncing())soon(1500);});
+  }catch(e){n45(e,'b45:boot');}
+},800);
+
+/* ---------- version + release note (beta 45) ---------- */
+try{if(window.pinVer36)window.pinVer36('1.60 beta 45');}catch(e){}
+try{
+  if(!window.__B45RN){
+    var ol45=document.querySelector('#pageSet details.help ol')||document.querySelector('#view-settings details.help ol');
+    if(ol45){ol45.insertAdjacentHTML('beforeend','<li><b>Household folder (beta 45):</b> the household can now live in an encrypted folder in one partner’s Google Drive or OneDrive, with live sync between both phones (Settings → Data &amp; Sync). The owner creates and shares the folder; the partner picks it and enters the household code. Private accounts never leave their owner’s phone. Also: a partner’s change that arrives by sync is never logged under your name.</li>');window.__B45RN=1;}
+  }
+}catch(e){}
+})();
+
+/* ===================================================================================
+   ##### SECTION: v160b46 — v1.60 beta 46 · public-release readiness
+   ===================================================================================
+     1. GOOGLE DRIVE WITHOUT A RESTRICTED SCOPE — the household folder now asks only for
+        drive.file (Google's "recommended, non-sensitive" Drive scope), so a public release does
+        not need Google's restricted-scope review. The owner's app can always open the files it
+        created; the partner gives access once with the Google Picker by selecting the folder's
+        files. The folder therefore has a FIXED set of 11 files from the start
+        (cmm-household.json, meta.cmm, members.cmm, tx-0…tx-7.cmm — months are spread over the
+        eight tx files), so the partner never has to pick again. OneDrive uses the same layout.
+        New config: googleApiKey (browser key, Picker API) and googleAppId (project number).
+     2. USAGE STATISTICS ARE OPT-IN — Google Analytics for Firebase only starts after the user
+        switches on "Share anonymous usage statistics" (Settings → Privacy & Security). Off by
+        default; switching it off stops collection.
+     4. ACCOUNT DELETION — Settings → Danger zone → Delete profile and data now also deletes the
+        sign-in account (Firebase Authentication) and its user record, after a fresh sign-in check.
+   3. LEGAL LINKS — Privacy policy, Terms of use and Support (CMM_CONFIG.privacyUrl, termsUrl,
+        supportEmail) in Help & About, Privacy & Security and the sign-in screen.
+   =================================================================================== */
+(function(){
+'use strict';
+function $(id){return document.getElementById(id);}
+function n46(e,t){try{DIAG.note(e,t);}catch(x){}}
+var CFG=window.CMM_CONFIG||{};
+var PRIV=CFG.privacyUrl||'privacy.html',TERMS=CFG.termsUrl||'terms.html',MAIL=CFG.supportEmail||'';
+
+/* ---------- 2 · analytics consent ---------- */
+window.cmmAnalyticsOK=function(){try{return localStorage.getItem('cmm_analytics')==='1';}catch(e){return false;}};
+var _fia46=fbInitAnalytics;
+fbInitAnalytics=function(){if(!cmmAnalyticsOK())return;return _fia46.apply(this,arguments);};
+function setAnalytics(on){
+  try{localStorage.setItem('cmm_analytics',on?'1':'0');}catch(e){}
+  try{
+    if(FB&&FB.app)dynImport('https://www.gstatic.com/firebasejs/'+FBJS+'/firebase-analytics.js').then(function(A){
+      var an=A.getAnalytics(FB.app);if(A.setAnalyticsCollectionEnabled)A.setAnalyticsCollectionEnabled(an,!!on);}).catch(function(){});
+    else if(on)fbInitAnalytics();
+  }catch(e){n46(e,'b46:an');}
+  toast(on?'Thanks — anonymous usage statistics on':'Usage statistics off');
+}
+
+/* ---------- 3 · legal links ---------- */
+function linksHTML(cls){
+  return '<div class="lg46 '+(cls||'')+'"><a href="'+esc(PRIV)+'" target="_blank" rel="noopener">Privacy policy</a><span aria-hidden="true">·</span><a href="'+esc(TERMS)+'" target="_blank" rel="noopener">Terms of use</a>'
+    +(MAIL?'<span aria-hidden="true">·</span><a href="mailto:'+esc(MAIL)+'">Support</a>':'')+'</div>';
+}
+function aboutCard(){
+  var sec=document.querySelector('.setsub[data-sub="about"]');if(!sec||$('lg46About'))return;
+  var first=sec.querySelector('.card');
+  var h='<div class="card" id="lg46About"><h2>'+ico('shield')+' Privacy &amp; terms</h2><div class="help small">How the app handles your data, what is shared with your partner and which services are used (only when you switch them on).</div>'+linksHTML('lg46row')+'</div>';
+  if(first)first.insertAdjacentHTML('afterend',h);else sec.insertAdjacentHTML('afterbegin',h);
+}
+function authFooter(){
+  var a=$('authScr');if(!a||$('lg46Auth'))return;
+  var d=document.createElement('div');d.id='lg46Auth';d.innerHTML=linksHTML('lg46auth');a.appendChild(d);
+}
+if(window.B3&&typeof B3.renderSub==='function'){var _rs46=B3.renderSub;B3.renderSub=function(k){var r=_rs46.apply(this,arguments);try{if(k==='about')aboutCard();}catch(e){n46(e,'b46:about');}return r;};}
+SCREEN.after('B3.renderPrivSub',900000090,{call:'apply',ret:false},function(){
+  try{
+    var el=$('pvLockB3');if(!el)return;
+    var card=el.closest('.card')||el.parentNode;var old=$('pv46');if(old)old.remove();
+    var on=cmmAnalyticsOK();
+    card.insertAdjacentHTML('afterend','<div class="card" id="pv46"><h2>'+ico('chart')+' Usage statistics</h2>'
+      +'<div class="pv-grp"><label class="pv-row"><span class="pv-ic">'+ico('chart')+'</span><span class="pv-tx"><b>Share anonymous usage statistics</b><small>Which screens are used and app errors — never amounts, names, notes or account details. Only while Couple Money Cloud is on. Off by default.</small></span><span class="pv-ct"><input type="checkbox" class="tgl" data-act="an46"'+(on?' checked':'')+'></span></label>'+'</div>'
+      +linksHTML('lg46row')+'</div>');
+  }catch(e){n46(e,'b46:priv');}
+});
+SCREEN.on('B3.renderPrivSub',900000090);
+ACT.on('b46-public',{'an46':function(el){setAnalytics(!!el.checked);}});
+try{if(!ICONS.chart)ICONS.chart='<path d="M3 3v18h18"/><path d="M7 15l4-4 3 3 5-6"/>';}catch(e){}
+setTimeout(function(){try{authFooter();aboutCard();}catch(e){n46(e,'b46:boot');}},600);
+
+/* ---------- 4 · account deletion (app stores require it): Delete profile and data also deletes
+   the sign-in account. Firebase asks for a recent sign-in, so the app checks first and, if the
+   last sign-in is older than 5 minutes, asks the user to confirm with Google or the password. ---------- */
+function authMod(){return dynImport('https://www.gstatic.com/firebasejs/'+FBJS+'/firebase-auth.js');}
+function signedInUser(){try{return (FB&&FB.auth&&FB.auth.currentUser)||(FB&&FB.user)||null;}catch(e){return null;}}
+function recent(u){try{var t=Date.parse(u.metadata&&u.metadata.lastSignInTime||'');return t&&Date.now()-t<5*60000;}catch(e){return false;}}
+function provOf(u){try{return (u.providerData&&u.providerData[0]&&u.providerData[0].providerId)||'';}catch(e){return '';}}
+var DEL46={ok:false};
+function reauthPanel(msg){
+  var p=$('dzPanelB3');if(!p)return;var u=signedInUser(),g=provOf(u)==='google.com';
+  p.innerHTML='<div class="delbox"><b>Confirm it’s you</b><div class="help small" style="margin:6px 0 10px">'+esc(msg||'To delete your sign-in account too, confirm your sign-in first.')+'</div>'
+    +(g?'<button class="btn" data-act="dz46reauth">'+ico('key')+' Continue with Google</button>'
+       :'<input class="fin" id="dz46pw" type="password" autocomplete="current-password" placeholder="Account password"><button class="btn" data-act="dz46reauth" style="margin-top:8px">'+ico('key')+' Confirm password</button>')
+    +'<div style="display:grid;gap:8px;margin-top:8px"><button class="btn ghost" data-act="dz46dataonly">Delete data on this device only (keep the account)</button><button class="btn ghost" data-act="dzcancel">Cancel</button></div></div>';
+}
+if(window.B3&&typeof B3.runDeletion==='function'){
+  var _rd46=B3.runDeletion;
+  B3.runDeletion=function(retry){
+    var u=signedInUser();
+    if(u&&!DEL46.ok&&!DEL46.skip&&!recent(u)){reauthPanel();return;}
+    if(u&&!DEL46.skip)DEL46.ok=true;
+    return _rd46.apply(this,arguments);
+  };
+}
+var _wipe46=wipeAll57;
+wipeAll57=function(){
+  var self=this,args=arguments,u=signedInUser();
+  if(!u||!DEL46.ok||DEL46.skip)return _wipe46.apply(self,args);
+  var uid=u.uid;
+  var userDoc=(typeof fsMods==='function'&&FB.db)?fsMods().then(function(F){return F.deleteDoc(F.doc(FB.db,'users',uid));}).catch(function(){}):Promise.resolve();
+  return userDoc.then(function(){return authMod();}).then(function(A){return A.deleteUser(FB.auth.currentUser||u);})
+    .then(function(){try{sessSet(null);}catch(e){}},function(e){n46(e,'b46:deluser');try{sessionStorage.setItem('cmm_del46_fail','1');}catch(x){}})
+    .then(function(){return _wipe46.apply(self,args);});
+};
+ACT.on('b46-delete',{
+  'dz46reauth':function(el){
+    var u=signedInUser();if(!u)return;el.disabled=true;
+    authMod().then(function(A){
+      if(provOf(u)==='google.com')return A.reauthenticateWithPopup(FB.auth.currentUser,new A.GoogleAuthProvider());
+      var pw=(($('dz46pw')||{}).value)||'';if(!pw)throw new Error('Enter your password');
+      return A.reauthenticateWithCredential(FB.auth.currentUser,A.EmailAuthProvider.credential(u.email,pw));
+    }).then(function(){DEL46.ok=true;B3.runDeletion(false);})
+      .catch(function(e){el.disabled=false;reauthPanel(e&&e.code==='auth/wrong-password'||e&&e.code==='auth/invalid-credential'?'That password is not right. Try again.':((e&&e.message)||'Could not confirm — try again.'));});
+  },
+  'dz46dataonly':function(){DEL46.skip=true;B3.runDeletion(false);}
+});
+setTimeout(function(){try{if(sessionStorage.getItem('cmm_del46_fail')){sessionStorage.removeItem('cmm_del46_fail');toast('Your data was deleted, but the sign-in account could not be removed. Contact support to finish deleting it.');}}catch(e){}},2500);
+
+/* ---------- version + release note (beta 46) ---------- */
+try{if(window.pinVer36)window.pinVer36('1.60 beta 46');}catch(e){}
+try{
+  if(!window.__B46RN){
+    var ol46=document.querySelector('#pageSet details.help ol')||document.querySelector('#view-settings details.help ol');
+    if(ol46){ol46.insertAdjacentHTML('beforeend','<li><b>Ready for public release (beta 46):</b> the Google Drive household folder now asks Google only for access to the files the app creates or that you pick (no full Drive access). Usage statistics are off unless you switch them on in Privacy &amp; Security. Privacy policy and terms are linked in Help &amp; About.</li>');window.__B46RN=1;}
+  }
+}catch(e){}
+})();
