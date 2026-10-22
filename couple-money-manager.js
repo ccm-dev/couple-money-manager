@@ -411,7 +411,7 @@ function fbSetUser(u){
   if(!u)DB.meta.cloudSyncOn=false; /* signed out → back to local only */
   save();renderCloudAcc();
   var now=u?u.email:'';
-  if(now!==was)toast(now?('Signed in as '+now):'Signed out — local only');
+  if(now!==was&&!now&&was)toast('Signed out — local only'); /* beta 50: no "Signed in as" pop-up — the sign-in card shows it */
 }
 /* v1.32: Google sign-in only works when the app runs from its website — a bare file copy
    (file://) would die inside the SDK with a technical error, so show the plain note instead */
@@ -1982,7 +1982,7 @@ document.addEventListener('touchstart',function(e){
   if(e.touches.length!==1||swipeTabBlocked())return;
   var t=e.target;
   /* never hijack touches that start on controls or horizontally-scrollable strips */
-  if(t.closest&&t.closest('select,input,textarea,button,a,nav,.sheet,.cmodal,.chips,.bal-strip,.chart-scroll,.toast'))return;
+  if(t.closest&&t.closest('select,input,textarea,button,a,nav,.sheet,.cmodal,.chips,.bal-strip,.chart-scroll,.toast,#toast'))return;
   SWIPE={x:e.touches[0].clientX,y:e.touches[0].clientY,t:Date.now()};
 },{passive:true});
 document.addEventListener('touchmove',function(e){
@@ -4220,7 +4220,7 @@ function hhEmailAuth(kind){
   if(!emailOK(em)){toast('Enter a valid email');return;}if(pw.length<6){toast('Password must be at least 6 characters');return;}
   DB.meta.syncChoice='yes';DB.meta.cloudSyncOn=true;save();
   cloudAuth(kind,em,pw).then(function(r){
-    if(r.ok){HH.emailForm=false;toast('Signed in as '+em);return;}
+    if(r.ok){HH.emailForm=false;try{renderCloudAcc();}catch(e){}return;} /* beta 50: no "Signed in as" pop-up */
     var c=r.why||'';
     toast(c==='offline'?'Email sign-in works when the app is opened from its website.':c==='auth/operation-not-allowed'?'Email sign-in is not switched on in Firebase yet.':c==='auth/weak-password'?'Use a stronger password.':c==='timeout'?'Sign-in timed out. Check your connection.':'Wrong email or password.');
   });
@@ -4440,13 +4440,29 @@ setTimeout(function(){try{if(location.hash==='#add'&&sessGet()&&$('authScr').hid
 (function(){
   if(!('serviceWorker' in navigator)||!/^https?:$/.test(location.protocol))return;
   window.addEventListener('load',function(){
+    /* beta 50: calm update flow.
+       - first install (no controller yet) never reloads the page;
+       - a new version shows ONE info card with an "Update" button (no Undo, no forced reload);
+       - ignored → the new version starts the next time the app is opened;
+       - after updating, one "Updated to vX" card confirms it. */
+    var hadCtrl=!!navigator.serviceWorker.controller,accepted=false,asked=false;
     navigator.serviceWorker.register('service-worker.js').then(function(reg){
-      function ask(w){if(!w)return;toastAct('A new version is ready. Tap Undo to keep this one, or wait to update.',function(){});setTimeout(function(){w.postMessage('skipWaiting');},5400);}
+      function ask(w){
+        if(!w||asked)return;asked=true;
+        toast('A new version is ready',{type:'info',icon:'update',sub:'Update now, or it updates by itself next time you open the app.',action:'Update',dur:12000,onAction:function(){
+          accepted=true;
+          try{sessionStorage.setItem('cmmJustUpdated','1');}catch(e){}
+          toast('Updating…',{type:'info',icon:'update',dur:4000});
+          try{w.postMessage('skipWaiting');}catch(e){location.reload();}
+          setTimeout(function(){location.reload();},4000); /* fallback if the new worker is slow to take over */
+        }});
+      }
       if(reg.waiting&&navigator.serviceWorker.controller)ask(reg.waiting);
       reg.addEventListener('updatefound',function(){var w=reg.installing;if(!w)return;w.addEventListener('statechange',function(){if(w.state==='installed'&&navigator.serviceWorker.controller)ask(w);});});
       setInterval(function(){reg.update().catch(function(){});},3600000);
     }).catch(function(e){console.warn('sw',e);});
-    var done=false;navigator.serviceWorker.addEventListener('controllerchange',function(){if(done)return;done=true;location.reload();});
+    var done=false;navigator.serviceWorker.addEventListener('controllerchange',function(){if(done||!hadCtrl||!accepted)return;done=true;location.reload();});
+    try{if(sessionStorage.getItem('cmmJustUpdated')){sessionStorage.removeItem('cmmJustUpdated');setTimeout(function(){var v='';try{v=(document.querySelector('meta[name=app-version]')||{}).content||'';}catch(e){}toast('Updated'+(v?' to v'+v.replace(/-beta\./,' beta '):''),{type:'success',sub:'You are on the latest version.'});},1200);}}catch(e){}
   });
 })();
 
@@ -17389,7 +17405,7 @@ var INFO=[];                                       /* text shown by each (i) but
 function isDrop(t){return DROP.some(function(r){return r.test(t);});}
 function skip(el){
   if(el.id)return true;                            /* live hints / validation messages are addressed by id */
-  if(el.closest('.mgr-add,#sheet,#authScr,#x63ov,#x63ob,.toast,#toastWrap,details,.empty,#txList,#chmodal,#cmodal,[data-info23=keep]'))return true;
+  if(el.closest('.mgr-add,#sheet,#authScr,#x63ov,#x63ob,.toast,#toast,#toastWrap,details,.empty,#txList,#chmodal,#cmodal,[data-info23=keep]'))return true;
   if(el.querySelector('button,input,select,a,textarea,.btn'))return true;
   var t=txt(el);
   if(!t||t.length<40)return true;                  /* short status lines are content, not explanation */
@@ -19586,7 +19602,7 @@ Object.assign(X63.INFO,{
 var ESSENTIAL28={breakdown:1,v_income:1,upcoming:1,shared:1,goals:1,f_cash:1,f_couple:1};
 SCREEN.after('openReport',990028021,{call:'apply',ret:false},function(k){
   if(!(X63&&X63.isSimple&&X63.isSimple())||ESSENTIAL28[k])return;trackExperience28('advanced_report_discovered',{report:k});
-  setTimeout(function(){X63.ovOpen('<div class="xovh"><b>Advanced report</b><button class="xovx" data-act="x63ovx">×</button></div><p class="info23p">This report shows more detail than the Simple home screen. Your Experience Level stays Simple, your data is unchanged, and you can close the report normally.</p>');},40);
+  /* beta 50: the "Advanced report" pop-up on every report open was removed (the report itself is self-explanatory) */
 });
 
 /* ---------- private user-profile preferences, analytics and guided onboarding ---------- */
@@ -25249,6 +25265,349 @@ try{
   if(!window.__B48RN){
     var ol48=document.querySelector('#pageSet details.help ol')||document.querySelector('#view-settings details.help ol');
     if(ol48){ol48.insertAdjacentHTML('beforeend','<li><b>Accounts, redesigned (beta 48):</b> one net-worth headline with You have / You owe, one list grouped by kind with every account one tap away, and (in Couple modes) Everyone · you · your partner · Joint chips. Each account opens on a page built for its kind — Pay for cards, Record repayment for loans, Update value for property — with Overview and Activity. Adding an account starts with a plain-language chooser and four fields. The card minimum payment is now calculated (5% of the statement or RM 50, whichever is higher).</li>');window.__B48RN=1;}
+  }
+}catch(e){}
+})();
+
+;/* ===== v160b49 · Toast redesign (toast-redesign-mockup) =====
+   One calm card, five states: success · info · warning · error · undo.
+   - Message is the headline; optional detail line (opts.sub, or the text after " — ").
+   - Icon tile in the state colour (app tokens, follows theme colour + light/dark).
+   - Thin countdown bar replaces the "This message will disappear in Nsec" footer;
+     generic titles/emoji are gone.
+   - Durations 3.5 / 3.5 / 5 / 7 / 6 s, +40 ms per character over 40, capped at 10 s.
+   - Touch, hover or keyboard focus pauses; the same message within 2 s merges into ×N.
+   - Dismiss with ×, swipe (up or sideways) or a tap on a card without an action.
+   - Errors are announced as alerts; warnings give a small shake.
+   - toastAct() is the neutral Undo state (was "warning"); a plain success/info that
+     arrives while an Undo is open waits until the Undo window ends.
+   - Top placement, just under the app header (clear of Save, keypad, nav and +).
+   Contract kept: toast(msg,type), toastAct(msg,cb), UNDO global, .on/.act classes,
+   #toast/#toastMsg/#toastUndo/#toastX ids, undoNow(). New: toast(msg,type,{sub,action,onAction}). */
+(function(){ 'use strict';
+function $(id){return document.getElementById(id);}
+function n49(e,w){try{DIAG.note(e,w);}catch(_){}}
+var IC={
+ success:'<svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.6"/><path d="M8.4 12.4l2.4 2.4 4.9-5.1"/></svg>',
+ info:'<svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.6"/><line x1="12" y1="11.2" x2="12" y2="16.2"/><circle cx="12" cy="7.9" r="1.1" fill="currentColor" stroke="none"/></svg>',
+ warning:'<svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4.6L21.2 19.6H2.8Z"/><line x1="12" y1="10.2" x2="12" y2="14.4"/><circle cx="12" cy="17" r="1.05" fill="currentColor" stroke="none"/></svg>',
+ error:'<svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.6"/><line x1="12" y1="7.6" x2="12" y2="12.8"/><circle cx="12" cy="16" r="1.1" fill="currentColor" stroke="none"/></svg>',
+ update:'<svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12a9 9 0 0 1-15.5 6.2L3 16"/><path d="M3 21v-5h5"/><path d="M3 12a9 9 0 0 1 15.5-6.2L21 8"/><path d="M21 3v5h-5"/></svg>',
+ undo:'<svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>'
+};
+var XSVG='<svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg>';
+var DUR={success:3500,info:3500,warning:5000,error:7000,undo:6000};
+var MAP={ok:'success',success:'success',info:'info',warn:'warning',warning:'warning',err:'error',error:'error',undo:'undo'};
+
+/* ---------- rebuild #toast (fresh node: drops the b12/b13 listeners and layout) ---------- */
+var old=$('toast');
+var T=document.createElement('div');
+T.id='toast';T.className='t49';
+T.setAttribute('role','status');T.setAttribute('aria-live','polite');T.setAttribute('aria-atomic','true');
+T.innerHTML='<div class="t49card" id="tcard"><span class="t49ico" id="toastIco"></span>'
+ +'<div class="t49txt"><span id="toastMsg"></span><span id="toastSub"></span></div>'
+ +'<div class="t49acts"><button type="button" id="toastUndo">Undo</button><i class="t49div"></i>'
+ +'<button type="button" id="toastX" aria-label="Dismiss">'+XSVG+'</button></div>'
+ +'<i class="t49bar"><b></b></i></div>';
+if(old&&old.parentNode)old.parentNode.replaceChild(T,old);else document.body.appendChild(T);
+
+var S={timer:0,left:0,t0:0,cb:null,last:'',lastAt:0,n:1,drag:null,type:'',q:null};
+function esc49(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
+function dur(type,msg,sub){var len=String(msg||'').length+String(sub||'').length;return Math.min(10000,(DUR[type]||3500)+Math.max(0,len-40)*40);}
+function isOpen(){return T.classList.contains('on')&&!T.classList.contains('out');}
+function arm(ms){clearTimeout(S.timer);S.left=ms;S.t0=Date.now();S.timer=setTimeout(function(){hide('time');},ms);}
+function pause(){if(!isOpen()||T.classList.contains('paused'))return;T.classList.add('paused');clearTimeout(S.timer);S.left=Math.max(400,S.left-(Date.now()-S.t0));}
+function resume(){if(!T.classList.contains('paused'))return;T.classList.remove('paused');arm(S.left);}
+function restartBar(ms){T.style.setProperty('--d',(ms/1000)+'s');var b=T.querySelector('.t49bar b');if(!b)return;b.style.animation='none';void b.offsetWidth;b.style.animation='';}
+/* beta 49.1: keep the card off buttons. Start under the app header (or the top of the
+   screen while a sheet is open); if a visible button/tab/field sits in the band the card
+   would cover, drop the card below it. Gives up (keeps the first spot) past mid-screen. */
+var TAP49='button,a[href],[data-act],input,select,textarea,[role=button],[role=tab],summary';
+function topHit(x,y){
+  try{
+    var list=document.elementsFromPoint(x,y);
+    for(var i=0;i<list.length;i++){if(!T.contains(list[i]))return list[i];}
+  }catch(e){}
+  return null;
+}
+function place(){
+  try{
+    var vh=window.innerHeight||800,vw=window.innerWidth||400;
+    var sheet=document.body.classList.contains('sheeton');
+    var base=12,h=document.querySelector('header.hdr');
+    if(h&&!sheet){var r=h.getBoundingClientRect();if(r.height>0&&r.bottom>0)base=Math.round(r.bottom)+8;}
+    var card=$('tcard'),H=Math.max(56,(card&&card.offsetHeight)||64);
+    var cw=Math.min(400,vw-24),L=(vw-cw)/2,R=L+cw;
+    var top=base,els=document.querySelectorAll(TAP49),cap=Math.round(vh*0.5);
+    for(var pass=0;pass<4;pass++){
+      var lo=top,hi=top+H,maxB=0;
+      for(var i=0;i<els.length;i++){
+        var el=els[i];
+        if(T.contains(el)||el.closest('header.hdr'))continue;
+        var b=el.getBoundingClientRect();
+        if(b.width<4||b.height<4||b.bottom<=lo||b.top>=hi||b.right<=L||b.left>=R)continue;
+        var cx=Math.min(Math.max(b.left+b.width/2,1),vw-1),cy=Math.min(Math.max(b.top+b.height/2,1),vh-1);
+        var t=topHit(cx,cy);
+        if(!t||!(t===el||el.contains(t)||t.contains(el)))continue;   /* covered / hidden */
+        if(b.bottom>maxB)maxB=b.bottom;
+      }
+      if(!maxB)break;
+      top=Math.round(maxB)+8;
+      if(top>cap){top=base;break;}
+    }
+    T.style.setProperty('--t49top',top+'px');
+  }catch(e){n49(e,'b49:place');}
+}
+function hide(why){
+  clearTimeout(S.timer);
+  var wasUndo=S.type==='undo';
+  if(wasUndo){try{UNDO=null;}catch(e){}}
+  S.cb=null;
+  if(!T.classList.contains('on')){T.classList.remove('act','paused');return;}
+  T.classList.add('out');T.classList.remove('paused');
+  setTimeout(function(){if(T.classList.contains('out')){T.classList.remove('on','out','act','shake','bump');S.last='';}},180);
+  if(wasUndo){
+    var q=S.q;S.q=null;S.type='';
+    if(q&&why!=='action'&&Date.now()-q.at<10000)setTimeout(function(){show(q.type,q.msg,q.o);},200);
+  }
+}
+function split(msg,o){
+  var m=String(msg==null?'':msg),sub=o.sub||'';
+  if(!sub){
+    var i=m.indexOf(' — ');
+    if(i>0){sub=m.slice(i+3);m=m.slice(0,i);}
+  }
+  sub=String(sub).replace(/\s*\bundo\?\s*$/i,'').trim();
+  m=m.replace(/\s*✓\s*/g,' ').replace(/\s{2,}/g,' ').trim();
+  return {msg:m,sub:sub};
+}
+function show(type,msg,o){
+  o=o||{};
+  type=MAP[type]||'info';
+  var p=split(msg,o);
+  /* an open Undo keeps its window: calm news waits behind it */
+  if(type!=='undo'&&(type==='success'||type==='info')&&S.type==='undo'&&isOpen()){S.q={type:type,msg:msg,o:o,at:Date.now()};return;}
+  var now=Date.now(),key=type+'|'+p.msg+'|'+p.sub;
+  var same=key===S.last&&now-S.lastAt<2000&&isOpen()&&type!=='undo';
+  S.lastAt=now;
+  var d=o.dur?Math.min(15000,+o.dur):dur(type,p.msg,p.sub);
+  if(same){
+    S.n++;var c=$('toastCnt');if(c){c.textContent='×'+S.n;c.classList.add('show');}
+    T.classList.remove('bump');void T.offsetWidth;T.classList.add('bump');
+    restartBar(d);arm(d);return;
+  }
+  if(type!=='undo'&&S.type==='undo'){try{UNDO=null;}catch(e){}}
+  if(type==='undo')S.q=null;
+  S.n=1;S.last=key;S.type=type;
+  T.classList.remove('out','paused','shake','bump');
+  T.dataset.t=type;
+  T.setAttribute('role',type==='error'?'alert':'status');
+  T.setAttribute('aria-live',type==='error'?'assertive':'polite');
+  $('toastIco').innerHTML=(o.icon&&IC[o.icon])||IC[type];
+  $('toastMsg').innerHTML=esc49(p.msg)+'<em class="t49cnt" id="toastCnt"></em>';
+  $('toastSub').textContent=p.sub;
+  var act=!!o.action;
+  T.classList.toggle('act',act);
+  $('toastUndo').textContent=o.action||'Undo';
+  S.cb=act?(o.onAction||null):null;
+  var card=$('tcard');if(card){card.style.transform='';card.style.opacity='';}
+  place();
+  S.shownAt=Date.now();S.sy=null;
+  restartBar(d);
+  T.classList.add('on');
+  if(type==='warning'){void T.offsetWidth;T.classList.add('shake');}
+  arm(d);
+}
+
+/* ---------- public contract ---------- */
+function classify(msg,type){
+  if(type&&MAP[type])return MAP[type];
+  try{if(window.B13&&B13.type)return MAP[B13.type(msg)]||'info';}catch(e){}
+  return 'info';
+}
+window.toast=function(msg,type,o){
+  try{
+    if(type&&typeof type==='object'){o=type;type=o.type;}
+    show(classify(msg,type),msg,o);
+  }catch(e){n49(e,'b49:toast');}
+};
+window.toastAct=function(msg,cb,o){
+  try{
+    o=o||{};
+    show('undo',msg,{sub:o.sub,action:o.action||'Undo',onAction:null});
+    UNDO=cb;
+  }catch(e){n49(e,'b49:toastAct');}
+};
+window.toastHide=function(){hide('api');};
+window.TOAST49={show:show,hide:hide,state:S};
+
+/* ---------- dismiss / action / pause / swipe ---------- */
+$('toastX').addEventListener('click',function(e){e.stopPropagation();hide('x');});
+$('toastUndo').addEventListener('click',function(e){
+  e.stopPropagation();
+  var cb=S.cb,u=null;
+  if(S.type==='undo'){try{u=UNDO;UNDO=null;}catch(_){}}
+  hide('action');
+  try{if(u)u();else if(cb)cb();}catch(err){n49(err,'b49:action');}
+});
+var card=$('tcard');
+card.addEventListener('pointerenter',function(e){if(e.pointerType==='mouse')pause();});
+card.addEventListener('pointerleave',function(e){if(e.pointerType==='mouse'&&!S.drag)resume();});
+card.addEventListener('focusin',pause);
+card.addEventListener('focusout',function(){if(!S.drag)resume();});
+card.addEventListener('pointerdown',function(e){
+  if(e.target.closest('button'))return;
+  pause();S.drag={x:e.clientX,y:e.clientY,dx:0,dy:0};
+  try{card.setPointerCapture(e.pointerId);}catch(_){}
+  card.style.transition='none';
+});
+card.addEventListener('pointermove',function(e){
+  if(!S.drag)return;
+  S.drag.dx=e.clientX-S.drag.x;S.drag.dy=e.clientY-S.drag.y;
+  var dy=Math.min(0,S.drag.dy);
+  card.style.transform='translate('+S.drag.dx+'px,'+dy+'px)';
+  card.style.opacity=String(Math.max(.3,1-Math.abs(S.drag.dx)/260));
+});
+function endDrag(e){
+  if(!S.drag)return;
+  var d=S.drag;S.drag=null;card.style.transition='';
+  var away=-d.dy;
+  card.style.transform='';card.style.opacity='';
+  if(Math.abs(d.dx)>70||away>38){hide('swipe');return;}
+  if(Math.abs(d.dx)<6&&Math.abs(d.dy)<6&&!T.classList.contains('act')){hide('tap');return;}
+  if(!(e&&e.pointerType==='mouse'&&card.matches(':hover')))resume();
+}
+card.addEventListener('pointerup',endDrag);
+card.addEventListener('pointercancel',endDrag);
+T.addEventListener('click',function(e){e.stopPropagation();});
+/* Escape closes a toast that has no pending action */
+document.addEventListener('keydown',function(e){if(e.key==='Escape'&&isOpen()&&!T.classList.contains('act')&&document.activeElement&&T.contains(document.activeElement))hide('esc');});
+
+/* ---------- beta 49.1 · plain toasts step aside when you move on ----------
+   A tap anywhere else, or scrolling/swiping the page, fades out a saved / info / warning
+   toast early. Undo and Retry cards (and errors) stay until they time out or you close them. */
+function plain(){return isOpen()&&!T.classList.contains('act')&&S.type!=='error'&&S.type!=='undo';}
+function settled(){return Date.now()-(S.shownAt||0)>350;}
+document.addEventListener('pointerdown',function(e){
+  if(!plain()||!settled())return;
+  if(T.contains(e.target))return;
+  hide('away');
+},true);
+var ty0=null;
+document.addEventListener('touchstart',function(e){ty0=e.touches&&e.touches[0]?{x:e.touches[0].clientX,y:e.touches[0].clientY}:null;},{capture:true,passive:true});
+document.addEventListener('touchmove',function(e){
+  if(!ty0||!plain()||!settled()||S.drag)return;
+  if(T.contains(e.target))return;
+  var t=e.touches&&e.touches[0];if(!t)return;
+  if(Math.abs(t.clientY-ty0.y)>24||Math.abs(t.clientX-ty0.x)>24){ty0=null;hide('scroll');}
+},{capture:true,passive:true});
+document.addEventListener('wheel',function(e){
+  if(!plain()||!settled())return;
+  if(T.contains(e.target))return;
+  if(Math.abs(e.deltaY)+Math.abs(e.deltaX)>8)hide('scroll');
+},{capture:true,passive:true});
+
+/* ---------- version + release note (beta 49) ---------- */
+try{if(window.pinVer36)window.pinVer36('1.60 beta 49.1');}catch(e){}
+try{
+  if(!window.__B49RN){
+    var ol49=document.querySelector('#pageSet details.help ol')||document.querySelector('#view-settings details.help ol');
+    if(ol49){ol49.insertAdjacentHTML('beforeend','<li><b>Calmer toasts (beta 49):</b> messages now appear as one clean card at the top of the screen, clear of the Save button and keypad. Your message is the headline, with a coloured icon for saved, info, check-this, failed or undo. A thin bar shows how long it stays, and it waits while you touch it. Swipe it away or tap ×. Deleting something now shows a neutral Undo card instead of a warning, and repeated messages merge into one (×2, ×3). <b>49.1:</b> the card now drops below any buttons at the top of the page (such as + on Accounts) instead of covering them, and a saved or info message steps aside as soon as you tap elsewhere or scroll. Undo and Retry cards stay until you use or close them.</li>');window.__B49RN=1;}
+  }
+}catch(e){}
+})();
+
+;/* ===== v160b50 · Back navigation audit · Data & Sync household card · Modes opens on the active mode =====
+   1. Back (system gesture / hardware / browser / Esc) walks the stack top-down:
+      - a confirm, choice, sheet, manager sheet, keypad, menu or info pop-up that sits over a
+        Settings page now closes first (the Settings page used to close underneath it);
+      - the (i) info pop-up is a Back-closable layer (Back used to leave the app);
+      - a guided tour ends on Back.
+   2. Data & Sync: the separate "Household & membership" card is gone; the Household row's
+      Manage button is the one entry point and opens sign-in / invites right under it.
+   3. Settings › Modes opens on the mode that is active now (it used to remember the last tab). */
+(function(){ 'use strict';
+function $(id){return document.getElementById(id);}
+function on(id){var e=$(id);return !!(e&&e.classList.contains('on'));}
+function n50(e,w){try{DIAG.note(e,w);}catch(_){}}
+function tourOn(){try{return !!(window.TOUR&&TOUR.steps)||!!(TOUR&&TOUR.steps);}catch(e){return false;}}
+function higherThanPage(){
+  var h=on('cmodal')||on('chmodal')||on('clrmodal')||on('mgrOvl')||on('ovl')||on('txSheet61')||on('aiSheet')||on('x63ov');
+  try{if(CALC&&CALC.open)h=true;}catch(e){}
+  try{if(HDR&&HDR.isOpen&&HDR.isOpen())h=true;}catch(e){}
+  return h;
+}
+
+/* ---------- 1 · Back stack ---------- */
+var _alo50=anyLayerOpen;
+anyLayerOpen=function(){return tourOn()||on('x63ov')||_alo50.apply(this,arguments);};
+var _nc50=navClose;
+navClose=function(){
+  try{
+    if(tourOn()){tourEnd(false);navSync();return;}
+    /* a Settings page must not close while something sits on top of it */
+    if(window.B3&&B3.open&&higherThanPage()){
+      var keep=B3.open;B3.open=false;
+      try{return _nc50.apply(this,arguments);}finally{B3.open=keep;navSync();}
+    }
+  }catch(e){n50(e,'b50:navClose');}
+  return _nc50.apply(this,arguments);
+};
+/* layers opened or closed outside the usual funnels re-arm / release the Back entry */
+function syncSoon(){setTimeout(function(){try{navSync();}catch(e){}},0);}
+try{
+  if(window.X63&&X63.ovOpen){var _oo=X63.ovOpen;X63.ovOpen=function(){var r=_oo.apply(this,arguments);syncSoon();return r;};}
+  if(window.X63&&X63.ovClose){var _oc=X63.ovClose;X63.ovClose=function(){var r=_oc.apply(this,arguments);syncSoon();return r;};}
+}catch(e){n50(e,'b50:x63');}
+try{
+  if(typeof tourStart==='function'){var _ts=tourStart;tourStart=function(){var r=_ts.apply(this,arguments);syncSoon();return r;};}
+  if(typeof tourEnd==='function'){var _te=tourEnd;tourEnd=function(){var r=_te.apply(this,arguments);syncSoon();return r;};}
+}catch(e){n50(e,'b50:tour');}
+/* the × on the info pop-up */
+document.addEventListener('click',function(e){if(e.target.closest&&e.target.closest('[data-act=x63ovx]'))syncSoon();},true);
+
+/* ---------- 2 · Data & Sync: one Household entry point ---------- */
+function hhCard(){var fb=$('fbBody');return fb?fb.closest('.card'):null;}
+function placeHH(){
+  try{
+    var card=hhCard(),row=$('b28HouseholdRow');if(!card)return;
+    card.classList.add('hh50');
+    var open=!!(window.B28&&B28.hhOpen)&&row&&!row.hidden;
+    card.classList.toggle('hh50on',open);
+    var mg=row&&row.querySelector('.manage');if(mg){var t=(window.B28&&B28.hhOpen)?'Done':'Manage';if(mg.textContent!==t)mg.textContent=t;}
+    if(open&&row&&row.nextElementSibling!==card)row.insertAdjacentElement('afterend',card);
+  }catch(e){n50(e,'b50:hh');}
+}
+SCREEN.afterDraw(placeHH);
+ACT.on('b50-household',{b28hhmanage:function(el,next){next(el);placeHH();}});
+
+/* ---------- 3 · Modes opens on the active mode ---------- */
+try{
+  var _sg=B3.setGo;
+  B3.setGo=function(k){if(k==='mode'&&window.B10){try{B10.mtab=B3.mode();B10._m50=B3.mode();}catch(e){}}return _sg.apply(this,arguments);};
+}catch(e){n50(e,'b50:setGo');}
+SCREEN.before('B3.renderModeSub',900000050,{call:'apply',ret:true},function(){
+  try{var m=B3.mode();if(window.B10&&B10._m50!==m){B10.mtab=m;B10._m50=m;}}catch(e){}
+});
+SCREEN.on('B3.renderModeSub',900000050);
+SCREEN.after('B3.renderModeSub',900000051,{call:'apply',ret:false},function(){
+  try{
+    var m=B3.mode();
+    [].slice.call(document.querySelectorAll('#b10modeTabs button')).forEach(function(b){
+      var cur=b.dataset.v===m;b.classList.toggle('cur50',cur);
+      if(cur)b.setAttribute('aria-current','true');else b.removeAttribute('aria-current');
+      b.title=cur?'Current mode':'';
+    });
+  }catch(e){n50(e,'b50:modetabs');}
+});
+SCREEN.on('B3.renderModeSub',900000051);
+
+/* ---------- version + release note (beta 50) ---------- */
+try{if(window.pinVer36)window.pinVer36('1.60 beta 50');}catch(e){}
+try{
+  if(!window.__B50RN){
+    var ol=document.querySelector('#pageSet details.help ol')||document.querySelector('#view-settings details.help ol');
+    if(ol){ol.insertAdjacentHTML('beforeend','<li><b>Fewer pop-ups, better Back (beta 50):</b> no more “Signed in as …” message each time the app opens, and no “Advanced report” note on every report. A new version now shows one card with an <b>Update</b> button (or it updates by itself next time you open the app), then confirms “Updated”. Back closes whatever is on top first — confirm boxes, sheets, the keypad, info pop-ups and tours — then the page, then returns to the previous tab. Data &amp; Sync has one Household row (Manage opens sign-in and invites). Settings › Modes opens on the mode you are using.</li>');window.__B50RN=1;}
   }
 }catch(e){}
 })();
