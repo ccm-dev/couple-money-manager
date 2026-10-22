@@ -2392,8 +2392,9 @@ button.fline.acr-nav:active{opacity:.65}
 /* ================= v1.60 beta 40 — add transaction v2.1 (mockup updates) =================
    1. Amount hero: 46 px, refund chip inline to the right, caret while the keypad is open,
       long values shrink to 34 px.
-   2. Account row: the read-only owner chip moves to a second line under the account name;
-      Advanced Couple private accounts show a "Private account" hint.
+   2. Account row: the read-only owner chip sits on a second line under the account name
+      and always follows the chosen account's owner (beta 42 — no editable owner field,
+      no arrow beside the field); Advanced Couple private accounts show a "Private account" hint.
    3. Transfer: From ⇄ To flow tiles (owner chip under each), the Between Us entry is
       created automatically when the owners differ — no checkbox.
    4. ONE keypad, docked inside the open sheet (never above the nav, never over a footer);
@@ -2432,6 +2433,9 @@ button.fline.acr-nav:active{opacity:.65}
 #sheet.form61 .ad-flow61>.row61>label{width:auto!important;flex:none!important;margin:0 0 1px!important;font-size:var(--fs-11)!important;font-weight:800!important;text-transform:uppercase;letter-spacing:.5px}
 #sheet.form61 .ad-flow61>.row61>.acc-col61{align-items:flex-start;text-align:left}
 #sheet.form61 .ad-flow61>.row61>.acc-col61 select.fin{text-align:left;text-align-last:left;padding:2px 0}
+/* beta 42: the small arrow beside the account field is retired — the whole row opens
+   the picker, so the chevron adds nothing */
+#sheet .chev61{display:none!important}
 #sheet.form61 .ad-flow61>.row61 .chev61{display:none}
 #sheet.form61 .ad-flow61 .swap61{align-self:center;width:36px;height:36px;border-radius:50%;flex:none}
 
@@ -2458,11 +2462,12 @@ body.calc-on #mgrSheet #mgrBody{padding-bottom:315px}
 .af40.cell40 input.fin{font-size:var(--fs-14);font-weight:700;letter-spacing:0}
 .bgrow .af40{min-height:40px;background:var(--card)}
 
-/* beta 40: the editable owner select lives on the account row's second line */
+/* beta 42: the owner select is retired — the owner follows the chosen account and is
+   not editable, so the second line only ever shows the read-only owner chip */
 #sheet.form61 .ad-card61>.row61>.acc-col61 #fOwnerRow{flex-direction:row;align-items:center;gap:6px;min-height:0;border:0;background:transparent;padding:0;margin:0;width:100%;display:flex}
 #sheet.form61 .ad-card61>.row61>.acc-col61 #fOwnerRow[hidden]{display:none}
 #sheet.form61 .acc-col61 #fOwnerRow>label,#sheet.form61 .acc-col61 #fOwnerRow>svg{display:none}
-#sheet.form61 .acc-col61 #fOwnerSel{flex:1;min-width:0;border:0!important;background:transparent!important;box-shadow:none!important;padding:2px 0!important;font-size:var(--fs-12);font-weight:700;color:var(--muted);text-align:right;text-align-last:right;height:auto!important}
+#sheet.form61 .acc-col61 #fOwnerSel{display:none!important}
 #sheet.form61 .acc-col61 #fOwner{font-size:var(--fs-12);min-height:0}
 
 /* beta 40 fixes: chips and tiles */
@@ -2471,3 +2476,15 @@ body.calc-on #mgrSheet #mgrBody{padding-bottom:315px}
 
 /* beta 40: one caret — hide the native one while the custom keypad caret shows */
 #sheet.form61 .ad-amt61.focus40 #fAmount{caret-color:transparent}
+
+/* ===== v1.60 beta 41 · Your Profile — invite-first collaborator field =====
+   Couple mode with no collaborator yet: the "Your partner" label and the name
+   input are replaced by a full-width Invite collaborator button. A pending
+   invitation keeps the beta-33 pending note (Manage invite). When the
+   collaborator accepts, the .b41inv class is removed and the editable name
+   field returns (beta 33 auto-fill). */
+.f-row.b41inv>label,.f-row.b41inv #profPartB3{display:none}
+.f-row.b41inv .profpart-note:not(.pending){display:none}
+.b41invwrap{display:flex;flex-direction:column;gap:2px;width:100%;min-width:0}
+.b41invwrap .btn{width:100%;justify-content:center}
+.b41invwrap .help.small{margin:2px 2px 0}
