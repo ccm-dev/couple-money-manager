@@ -900,7 +900,7 @@ body.sheeton .toast{border-radius:16px}
 .m6cmp tr:last-child td{border-bottom:0}
 .m6h{margin:14px 2px 6px}
 
-/* ---------- 4. migration / blocker rows (adv→couple destinations) ---------- */
+/* ---------- 4. mode-switch / blocker rows (adv→couple destinations) ---------- */
 .m6dest{display:grid;gap:5px;margin:7px 0 3px}
 .m6dest label{display:flex;gap:8px;align-items:flex-start;font-size:var(--fs-12);font-weight:600;color:var(--text);cursor:pointer;line-height:1.45}
 .m6dest input{margin-top:2px;accent-color:var(--accent)}
@@ -2963,3 +2963,41 @@ details.calc51 p{margin-top:6px;line-height:1.5}
 .row54off small{color:var(--muted)}
 .rem54sub{display:flex;align-items:center;gap:8px;flex-wrap:wrap;color:var(--muted);font-size:var(--fs-13,13px);margin:0 2px 10px}
 .rem54set{background:none;border:0;padding:6px 0;min-height:32px;color:var(--accent);font-weight:800;font-size:inherit;cursor:pointer;margin-left:auto}
+
+/* beta 58: tab bars inside a scrolling page stick right under that page's header */
+.page .stab{top:var(--stick58,-11px)}
+
+/* ===== beta 59 · Add transaction: account field without a box, owner on its own line in a small box =====
+   Expense / Income: one "Paid from" / "Paid into" field. Transfer: From ⇄ To side by side.
+   The native drop-down stays (the phone's own picker); it is shown as plain bold text with a chevron. */
+#sheet.form61 .ad-flow61>.row61{background:transparent!important;border:0!important;border-radius:0!important;padding:2px 0 0!important;min-height:0!important;gap:4px!important;box-shadow:none!important}
+#sheet.form61 .ad-flow61>.row61>label{color:var(--muted)!important}
+#sheet.form61 .ad-flow61>.row61>.acc-col61{gap:6px!important}
+#sheet.form61 .ad-flow61 .acc-col61 select.fin{-webkit-appearance:none;appearance:none;background:transparent url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%238a94a6' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") no-repeat right 0 center/16px 16px!important;border:0!important;box-shadow:none!important;border-radius:0!important;
+  font-size:var(--fs-17,17px)!important;font-weight:800!important;color:var(--text,var(--ink))!important;padding:2px 22px 2px 0!important;min-height:30px;height:auto!important;width:auto!important;max-width:100%;cursor:pointer;text-overflow:ellipsis}
+#sheet.form61 .ad-flow61 .acc-col61 select.fin:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:6px!important}
+#sheet.form61 .ad-flow61 .own61{border-radius:8px!important;background:var(--card)!important;box-shadow:none!important;border:1px solid var(--line,var(--hair))!important;color:var(--text,var(--ink))!important;font-weight:700!important;padding:3px 9px!important;align-self:flex-start}
+#sheet.form61 .ad-flow61 .own61 svg{color:var(--muted)}
+#sheet.form61 .ad-flow61 .swap61{align-self:center}
+/* Expense / Income: the field's own label ("Paid from" / "Paid into") is the section label */
+#sheet.form61 #fAcc52>.ad-lb61{display:none}
+#sheet.form61 #fAcc52 .ad-flow61>.row61>label{font-size:var(--fs-11)!important;letter-spacing:.5px}
+#sheet.form61 .ad-flow61>.row61>.acc-col61{display:flex!important;flex-direction:column!important;align-items:flex-start!important;min-width:0}
+#sheet.form61 .ad-flow61 .acc-col61 select.fin{field-sizing:content}
+
+/* ===== beta 59 · Transactions tab uses the Accounts tab look ===== */
+#view-txns #t59pt{padding-top:2px}
+#view-txns #t59chips{padding-top:0}
+#txList .rowsw{border-radius:18px}
+#txList .day-h{letter-spacing:.5px}
+#txList .day-h span:last-child{font-size:var(--fs-13,13px);font-weight:800;color:var(--text,var(--ink));letter-spacing:0}
+#txList .txr-amt .cur2,.txr-amt .cur2{font-size:inherit!important;font-weight:inherit!important;letter-spacing:inherit}
+.txr-who{width:18px!important;height:18px!important;line-height:18px!important;font-size:10px!important;right:-5px!important;bottom:-5px!important;color:#fff!important}
+.txr-who.b{background:var(--accent-2)}
+.txr-who.j{width:30px!important;background:none!important;box-shadow:none!important;right:-9px!important}
+.txr-who.j b{position:absolute;bottom:0;width:18px;height:18px;border-radius:50%;font-size:10px;display:flex;align-items:center;justify-content:center;color:#fff;box-shadow:0 0 0 2px var(--card);left:0;background:var(--accent)}
+.txr-who.j b.b{left:11px;background:var(--accent-2)}
+
+/* ===== beta 60 · Add transaction: no "Paid from / Paid into" label; the section is headed "Account" like "Category" ===== */
+#sheet.form61 #fAcc52>.ad-lb61{display:flex!important}
+#sheet.form61 #fAcc52 .ad-flow61>.row61>label{display:none!important}
