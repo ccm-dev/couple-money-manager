@@ -277,7 +277,7 @@ function defaultDB(){
   return {version:4,people:['Me'],accTypes:['Cash','Bank','Card','eWallet'],accTypeMeta:{},accounts:[{name:'Cash',start:0,owner:'',type:'Cash'},{name:'Bank',start:0,owner:'',type:'Bank'}],
     categories:JSON.parse(JSON.stringify(DEF_CATS)),subcats:{},txns:[],recur:[],
     budgets:{},fixedCats:[],
-    meta:{changedAt:0,pushedAt:0,currency:'RM',accent:'',mode:'',legsMigrated:false}};
+    meta:{changedAt:0,pushedAt:0,currency:'RM',accent:'',mode:''}};
 }
 function normalizeDB(){
   if(!DB.subcats||typeof DB.subcats!=='object'||Array.isArray(DB.subcats))DB.subcats={};
@@ -323,9 +323,9 @@ function loadDB(){
       if(d&&Array.isArray(d.txns)){
         DB=Object.assign(defaultDB(),d);
         DB.categories=Object.assign(JSON.parse(JSON.stringify(DEF_CATS)),d.categories||{});
-        DB.meta=Object.assign({changedAt:0,pushedAt:0,currency:'RM',accent:'',mode:'',legsMigrated:false},d.meta||{});
+        DB.meta=Object.assign({changedAt:0,pushedAt:0,currency:'RM',accent:'',mode:''},d.meta||{});
         normalizeDB();
-        migrateLegs();
+        explodeSplits();
         return;
       }
     }
@@ -621,9 +621,8 @@ function ensureEntities(txns){
   });
   DB.accounts.forEach(function(a){if(typeof a.owner!=='string')a.owner='';});
 }
-/* split txns → one transaction per person share (multi-payer legs, v1.4) */
-function migrateLegs(){
-  DB.meta.legsMigrated=true;
+/* split shares (Excel template 'Split' column, sample data) → one transaction per person share */
+function explodeSplits(){
   var added=[];
   DB.txns.slice().forEach(function(t){
     if(!hasSplit(t))return;
@@ -770,7 +769,7 @@ function adoptJSON(text){
     if(Array.isArray(d)){
       var rows=d.map(csvRowToTxn).filter(function(t){return t.date&&t.amount;});
       if(!rows.length)return rej(new Error('No valid rows found'));
-      DB=defaultDB();ensureEntities(rows);DB.txns=rows;migrateLegs();
+      DB=defaultDB();ensureEntities(rows);DB.txns=rows;explodeSplits();
     }else if(d&&Array.isArray(d.txns)){
       DB=Object.assign(defaultDB(),d);
       DB.meta=Object.assign({changedAt:0,pushedAt:0,currency:'RM',accent:'',mode:''},d.meta||{});
@@ -779,7 +778,7 @@ function adoptJSON(text){
       ['Expense','Income'].forEach(function(k){if(!Array.isArray(DB.categories[k]))DB.categories[k]=DEF_CATS[k].slice();});
       normalizeDB();
       ensureEntities(DB.txns);
-      migrateLegs();
+      explodeSplits();
     }else return rej(new Error('Unrecognized file format'));
     DB.meta.changedAt=Date.now();save();backupSnap('restore');cloudPushSoon();renderAll();res(Array.isArray(d)?rows.length:d.txns.length);
   });
@@ -862,7 +861,7 @@ function importRows(rows){
     ids[t.id]=1;
     DB.txns.push(t);
   });
-  migrateLegs();
+  explodeSplits();
   var mid=DB.txns.length;
   var dup=dedupeDB();
   return {added:mid-dup-b0,dup:dup};
@@ -978,7 +977,7 @@ function replaceFile(inp){
   askConfirm('Replace ALL current data with the contents of “'+f.name+'”? What you have now will be lost.','Replace',function(){
     rowsFromAnyFile(f).then(function(r){
       if(r.dbdata)return adoptJSON(JSON.stringify(r.dbdata));
-      DB=defaultDB();ensureEntities(r.rows);DB.txns=r.rows;migrateLegs();
+      DB=defaultDB();ensureEntities(r.rows);DB.txns=r.rows;explodeSplits();
       DB.meta.changedAt=Date.now();save();backupSnap('replace');cloudPushSoon();renderAll();
       return r.rows.length;
     }).then(function(n){
@@ -996,7 +995,7 @@ function download(name,mime,text){
 }
 function exportJSON(){download('money-data.json','application/json',JSON.stringify(DB,null,1));toast('Snapshot saved — move it to Drive / OneDrive');}
 function csvField(s){s=String(s==null?'':s);return /[",\n]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s;}
-/* ===== v1.15: Excel upload template for data migration ===== */
+/* ===== v1.15: Excel upload template for importing data ===== */
 function templateSampleRows(){
   return [
     ['2026-10-01','Expense','Groceries','Wet Market','Cash','Hubby','SAMPLE — delete before importing','45.50','','','',''],
@@ -1243,7 +1242,7 @@ function quickAddAcc(){openMgr('accs');requestAnimationFrame(function(){var ms=$
 /* ================= settings view ================= */
 /* ============ list manager modal (v1.3: pop-out for people/categories/subs/accounts) ============ */
 var MGR={kind:'',edit:null};
-var MGR_TITLE={people:ico('users')+' People',cats:ico('tag')+' Categories',subs:ico('list')+' Sub-categories',accs:ico('card')+' Accounts',acctype:ico('folder')+' Classify legacy account types',recur:ico('repeat')+' Recurring transactions',backups:ico('clock')+' Backup history',pickcat:ico('tag')+' Choose category',picksub:ico('list')+' Choose sub-category',batchedit:ico('pencil')+' Batch edit',budgets:ico('wallet')+' Budgets & fixed costs',collabinv:ico('users')+' Invite collaborator',collabedit:ico('users')+' Collaborator access'};
+var MGR_TITLE={people:ico('users')+' People',cats:ico('tag')+' Categories',subs:ico('list')+' Sub-categories',accs:ico('card')+' Accounts',acctype:ico('folder')+' Choose account types',recur:ico('repeat')+' Recurring transactions',backups:ico('clock')+' Backup history',pickcat:ico('tag')+' Choose category',picksub:ico('list')+' Choose sub-category',batchedit:ico('pencil')+' Batch edit',budgets:ico('wallet')+' Budgets & fixed costs',collabinv:ico('users')+' Invite collaborator',collabedit:ico('users')+' Collaborator access'};
 function subList(c){if(!DB.subcats||typeof DB.subcats!=='object')DB.subcats={};if(!DB.subcats[c])DB.subcats[c]=[];return DB.subcats[c];}
 function mgrRow(lb,sub,editAttrs,delAttrs,amt){
   return '<div class="mgr-row"><span class="lb">'+lb+'<small>'+sub+'</small></span>'
@@ -1351,7 +1350,7 @@ function saveAccType(oldN){
   var newName=(($('mgrEName')||{}).value||oldN).trim();
   var kind=$('mgrEKind')?$('mgrEKind').value:'asset';
   /* v1.27: the type editor no longer asks for a billing cycle (it lives on each account in
-     Accounts → the account → Edit) — preserve the legacy type-level default so old data keeps working */
+     Accounts → the account → Edit); the type keeps its own default */
   var cyc=accTypeCycle(oldN);
   if(kind!=='liability')cyc=0; /* v1.15 rule kept: cycles only live on liabilities */
   if(newName!==oldN){
@@ -3357,7 +3356,7 @@ function pinHash(s){var h=5381,i;s='mm-pin:'+s;for(i=0;i<s.length;i++)h=((h<<5)+
 var LOCK={mode:'',buf:'',first:'',hiddenAt:0};
 function lockShow(mode){
   LOCK.mode=mode;LOCK.buf='';LOCK.first='';
-  var T={unlock:'Enter your PIN',set1:'Choose a 4-digit PIN',set2:'Enter the PIN again',verify:'Enter your current PIN',verifyoff:'Enter your PIN to turn the lock off'};
+  var T={unlock:'Enter your PIN',set1:'Choose a 6-digit PIN',set2:'Enter the 6-digit PIN again',verify:'Enter your current PIN',verifyoff:'Enter your PIN to turn the lock off'};
   $('lkTitle').textContent=T[mode]||'Enter PIN';$('lkMsg').textContent='';
   $('lkCancel').style.visibility=mode==='unlock'?'hidden':'visible';
   $('lockScr').hidden=false;document.body.classList.add('locked');if(typeof lockDots==='function')lockDots(); /* v1.60 fix: lockDots is first assigned in the v1.52 section below — at boot (PIN already set) this ran before that assignment and killed the whole script, leaving a frozen lock screen with a dead keypad */
@@ -3917,8 +3916,8 @@ function svgPie(items,tot,r){
   });
   return '<svg viewBox="0 0 240 240">'+out+'<text x="120" y="117" text-anchor="middle" font-size="20" font-weight="800" fill="var(--ink)">'+cfmt(tot)+'</text><text x="120" y="137" text-anchor="middle" font-size="10.5" font-weight="700" fill="var(--muted)" letter-spacing=".5">SPENT</text></svg>';
 };
-/* ---------- 3. app lock: 6-digit PIN (an older 4-digit PIN keeps working until it is changed) ---------- */
-function pinLen(){return (LOCK.mode==='set1'||LOCK.mode==='set2')?6:(lockCfg().len||4);}
+/* ---------- 3. app lock: a PIN is always 6 digits ---------- */
+function pinLen(){return 6;}
 lockShow=function(mode){
   LOCK.mode=mode;LOCK.buf='';LOCK.first='';
   var T={unlock:'Enter your PIN',set1:'Choose a 6-digit PIN',set2:'Enter the 6-digit PIN again',verify:'Enter your current PIN',verifyoff:'Enter your PIN to turn the lock off'};
@@ -5435,6 +5434,7 @@ function v57AiLoad(){
 }
 /* ---------- 2. app lock: PBKDF2 PIN, growing delay after wrong PINs, optional erase ---------- */
 function pinSetup(pin){
+  if(!/^\d{6}$/.test(String(pin||'')))return Promise.reject(new Error('A PIN must be 6 digits')); /* beta 60 */
   var old=lockCfg(),vs=rnd57(16),ks=rnd57(16);
   return Promise.all([pbkdf2Bits(pin,vs),pbkdf2Key(pin,ks)]).then(function(r){
     lockSave({v:2,h:'v2',len:pin.length,vs:b64(vs),vh:hex57(r[0]),ks:b64(ks),delay:(old.delay!=null?old.delay:60),wipe:!!old.wipe,fails:0,until:0});
@@ -5445,8 +5445,7 @@ function pinVerify(pin,mode){
   var c=lockCfg();
   if(c.v!==2){
     if(pinHash(pin)!==c.h)return Promise.resolve(false);
-    if(!c57ok())return Promise.resolve(true);
-    return pinSetup(pin).then(function(){return true;});
+    return Promise.resolve(true); /* PIN saved without WebCrypto (hash only) */
   }
   if(mode==='boot'&&V57.encRec)return pbkdf2Key(pin,unb64(c.ks)).then(function(k){return decStr(V57.encRec,k).then(function(json){V57.key=k;V57.bootJson=json;return true;});}).catch(function(){return false;});
   return pbkdf2Bits(pin,unb64(c.vs)).then(function(b){
@@ -5532,96 +5531,17 @@ function hstr(s){s=String(s);var a=5381,b=52711,i;for(i=0;i<s.length;i++){var c=
 function mKey57(t){return /^\d{4}-\d{2}/.test(t.date||'')?t.date.slice(0,7):'misc';}
 function hhSplit(copy){var m={};(copy.txns||[]).forEach(function(t){var k=mKey57(t);(m[k]=m[k]||[]).push(t);});Object.keys(m).forEach(function(k){m[k].sort(function(a,b){return a.id<b.id?-1:a.id>b.id?1:0;});});var meta=Object.assign({},copy);delete meta.txns;return {meta:meta,months:m};}
 function metaHash(meta){var x=JSON.parse(JSON.stringify(meta));if(x.meta)delete x.meta.changedAt;return hstr(cjson(x));}
-Object.assign(HH,{rmeta:null,rmetaH:'',rmon:{},rhash:{},readyH:false,readyM:false,legacy:null,unsubM:null,applied:'',pushing:false,again:false,rby:''});
-var MONTH_MAX=950000;
-var _hhDet57=hhDetach;hhDetach=function(){if(HH.unsubM)try{HH.unsubM();}catch(e){DIAG.note(e,"core/25-v1-57-security-storage-chunked:155");}HH.unsubM=null;_hhDet57();Object.assign(HH,{rmeta:null,rmetaH:'',rmon:{},rhash:{},readyH:false,readyM:false,legacy:null,applied:''});};
-function hhMonths(F,id){return F.collection(FB.db,'households',id,'months');}
-function hhAttach(id){
-  return fsMods().then(function(F){
-    hhDetach();HH.id=id;DB.meta.hh=id;save();
-    HH.unsub=F.onSnapshot(hhRef(F,id),function(s){
-      if(!s.exists()){hhGone('The shared household was deleted. Your data is still on this phone.');return;}
-      var d=s.data();HH.info={owner:d.owner,ownerEmail:d.ownerEmail||'',members:d.members||[],memberEmails:d.memberEmails||{},invites:d.invites||[]};
-      if(d.meta){var mh=d.metaH||hstr(d.meta);if(mh!==HH.rmetaH){try{HH.rmeta=JSON.parse(d.meta);HH.rmetaH=mh;HH.rby=d.by||'';}catch(e){DIAG.note(e,"core/25-v1-57-security-storage-chunked:163");}}}
-      else if(d.data&&!d.schema){try{HH.legacy=JSON.parse(d.data);HH.rby=d.by||'';}catch(e){DIAG.note(e,"core/25-v1-57-security-storage-chunked:164");}}
-      HH.readyH=true;hhApplySoon();renderCloudAccSafe();
-    },function(e){hhGone(fsErr(e));});
-    HH.unsubM=F.onSnapshot(hhMonths(F,id),function(qs){
-      var ids={};
-      qs.docs.forEach(function(doc){var d=doc.data()||{};ids[doc.id]=1;if(HH.rhash[doc.id]===d.h)return;HH.rhash[doc.id]=d.h;if(d.by&&d.by!==DEVICE)HH.rby=d.by;try{HH.rmon[doc.id]=JSON.parse(d.data||'[]');}catch(e){HH.rmon[doc.id]=[];}});
-      Object.keys(HH.rhash).forEach(function(k){if(!ids[k]){delete HH.rhash[k];delete HH.rmon[k];}});
-      HH.readyM=true;hhApplySoon();
-    },function(e){console.warn('hh-months',e);if(e&&e.code==='permission-denied')toast(fsErr(e));});
-    HH.unsubP=F.onSnapshot(hhPrivRef(F,id),function(s){
-      if(!s.exists())return;var d=s.data(),raw=d.data||'[]';HH.lastPriv=raw+'\u0001'+(d.accs||'[]');
-      try{HH.priv=JSON.parse(raw);}catch(e){HH.priv=[];}
-      pvOverlayAccs(d.accs);overlayPriv();stampInit();save();renderAll();
-    },function(){});
-  });
-};
-function hhRemote(){
-  var meta=HH.rmeta,txns=[];
-  if(!meta&&HH.legacy){meta=Object.assign({},HH.legacy);delete meta.txns;txns=HH.legacy.txns||[];}
-  else Object.keys(HH.rmon).forEach(function(k){txns=txns.concat(HH.rmon[k]);});
-  if(!meta&&!txns.length)return null;
-  return Object.assign({},meta||{meta:{changedAt:0,del:{}}},{txns:txns});
-}
-function hhApplySoon(){clearTimeout(HH.at);HH.at=setTimeout(hhApply,150);}
-function hhApply(){
-  if(!HH.readyH||!HH.readyM||!HH.id)return;
-  var sig=HH.rmetaH+'|'+cjson(HH.rhash)+(HH.legacy?'|L':'');
-  if(sig!==HH.applied){
-    HH.applied=sig;var R=hhRemote();
-    if(R){var before=JSON.stringify(DB);try{mergeShared(R);overlayPriv();stampInit();}catch(e){console.warn('hh-merge',e);}
-      if(JSON.stringify(DB)!==before){save();renderAll();}}
-  }
-  clearTimeout(HH.t);HH.t=setTimeout(hhPush,400);
-}
-hhPush=function(){
-  if(!(FB.user&&DB.meta.cloudSyncOn&&HH.id&&HH.readyH&&HH.readyM))return Promise.resolve(false);
-  if(HH.pushing){HH.again=true;return Promise.resolve(false);}
-  HH.pushing=true;stampChanges();
-  var id=HH.id,now=Date.now(),sp=hhSplit(sharedCopy(now)),writes=[],keys={};
-  Object.keys(sp.months).concat(Object.keys(HH.rhash)).forEach(function(k){keys[k]=1;});
-  Object.keys(keys).forEach(function(k){var arr=sp.months[k]||[],s=cjson(arr),h=hstr(s);if(h!==HH.rhash[k])writes.push({k:k,s:s,h:h,arr:arr});});
-  var mS=cjson(sp.meta),mh=metaHash(sp.meta),needMeta=mh!==HH.rmetaH||!!HH.legacy;
-  return fsMods().then(function(F){
-    if(!writes.length&&!needMeta)return 'none';
-    if(writes.some(function(w){return w.s.length>MONTH_MAX;})||mS.length>MONTH_MAX)throw {code:'too-big'};
-    var ops=writes.map(function(w){return {ref:F.doc(FB.db,'households',id,'months',w.k),v:{data:w.s,h:w.h,changedAt:now,by:DEVICE}};});
-    var chunks=[];for(var i=0;i<ops.length;i+=400)chunks.push(ops.slice(i,i+400));if(!chunks.length)chunks.push([]);
-    var p=Promise.resolve();
-    chunks.forEach(function(ch,ci){p=p.then(function(){
-      var bt=F.writeBatch(FB.db);ch.forEach(function(o){bt.set(o.ref,o.v);});
-      if(ci===chunks.length-1&&needMeta)bt.update(hhRef(F,id),{meta:mS,metaH:mh,schema:2,changedAt:now,by:DEVICE,updatedAt:new Date().toISOString(),data:F.deleteField()});
-      return bt.commit();});});
-    return p.then(function(){return 'ok';});
-  }).then(function(r){
-    if(r==='ok'){writes.forEach(function(w){HH.rhash[w.k]=w.h;HH.rmon[w.k]=JSON.parse(w.s);});if(needMeta){HH.rmeta=JSON.parse(mS);HH.rmetaH=mh;}HH.legacy=null;HH.applied=HH.rmetaH+'|'+cjson(HH.rhash);DB.meta.cloudPushedAt=Date.now();save();}
-    pushPrivate();syncStatus();renderCloudAccSafe();return true;
-  }).catch(function(e){console.warn('hh-push',e);syncUI('warn','Sync failed — tap');if(e&&(e.code==='too-big'||e.code==='permission-denied'))toast(fsErr(e));return false;})
-  .then(function(ok){HH.pushing=false;if(HH.again){HH.again=false;setTimeout(hhPush,300);}return ok;});
-};
-function hhCreate(ud){
-  return fsMods().then(function(F){
-    var p=Promise.resolve(),ca=ud&&ud.data?(+ud.changedAt||Date.parse(ud.updatedAt)||0):0;
-    if(ca>(+DB.meta.changedAt||0)+1000){backupSnap('pre-cloud');p=adoptJSON(ud.data).then(function(){DB.meta.cloudSyncOn=true;DB.meta.syncChoice='yes';stampInit();});}
-    return p.then(function(){
-      var id=hhCode(),em=(FB.user.email||'').toLowerCase(),me={};me[FB.user.uid]=em;
-      return F.setDoc(hhRef(F,id),{owner:FB.user.uid,ownerEmail:em,members:[FB.user.uid],memberEmails:me,invites:[],schema:2,meta:'',metaH:'',changedAt:Date.now(),by:DEVICE,created:new Date().toISOString(),updatedAt:new Date().toISOString()})
-        .then(function(){return F.setDoc(F.doc(FB.db,'users',FB.user.uid),{household:id,email:em},{merge:true});})
-        .then(function(){return hhAttach(id);})
-        .then(function(){toast('Cloud sync is on ✓ Invite your partner in Settings → Modes.');});
-    });
-  });
-};
+/* beta 61: the month-document household sync (schema 2) and its schema-1 reader were removed. The household syncs
+   through the normalized collections (sharedState / accounts / transactions) — see hhAttach / hhPush in the beta 29.1 section. */
+function hhAttach(id){return Promise.resolve();}  /* replaced by the beta 29.1 normalized version */
+function hhCreate(){return Promise.resolve();}    /* replaced by the beta 29.1 normalized version */
 function fbPushSoon(){stampChanges();if(!FB.user||!DB.meta.cloudSyncOn||!FB.ready||!HH.id)return;clearTimeout(HH.t);HH.t=setTimeout(hhPush,1500);};
 function fbDeleteCloud(){
   if(!FB.user||!HH.id){toast('Nothing to delete');return;}
   askConfirm('Delete the shared household from the cloud? Your partner loses the shared copy. The data on this phone stays.','Delete household',function(){
     var id=HH.id,uid=FB.user.uid;
     fsMods().then(function(F){
-      return F.getDocs(hhMonths(F,id)).then(function(qs){var bt=F.writeBatch(FB.db);qs.docs.forEach(function(d){bt.delete(F.doc(FB.db,'households',id,'months',d.id));});return bt.commit();})
+      return Promise.resolve() /* beta 61: no month documents in the household layout */
         .then(function(){return F.deleteDoc(hhPrivRef(F,id)).catch(function(){});})
         .then(function(){return F.deleteDoc(hhRef(F,id));})
         .then(function(){return F.setDoc(F.doc(FB.db,'users',uid),{household:F.deleteField()},{merge:true});});
@@ -6887,7 +6807,7 @@ try{mode6MgrPost();}catch(e){console.warn('m6mgr',e);}
 SCREEN.around('renderMgr',100002687,function(_rmB4){return function(){
   if(MGR.kind!=='acctype'){_rmB4.apply(this,arguments);return;}
   B3.ensureTypes();
-  var lt=B3.legacyTypes(),h='';
+  var lt=B3.unknownTypes(),h='';
   if(lt.length)h+='<div class="help small" style="margin-bottom:10px">Some accounts use an old type. Choose a new one for each \u2014 balances and history do not change.</div>';
   if(!lt.length){
     h+='<div class="pv-note"'+' data-info23="keep" style="color:var(--inc);font-weight:700">'+ico('check')+' Every account uses a current type.</div>'
@@ -6900,7 +6820,7 @@ SCREEN.around('renderMgr',100002687,function(_rmB4){return function(){
     lt.forEach(function(ty){
       var accs=(DB.accounts||[]).filter(function(a){return a.type===ty&&!a.recv;});
       var tot=0;accs.forEach(function(a){var b=accountBalAsOf(a.name,td);if(isFinite(b))tot+=b;});
-      h+='<div class="migrow"><b>'+esc(ty)+' <span class="legpill">legacy</span></b>'
+      h+='<div class="migrow"><b>'+esc(ty)+' <span class="legpill">unknown type</span></b>'
         +'<small>'+accs.length+' account'+(accs.length===1?'':'s')+' \u00b7 '+esc(accs.map(function(a){return a.name;}).join(', '))+' \u00b7 balances '+esc(money(Math.abs(tot)))+(tot<0?' owed':'')+'</small>'
         +'<div class="mgr-lb" style="margin-top:8px">Classify as</div>'
         +'<select class="fin" data-migsel="'+esc(ty)+'">'+B4.accTypeOpts(B4.guess(ty))+'</select>'
@@ -7759,11 +7679,11 @@ try{
 SCREEN.base('renderMe',301476,function __base_renderMe(){
   var b=$('meBody');if(!b)return;
   var s=sessGet()||{},pr=DB.meta.profile||{},j=jr(),d=DB.meta.demo;
-  b.innerHTML='<div class="ds-status"><span class="dot" style="background:var(--inc)"></span><span>'+ico('mail')+' '+esc(s.email||'—')+'<br><small class="muted" style="font-weight:600">'+(pr.name?'You are '+esc(pr.name)+' · ':'')+(s.mode==='cloud'?'cloud account':'profile on this phone (not a cloud account)')+'</small></span></div>'
-    +'<div style="display:grid;gap:8px">'
+  /* beta 58: the e-mail status line was removed here — the Sign-in card shows it once; Log out lives there too */
+  b.innerHTML='<div style="display:grid;gap:8px">'
     +(j.hide||jrDoneCount()>=JR.length?'<button class="btn ghost" data-act="jrshow">'+ico('flag')+' Show getting-started checklist</button>':'')
     +(d&&d.on?'<button class="btn ghost" data-act="demorm">'+ico('trash')+' Remove sample transactions</button>':'<button class="btn ghost" data-act="demoadd">'+ico('play')+' Add sample transactions</button>')
-    +'<button class="btn ghost" data-act="aulogout">'+ico('logout')+' Log out</button></div>';
+    +'</div>';
 });
 SCREEN.on('renderMe',301476);
 
@@ -8812,8 +8732,7 @@ try{
       adv:[['users','Everything in Couple mode — shared accounts, sync and reminders'],
            ['lock','Private (Only-me) accounts the partner view cannot open'],
            ['folder','Separate data spaces for personal and shared money'],
-           ['sliders','Advanced permissions on every account'],
-           ['search','Partner-view preview shows exactly what your partner sees']]
+           ['sliders','Advanced permissions on every account']]
     };
     var list=P[B10.mtab]||P.couple;
     var h='<div class="m6pre"><div class="m6pre-h">Settings presets</div>'+list.map(function(x){
@@ -8853,9 +8772,7 @@ try{
     if(!document.getElementById('b20modenote')){
       mb.insertAdjacentHTML('beforeend','<div class="help small" id="b20modenote" style="margin-top:8px">'+ico('users')+' Each partner can use a different mode \u2014 your choice changes only what you see.</div>');
     }
-    if(adv20()&&!document.getElementById('b20pvpBtn')){
-      mb.insertAdjacentHTML('beforeend','<button class="btn ghost" id="b20pvpBtn" data-act="b20pvp" style="margin-top:8px">'+ico('eye')+' Preview as '+esc(partnerName()||'your partner')+'</button>');
-    }
+    /* beta 58: the "Preview as <partner>" button was removed from Settings › Modes */
   }catch(e){console.warn('b20mode',e);}
 });
 /* ================= B3.renderProfileSub — Settings › Your Profile =================
@@ -8893,7 +8810,7 @@ try{
         paEl.innerHTML='<b>Collaborator</b> — '+esc(P||'your partner')+' joins the household with the access you allow in Settings → Modes.';}
     }
     var rs=$('b19Roles');
-    if(rs)rs.innerHTML=B19.roleLine();
+    if(rs){rs.innerHTML='';rs.hidden=true;} /* beta 58: the "Roles right now" box repeated the two captions above */
     /* the b3 auto-fill picks DB.people[0] which can be the placeholder person "Me" —
        with rename-on-save that would merge the partner into "Me". Default to the real
        partner instead (profile.partner, else first real non-demo other person). */
@@ -8917,7 +8834,7 @@ SCREEN.base('B3.renderPrivSub',90036875,function(){
   var el=$('pvLockB3');if(!el)return;
   var lk=lockCfg(),lockOn=!!lk.h,enc=lockOn&&lk.v===2&&V57.key,psOn=!!PS.cfg.on;
   function tgl(on,fn){return '<input type="checkbox" class="tgl"'+(on?' checked':'')+(fn?' onchange="'+fn+'"':'')+'>';}
-  var h=pvRow('lock','App lock',lockOn?'Asks for your '+(lk.len||4)+'-digit PIN when the app opens':'Anyone holding this phone can open the app',
+  var h=pvRow('lock','App lock',lockOn?'Asks for your 6-digit PIN when the app opens':'Anyone holding this phone can open the app',
     lockOn?'<button class="ibtn" data-act="pinchg">Change</button><button class="ibtn" data-act="pinoff" style="color:var(--exp)">Turn off</button>':'<button class="ibtn" data-act="pinset" style="color:var(--accent);font-weight:800">Set PIN</button>');
   if(lockOn){
     h+=pvRow('clock','Lock again after leaving','Time away before the PIN is needed','<select class="fin" onchange="var c=lockCfg();c.delay=+this.value;lockSave(c);toast(\'Saved\')">'+[[0,'Immediately'],[60,'1 minute'],[300,'5 minutes'],[900,'15 minutes']].map(function(o){return '<option value="'+o[0]+'"'+((+lk.delay||0)===o[0]?' selected':'')+'>'+o[1]+'</option>';}).join('')+'</select>')
@@ -8936,11 +8853,7 @@ SCREEN.base('B3.renderPrivSub',90036875,function(){
 /* — from 23-v160-b4-fixes.js:99 — */
 SCREEN.after('B3.renderPrivSub',100006466,{call:'apply',ret:false},function(){
 try{
-    var lk=lockCfg();
-    if(lk&&lk.h&&(+lk.len||4)===4){
-      var el=$('pvLockB3'),note=el&&el.querySelector('.pv-note');
-      if(note)note.insertAdjacentHTML('beforebegin','<div class="pv-note warn">Your PIN has 4 digits \u2014 tap <b>Change</b> above to switch to a safer 6-digit PIN.</div>');
-    }
+    /* beta 60: the "your PIN has 4 digits — change it" hint was removed; such a PIN must be replaced right after unlocking */
   }catch(e){console.warn('pin4',e);}
 });
 
@@ -9076,7 +8989,7 @@ var renderStore59,stgCards59,loanSave59,loanCard59,pvMove59,isLoan; /* bindings 
 
 /* ===================== v1.59 beta 2 · executes the revised v1.59 product plan =====================
    Layered on v1.58 like every earlier release. Replaces the v1.59 beta 1 "Setup" pop-up with real, integrated features:
-   Mode & storage (Settings) · storage migration with safety backup · encrypted personal-cloud backup / restore ·
+   Mode & storage (Settings) · storage switch with safety backup · encrypted personal-cloud backup / restore ·
    five sync states · assets, loans & Net Worth · shared-account permissions · privacy rules · audit trail ·
    Overview (Net Worth, collapsed Between Us, one insight) · question-based reports · flat 2D charts · statement/min-payment rules. */
 var V59={ov:{},ins:0,prob:0,skipChk:'',ver:'1.59 beta 2'};
@@ -9098,38 +9011,17 @@ function isVal(a){return !!a&&VAL_T.indexOf(a.type)>=0;}
 function storageMode(){var s=(DB&&DB.meta&&DB.meta.v59&&DB.meta.v59.storage)||'device';return STG_L[s]?s:'device';}
 function ownerHas(owner,who){return !who||who==='couple'||owner===who||String(owner||'').split(' & ').indexOf(who)>=0;}
 
-/* ---------------- data migration (idempotent; runs after every normalizeDB) ---------------- */
+/* ---------------- data defaults (runs after every normalizeDB). Beta 61: new app — no conversion of older data shapes ---------------- */
 function ensure59(){
   if(!DB||!DB.meta||!Array.isArray(DB.accounts)||!Array.isArray(DB.accTypes))return;
   var v=m59();
   VAL_T.forEach(function(t){if(DB.accTypes.indexOf(t)<0){DB.accTypes.push(t);DB.accTypeMeta[t]={kind:'asset',cycle:0};}});
-  LOAN_T.forEach(function(t){if(DB.accTypes.indexOf(t)<0){DB.accTypes.push(t);DB.accTypeMeta[t]={kind:'liability',cycle:0};}});
-  /* v1.59: plain-language name for debt ledgers (no accounting terms on screen) */
-  if(DB.accTypes.indexOf('Receivable')>=0){
-    if(DB.accTypes.indexOf('Between Us')<0){DB.accTypes[DB.accTypes.indexOf('Receivable')]='Between Us';DB.accTypeMeta['Between Us']=DB.accTypeMeta.Receivable||{kind:'asset',cycle:0};}
-    else DB.accTypes=DB.accTypes.filter(function(x){return x!=='Receivable';});
-    delete DB.accTypeMeta.Receivable;
-    DB.accounts.forEach(function(a){if(a.type==='Receivable')a.type='Between Us';});
-  }
   DB.accounts.forEach(function(a){
-    /* beta 1 fields → beta 2 model */
-    if(a.assetClass){if((VAL_T.indexOf(a.assetClass)>=0||LOAN_T.indexOf(a.assetClass)>=0)&&a.type!==a.assetClass)a.type=a.assetClass;delete a.assetClass;}
-    if(a.adjustedValue!==undefined){if(+a.adjustedValue>0&&!(a.vals&&a.vals.length))a.vals=[{date:a.adjustedDate||todayISO(),value:+a.adjustedValue,note:'Adjusted value'}];delete a.adjustedValue;delete a.adjustedDate;}
-    if(a.linkedAccount!==undefined){
-      if(a.linkedAccount&&isLoan(a)&&!a.linkedAsset)a.linkedAsset=a.linkedAccount;
-      else if(a.linkedAccount&&isVal(a)){var l=a59(a.linkedAccount);if(l&&isLoan(l)&&!l.linkedAsset)l.linkedAsset=a.name;}
-      delete a.linkedAccount;
-    }
     if(isVal(a)&&a.purchasePrice!==undefined&&a.purchasePrice!==''&&isFinite(+a.purchasePrice))a.start=+a.purchasePrice;
     if(a.partnerAccess&&['view','add','full','admin'].indexOf(a.partnerAccess)<0)a.partnerAccess='add';
     if(a.minPay!==undefined&&!(+a.minPay>0))delete a.minPay;
   });
-  if(!v.storage){
-    var b=DB.meta.v159||{},s=b.storage;
-    if(['device','drive','onedrive','household'].indexOf(s)<0)s=DB.meta.cloudSyncOn?'household':'device';
-    v.storage=s;if(b.providerEmail&&!v.providerEmail)v.providerEmail=b.providerEmail;if(b.backupAt&&!v.backupAt){v.backupAt=b.backupAt;v.backupChangedAt=0;}
-    if((DB.txns&&DB.txns.length)||profOK())DB.meta.storageAsked=1;
-  }
+  if(!v.storage)v.storage=DB.meta.cloudSyncOn?'household':'device';
   if(!v.remind)v.remind=7;
 }
 var _nd59=normalizeDB;normalizeDB=function(){_nd59();try{ensure59();}catch(e){console.warn('ensure59',e);}};
@@ -9681,7 +9573,7 @@ function cloudRemove59(){
   var id=HH.id,uid=FB.user&&FB.user.uid;if(!id||!uid)return Promise.resolve();
   var owner=HH.info&&HH.info.owner===uid;
   return fsMods().then(function(F){
-    if(owner)return F.getDocs(hhMonths(F,id)).then(function(qs){var bt=F.writeBatch(FB.db);qs.docs.forEach(function(d){bt.delete(F.doc(FB.db,'households',id,'months',d.id));});return bt.commit();})
+    if(owner)return Promise.resolve() /* beta 61: no month documents in the household layout */
       .then(function(){return F.deleteDoc(hhPrivRef(F,id)).catch(function(){});}).then(function(){return F.deleteDoc(hhRef(F,id));})
       .then(function(){return F.setDoc(F.doc(FB.db,'users',uid),{household:F.deleteField()},{merge:true});});
     var u={members:F.arrayRemove(uid)};u['memberEmails.'+uid]=F.deleteField();
@@ -9988,19 +9880,11 @@ var V59B3={open:null};
 var PDH_PROV={drive:'Google Drive',onedrive:'OneDrive'};
 ICONS.key='<path d="m21 2-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.78 7.78 5.5 5.5 0 0 1 7.78-7.78Zm0 0L15.5 7.5m0 0 3 3L22 7l-3-3m-3.5 3.5L19 4"/>';
 
-/* ---------------- state (migrated from the beta 2 checklist on first use) ---------------- */
+/* ---------------- household folder state ---------------- */
 function pdh59(){
   var v=m59();
   if(!v.pdh||typeof v.pdh!=='object')v.pdh={};
-  var p=v.pdh,f=v.folder;
-  if(f){ /* beta 2 checklist → beta 3 model */
-    if(f.email&&!p.email)p.email=f.email;
-    if(f.created&&!p.createdAt)p.createdAt=Date.now();
-    if(f.shared&&!p.sharedAt)p.sharedAt=Date.now();
-    if(f.accepted&&!p.acceptedAt)p.acceptedAt=Date.now();
-    if((f.created||f.shared||f.accepted)&&!p.owner)p.owner=meName()||'';
-    delete v.folder;save();
-  }
+  var p=v.pdh;
   if(p.createdAt&&!p.code)p.code=pdhCode59();
   if(p.owner===undefined||p.owner===null)p.owner=meName()||'';
   return p;
@@ -10342,9 +10226,9 @@ window.icoFor5=icoFor5; /* used by js/screens */
    Additive layer on top of beta 5 implementing the Three-Mode Design plan:
    · M-01  One authoritative mode value: Personal · Couple · Advanced Couple (isCouple covers couple+adv)
    · M-03  Onboarding decision flow: "do both partners need accounts the other cannot see?"
-   · M-05  Couple simplification: household accounts are shared; no new Private accounts; legacy review
+   · M-05  Couple simplification: household accounts are shared; no new Private accounts; review of earlier private items
    · M-06  Advanced privacy: private space per partner, separate Household/Private sync status
-   · M-08  Mode migration engine: previews, safety backup, never shares without explicit confirmation
+   · M-08  Mode switch engine: previews, safety backup, never shares without explicit confirmation
    · M-09  Exports/backups never include the other partner's Private data
    · plan 7 mode cards + Compare modes · plan 13 naming subtitles · version → beta 6 */
 (function(){
@@ -10389,8 +10273,7 @@ V56.mgr.modecmp=function(){
       ['Separate private space per partner','—','—','Yes'],
       ['Personal encrypted backup','Yes','Household backup','Yes, per owner'],
       ['Privacy Screen &amp; App lock','Yes','Yes','Yes'],
-      ['Partner-view preview','—','Optional','Yes'],
-      ['Privacy migration','—','Limited','Full']
+      ['Moving private items','—','Limited','Full']
     ])
     +'<div class="mgr-sec m6h">Default storage by mode</div>'
     +tbl(['Mode','Default','Also good'],[
@@ -10472,7 +10355,7 @@ function usgApply6(to,o){
   renderAll();renderStore59();
   if(to==='couple'&&!openedShare)setTimeout(migPrompt6,400);
 }
-/* legacy privacy review after entering Couple (plan 9.1 last bullet + 4.7) */
+/* privacy review of earlier private items after switching to Couple (plan 9.1 last bullet + 4.7) */
 function migPrompt6(){
   if(nowMode6()!=='couple')return;
   var conf=privConflicts59().length;
@@ -10592,7 +10475,7 @@ function mode6MgrPost(){
   if(ed){
     var a=MGR.edit?DB.accounts.find(function(x){return x.name===MGR.edit;}):null;
     if(a&&a.vis==='me'){
-      /* legacy private account: sharing stays possible (safe direction); relabel for clarity */
+      /* a private account made in Advanced Couple: sharing stays possible (safe direction); relabel for clarity */
       ed.value='me';
       var mo=ed.querySelector('option[value=me]');if(mo)mo.textContent='Only me (kept on this device)';
     }else{
@@ -10872,14 +10755,14 @@ B3.freqL=function(f){return {m:'monthly',f:'fortnightly',w:'weekly',q:'quarterly
 B3.ASSETS=['Property','Vehicle','Investment','Bank','Cash','e-Wallet'];
 B3.LIABS=['Loan','Hire Purchase','Card'];
 B3.isCtrl=function(ty){return B3.ASSETS.indexOf(ty)>=0||B3.LIABS.indexOf(ty)>=0;};
-B3.legacyTypes=function(){
+B3.unknownTypes=function(){
   var used={};(DB.accounts||[]).forEach(function(a){
     if(!a.type||a.recv||LBL_RE.test(a.name))return; /* Between-Us ledgers carry an internal type — not classifiable */
     used[a.type]=1;
   });
-  return (DB.accTypes||[]).filter(function(t){return !B3.isCtrl(t)&&used[t];}); /* classification is only required while legacy types are in use */
+  return (DB.accTypes||[]).filter(function(t){return !B3.isCtrl(t)&&used[t];}); /* types from imported files that the app does not know */
 };
-/* one-way safe migration of known legacy type names to the controlled model (plan §4/§12 — legacyType keeps the original) */
+/* common type names from imported files and sample data map to the app's own types */
 var TYPE_MAP={ 'eWallet':'e-Wallet','Credit Card':'Card','Housing Loan':'Loan','Personal Loan':'Loan','Education Loan':'Loan','Other Loan':'Loan','Car / Hire Purchase Loan':'Hire Purchase' };
 B3.ensureTypes=function(){
   if(!DB||!DB.accTypes)return;
@@ -10892,7 +10775,7 @@ B3.ensureTypes=function(){
   var ch=0;
   (DB.accounts||[]).forEach(function(a){
     var to=TYPE_MAP[a.type];
-    if(to&&!a.legacyType){a.legacyType=a.type;a.type=to;ch++;}
+    if(to){a.type=to;ch++;}
   });
   if(ch)save();
 };
@@ -10912,7 +10795,7 @@ ownerOptions=function(sel){
     var h='<option value="'+esc(p0)+'"'+(sel===p0?' selected':'')+'>'+esc(p0)+'</option>'
          +'<option value="'+esc(p1)+'"'+(sel===p1?' selected':'')+'>'+esc(p1)+'</option>'
          +'<option value="'+esc(jp)+'"'+(sel===jp?' selected':'')+'>Joint · '+esc(jp)+'</option>';
-    if(sel&&sel!==p0&&sel!==p1&&sel!==jp)h+='<option selected>'+esc(sel)+'</option>'; /* legacy / stale owners stay readable */
+    if(sel&&sel!==p0&&sel!==p1&&sel!==jp)h+='<option selected>'+esc(sel)+'</option>'; /* an owner name that is no longer in the household stays readable */
     return h;
   }
   return _oo59(sel);
@@ -10923,10 +10806,10 @@ var _xF59=xFields59;
 xFields59=function(p,type,a){
   a=a||{};
   var h=_xF59(p,type,a);
-  var legacyLoan=LOAN_T.indexOf(type)>=0,hp=type==='Hire Purchase',loan=type==='Loan';
-  if(legacyLoan||hp||loan){
+  var otherLoan=LOAN_T.indexOf(type)>=0,hp=type==='Hire Purchase',loan=type==='Loan';
+  if(otherLoan||hp||loan){
     var id=function(s){return 'x59'+p+'_'+s;};
-    if(!legacyLoan){ /* controlled types: the original only adds the linked-asset select for legacy loan types */
+    if(!otherLoan){ /* the app's own loan types: the original only adds the linked-asset select for other loan names */
       var as=DB.accounts.filter(function(x){return isVal(x);}),want=hp?'Vehicle':'';
       h+='<div class="mgr-lb">Linked '+(hp?'vehicle (optional)':'asset (optional)')+'</div><select class="fin" id="'+id('LA')+'" style="margin-bottom:7px"><option value="">None</option>'
         +as.sort(function(x,y){return (x.type===want?0:1)-(y.type===want?0:1)||alphasort(x.name,y.name);}).map(function(x){return '<option'+(a.linkedAsset===x.name?' selected':'')+'>'+esc(x.name)+'</option>';}).join('')+'</select>';
@@ -11094,7 +10977,7 @@ var SET_HTML=''
     +'<div class="achips" id="accChipsB3"><button data-act="accflt2" data-f="all" class="on">All</button><button data-act="accflt2" data-f="assets">Assets</button><button data-act="accflt2" data-f="liabs">Liabilities</button></div>'
     +'<div class="rows" id="accListB3"></div>'
     +'<button class="btn" data-act="accaddq" style="width:100%;margin-top:12px">'+ico('plus')+' Add account</button>'
-    +'<div id="accLegacyB3"></div>'
+    +'<div id="accUnknownB3"></div>'
   +'</div></section>'
   /* Mode & Partner Access (plan §9) */
   +'<section class="setsub" data-sub="mode" hidden>'
@@ -11260,12 +11143,12 @@ B3.renderAccSub=function(){
     var access='';
     if(isCouple()&&a.vis!=='me'){var p=permFor59(a.name);access=p==='owner'?' · you own this':' · partner: '+(PERM_L[p]||p);}
     else if(a.vis==='me'){access=' · personal';}
-    var leg=B3.isCtrl(a.type)?'':(a.legacyType?'<span class="legpill">was '+esc(a.legacyType)+'</span>':'<span class="legpill">legacy</span>');
+    var leg=B3.isCtrl(a.type)?'':'<span class="legpill">unknown type</span>';
     return '<button class="arow" data-act="acc" data-n="'+esc(a.name)+'"><span class="aic">'+ico(a.type==='Vehicle'?'car':(a.type==='Property'?'home':(r.kind==='liability'?'bank':'card')))+'</span>'
       +'<span class="atx"><b>'+esc(a.name)+leg+'</b><small>'+esc(a.type||'—')+' · '+esc(own)+esc(access)+'</small></span>'
       +'<span class="aam '+(r.bal<0?'neg':'')+'">'+money(r.bal)+'</span></button>';
   }).join(''):'<div class="empty"><b>No accounts</b><p>Add your first account below.</p></div>';
-  var lg=$('accLegacyB3'),lt=B3.legacyTypes();
+  var lg=$('accUnknownB3'),lt=B3.unknownTypes();
   if(lg)lg.innerHTML=lt.length?'<div class="help small" style="margin-top:10px">'+ico('warn')+' <b>'+lt.length+' old account type'+(lt.length===1?'':'s')+'</b> need'+(lt.length===1?'s':'')+' a new type: '+lt.map(esc).join(', ')+'. <button class="aulink inl" data-act="mgr" data-k="acctype">Choose now</button></div>':'';
 };
 
@@ -11348,7 +11231,7 @@ B3.runDeletion=function(retry){
   if(cloud){
     var id=HH.id,uid=FB.user.uid;
     fsMods().then(function(F){
-      return F.getDocs(hhMonths(F,id)).then(function(qs){var bt=F.writeBatch(FB.db);qs.docs.forEach(function(d){bt.delete(F.doc(FB.db,'households',id,'months',d.id));});return bt.commit();})
+      return Promise.resolve() /* beta 61: no month documents in the household layout */
         .then(function(){return F.deleteDoc(hhPrivRef(F,id)).catch(function(){});})
         .then(function(){return F.deleteDoc(hhRef(F,id));})
         .then(function(){return F.setDoc(F.doc(FB.db,'users',uid),{household:F.deleteField()},{merge:true});});
@@ -11394,8 +11277,8 @@ B3.attList=function(){
       Object.keys(bs).forEach(function(c){var b=(+bs[c].f||0)+(+bs[c].v||0),a=act[c]||0;if(b>0&&a>=b&&(!worst||a-b>worst.o))worst={c:c,a:a,b:b,o:a-b,s:s};});});
     if(worst)out.push({pri:3,ic:'wallet',tone:'neg',t:'Over budget: '+worst.c,s:money(worst.a)+' of '+money(worst.b)+(worst.s==='couple'?'':' · '+worst.s+'\u2019s budget'),act:'mgr',k:'budgets',go:'Review'});
   }catch(e){DIAG.note(e,"22-v160-b3-settings:632");}
-  try{ /* legacy account types waiting for classification */
-    var lt=B3.legacyTypes();
+  try{ /* imported accounts whose type the app does not know */
+    var lt=B3.unknownTypes();
     if(lt.length)out.push({pri:6,ic:'warn',tone:'warn',t:'Old account types',s:lt.length+' type'+(lt.length===1?'':'s')+' need'+(lt.length===1?'s':'')+' a new type',act:'setopen',k:'accounts',go:'Review'});
   }catch(e){DIAG.note(e,"22-v160-b3-settings:636");}
   out.sort(function(a,b){return a.pri-b.pri;});
@@ -11746,13 +11629,13 @@ if(olB3)olB3.insertAdjacentHTML('beforeend',
 /* ===================== v1.60 beta 4 · Modification & Execution Report fixes =====================
    Additive layer on v1.60 beta 3 closing the report's items:
    · M01  Privacy & Security keeps exactly two top-level choices (Protect this device / Privacy Screen);
-          4-digit PIN upgrade hint nests under Protect this device; no partner/storage/AI settings there.
+          (PIN upgrade hint removed in beta 60); no partner/storage/AI settings there.
    · M02  ALL partner visibility & permission configuration lives in Settings → Modes:
           per-account access list, share-notes, personal accounts, hidden balances, older private
           transactions and conflicts review; the account editor only points there ("Settings → Privacy"
           references replaced app-wide).
    · U01  "Protect this device" wording kept consistent.
-   · E02  Controlled account model completed: guided legacy-type classification manager with preview,
+   · E02  Controlled account model completed: guided unknown-type chooser with preview,
           automatic safety backup and balance reconciliation; new accounts use only controlled types.
    · E01  Personal-drive household folder re-homed into Data & Sync and explicitly marked as a
           preview — live provider sync is not available in this beta (future-tense claims removed).
@@ -11769,12 +11652,12 @@ B4.accTypeOpts=function(cur){
     return '<option value="'+esc(t)+'"'+(t===cur?' selected':'')+'>'+esc(t)+(kd==='liability'?' \u00b7 liability':'')+'</option>';}
   B3.ASSETS.forEach(function(t){var s=opt(t);if(s)out.push(s);});
   B3.LIABS.forEach(function(t){var s=opt(t);if(s)out.push(s);});
-  if(cur&&B3.ASSETS.indexOf(cur)<0&&B3.LIABS.indexOf(cur)<0){var s2=opt(cur);if(s2)out.push(s2);} /* a legacy account keeps its own type until classified */
+  if(cur&&B3.ASSETS.indexOf(cur)<0&&B3.LIABS.indexOf(cur)<0){var s2=opt(cur);if(s2)out.push(s2);} /* an imported account keeps its own type until a type is chosen */
   return out.join('');
 };
 
-/* ---------- 2. guided legacy-type classification (E02 — required, previewed, backed up) ---------- */
-MGR_TITLE.acctype=ico('folder')+' Classify legacy account types';
+/* ---------- 2. choose a type for imported accounts with an unknown type (E02 — previewed, backed up) ---------- */
+MGR_TITLE.acctype=ico('folder')+' Choose account types';
 B4.guess=function(ty){
   var n=String(ty||'').toLowerCase();
   if(/hire|car loan/.test(n))return 'Hire Purchase';
@@ -11801,7 +11684,7 @@ B4.applyType=function(ty){
   var td=todayISO(),before=0;
   accs.forEach(function(a){var b=accountBalAsOf(a.name,td);if(isFinite(b))before+=b;});
   backupSnap('before type classification');
-  accs.forEach(function(a){if(!a.legacyType)a.legacyType=a.type;a.type=to;});
+  accs.forEach(function(a){a.type=to;});
   var still=(DB.accounts||[]).some(function(a){return a.type===ty;});
   if(!still&&!B3.isCtrl(ty)){DB.accTypes=DB.accTypes.filter(function(x){return x!==ty;});}
   save();
@@ -11812,7 +11695,7 @@ B4.applyType=function(ty){
   toast(accs.length+' account'+(accs.length===1?'':'s')+' classified as '+to+' \u00b7 balances '+(Math.abs(before-after)<0.005?'unchanged':'reconciled'));
 };
 
-/* ---------- 3. M01 — 4-digit PIN upgrade hint nests under Protect this device ---------- */
+/* ---------- 3. M01 — (beta 60: the PIN upgrade hint was removed) ---------- */
 
 SCREEN.on('B3.renderPrivSub',100006466);
 
@@ -13670,8 +13553,8 @@ V63.trendBlock=function(){
     +'<div class="'+(up?'pos':'neg')+'" style="text-align:right"><b>'+(up?'▲ ':'▼ ')+money(Math.abs(S.change))+'</b>'+(pc?'<small>'+pc+'</small>':'')+'</div></div>';
   return chips+sum+V63.trendSVG(S);
 };
-/* ---------- safe boot migration (docx §25, plan §16.9 — classification only) ---------- */
-V63.migrate=function(){
+/* ---------- property / vehicle field defaults (docx §25, plan §16.9) ---------- */
+V63.fillDefaults=function(){
   if(!DB||!DB.accounts)return 0;
   var ch=0;
   if(B3.ASSETS.indexOf('Other Asset')<0){B3.ASSETS.push('Other Asset');ch=1;}
@@ -13698,7 +13581,7 @@ V63.migrate=function(){
 var _boot16=boot;
 boot=function(){
   _boot16();
-  try{if(V63.migrate())renderAll();}catch(e){console.warn('v63m',e);}
+  try{if(V63.fillDefaults())renderAll();}catch(e){console.warn('v63m',e);}
   try{V63.afterBoot&&V63.afterBoot();}catch(e){DIAG.note(e,"35-v160-b16-insights-reports:272");}
 };
 })();
@@ -15564,9 +15447,6 @@ X63.obFinish=function(){
   toast(ch==='simple'?'Simple experience set — Money comes first':'Full experience set — Wealth comes first');
 };
 X63.obSkip=function(){
-  var v=X63.viewer();
-  DB.meta.expLevel=DB.meta.expLevel||{};
-  if(!DB.meta.expLevel[v])DB.meta.expLevel[v]='full';
   DB.meta.expOnboarded=true;DB.meta.expSelectionSource='skipped';
   X63.save();X63.obClose();
   toast('No problem — Experience Level is in Settings → App Preference');
@@ -15669,14 +15549,11 @@ return;
 }
 });
 
-/* ---------------- boot migration + first-run onboarding trigger ---------------- */
+/* ---------------- first-run onboarding trigger ---------------- */
 var _prevAfter=V63.afterBoot;
 V63.afterBoot=function(){
   try{_prevAfter&&_prevAfter();}catch(e){DIAG.note(e,"37-v160-b18-tiles-experience:855");}
   try{
-    if(!DB.meta.expLevel)DB.meta.expLevel={};
-    var v=X63.viewer();
-    if(!DB.meta.expLevel[v]){DB.meta.expLevel[v]='full';X63.save();} /* existing households keep the current presentation until the questions are answered */
     if(DB.meta.expOnboarded===undefined)DB.meta.expOnboarded=false;
     if(X63.isSimple()&&X63.wealthVis()!=='full-tab'&&V63.itab==='wealth'){
       V63.itab='cash';try{sessionStorage.setItem('v63itab','cash');}catch(e){DIAG.note(e,"37-v160-b18-tiles-experience:862");}
@@ -15800,11 +15677,6 @@ B19.rename=function(from,to){
   if(Array.isArray(DB.goals))DB.goals.forEach(function(g){if(g&&g.owner===from)g.owner=to;});
   /* recurring series templates carry the person */
   if(Array.isArray(DB.recur))DB.recur.forEach(function(r){if(r&&r.tpl&&r.tpl.person===from)r.tpl.person=to;});
-  /* Experience Level keys (beta 18) — per person, values preserved */
-  if(DB.meta.expLevel&&typeof DB.meta.expLevel==='object'&&from in DB.meta.expLevel){
-    var ne={};Object.keys(DB.meta.expLevel).forEach(function(k){ne[k===from?to:k]=DB.meta.expLevel[k];});
-    DB.meta.expLevel=ne;
-  }
   /* profile name / partner name themselves */
   if(DB.meta.profile){
     if(DB.meta.profile.name===from)DB.meta.profile.name=to;
@@ -16052,8 +15924,8 @@ B20.ended=isEnded20;
 function permLabel20(p){return {view:'View only',add:'Add transactions',full:'Full transaction access',admin:'Account administrator'}[p]||'Add transactions';}
 B20.permLabel=permLabel20;
 
-/* ---------- 1 · Stable account ids (OD-AE-01 / AE-REN-01) + status migration (AE-ARC-15) ---------- */
-B20.migrate=function(){
+/* ---------- 1 · Stable account ids (OD-AE-01 / AE-REN-01) + Sold = Closed with reason (AE-ARC-15) ---------- */
+B20.normalizeAccounts=function(){
   try{
     var needDate=[];
     DB.accounts.forEach(function(a){
@@ -16499,7 +16371,7 @@ B20.sdv=function(){
 /* touch() keeps a private-space activity stamp for the backup-due attention (AC-STO-13) */
 var _tch20=touch;
 touch=function(){var r=_tch20.apply(this,arguments);
-  try{B20.migrate();}catch(e){DIAG.note(e,"40-v160-b20-advanced-couple:615");}
+  try{B20.normalizeAccounts();}catch(e){DIAG.note(e,"40-v160-b20-advanced-couple:615");}
   try{if(adv20()&&DB.accounts.some(function(a){return a.vis==='me';})){DB.meta.v59=DB.meta.v59||{};DB.meta.v59.privTouch=Date.now();}}catch(e){DIAG.note(e,"40-v160-b20-advanced-couple:616");}
   return r;};
 
@@ -16580,7 +16452,7 @@ B20.pvData=function(){
     if(t.demo)return false;
     var inA=accSet[t.account],inB=t.type==='Transfer'&&t.to&&accSet[t.to];
     if(!inA&&!inB)return false;
-    if(t.priv&&(t.pby||me)===me)return false;          /* my own legacy private entries never reach the partner */
+    if(t.priv&&(t.pby||me)===me)return false;          /* my own private entries never reach the partner */
     if(t.priv&&t.pby&&t.pby!==me)return false;          /* AC-PVP-05: the partner's own private entries are never shown in preview */
     return true;
   }).slice(0,200);
@@ -16692,29 +16564,7 @@ B20.tilesPost=function(){
 SCREEN.on('X63.reportsFilter',260047342);
 
 /* ---------- 20 · OD-04: a new user who skips starts in Simple (BG-16, WP-16, AC-EXP-14) ---------- */
-B20.existingHH=function(){
-  try{
-    if(DB.meta.demo&&DB.meta.demo.on)return false;
-    if((DB.txns||[]).some(function(t){return !t.demo;}))return true;
-    return DB.accounts.length>1;
-  }catch(e){return true;}
-};
-X63.obSkip=function(){
-  var v=X63.viewer();
-  DB.meta.expLevel=DB.meta.expLevel||{};
-  var isNew=!DB.meta.expOnboarded&&!B20.existingHH();
-  if(isNew){DB.meta.expLevel[v]='simple';}
-  else if(!DB.meta.expLevel[v])DB.meta.expLevel[v]='full'; /* existing household keeps Full until it answers */
-  DB.meta.expOnboarded=true;DB.meta.expSelectionSource='skipped'; /* the skip is not a literacy judgement */
-  X63.save();X63.obClose();
-  if(isNew){
-    V63.itab='cash';try{sessionStorage.setItem('v63itab',V63.itab);}catch(e){DIAG.note(e,"40-v160-b20-advanced-couple:854");}
-    X63.apply();
-    toast('Simple experience set \u2014 you can change it any time in Settings \u2192 App Preference');
-  }else{
-    toast('No problem \u2014 Experience Level is in Settings \u2192 App Preference');
-  }
-};
+/* beta 61: a person who skips the questions starts in Simple — see X63.obSkip (beta 28.1 private preferences) */
 /* the settings switch records its source code (WP-16 reason codes) */
 var _eg20=X63.expGo;
 X63.expGo=function(){
@@ -16772,7 +16622,7 @@ try{
   var ol20=document.querySelector('#relNotes ol,#relList ol,main ol');
   if(ol20)ol20.insertAdjacentHTML('beforeend','<li><b>Advanced Couple v2.1 + Add &amp; Edit v1.1 (v1.60 beta 21):</b> your private space now truly stays on this phone \u2014 nothing is uploaded, and the app offers to delete any old cloud copy. The Couple tab shows shared information only, so both partners see identical figures. Every account can be Closed, Reopened and Archived (archived ones hide from lists and pickers until you tap Show archived), and delete is only for empty accounts \u2014 nothing ever moves transactions silently. All 11 account categories work, what you owe is entered as a positive number, the owner always defaults to you, and renaming an account now follows it into recurring items, linked financing and goals. The household creator can remove a partner (they keep the copy already on their phone), you can preview exactly what your partner sees, and a new user who skips the experience questions starts in Simple.</li>');
 }catch(e){DIAG.note(e,"40-v160-b20-advanced-couple:935");}
-B20.migrate();
+B20.normalizeAccounts();
 try{if(adv20()&&DB.accounts.some(function(a){return a.vis==='me';})){DB.meta.v59=DB.meta.v59||{};DB.meta.v59.privTouch=DB.meta.v59.privTouch||Date.now();}}catch(e){DIAG.note(e,"40-v160-b20-advanced-couple:937");}
 save();
 }
@@ -17531,6 +17381,7 @@ function wait(ms){return new Promise(function(r){__ST57(r,ms);});}
 var _setup=pinSetup,_verify=pinVerify;
 /* rw: the recovery copies to store with this PIN. Left out, they are kept when the DEK is unchanged. */
 pinSetup=function(pin,dek,rw){
+  if(!/^\d{6}$/.test(String(pin||'')))return Promise.reject(new Error('A PIN must be 6 digits')); /* beta 60 */
   if(!c57ok())return _setup(pin);
   var old=lockCfg(),cur=V57.dekRaw,vs=rnd57(16),ks=rnd57(16);
   dek=dek||cur||rnd57(32);
@@ -17551,7 +17402,6 @@ pinVerify=function(pin,mode){
   var c=lockCfg();
   if(!c.dk){
     return _verify(pin,mode).then(function(ok){
-      if(ok&&c57ok()&&c.v===2)__ST57(function waitBoot(){if(!V57.booted){__ST57(waitBoot,400);return;}pinSetup(pin).catch(function(){});},0);
       if(ok)promptLater(mode);
       return ok;
     });
@@ -18104,7 +17954,7 @@ lockKey=function(k){
   _lk(k);
 };
 if($('lockScr')&&!$('lockScr').hidden)decorate();
-/* a PIN without PIN reset (set up before beta 28): ask once per app session after unlocking */
+/* a PIN without PIN reset (the person chose Later): offer it once per app session after unlocking */
 function promptLater(mode){
   if(mode!=='boot'&&mode!=='unlock')return;
   __ST57(function chk(){
@@ -18178,9 +18028,10 @@ SCREEN.after('B3.renderProfileSub',280002000,{call:'apply',ret:false},function()
   var box=$('b28Acct');if(!box){box=document.createElement('div');box.id='b28Acct';box.className='card';card.parentNode.insertBefore(box,card.nextSibling);}
   var k=kind(),em=acctEmail();
   box.innerHTML='<h2>'+ico('key')+' Sign-in</h2>'
-    +'<div class="fline"><span>'+esc(em||'\u2014')+'<small style="display:block;color:var(--muted)">'+(k==='google'?'Signs in with Google':k==='pw'?(isCloud()?'Email & password \u00b7 cloud account':'Email & password \u00b7 this phone only'):'')+'</small></span>'
+    +'<div class="fline"><span>'+esc(em||'\u2014')+'<small style="display:block;color:var(--muted)">'+(k==='google'?'Signs in with Google':k==='pw'?(isCloud()?'Email & password \u00b7 cloud account':'Email & password \u00b7 this phone only'):'Profile on this phone only')+'</small></span>'
     +(k==='pw'?'<button class="ibtn" data-act="prpwchg" style="color:var(--accent);font-weight:800">Change password</button>':'')+'</div>'
-    +'<div class="help small" style="margin-top:6px">Your sign-in and PIN are separate. '+(k==='google'?'Manage your password in your Google account.':'Changing your password does not change your PIN.')+'</div>';
+    +'<div class="help small" style="margin-top:6px">Your sign-in and PIN are separate. '+(k==='google'?'Manage your password in your Google account.':'Changing your password does not change your PIN.')+'</div>'
+    +'<button class="btn ghost" data-act="aulogout" style="margin-top:10px;width:100%">'+ico('logout')+' Log out</button>';
 });
 SCREEN.on('B3.renderProfileSub',280002000);
 })();
@@ -18663,19 +18514,26 @@ SCREEN.afterDraw(function(){try{drillEdit();}catch(e){}});
   function people61(){try{return (typeof realPeople==='function'?realPeople():DB.people)||[];}catch(e){return DB.people||[];}}
   function couple61(){try{return typeof isCouple==='function'&&isCouple();}catch(e){return false;}}
   function adv61(){try{return typeof ADV==='function'?ADV():false;}catch(e){return false;}}
+  /* beta 59: badges match the Accounts tab — you = blue, partner = violet, joint = both initials;
+     a transaction without its own person shows its account's owner (owner follows account since beta 42) */
+  function me59(){try{return meName()||'';}catch(e){return '';}}
+  function ini59(p,title){p=String(p||'').trim();return '<i class="txr-who'+(p&&p!==me59()?' b':'')+'"'+(title?' title="'+esc(title)+'"':'')+'>'+esc(p.charAt(0).toUpperCase())+'</i>';}
+  function badge59(p,title){
+    p=String(p||'');if(!p)return '';
+    if(p.indexOf(' & ')>=0){var q=p.split(' & ');var a=q[0],b=q[1];if(b===me59()){var x=a;a=b;b=x;}
+      return '<i class="txr-who j"'+(title?' title="'+esc(title)+'"':'')+'><b>'+esc(a.charAt(0).toUpperCase())+'</b><b class="b">'+esc(b.charAt(0).toUpperCase())+'</b></i>';}
+    return ini59(p,title);
+  }
   function whoBadge(t){
     if(!couple61()||!t||t.type==='Transfer')return '';
     if(hasSplit(t))return payerBadge52(ownerOf(t.account)||t.person||'');
-    var p=t.person||'';if(!p)return '';
-    var i=people61().indexOf(p);
-    return '<i class="txr-who'+(i===1?' b':'')+'">'+esc(p.charAt(0).toUpperCase())+'</i>';
+    return badge59(t.person||ownerOf(t.account)||'');
   }
-  /* beta 52: a split bill shows who paid it (the paying account's owner); joint accounts keep the two-people icon */
+  /* beta 52: a split bill shows who paid it (the paying account's owner) */
   function payerBadge52(p){
     p=String(p||'');
-    if(!p||p.indexOf(' & ')>=0)return '<i class="txr-who sp">'+ico('users')+'</i>';
-    var i=people61().indexOf(p);
-    return '<i class="txr-who'+(i===1?' b':'')+'" title="Paid by '+esc(p)+'">'+esc(p.charAt(0).toUpperCase())+'</i>';
+    if(!p)return '<i class="txr-who sp">'+ico('users')+'</i>';
+    return badge59(p,'Paid by '+p);
   }
   function payerOfLegs52(legs){for(var i=0;i<legs.length;i++){var l=legs[i];if(!(l.to&&typeof isRecvAcc==='function'&&isRecvAcc(l.to)))return ownerOf(l.account)||l.person||'';}return ownerOf(legs[0].account)||legs[0].person||'';}
   function txById(id){return DB.txns.find(function(x){return x.id===id;});}
@@ -18946,7 +18804,7 @@ SCREEN.afterDraw(function(){try{drillEdit();}catch(e){}});
       var oc=$('fOwnChip61'),ot=ownText('fOwner');
       oc.hidden=!(cp&&ot);if(!oc.hidden)oc.innerHTML=ico('user')+'<span>'+esc(ot)+'</span>';
       $('fOwnerRow').hidden=true;
-      var otc=$('fOwnToChip61'),ott=ownText('fOwnerTo');otc.hidden=!(cp&&trf&&ott);if(!otc.hidden)otc.innerHTML=ico('user')+'<span>'+esc(ott)+'</span>';
+      var otc=$('fOwnToChip61'),ott=ownText('fOwnerTo')||(function(n){var a=(DB.accounts||[]).filter(function(x){return x.name===n;})[0];return a&&a.owner?String(a.owner):'';})(($('fTo')||{}).value);otc.hidden=!(cp&&trf&&ott); /* beta 59: To shows its owner too */if(!otc.hidden)otc.innerHTML=ico('user')+'<span>'+esc(ott)+'</span>';
       $('fSwap61').hidden=!trf;
       /* date chips */
       var d=$('fDate').value||todayStr(),dk=d===isoOff(0)?'0':(d===isoOff(-1)?'-1':'pick');
@@ -19213,20 +19071,6 @@ var _stbH29=swipeTabBlocked;swipeTabBlocked=function(){return HDR.isOpen()||_stb
 /* CMM_TEST_API_START */
 function cmm291Clone(v){return JSON.parse(JSON.stringify(v));}
 function cmm291Hash(s){s=String(s||'');var a=2166136261;for(var i=0;i<s.length;i++){a^=s.charCodeAt(i);a=Math.imul(a,16777619);}return (a>>>0).toString(36);}
-function cmm291IsSeedAccount(a){
-  if(!a||['Cash','Bank'].indexOf(a.name)<0)return false;
-  var allowed={name:1,start:1,owner:1,type:1,cycle:1,id:1};
-  if(+a.start!==0||a.owner||((a.name==='Cash'?'Cash':'Bank')!==a.type))return false;
-  return Object.keys(a).every(function(k){return allowed[k];});
-}
-function cmm291IsExisting(db,hadStored){
-  db=db||{};var m=db.meta||{},tx=db.txns||[],acc=db.accounts||[],people=db.people||[];
-  if(tx.some(function(t){return t&&!t.demo;}))return true;
-  if(acc.some(function(a){return !cmm291IsSeedAccount(a)&&!a.recv;}))return true;
-  if(people.some(function(p){return p&&p!=='Me';}))return true;
-  if(m.hh||m.installInitialized||m.profile&&m.profile.name||m.cloudSyncOn)return true;
-  return !!(hadStored&&m.expOnboarded&&m.expSelectionSource&&m.expSelectionSource!=='skipped');
-}
 function cmm291NormalizeHPText(s){
   var C='Car financing / Hire Purchase',P='Loan / Car financing (Hire Purchase)',a='\u0001CMMHP\u0001',b='\u0001CMMLOANHP\u0001';
   return String(s==null?'':s)
@@ -19253,17 +19097,6 @@ function cmm291ReminderAllowed(account,uid){
   if(who==='owner')return (account.ownerUids||[]).indexOf(uid)>=0;
   if(who.indexOf('uid:')===0)return who.slice(4)===uid;
   return false;
-}
-function cmm291StripExperienceMeta(db){
-  if(!db||!db.meta)return db;
-  /* v1.60 beta 41: 'expOnboarded' stays in DB.meta — it is the device-wide "the
-     experience questions were answered or skipped" marker that the beta-18
-     sign-in/boot timers still watch. Stripping it on every save made the flag
-     impossible to persist, so the questions re-appeared at every sign-in.
-     The private experience data (level, source, recommendations) is still
-     stripped here and lives in the per-user preference store. */
-  ['expLevel','expSelectedAt','expSelectionSource','expTourFull','simpleWealthVisibility','onboardingRecommendation','onboardingRecommendationReasons'].forEach(function(k){delete db.meta[k];});
-  return db;
 }
 /* CMM_TEST_API_END */
 
@@ -19538,11 +19371,19 @@ SCREEN.after('openReport',990028021,{call:'apply',ret:false},function(k){
 
 /* ---------- private user-profile preferences, analytics and guided onboarding ---------- */
 function prefKey28(){return 'cmm_user_profile_pref:'+uid28();}
-function prefGet28(){var p={};try{p=JSON.parse(localStorage.getItem(prefKey28())||'{}')||{};}catch(e){}p.schemaVersion=SCHEMA_VERSION;return p;}
-function prefSet28(p){p.schemaVersion=SCHEMA_VERSION;p.userId=uid28();p.updatedAt=Date.now();try{localStorage.setItem(prefKey28(),JSON.stringify(p));}catch(e){}return p;}
-function existing28(){return safe28(function(){return !!((DB.txns||[]).some(function(t){return !t.demo;})||(DB.accounts||[]).length>1||(DB.meta&&DB.meta.expOnboarded));},true);}
+/* beta 57: one answer for "which experience am I in". The key used to follow the signed-in id, so while the cloud
+   sign-in was still restoring (or on a phone without it) the app could read a second, older copy and flip between
+   Simple and Full — and between 2 and 3 Insights tabs. Every copy on this phone is now read and the newest one wins;
+   writes go to the current copy and a device copy, so a sign-in change can't bring back an older choice. */
+var PREFDEV57='cmm_user_profile_pref:device';
+function prefKeys57(){var o=[PREFDEV57,prefKey28()];try{for(var i=0;i<localStorage.length;i++){var k=localStorage.key(i);if(k&&k.indexOf('cmm_user_profile_pref:')===0&&o.indexOf(k)<0)o.push(k);}}catch(e){}return o;}
+function prefGet28(){
+  var best=null,bt=-1;
+  prefKeys57().forEach(function(k){try{var v=JSON.parse(localStorage.getItem(k)||'null');if(v&&typeof v==='object'){var t=+v.updatedAt||0;if(t>bt){bt=t;best=v;}}}catch(e){}});
+  var p=best||{};p.schemaVersion=SCHEMA_VERSION;return p;
+}
+function prefSet28(p){p.schemaVersion=SCHEMA_VERSION;p.userId=uid28();p.updatedAt=Date.now();var j=JSON.stringify(p);[PREFDEV57,prefKey28()].forEach(function(k){try{localStorage.setItem(k,j);}catch(e){}});return p;}
 B28.pref={get:prefGet28,set:prefSet28,key:prefKey28};
-var _levelOf28=X63.levelOf;X63.levelOf=function(p){var me=X63.viewer();if(!p||p===me){var v=prefGet28().experienceLevel;if(v==='simple'||v==='full')return v;return existing28()?'full':'simple';}return _levelOf28(p);};
 X63.wealthVis=function(){return prefGet28().simpleWealthVisibility||'hidden';};
 function reasonCodes28(ob,rec){var a=[];Object.keys(ob&&ob.q1||{}).forEach(function(k){if(ob.q1[k])a.push('need_'+k);});if(ob&&ob.q2)a.push('detail_'+ob.q2);if(ob&&ob.q3)a.push('overall_values_'+ob.q3);if(rec&&rec.note)a.push('mixed_default_simple');return a;}
 function trackExperience28(name,props){
@@ -19559,7 +19400,6 @@ function firstAccount28(){
 }
 function fullWelcome28(){var p=prefGet28();p.experienceTourComplete=p.experienceTourComplete||{};p.experienceTourComplete.full=true;prefSet28(p);trackExperience28('experience_tour_completed',{level:'full'});X63.ovOpen('<div class="xovh"><b>Welcome to Full Experience</b><button class="xovx" data-act="x63ovx">×</button></div><div class="b28-welcome"><div><b>1 · Wealth</b><small>Start with Net Worth and Asset mix.</small></div><div><b>2 · Cash Flow</b><small>See income, spending and Change in Cash.</small></div><div><b>3 · Reports</b><small>Open any card for the full catalogue and drill-downs.</small></div></div><button class="btn" data-act="b28tourgo">Show me Wealth</button>');}
 var _obFinish28=X63.obFinish;X63.obFinish=function(){var ob=X63.ob&&clone28(X63.ob),rec=X63.obRec();var r=_obFinish28.apply(this,arguments),p=prefGet28(),choice=ob&&ob.choice||rec.l;p.experienceLevel=choice;p.experienceSelectedAt=Date.now();p.experienceSelectionSource='onboarding';p.onboardingRecommendation=rec.l;p.onboardingRecommendationReasons=reasonCodes28(ob,rec);p.experienceTourComplete=p.experienceTourComplete||{};prefSet28(p);trackExperience28('experience_selected',{level:choice,source:'onboarding',reasons:p.onboardingRecommendationReasons.join('|')});setTimeout(function(){if(choice==='full')fullWelcome28();else firstAccount28();},320);return r;};
-var _obSkip28=X63.obSkip;X63.obSkip=function(){var isNew=!existing28(),r=_obSkip28.apply(this,arguments),p=prefGet28();p.experienceLevel=isNew?'simple':(p.experienceLevel||'full');p.experienceSelectedAt=Date.now();p.experienceSelectionSource='skipped';p.onboardingRecommendationReasons=['skip_'+(isNew?'new_user_simple':'existing_keep_full')];prefSet28(p);trackExperience28('experience_selected',{level:p.experienceLevel,source:'skipped',reasons:p.onboardingRecommendationReasons[0]});setTimeout(firstAccount28,320);return r;};
 ACT.on('b28-review-experience',{b28firstacc:function(){X63.ovClose();try{if(window.M27&&M27.pending){}openMgr('accs');setTimeout(function(){var p=$28('m27plus');if(p)p.click();},80);}catch(e){gotoView('accounts');}},b28tourgo:function(){X63.ovClose();V63.itab='wealth';renderOverview();gotoView('overview');}});
 
 /* ---------- privacy regression catalogue used by QA and the specifications ---------- */
@@ -19578,42 +19418,37 @@ window.CMM_PRIVACY_TEST_SCENARIOS=[
   'Mode switch warns when offline or Shared changes are unsynced.'
 ];
 
-/* ---------- beta 28 migration/version pin ---------- */
-function migrate28(){
+/* ---------- beta 28 version pin ---------- */
+function boot28stamp(){
   if(!DB||!DB.meta)return;DB.meta.schemaVersion=Math.max(+DB.meta.schemaVersion||0,SCHEMA_VERSION); /* never step back below the beta 28.1 schema (this and finish291 run on independent timers) */
-  var p=prefGet28();if(!p.experienceLevel&&DB.meta.expLevel){var v=DB.meta.expLevel[X63.viewer()];if(v==='simple'||v==='full')p.experienceLevel=v;}if(!p.simpleWealthVisibility&&DB.meta.simpleWealthVisibility)p.simpleWealthVisibility=DB.meta.simpleWealthVisibility;if(Object.keys(p).length)prefSet28(p);
   safe28(updatePrivateManifest28);
 }
 function pinVersion28(o){try{Object.defineProperty(o,'ver',{get:function(){return VERSION;},set:function(){},configurable:true});}catch(e){try{o.ver=VERSION;}catch(x){}}}
 pinVersion28(V59);safe28(function(){pinVersion28(V63);});safe28(function(){if(window.B20)pinVersion28(B20);});
 document.title='v'+VERSION+' · Couple Money Manager';
 var about=$28('aboutSubB3');if(about)about.textContent=VERSION;document.querySelectorAll('.sub').forEach(function(el){if(/v?1\.\d+ beta \d+/i.test(el.textContent))el.textContent=el.textContent.replace(/v?1\.\d+ beta \d+/i,'v'+VERSION);});
-function boot28(){if(!window.DB){setTimeout(boot28,50);return;}migrate28();safe28(function(){renderAll();});safe28(function(){if(B3.cur==='data')B3.renderDataSub();});}
+function boot28(){if(!window.DB){setTimeout(boot28,50);return;}boot28stamp();safe28(function(){renderAll();});safe28(function(){if(B3.cur==='data')B3.renderDataSub();});}
 boot28();
 
 /* ================= v1.60 beta 28.1 · verified correction layer =================
    Runs inside the beta 28 module scope on purpose: it replaces beta 28 functions (existing28, fullWelcome28,
    simpleCoupleHTML28, privateManifest28 …) and calls its helpers (safe28, prefGet28 …), none of which are global. */
 var VERSION291='1.60 beta 32',SCHEMA291=SCHEMA_VERSION;
-var N291={unsubA:null,unsubT:null,unsubS:null,remoteA:{},remoteT:{},state:null,readyA:false,readyT:false,readyS:false,applying:false,migrating:false,pushing:false,again:false};
+var N291={unsubA:null,unsubT:null,unsubS:null,remoteA:{},remoteT:{},state:null,readyA:false,readyT:false,readyS:false,applying:false,pushing:false,again:false};
 function members291(){return (HH.info&&HH.info.members||[]).slice();}
 function profiles291(){return (HH.info&&HH.info.memberProfiles)||{};}
 function stableUid291(){return safe28(function(){return FB.user.uid;},uid28());}
-function hadStored291(){try{return !!((typeof V57!=='undefined'&&V57.pre!=null)?V57.pre:localStorage.getItem(LS_KEY));}catch(e){return false;}}
-function prefMigrated291(){
-  var p=prefGet28(),v='';
-  try{v=DB.meta.expLevel&&DB.meta.expLevel[X63.viewer()];}catch(e){}
-  if(!p.experienceLevel){if(v==='simple'||v==='full')p.experienceLevel=v;else p.experienceLevel=cmm291IsExisting(DB,hadStored291())?'full':'simple';p.experienceSelectionSource=v?'legacy-private-migration':'default';p.experienceSelectedAt=Date.now();}
-  if(!p.simpleWealthVisibility&&DB.meta.simpleWealthVisibility)p.simpleWealthVisibility=DB.meta.simpleWealthVisibility;
-  p.schemaVersion=SCHEMA291;prefSet28(p);cmm291StripExperienceMeta(DB);return p;
+/* first run: a person who has not chosen yet starts in Simple (OD-04). Beta 61: no copying of older settings */
+function prefDefaults291(){
+  var p=prefGet28();
+  if(!p.experienceLevel){p.experienceLevel='simple';p.experienceSelectionSource='default';p.experienceSelectedAt=Date.now();p.schemaVersion=SCHEMA291;prefSet28(p);}
+  return p;
 }
-var _loadDB291=loadDB;loadDB=function(){var r=_loadDB291.apply(this,arguments);prefMigrated291();ensureIds291();return r;};
-var _save291=save;save=function(){cmm291StripExperienceMeta(DB);return _save291.apply(this,arguments);};
-existing28=function(){return cmm291IsExisting(DB,hadStored291());};
+var _loadDB291=loadDB;loadDB=function(){var r=_loadDB291.apply(this,arguments);prefDefaults291();ensureIds291();return r;};
 X63.levelOf=function(p){if(!p||p===X63.viewer()){var v=prefGet28().experienceLevel;return v==='full'?'full':'simple';}return 'simple';};
 X63.wealthVis=function(){var v=prefGet28().simpleWealthVisibility;return ['hidden','summary','full-tab'].indexOf(v)>=0?v:'hidden';};
 
-/* Experience and Wealth controls are private-only. No legacy handler is called. */
+/* Experience and Wealth controls are private-only. */
 X63.expGo=function(){
   var s=X63.sel;if(!s)return;var from=X63.level(),to=s.pick==null?from:s.pick;if(to===from){X63.ovClose();return;}
   var p=prefGet28();p.experienceLevel=to;p.experienceSelectedAt=Date.now();p.experienceSelectionSource='settings';p.experienceTourComplete=p.experienceTourComplete||{};prefSet28(p);
@@ -19625,17 +19460,16 @@ X63.obFinish=function(){
   var s=X63.ob;if(!s)return;var rec=s.rec||X63.obRec(),choice=s.choice||rec.l,p=prefGet28();p.experienceLevel=choice;p.experienceSelectedAt=Date.now();p.experienceSelectionSource='onboarding';p.onboardingComplete=true;p.onboardingRecommendation=rec.l;p.onboardingRecommendationReasons=reasonCodes28(s,rec);p.experienceTourComplete=p.experienceTourComplete||{};prefSet28(p);
   trackExperience28('experience_selected',{level:choice,source:'onboarding',reasons:p.onboardingRecommendationReasons.join('|')});V63.itab=choice==='simple'?'cash':'wealth';try{sessionStorage.setItem('v63itab',V63.itab);}catch(e){}X63.obClose();X63.apply();gotoView('overview');toast(choice==='simple'?'Simple experience set — Money comes first':'Full experience set — Wealth comes first');setTimeout(function(){if(choice==='full')fullWelcome291();else firstAccount28();},320);
 };
-X63.obSkip=function(){var isNew=!existing28(),p=prefGet28();p.experienceLevel=isNew?'simple':(p.experienceLevel||'full');p.experienceSelectedAt=Date.now();p.experienceSelectionSource='skipped';p.onboardingComplete=true;p.onboardingRecommendationReasons=['skip_'+(isNew?'new_user_simple':'existing_keep_full')];prefSet28(p);trackExperience28('experience_selected',{level:p.experienceLevel,source:'skipped',reasons:p.onboardingRecommendationReasons[0]});X63.obClose();V63.itab=p.experienceLevel==='simple'?'cash':'wealth';X63.apply();toast(isNew?'Simple experience set — you can switch any time':'Experience kept — change it any time in Settings');setTimeout(firstAccount28,320);};
+X63.obSkip=function(){var p=prefGet28();p.experienceLevel='simple';p.experienceSelectedAt=Date.now();p.experienceSelectionSource='skipped';p.onboardingComplete=true;p.onboardingRecommendationReasons=['skip_simple'];prefSet28(p);trackExperience28('experience_selected',{level:p.experienceLevel,source:'skipped',reasons:p.onboardingRecommendationReasons[0]});X63.obClose();V63.itab=p.experienceLevel==='simple'?'cash':'wealth';X63.apply();toast(isNew?'Simple experience set — you can switch any time':'Experience kept — change it any time in Settings');setTimeout(firstAccount28,320);};
 function fullWelcome291(){X63.ovOpen('<div class="xovh"><b>Welcome to Full Experience</b><button class="xovx" data-act="x63ovx">×</button></div><div class="b28-welcome"><div><b>1 · Wealth</b><small>Start with Net Worth and Asset mix.</small></div><div><b>2 · Cash Flow</b><small>See income, spending and Change in Cash.</small></div><div><b>3 · Reports</b><small>Open any card for the full catalogue and drill-downs.</small></div></div><button class="btn" data-act="b291tourdone">Show me Wealth</button>');}
 fullWelcome28=fullWelcome291;
 ACT.on('beta-28.1-private-preferences',{x63wvset:function(el){X63.wvPick(el.dataset.v);},b28tourgo:function(){X63.ovClose();V63.itab='wealth';renderOverview();gotoView('overview');},b291tourdone:function(){var p=prefGet28();p.experienceTourComplete=p.experienceTourComplete||{};p.experienceTourComplete.full=true;prefSet28(p);trackExperience28('experience_tour_completed',{level:'full'});X63.ovClose();V63.itab='wealth';renderOverview();gotoView('overview');}});
-V63.afterBoot=function(){var p=prefMigrated291();if(p.experienceLevel==='simple'&&X63.wealthVis()!=='full-tab'&&V63.itab==='wealth')V63.itab='cash';setTimeout(function(){var a=$('authScr');if(!p.onboardingComplete&&(!a||a.hidden))X63.obOpen();},1000);};
+V63.afterBoot=function(){var p=prefDefaults291();if(p.experienceLevel==='simple'&&X63.wealthVis()!=='full-tab'&&V63.itab==='wealth')V63.itab='cash';setTimeout(function(){var a=$('authScr');if(!p.onboardingComplete&&(!a||a.hidden))X63.obOpen();},1000);};
 if(typeof _afB==='function')authFinish=function(){_afB.apply(this,arguments);setTimeout(function(){if(!prefGet28().onboardingComplete)X63.obOpen();},1000);};
 
-/* Idempotent terminology and recorded-value migration. */
+/* Simple wording for hire purchase on screen. */
 function normalizeVisibleText291(){if(!(X63&&X63.isSimple&&X63.isSimple()))return;var root=document.querySelector('main,#mgrSheet,#sheet,#x63ov');if(!root)return;var w=document.createTreeWalker(root,NodeFilter.SHOW_TEXT,null),n;while((n=w.nextNode()))n.nodeValue=cmm291NormalizeHPText(n.nodeValue);}
 SCREEN.afterDraw(normalizeVisibleText291);
-function migrateVals291(){(DB.accounts||[]).forEach(function(a){if(Array.isArray(a.valHist)){a.vals=(a.vals||[]).concat(a.valHist);delete a.valHist;}});}
 
 /* Exact seven-card Simple Couple contract, including empty Shared Spending and Shared Goals. */
 simpleCoupleHTML28=function(){return withShared28(function(){
@@ -19653,7 +19487,7 @@ simpleCoupleHTML28=function(){return withShared28(function(){
 V63.coupleHTML=function(){return X63.isSimple()?simpleCoupleHTML28():withShared28(function(){return SCREEN.upTo('V63.coupleHTML',990028000)();});};
 
 /* Stable IDs and normalized Firestore documents. */
-function ensureIds291(){var used={};(DB.accounts||[]).forEach(function(a,i){var id=String(a.id||'');if(!id||used[id])id='a_'+cmm291Hash((a.name||'')+'|'+(a.owner||'')+'|'+i);while(used[id])id+='x';a.id=id;used[id]=1;});migrateVals291();}
+function ensureIds291(){var used={};(DB.accounts||[]).forEach(function(a,i){var id=String(a.id||'');if(!id||used[id])id='a_'+cmm291Hash((a.name||'')+'|'+(a.owner||'')+'|'+i);while(used[id])id+='x';a.id=id;used[id]=1;});}
 function profileUidByName291(name){var ps=profiles291(),uids=members291(),hit='';uids.forEach(function(u){var p=ps[u]||{};if(String(p.displayName||'').trim()===String(name||'').trim())hit=u;});return hit;}
 function accountSecurity291(a){
   var uid=stableUid291(),members=members291();if(members.indexOf(uid)<0)members.push(uid);var ownerUids=(a.ownerUids||[]).filter(function(u){return members.indexOf(u)>=0;}),own=String(a.owner||''),me=safe28(function(){return meName();},'');
@@ -19678,8 +19512,7 @@ function attachNormalized291(F,id){
   var aq=F.query(F.collection(FB.db,'households',id,'accounts'),F.where('memberUids','array-contains',uid));N291.unsubA=F.onSnapshot(aq,function(q){var x={};q.docs.forEach(function(d){x[d.id]=d.data();});N291.remoteA=x;N291.readyA=true;applyNormalized291();},function(e){console.warn('accounts-sync',e);});
   var tq=F.query(F.collection(FB.db,'households',id,'transactions'),F.where('viewerUids','array-contains',uid));N291.unsubT=F.onSnapshot(tq,function(q){var x={};q.docs.forEach(function(d){x[d.id]=d.data();});N291.remoteT=x;N291.readyT=true;applyNormalized291();},function(e){console.warn('transactions-sync',e);});
 }
-function requestMigration291(){if(N291.migrating||!HH.id||!HH.info||HH.info.owner!==stableUid291())return;N291.migrating=true;backend291('migrateHouseholdStorage',{householdId:HH.id,displayName:safe28(function(){return meName();},'')}).then(function(){toast('Household security storage upgraded');}).catch(function(e){toast('Cloud migration needs the bundled trusted server functions to be deployed.');console.warn(e);}).then(function(){N291.migrating=false;});}
-hhAttach=function(id){return fsMods().then(function(F){hhDetach();HH.id=id;DB.meta.hh=id;save();HH.unsub=F.onSnapshot(hhRef(F,id),function(s){if(!s.exists()){hhGone('The shared household was deleted. Your data is still on this phone.');return;}var d=s.data();HH.info={owner:d.owner,ownerEmail:d.ownerEmail||'',members:d.members||[],memberEmails:d.memberEmails||{},memberProfiles:d.memberProfiles||{},invites:d.invites||[],storageVersion:+d.storageVersion||0};renderCloudAccSafe();if((+d.storageVersion||0)<3)requestMigration291();},function(e){hhGone(fsErr(e));});attachNormalized291(F,id);backend291('registerMemberProfile',{householdId:id,displayName:safe28(function(){return meName();},'')}).catch(function(){});return true;});};
+hhAttach=function(id){return fsMods().then(function(F){hhDetach();HH.id=id;DB.meta.hh=id;save();HH.unsub=F.onSnapshot(hhRef(F,id),function(s){if(!s.exists()){hhGone('The shared household was deleted. Your data is still on this phone.');return;}var d=s.data();HH.info={owner:d.owner,ownerEmail:d.ownerEmail||'',members:d.members||[],memberEmails:d.memberEmails||{},memberProfiles:d.memberProfiles||{},invites:d.invites||[],storageVersion:+d.storageVersion||0};renderCloudAccSafe();},function(e){hhGone(fsErr(e));});attachNormalized291(F,id);backend291('registerMemberProfile',{householdId:id,displayName:safe28(function(){return meName();},'')}).catch(function(){});return true;});};
 function canWriteAccount291(d,exists){var p=d.permissions[stableUid291()]||'none';return exists?(p==='owner'||p==='admin'):p==='owner';}
 function canWriteTxn291(d,exists){var a=N291.remoteA[d.accountId]||{},p=a.permissions&&a.permissions[stableUid291()]||'none';return exists?(d.createdByUid===stableUid291()?p!=='view'&&p!=='none':['full','admin','owner'].indexOf(p)>=0):d.createdByUid===stableUid291()&&['add','full','admin','owner'].indexOf(p)>=0;}
 function commitOps291(F,ops){var p=Promise.resolve();for(var i=0;i<ops.length;i+=380)(function(ch){p=p.then(function(){var b=F.writeBatch(FB.db);ch.forEach(function(o){if(o.del)b.delete(o.ref);else b.set(o.ref,o.data);});return b.commit();});})(ops.slice(i,i+380));return p;}
@@ -19726,7 +19559,7 @@ bkFileGo=function(){var pw=(($('bkPw')||{}).value||''),pw2=(($('bkPw2')||{}).val
 /* Partner preview: authoritative shared view, genuine latest activity. */
 if(window.B20)B20.pvData=function(){var me=safe28(function(){return meName();},''),P=safe28(function(){return partnerName();},'your partner'),v=buildSharedView(DB,{purpose:'preview'}),m=v.__sharedView||{},accSet={};(v.accounts||[]).forEach(function(a){if(a&&!a.locked&&!a.recv&&!/^.+ owes .+$/.test(a.name||''))accSet[a.name]=1;});var asc=cmm291Latest(v.txns||[],200).reverse();return {me:me,P:P,accs:(v.accounts||[]).filter(function(a){return accSet[a.name];}),txns:asc,relabel:function(n){return (m.labels||{})[n]||n;},anyPn:m.privateNames||{},accSet:accSet};};
 
-function finish291(){if(!DB)return setTimeout(finish291,30);prefMigrated291();ensureIds291();migrateVals291();cmm291StripExperienceMeta(DB);DB.meta.schemaVersion=SCHEMA291;if(window.experienceConfig){experienceConfig.version=VERSION291;experienceConfig.schemaVersion=SCHEMA291;}if(window.advancedCoupleConfig){advancedCoupleConfig.version=VERSION291;advancedCoupleConfig.schemaVersion=SCHEMA291;}save();document.title='v'+VERSION291+' · Couple Money Manager';var mv=document.querySelector('meta[name="app-version"]');if(mv)mv.content='1.60-beta.31';document.querySelectorAll('.sub').forEach(function(el){el.textContent=el.textContent.replace(/v?1\.60 beta 28(\.\d+)?/g,'v'+VERSION291);});if(X63.isSimple()&&V63.itab==='wealth')V63.itab='cash';renderAll();}
+function finish291(){if(!DB)return setTimeout(finish291,30);prefDefaults291();ensureIds291();DB.meta.schemaVersion=SCHEMA291;if(window.experienceConfig){experienceConfig.version=VERSION291;experienceConfig.schemaVersion=SCHEMA291;}if(window.advancedCoupleConfig){advancedCoupleConfig.version=VERSION291;advancedCoupleConfig.schemaVersion=SCHEMA291;}save();document.title='v'+VERSION291+' · Couple Money Manager';var mv=document.querySelector('meta[name="app-version"]');if(mv)mv.content='1.60-beta.31';document.querySelectorAll('.sub').forEach(function(el){el.textContent=el.textContent.replace(/v?1\.60 beta 28(\.\d+)?/g,'v'+VERSION291);});if(X63.isSimple()&&V63.itab==='wealth')V63.itab='cash';renderAll();}
 setTimeout(finish291,0);
 window.CMM_VERSION=VERSION291;window.CMM_SCHEMA_VERSION=SCHEMA291;
 })();
@@ -20728,9 +20561,11 @@ SCREEN.after('B3.renderProfileSub',261000000,{call:'apply',ret:false},function()
       if(stored&&document.activeElement!==pt)pt.value=stored; /* nothing stored → keep the pipeline's best guess on show */
       note.className='profpart-note ok';
       note.innerHTML=c.local
-        ?ico('users')+'<span><b>'+esc(stored||'Your collaborator')+'</b> is your collaborator space. Rename above — Save follows the new name through every transaction, split and role.</span>'
-        :ico('users')+'<span><b>'+esc(stored||c.nick||'Your collaborator')+'</b> accepted the invitation'+(c.email?' · '+esc(c.email):'')+'. You can rename the collaborator above — Save follows the new name through every transaction, split and role.</span>';
+        ?''
+        :ico('users')+'<span><b>'+esc(stored||c.nick||'Your collaborator')+'</b> accepted your invitation'+(c.email?' · '+esc(c.email):'')+'.</span>';
+      note.hidden=!!c.local;
     }else{
+      note.hidden=false;
       if(document.activeElement!==pt)pt.value=stored; /* clears the old people-based guess when nothing is stored */
       pt.disabled=true;
       pt.placeholder=stored?'Locked — fills in when your collaborator accepts':'Auto-fills when your collaborator accepts';
@@ -22555,9 +22390,8 @@ function n41(e,site){try{DIAG.note(e,site);}catch(_){}}
    sign-in trigger chains, so their 1-second timers always see a settled state. */
 function expReconcile41(){
   var P=B28&&B28.pref;if(!P)return;
-  /* a pref counts as "answered" only when a person actually acted — the 29.1
-     migration auto-writes experienceSelectedAt with source 'default' or
-     'legacy-private-migration' for households that never saw the questions */
+  /* a pref counts as "answered" only when a person actually acted — first-run
+     defaults write experienceSelectedAt with source 'default' */
   function answered(p){return !!(p&&(p.onboardingComplete===true||((p.experienceSelectionSource==='skipped'||p.experienceSelectionSource==='onboarding'||p.experienceSelectionSource==='settings')&&p.experienceSelectedAt)));}
   var p=P.get();
   var done=answered(p);
@@ -23461,7 +23295,6 @@ var _own45=pdhIsOwner59;
 pdhIsOwner59=function(){var p=pdh59();if(p.role)return p.role==='owner';return _own45.apply(this,arguments);};
 function P(){return pdh59();}
 /* folders recorded by the earlier preview were never created in the provider: start them again */
-function migrate(){var p=P();if(p.createdAt&&!p.ref){['createdAt','sharedAt','acceptedAt','verifiedAt','missingAt','code'].forEach(function(k){delete p[k];});p.fromPreview=1;save();}}
 function ready(p){return !!(p.ref&&p.provider&&PX.key&&PX.keyFor===keyStoreName(p.ref));}
 function syncing(){var p=P();return isCouple()&&ready(p)&&storageMode()==='pdh';}
 PX.syncing=syncing;
@@ -23625,7 +23458,7 @@ function createFolder(el){
     for(var i=0;i<SHARDS;i++)init.push(['tx-'+i+'.cmm',{months:{}}]);
     return init.reduce(function(pr,x){return pr.then(function(){return seal(key,x[1]).then(function(tx){return Pv.write(ref,x[0],null,tx);}).then(function(r){rf[x[0]]=r;});});},Promise.resolve());
   }).then(function(){
-    p.role='owner';p.owner=meName()||'';p.ref=ref;p.folder=FOLDER;p.createdAt=now;p.code=code;p.salt=salt;delete p.fromPreview;delete p.missingAt;
+    p.role='owner';p.owner=meName()||'';p.ref=ref;p.folder=FOLDER;p.createdAt=now;p.code=code;p.salt=salt;delete p.missingAt;
     PX.key=key;PX.keyFor=keyStoreName(ref);resetRemote();
     return saveKey(ref,key);
   }).then(function(){
@@ -23672,7 +23505,7 @@ function join(el){
     if(!o||o.ok!=='cmm-household')throw E('key','That code does not match this household');
     var now=Date.now(),c=normCode(code);
     p.role='member';p.ref=pd.ref;p.folder=pd.name;p.owner=pd.hh.owner||p.owner||'';p.ownerEmail=pd.hh.ownerEmail||'';
-    p.createdAt=pd.hh.createdAt||now;p.sharedAt=now;p.acceptedAt=now;p.verifiedAt=now;p.code=c.slice(0,4)+'-'+c.slice(4,8);delete p.missingAt;delete p.fromPreview;
+    p.createdAt=pd.hh.createdAt||now;p.sharedAt=now;p.acceptedAt=now;p.verifiedAt=now;p.code=c.slice(0,4)+'-'+c.slice(4,8);delete p.missingAt;
     PX.key=key;PX.keyFor=keyStoreName(pd.ref);PX.pending=null;PX.found=null;resetRemote();
     return saveKey(pd.ref,key).then(function(){return addMeToMembers(p,now).catch(function(e){if(e.kind==='pick'){PX.joinPending=true;return;}throw e;});});
   }).then(function(){useFolder();save();toast('Joined the household folder ✓ · syncing');return cycle();})
@@ -23747,7 +23580,6 @@ function bodyHTML(){
   var p=P(),pn=pdhProvName59(p),P2=esc(partnerName()||'your partner'),h='';
   var st=stState(),dot=st.cls==='ok'?'var(--inc)':(st.cls==='bad'?'var(--exp)':(st.cls==='warn'?'var(--warn)':'var(--muted)'));
   h+='<div class="ds-status"><span class="dot" style="background:'+dot+'"></span><span><b>'+esc(st.t)+'</b><br><small class="muted" style="font-weight:600">'+st.why+'</small></span></div>';
-  if(p.fromPreview)h+='<div class="help small" style="margin:8px 0">The folder recorded in an earlier test version was never created in your cloud. Set it up again below — it takes a minute.</div>';
   var cfgOK=p.provider&&configured(p.provider);
   /* not connected yet */
   if(!p.ref){
@@ -23811,7 +23643,6 @@ function infoHTML(){
 pdhPanel59=function(){
   var b=$('storeBody');if(!b||!isCouple())return;
   var ae=document.activeElement;if(ae&&b.contains(ae)&&/INPUT|SELECT/.test(ae.tagName))return;
-  migrate();
   var old=b.querySelector('details.pdhdet');if(old)old.remove();
   var st=stState();if(V59B3.open===null)V59B3.open=st.k!=='none';
   b.insertAdjacentHTML('beforeend','<details class="help pdhdet" data-pdh'+(V59B3.open?' open':'')+' ontoggle="V59B3.open=this.open"><summary>'+ico('folderopen')+' Household folder · Google Drive or OneDrive'+pdhPill59()+'</summary><div style="margin-top:10px">'+bodyHTML()+infoHTML()+'</div></details>');
@@ -23822,7 +23653,7 @@ pdhPill59=function(){
   return ' <span class="pvpill" style="'+c+'">'+L[st.k]+'</span>';
 };
 rAuthHHF59=function(){
-  var b=$('auBody'),s=$('auSub');if(!b)return;migrate();
+  var b=$('auBody'),s=$('auSub');if(!b)return;
   if(s)s.textContent='Household folder · optional';
   var em=(sessGet()||{}).email||'';
   b.innerHTML='<div class="austep">'+ico('check')+' Signed in'+(em?' as '+esc(em):'')+'</div>'
@@ -23882,7 +23713,7 @@ ACT.on('b45-open',{'pdhopen':function(){if(!isCouple()){toast('The household fol
 
 /* ---------- 8 · boot ---------- */
 setTimeout(function(){
-  try{migrate();var p=P();
+  try{var p=P();
     var t=ssGet('cmm_pdh_tok:'+(p.provider||''));if(t)PX.tok[p.provider]=t;
     ensureKey().then(function(){if(syncing())soon(1500);});
   }catch(e){n45(e,'b45:boot');}
@@ -25212,7 +25043,7 @@ document.addEventListener('input',function(e){
 
 /* ---------- 8 · one way to add, edit, close or delete (beta 48.1) ----------
    Settings › Accounts and the Accounts manager list stay — they are the maintenance views
-   (flat list, Assets / Liabilities filter, legacy-type sorting). What sits behind them now uses
+   (flat list, Assets / Liabilities filter, unknown-type sorting). What sits behind them now uses
    the same sheets as the Accounts tab: Add → the type chooser, Edit → the new Edit sheet (where
    Close / archive and Delete live), and the Delete button beside Edit is gone. */
 ACT.on('b48-entry-points',{
@@ -25997,13 +25828,22 @@ function cashHero(){
     +(o.tr.length?bars6(o.tr,cur):'')
     +'<div class="whyrow51"><span>Income <b>'+money(S.inc)+'</b></span><span>Spent <b>'+money(S.exp)+'</b></span><span>Cash actually moved <b class="'+(o.ncf<0?'neg':'pos')+'">'+sg(o.ncf)+'</b>'+infoBtn('ncf')+'</span></div></div>';
 }
+/* beta 56: Simple shows everyday money here, not net worth (a Wealth figure Simple keeps hidden) */
+function heroFoot56(N,P,f,eD){
+  var simp=false;try{simp=!!(X63.isSimple&&X63.isSimple());}catch(e){}
+  if(simp){
+    var tot=0,n=0;try{Object.keys(V63.liqSet('couple')).forEach(function(k){var b=accountBalAsOf(k,eD);if(isFinite(b)){tot+=b;n++;}});}catch(e){n51(e,'b56:liq');}
+    return 'Shared Money Available '+money(tot)+(n?' \u00b7 '+n+' account'+(n===1?'':'s'):'');
+  }
+  return 'Household net worth '+money(N.net)+(f!=null&&Math.abs(N.net-P.net)>=0.5?' · '+(f>0?'▲ ':'▼ ')+pc(Math.abs(f))+' '+thisWord():'');
+}
 function coupleHero(){
   var o=RULES.K1(),eD=nwAsAt(curR()),N=nwAt(eD,'couple'),P=nwAt(addDaysISO(curR().s,-1),'couple'),f=P.net?(N.net-P.net)/Math.abs(P.net):null;
   var btn=!o.ls.length?'':(o.one?'<button class="btn full" data-act="settle" data-n="'+esc(o.one.name)+'">'+ic('check')+' Settle up</button>':'<button class="btn full" data-act="v63rep" data-k="settle">'+ic('check')+' Settle up</button>');
   return '<div data-info23="keep" class="card hero51"><h2>'+ic('scale')+' Between Us <span class="sub">as at '+esc(dLabelY(eD))+'</span>'+det26('settle')+'</h2>'
     +'<div style="text-align:center"><div class="dir51">'+esc(o.dir)+'</div>'+(o.ls.length?'<div class="big51 pos" style="margin:2px 0 10px"><b>'+money(o.amt)+'</b></div>':'<div style="font-size:28px;margin:4px 0 8px">🎉</div>')+'</div>'
     +btn+(o.old>30?'<div class="help small" style="text-align:center;margin-top:6px">Open for '+o.old+' days.</div>':'')
-    +'<div class="help" style="text-align:center;margin-top:9px">Household net worth '+money(N.net)+(f!=null&&Math.abs(N.net-P.net)>=0.5?' · '+(f>0?'▲ ':'▼ ')+pc(Math.abs(f))+' '+thisWord():'')+'</div></div>';
+    +'<div class="help" style="text-align:center;margin-top:9px">'+heroFoot56(N,P,f,eD)+'</div></div>';
 }
 
 /* ---------- tabs ---------- */
@@ -26486,3 +26326,81 @@ try{
   }
 }catch(e){}
 })();
+
+;/* ===== v160b56 · Simple Couple tab stays Simple: Between Us shows Shared Money Available, not household net worth ===== */
+(function(){try{if(window.pinVer36)window.pinVer36('1.60 beta 56');}catch(e){}
+try{if(!window.__B56RN){var ol=document.querySelector('#pageSet details.help ol')||document.querySelector('#view-settings details.help ol');if(ol){ol.insertAdjacentHTML('beforeend','<li><b>Simple Couple tab (beta 56):</b> in Simple, the Couple tab no longer shows household net worth (a Full experience figure); it shows the shared money available instead.</li>');window.__B56RN=1;}}}catch(e){}})();
+
+;/* ===== v160b57 · Insights tabs no longer flip between Simple (2 tabs) and Full (3 tabs) — see prefGet28 ===== */
+(function(){try{if(window.pinVer36)window.pinVer36('1.60 beta 57');}catch(e){}
+try{if(!window.__B57RN){var ol=document.querySelector('#pageSet details.help ol')||document.querySelector('#view-settings details.help ol');if(ol){ol.insertAdjacentHTML('beforeend','<li><b>Experience level (beta 57):</b> your Simple / Full choice is read from one place, so the Insights tabs no longer switch between Simple and Full while you move around the app.</li>');window.__B57RN=1;}}}catch(e){}})();
+
+;/* ===== v160b58 · Modes without "Preview as", one sign-in block on Your Profile, report tab bar sticks under the header =====
+   Report pages scroll inside .page, whose top padding already clears the fixed header, so the Insights rule
+   (.stab top: 56/66px) left the Category / vs Budget / Top / Trend bar floating ~70px below the header.
+   Each page now gets --stick58 = header bottom − page top padding , measured on open, scroll and resize. */
+(function(){ 'use strict';
+function n58(e,w){try{DIAG.note(e,w);}catch(_){}}
+function fit(pg){
+  try{
+    if(!pg||!pg.classList||!pg.classList.contains('page'))return;
+    var h=pg.querySelector(':scope > .hdrrow');if(!h)return;
+    var pt=parseFloat(getComputedStyle(pg).paddingTop)||0,hb=h.getBoundingClientRect().bottom-Math.max(0,pg.getBoundingClientRect().top);
+    var v=Math.round(hb-pt)+'px';
+    if(pg.style.getPropertyValue('--stick58')!==v)pg.style.setProperty('--stick58',v);
+  }catch(e){n58(e,'b58:fit');}
+}
+var q=0;
+document.addEventListener('scroll',function(e){var t=e.target;if(!t||!t.classList||!t.classList.contains('page')||q)return;q=1;requestAnimationFrame(function(){q=0;fit(t);});},true);
+window.addEventListener('resize',function(){document.querySelectorAll('.page.on').forEach(fit);});
+try{SCREEN.after('openReport',990058001,{call:'apply',ret:false},function(){setTimeout(function(){fit($('pageReport'));},30);});SCREEN.on('openReport',990058001);}catch(e){n58(e,'b58:open');}
+try{SCREEN.after('renderReport',990058002,{call:'apply',ret:false},function(){fit($('pageReport'));});SCREEN.on('renderReport',990058002);}catch(e){n58(e,'b58:render');}
+try{if(window.pinVer36)window.pinVer36('1.60 beta 58');}catch(e){}
+try{if(!window.__B58RN){var ol=document.querySelector('#pageSet details.help ol')||document.querySelector('#view-settings details.help ol');if(ol){ol.insertAdjacentHTML('beforeend','<li><b>Beta 58:</b> Settings › Modes no longer has "Preview as". Your Profile shows your e-mail once, in the Sign-in card (with Log out). In reports, the Category / vs Budget / Top / Trend bar stays right under the header while you scroll.</li>');window.__B58RN=1;}}}catch(e){}
+})();
+
+;/* ===== v160b59 · Add transaction account field restyle (CSS) + Transactions tab aligned with the Accounts tab =====
+   Transactions tab now uses the Accounts tab's building blocks:
+   - page title row "Transactions" with the round + button (opens Add transaction), like "Accounts" + Add account;
+   - in Couple modes, the same person chips (Everyone / you / partner) — they set the existing person filter;
+   - owner badges on row icons in the same colours (you blue, partner violet, joint = both initials);
+   - group cards, section headers and amounts styled like the Accounts tab (CSS). */
+(function(){ 'use strict';
+function n59(e,w){try{DIAG.note(e,w);}catch(_){}}
+function title(){
+  var v=$('view-txns');if(!v||$('t59pt'))return;
+  var first=v.querySelector(':scope > .card');if(!first)return;
+  first.insertAdjacentHTML('beforebegin','<div class="a48pt" id="t59pt"><h1>Transactions</h1><button type="button" class="a48plus" data-act="add" aria-label="Add transaction">'+ico('plus')+'</button></div>');
+}
+function chips(){
+  var v=$('view-txns');if(!v)return;
+  var box=$('t59chips'),cp=false;try{cp=isCouple();}catch(e){}
+  if(!cp){if(box)box.hidden=true;return;}
+  var me='',pa='';try{me=meName();pa=partnerName();}catch(e){}
+  if(!me||!pa||DB.people.indexOf(me)<0||DB.people.indexOf(pa)<0){if(box)box.hidden=true;return;}
+  if(!box){var card=v.querySelector(':scope > .card');if(!card)return;card.insertAdjacentHTML('afterend','<div class="a48chips" id="t59chips" role="group" aria-label="Whose transactions"></div>');box=$('t59chips');}
+  box.hidden=false;
+  var cur=TXF.person||'all';
+  box.innerHTML=[['all','Everyone'],[me,me],[pa,pa]].map(function(o){var on=cur===o[0];return '<button type="button" class="a48chip'+(on?' on':'')+'" aria-pressed="'+on+'" data-act="t59who" data-p="'+esc(o[0])+'">'+esc(o[1])+'</button>';}).join('');
+}
+function paint(){try{title();chips();}catch(e){n59(e,'b59:paint');}}
+try{SCREEN.after('renderTxns',990059001,{call:'apply',ret:false},paint);SCREEN.on('renderTxns',990059001);}catch(e){n59(e,'b59:hook');}
+ACT.on('b59-txns',{t59who:function(el){TXF.person=el.dataset.p||'all';try{var s=$('txPerson');if(s)s.value=TXF.person;}catch(e){}renderTxns();}});
+setTimeout(paint,0);
+try{if(window.pinVer36)window.pinVer36('1.60 beta 59');}catch(e){}
+try{if(!window.__B59RN){var ol=document.querySelector('#pageSet details.help ol')||document.querySelector('#view-settings details.help ol');if(ol){ol.insertAdjacentHTML('beforeend','<li><b>Beta 59:</b> Add transaction shows the account as plain text you tap to change, with its owner underneath. The Transactions tab matches the Accounts tab: a title with +, person chips in Couple modes, and the same owner badges.</li>');window.__B59RN=1;}}}catch(e){}
+})();
+
+;/* ===== v160b60 · Add transaction account field without "Paid from / Paid into" (CSS); 6-digit PIN only (see pinLen / pinSetup) ===== */
+(function(){try{if(window.pinVer36)window.pinVer36('1.60 beta 60');}catch(e){}
+try{if(!window.__B60RN){var ol=document.querySelector('#pageSet details.help ol')||document.querySelector('#view-settings details.help ol');if(ol){ol.insertAdjacentHTML('beforeend','<li><b>Beta 60:</b> App lock PINs are always 6 digits. Add transaction no longer shows "Paid from" / "Paid into" above the account.</li>');window.__B60RN=1;}}}catch(e){}})();
+
+;/* ===== v160b61 · new app: no data migration or older-version handling =====
+   Removed: experience-level copying from household data and the "existing household starts in Full" rule (everyone
+   starts in Simple until they choose); older PIN lengths and the PIN re-hash on unlock; the schema-1 / month-document
+   household sync and the server "migrate household storage" request (and its rules block); beta 1/2 account fields
+   (assetClass, adjustedValue, linkedAccount, Receivable, v159 storage) and checklist conversions; valHist; legacyType;
+   the "earlier test version" folder record. Kept on purpose (current features, not migration): mapping common type
+   names from imported files / sample data, splitting Excel "Split" shares into one row per person, mode switching
+   (moving data between Personal / Couple / Advanced) and its privacy review. */
+(function(){try{if(window.pinVer36)window.pinVer36('1.60 beta 61');}catch(e){}})();
