@@ -2935,3 +2935,31 @@ details.calc51 p{margin-top:6px;line-height:1.5}
 #repDyn .hbrow .hv small{display:block;color:var(--muted);font-weight:600;font-size:11px}
 #repDyn .card>.trow,#repDyn .card>button.fline{display:flex;align-items:center;gap:10px;padding:9px 2px;border-bottom:1px solid var(--line);width:100%;text-align:left;background:none;font-family:inherit;color:inherit}
 #repDyn .card>.trow .amt2{margin-left:auto;font-weight:800;white-space:nowrap}
+
+/* ===== v1.60 beta 52 ===== */
+/* Transfer: the automatic Between Us row is not shown (the entry is still recorded) */
+#sheet #fOwedRow.auto40{display:none!important}
+/* Income / Expense account tile, same look as the Transfer From / To tiles */
+#sheet.form61 #fAcc52[hidden]{display:none!important}
+#sheet.form61 .ad-flow61.one52>.row61{flex:1 1 auto}
+#sheet.form61 .ad-flow61.one52 .swap61{display:none!important}
+/* property / vehicle income & costs */
+.a52st{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-bottom:6px}
+.a52st>div{background:var(--bg);border-radius:12px;padding:8px 10px}
+.a52st small{display:block;font-size:var(--fs-11,11px);font-weight:700;color:var(--muted)}
+.a52st b{display:block;font-size:var(--fs-14,14px);margin-top:2px}
+.a52st b.p{color:var(--inc)}.a52st b.o{color:var(--exp)}
+.a52from{font-size:var(--fs-12,12px);color:var(--muted);margin:0 0 6px}
+.a52chips{margin-bottom:10px}
+.a52chips .chip.a52taken{opacity:.55;cursor:not-allowed}
+
+/* ===== beta 54 · one (i) style: 24px visible, 44px tap area ===== */
+.info23,.infob18,.info51{display:inline-grid!important;place-items:center;width:24px!important;height:24px!important;min-height:24px!important;min-width:24px;padding:0!important;border-radius:50%;border:1.5px solid var(--muted)!important;color:var(--muted)!important;background:none!important;font:italic 700 12px/1 Georgia,serif!important;position:relative;vertical-align:middle;cursor:pointer;flex:0 0 auto}
+.info23::after,.infob18::after,.info51::after{content:'';position:absolute;inset:-10px}
+.info23 svg,.infob18 svg{width:12px;height:12px}
+.info23.abs{position:absolute!important}
+.cap54{font-size:var(--fs-12,12px);color:var(--muted);margin:4px 0 9px}
+.row54off{display:flex;flex-direction:column;gap:2px;padding:10px 12px;border:1px solid var(--line);border-radius:12px;opacity:.6}
+.row54off small{color:var(--muted)}
+.rem54sub{display:flex;align-items:center;gap:8px;flex-wrap:wrap;color:var(--muted);font-size:var(--fs-13,13px);margin:0 2px 10px}
+.rem54set{background:none;border:0;padding:6px 0;min-height:32px;color:var(--accent);font-weight:800;font-size:inherit;cursor:pointer;margin-left:auto}
