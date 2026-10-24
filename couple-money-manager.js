@@ -1,4 +1,37 @@
 "use strict";
+
+/* ===== beta 75 · page-file check =====
+   The page (index.html) and this script must come from the same build. When a phone or host keeps an
+   older index.html, this script still loads but the Transactions toolbar, the Filters sheet and the
+   title row (which sits above the toolbar) are missing. Here the script puts the current markup in
+   place before anything is drawn, loads the matching stylesheet, and clears the offline copies so
+   the next start fetches fresh files. Help & About then says "old page file". */
+var PAGE75=(function(){
+  var JSV='1.60-beta.76',out={js:JSV,page:'',stale:false,fixed:false};
+  try{
+    var m=document.querySelector('meta[name="app-version"]');out.page=m?m.content:'';
+    out.stale=out.page!==JSV;
+    var tx=document.getElementById('view-txns');
+    if(tx&&!document.getElementById('txf71')){
+      var old=tx.querySelector(':scope > .card');
+      if(old)old.insertAdjacentHTML('beforebegin',"<div class=\"txf71\" id=\"txf71\">\n      <div class=\"txf71-srch\" id=\"txfSrch\">\n        <svg class=\"icn txf71-si\" viewBox=\"0 0 24 24\" aria-hidden=\"true\"><circle cx=\"11\" cy=\"11\" r=\"7\"/><path d=\"m21 21-4.3-4.3\"/></svg>\n        <input class=\"fin\" id=\"txSearch\" type=\"search\" placeholder=\"Search transactions\u2026\" autocomplete=\"off\" aria-label=\"Search transactions\" oninput=\"TXF.q=this.value;$('txClr').hidden=!this.value;renderTxns()\">\n        <button type=\"button\" class=\"srchx\" id=\"txClr\" data-act=\"txclr\" hidden aria-label=\"Clear search\"><svg class=\"icn\" viewBox=\"0 0 24 24\" aria-hidden=\"true\"><line x1=\"18\" y1=\"6\" x2=\"6\" y2=\"18\"/><line x1=\"6\" y1=\"6\" x2=\"18\" y2=\"18\"/></svg></button>\n        <button type=\"button\" class=\"txf71-fbtn\" id=\"txFilterBtn\" data-act=\"txfilter\" aria-label=\"Filters\" aria-haspopup=\"dialog\"><svg class=\"icn\" viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6\"/></svg><span class=\"bd\" id=\"txFilterN\" hidden></span></button>\n      </div>\n      <div class=\"txf71-tseg\" id=\"txfType\" role=\"group\" aria-label=\"Type\"></div>\n      <div class=\"txf71-act\" id=\"txfAct\" hidden></div>\n      <div class=\"txf71-sum\"><span class=\"g\" id=\"txSummary\"></span><button type=\"button\" class=\"ibtn\" id=\"txSelToggle\" data-act=\"selmode\" hidden>Exit</button></div>\n    </div>");else tx.insertAdjacentHTML('afterbegin',"<div class=\"txf71\" id=\"txf71\">\n      <div class=\"txf71-srch\" id=\"txfSrch\">\n        <svg class=\"icn txf71-si\" viewBox=\"0 0 24 24\" aria-hidden=\"true\"><circle cx=\"11\" cy=\"11\" r=\"7\"/><path d=\"m21 21-4.3-4.3\"/></svg>\n        <input class=\"fin\" id=\"txSearch\" type=\"search\" placeholder=\"Search transactions\u2026\" autocomplete=\"off\" aria-label=\"Search transactions\" oninput=\"TXF.q=this.value;$('txClr').hidden=!this.value;renderTxns()\">\n        <button type=\"button\" class=\"srchx\" id=\"txClr\" data-act=\"txclr\" hidden aria-label=\"Clear search\"><svg class=\"icn\" viewBox=\"0 0 24 24\" aria-hidden=\"true\"><line x1=\"18\" y1=\"6\" x2=\"6\" y2=\"18\"/><line x1=\"6\" y1=\"6\" x2=\"18\" y2=\"18\"/></svg></button>\n        <button type=\"button\" class=\"txf71-fbtn\" id=\"txFilterBtn\" data-act=\"txfilter\" aria-label=\"Filters\" aria-haspopup=\"dialog\"><svg class=\"icn\" viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6\"/></svg><span class=\"bd\" id=\"txFilterN\" hidden></span></button>\n      </div>\n      <div class=\"txf71-tseg\" id=\"txfType\" role=\"group\" aria-label=\"Type\"></div>\n      <div class=\"txf71-act\" id=\"txfAct\" hidden></div>\n      <div class=\"txf71-sum\"><span class=\"g\" id=\"txSummary\"></span><button type=\"button\" class=\"ibtn\" id=\"txSelToggle\" data-act=\"selmode\" hidden>Exit</button></div>\n    </div>");
+      if(old)old.remove();
+      out.fixed=true;
+    }
+    if(!document.getElementById('txfSheet')){document.body.insertAdjacentHTML('beforeend',"<div class=\"ov\" id=\"txfOvl\" data-act=\"txfclose\"></div>\n<div class=\"sheet txf71-sheet\" id=\"txfSheet\" role=\"dialog\" aria-modal=\"true\" aria-labelledby=\"txfTitle\">\n  <div class=\"grab\"></div>\n  <div class=\"txf71-shead\"><b id=\"txfTitle\">Filters</b><button type=\"button\" class=\"txf71-x\" data-act=\"txfclose\" aria-label=\"Close\"><svg class=\"icn\" viewBox=\"0 0 24 24\" aria-hidden=\"true\"><line x1=\"18\" y1=\"6\" x2=\"6\" y2=\"18\"/><line x1=\"6\" y1=\"6\" x2=\"18\" y2=\"18\"/></svg></button></div>\n  <div class=\"txf71-sbody\" id=\"txfBody\"></div>\n  <div class=\"txf71-sfoot\"><button type=\"button\" class=\"btn ghost\" data-act=\"txfreset\">Reset</button><button type=\"button\" class=\"btn\" id=\"txfShow\" data-act=\"txfclose\">Show</button></div>\n</div>");out.fixed=true;}
+    if(out.stale){
+      var l=document.querySelector('link[rel="stylesheet"][href*="couple-money-manager.css"]');
+      if(l&&l.getAttribute('href').indexOf(JSV)<0)l.setAttribute('href','couple-money-manager.css?v='+JSV);
+      var k='cmm75clear';
+      if(!sessionStorage.getItem(k)){
+        sessionStorage.setItem(k,'1');
+        if(window.caches&&caches.keys)caches.keys().then(function(ks){return Promise.all(ks.map(function(c){return caches.delete(c);}));}).catch(function(){});
+        if(navigator.serviceWorker&&navigator.serviceWorker.getRegistrations)navigator.serviceWorker.getRegistrations().then(function(rs){rs.forEach(function(r){try{r.update();}catch(e){}});}).catch(function(){});
+      }
+    }
+  }catch(e){}
+  return out;
+})();
 /* Couple Money Manager v1.60 beta 28.1 (current build: beta 64) — all JavaScript.
    Loaded once by the HTML page, at the end of <body>. The sections below run top to bottom in the
    same order as the former <script> blocks; each starts with a ===== SECTION banner.
@@ -23048,7 +23081,7 @@ SCREEN.after('B3.renderProfileSub',262000000,{call:'apply',ret:false},function()
       wrap.style.display='flex';
       wrap.innerHTML='<button class="btn b41invbtn" data-act="profpartinv33">'+ico('plus')+' Invite collaborator</button>'
         ;
-      if(cap)cap.innerHTML='<b>Collaborator</b> — send an invite from Modes; the name field appears here once they accept.';
+      if(cap)cap.innerHTML='<b>Collaborator</b> — send an invite from Data &amp; Sync; the name field appears here once they accept.';
     }
   }catch(e){n41(e,'b41:profsub');}
 });
@@ -28186,3 +28219,52 @@ try{if(!window.__B73RN){var ol=document.querySelector('#pageSet details.help ol'
 /* ===== beta 74 · smaller page title row on all four tabs (CSS only, see beta 74 in the stylesheet) ===== */
 (function(){try{if(window.pinVer36)window.pinVer36('1.60 beta 74');}catch(e){}
 try{if(!window.__B74RN){var ol=document.querySelector('#pageSet details.help ol')||document.querySelector('#view-settings details.help ol');if(ol){ol.insertAdjacentHTML('beforeend','<li><b>Beta 74:</b> The page titles on Insights, Transactions, Accounts and Reports are smaller, so more of each screen shows.</li>');window.__B74RN=1;}}}catch(e){}})();
+
+/* ===== beta 75 · page-file check (see PAGE75 at the top of this file) ===== */
+(function(){try{if(window.pinVer36)window.pinVer36('1.60 beta 75'+(PAGE75.stale?' · old page file ('+(PAGE75.page||'none')+')':''));}catch(e){}
+try{if(!window.__B75RN){var ol=document.querySelector('#pageSet details.help ol')||document.querySelector('#view-settings details.help ol');if(ol){ol.insertAdjacentHTML('beforeend','<li><b>Beta 75:</b> if your phone or website still has an older page file, the app now puts the Transactions title, toolbar and Filters sheet in place itself and refreshes its offline copy.</li>');window.__B75RN=1;}}}catch(e){}
+})();
+
+/* ===== beta 76 · Your Profile › Invite collaborator opens the invite page =====
+   It used to open Settings › Modes, which has no invite (since beta 50 inviting lives in Data & Sync, D-16).
+   Now it opens Data & Sync on the household storage in use:
+   · Household folder (chosen at onboarding, set up, or the current storage) → the Household folder card, opened;
+   · otherwise → the Household row opened (Couple Money Cloud sign-in and invites), same as tapping Manage.
+   "Manage invite" (invitation pending) uses the same action. Back returns to Settings, as for any Settings page. */
+(function(){
+function n76(e,w){try{DIAG.note(e,w);}catch(_){}}
+function usesFolder(){
+  try{if(storageMode()==='pdh')return true;}catch(e){}
+  try{var p=pdh59()||{};if(p.createdAt)return true;}catch(e){}
+  try{if(DB.meta.o62&&DB.meta.o62.store==='folder')return true;}catch(e){}
+  return false;
+}
+function scrollTo(el){if(el)setTimeout(function(){try{el.scrollIntoView({block:'start',behavior:'smooth'});}catch(e){}},60);}
+function openInvite(){
+  if(usesFolder()){
+    try{ACT.dispatch({dataset:{act:'pdhopen'}});}catch(e){n76(e,'b76:pdh');}
+    var d=document.querySelector('#storeBody details.pdhdet[open]');
+    if(!d){openCloud();return;} /* folder card not available here: fall back to the Household row */
+    setTimeout(function(){scrollTo(d.closest('.card')||d);},80); /* show the card title, not just its middle */
+    return;
+  }
+  openCloud();
+}
+function openCloud(){
+  try{
+    if(window.B28&&!B28.hhOpen){var b=document.querySelector('[data-act=b28hhmanage]');if(b)b.click();else{B28.hhOpen=true;paintHousehold28();}}
+    var fb=$('fbBody'),card=fb&&fb.closest('.card');
+    scrollTo($('b28HouseholdRow')||card);
+  }catch(e){n76(e,'b76:cloud');}
+}
+ACT.on('beta-76-profile-invite',{
+  profpartinv33:function(){
+    try{
+      gotoView('settings');
+      setTimeout(function(){try{B3.setGo('data');setTimeout(openInvite,120);}catch(e){n76(e,'b76:go');}},80);
+    }catch(e){n76(e,'b76:inv');}
+  }
+});
+try{if(window.pinVer36)window.pinVer36('1.60 beta 76'+(PAGE75.stale?' · old page file ('+(PAGE75.page||'none')+')':''));}catch(e){}
+try{if(!window.__B76RN){var ol=document.querySelector('#pageSet details.help ol')||document.querySelector('#view-settings details.help ol');if(ol){ol.insertAdjacentHTML('beforeend','<li><b>Beta 76:</b> Your Profile › Invite collaborator now opens the invite in Data &amp; Sync: the Household folder card if your household uses a Google Drive or OneDrive folder, otherwise the Household row (Couple Money Cloud).</li>');window.__B76RN=1;}}}catch(e){}
+})();
