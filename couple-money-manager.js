@@ -1,5 +1,5 @@
 "use strict";
-/* Couple Money Manager v1.60 beta 28.1 — all JavaScript.
+/* Couple Money Manager v1.60 beta 28.1 (current build: beta 64) — all JavaScript.
    Loaded once by the HTML page, at the end of <body>. The sections below run top to bottom in the
    same order as the former <script> blocks; each starts with a ===== SECTION banner.
    The file is strict mode throughout (it starts with the core section's "use strict"). */
@@ -823,11 +823,14 @@ function rowsFromCSV(text){
     function g(i){return i>=0?(R[i]||''):'';}
     var date=excelDate(g(iD)),type=normalizeType(g(iT))||'Expense',amt=parseAmt(g(iM));
     if(!date||!amt)continue;
-    out.push(mkTxn({date:date,type:type,category:g(iC)||'Others',sub:g(iS),account:g(iA),to:g(iTo),person:g(iP),note:g(iN),amount:amt,split:parseSplitStr(g(iSp)),owedAcc:g(iOA),owedAmt:g(iOM)}));
+    out.push(rowNo62(mkTxn({date:date,type:type,category:g(iC)||'Others',sub:g(iS),account:g(iA),to:g(iTo),person:g(iP),note:g(iN),amount:amt,split:parseSplitStr(g(iSp)),owedAcc:g(iOA),owedAmt:g(iOM)}),r+1));
   }
   return out;
 }
 /* ===== v1.13: merge-import — files are ADDED to the current data, never overwrite it ===== */
+/* v1.60 beta 62: remember which row of the file a transaction came from (shown when an import is blocked).
+   Non-enumerable, so it never reaches the saved data, backups or sync. */
+function rowNo62(t,n){try{Object.defineProperty(t,'_row',{value:n,enumerable:false,writable:true,configurable:true});}catch(e){}return t;}
 /* shared mapper for CSV / XLSX / JSON-array rows — English, lowercase and Chinese column names */
 function csvRowToTxn(r){
   function pick(){for(var i=0;i<arguments.length;i++){var k=arguments[i];if(r[k]!==undefined&&r[k]!=='')return r[k];}return '';}
@@ -931,7 +934,10 @@ function rowsFromAnyFile(f){
       return ensureXLSX().then(function(){
         var wb=XLSX.read(buf,{type:'array'});
         var ws=wb.Sheets[wb.SheetNames[0]];
-        var rows=XLSX.utils.sheet_to_json(ws,{defval:''}).map(csvRowToTxn).filter(function(t){return t.date&&t.amount;});
+        /* beta 62: keep blank rows so each data row maps to its real Excel row number (first data row = header row + 1) */
+        var rg=null;try{rg=XLSX.utils.decode_range(ws['!ref']||'A1');}catch(e){rg=null;}
+        var first=(rg?rg.s.r:0)+2;
+        var rows=XLSX.utils.sheet_to_json(ws,{defval:'',blankrows:true}).map(function(r,i){return rowNo62(csvRowToTxn(r),first+i);}).filter(function(t){return t.date&&t.amount;});
         if(!rows.length)throw new Error('No valid rows found');
         return {rows:rows};
       });
@@ -996,15 +1002,31 @@ function download(name,mime,text){
 function exportJSON(){download('money-data.json','application/json',JSON.stringify(DB,null,1));toast('Snapshot saved — move it to Drive / OneDrive');}
 function csvField(s){s=String(s==null?'':s);return /[",\n]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s;}
 /* ===== v1.15: Excel upload template for importing data ===== */
+/* v1.60 beta 62: the template is written with the household's own names (Your Profile), so the sample rows
+   already pass the import owner check. Falls back to Hubby / Wifey before a profile exists. */
+function templateNames62(){
+  var pf=(DB&&DB.meta&&DB.meta.profile)||{},me=String(pf.name||'').trim()||'Hubby',pt='';
+  try{
+    if(isCouple()){
+      pt=String(pf.partner||'').trim();
+      if(!pt||pt.toLowerCase()===me.toLowerCase()){
+        var o=realPeople().filter(function(x){return String(x).toLowerCase()!==me.toLowerCase();});
+        pt=o[0]||'Wifey';
+      }
+    }
+  }catch(e){DIAG.note(e,'tpl62');}
+  return {me:me,pt:pt};
+}
 function templateSampleRows(){
-  return [
-    ['2026-10-01','Expense','Groceries','Wet Market','Cash','Hubby','SAMPLE — delete before importing','45.50','','','',''],
-    ['2026-10-02','Income','Salary','','Bank','Hubby','SAMPLE — delete before importing','3200','','','',''],
-    ['2026-10-03','Transfer','','','Bank','','SAMPLE — move savings to cash','500','','Cash','',''],
-    ['2026-10-04','Expense','Food & Dining','Restaurant','Cash','Hubby','SAMPLE — split dinner 60/40','100','Hubby:60|Wifey:40','','',''],
-    ['2026-10-05','Expense','Transport','Grab','eWallet','Wifey','SAMPLE — new accounts are created automatically','18.20','','','',''],
-    ['2026-10-06','Transfer','','','Cash','Hubby','SAMPLE — cross-owner loan (in the app: tick Amount owed)','150','','Wifey Wallet','Wifey owes Hubby','150']
+  var N=templateNames62(),me=N.me,pt=N.pt,rows=[
+    ['2026-10-01','Expense','Groceries','Wet Market','Cash',me,'SAMPLE — delete before importing','45.50','','','',''],
+    ['2026-10-02','Income','Salary','','Bank',me,'SAMPLE — delete before importing','3200','','','',''],
+    ['2026-10-03','Transfer','','','Bank','','SAMPLE — move savings to cash','500','','Cash','','']
   ];
+  if(pt)rows.push(['2026-10-04','Expense','Food & Dining','Restaurant','Cash',me,'SAMPLE — split dinner 60/40','100',me+':60|'+pt+':40','','','']);
+  rows.push(['2026-10-05','Expense','Transport','Grab','eWallet',pt||me,'SAMPLE — new accounts are created automatically','18.20','','','','']);
+  if(pt)rows.push(['2026-10-06','Transfer','','','Cash',me,'SAMPLE — cross-owner loan (in the app: tick Amount owed)','150','',pt+' Wallet',pt+' owes '+me,'150']);
+  return rows;
 }
 /* per-person summary CSV (R2): split-aware income/expense/net per person per month */
 function personMonthMatrix(){
@@ -3780,6 +3802,7 @@ function tourStart(k){
   if(REPORT.open&&k!=='report')closeReport();
   TOUR.k=k;TOUR.steps=TOURS[k]();TOUR.i=-1;tourNext();
   clearInterval(TOUR.t);TOUR.t=setInterval(tourTick,250);
+  if(TOUR.steps)tourLockScroll(); /* beta 62 · TOUR-01: the rest of the screen does not scroll during a step */
 }
 function tourNext(){
   TOUR.i++;
@@ -3789,6 +3812,7 @@ function tourNext(){
   TOUR.el=null;TOUR.shown=Date.now();tourTick();
 }
 function tourEnd(ok){
+  tourUnlockScroll(); /* beta 62 · TOUR-01: first line, so every exit path (finish, Skip step, Exit, Skip guide, Back/Escape) unlocks */
   clearInterval(TOUR.t);TOUR.steps=null;$('tourRing').hidden=true;$('tourTip').hidden=true;
   if(ok){var x=JR.filter(function(j){return j.k===TOUR.k;})[0];toast(x&&x.done()?'✓ '+x.t+' · done!':'Nice work!');}
   TOUR.k='';renderOverview();
@@ -4314,6 +4338,21 @@ function tourAllowed(t){
   var w=el&&el.closest&&el.closest('.amt-wrap,.calcw');if(w&&w.contains(t))return true;
   if($('mgrSheet').classList.contains('on')&&(MGR.kind==='pickcat'||MGR.kind==='picksub')&&t.closest('#mgrSheet'))return true;
   return false;
+}
+/* beta 62 · TOUR-01: scroll lock while a tour step is active. Same whitelist as the tap blocker, so the tip,
+   keypad, pickers and the highlighted element itself still scroll; a JS scrollIntoView still works. */
+function tourBlockScroll(e){if(!TOUR.steps||tourAllowed(e.target))return;e.preventDefault();}
+function tourLockScroll(){
+  if(TOUR.locked)return;TOUR.locked=1;TOUR.ovH=document.documentElement.style.overflow||'';
+  document.documentElement.style.overflow='hidden'; /* body overflow belongs to the page layers (Settings, reports) — left alone */
+  window.addEventListener('wheel',tourBlockScroll,{capture:true,passive:false});
+  window.addEventListener('touchmove',tourBlockScroll,{capture:true,passive:false});
+}
+function tourUnlockScroll(){
+  if(TOUR.locked)document.documentElement.style.overflow=TOUR.ovH||'';
+  TOUR.locked=0;
+  window.removeEventListener('wheel',tourBlockScroll,{capture:true});
+  window.removeEventListener('touchmove',tourBlockScroll,{capture:true});
 }
 function tourNudge(){var tip=$('tourTip');if(!tip)return;tip.classList.remove('nudge');void tip.offsetWidth;tip.classList.add('nudge');}
 ['click','mousedown','pointerdown','touchend'].forEach(function(ev){
@@ -5001,7 +5040,7 @@ function renderImp(){
     +'<div class="help small" style="margin-top:6px">Choose the account, pick the CSV, Excel or PDF file, then review every line. The app flags duplicates, checks the closing balance and spots card payments. Statements are read on this phone; nothing is uploaded.</div>'
     +'<div class="mgr-sec" style="margin-top:14px">From another app or a file</div>'
     +'<button class="btn ghost" data-act="import">'+ico('upload')+' Import transactions · CSV, Excel or JSON</button>'
-    +'<div class="help small" style="margin-top:6px">Rows are added to your data and exact duplicates are skipped. Need a format? <button class="aulink inl" data-act="xlstpl">Download the Excel template</button></div>'
+    +'<div class="help small" style="margin-top:6px">Rows are added to your data and exact duplicates are skipped. The Person on each row must be the owner of its account and a member of your household, or the file is not imported. Need a format? <button class="aulink inl" data-act="xlstpl">Download the Excel template</button></div>'
     +(hist.length?'<div class="mgr-sec" style="margin-top:14px">Recent imports</div><div class="implist">'+hist.map(function(x){return '<div class="mgr-row"><span class="lb">'+esc(x.kind==='stmt'?x.acc:x.file)+'<small>'+(x.kind==='stmt'?esc(x.file)+' · '+(x.s?dLabel(x.s)+' – '+dLabelY(x.e)+' · ':''):'')+x.n+' transaction'+(x.n===1?'':'s')+' · imported '+bkWhen(x.at)+'</small></span><button class="ibtn" data-act="impundo" data-id="'+x.id+'" style="color:var(--exp)">Undo</button></div>';}).join('')+'</div>':'');
 }
 /* account page: import a statement for this account */
@@ -5872,8 +5911,17 @@ EXP_KIND.settle=['Settle-up statement','Shared bills, each person’s share and 
 var _rExp57=renderExp;renderExp=function(){_rExp57();var b=$('expBody');if(!b)return;b.innerHTML=b.innerHTML.replace(/PDF via print/g,'PDF file').replace('who owes whom · PDF','who owes whom · PDF file');var h=b.querySelector('.help.small');if(h)h.insertAdjacentHTML('beforeend',' Excel and PDF files are made on this phone and work offline.');};
 /* the Excel import template, offline too */
 function downloadTemplateXLSX(){
+  var N=templateNames62(),me=N.me,pt=N.pt;
   var H=['Date','Income/Expense','Category','Subcategory','Account','Person','Note','Amount','Split','To Account','Owed Account','Owed Amount'];
-  var G=[['Field','What to put here'],['Date','e.g. 2026-10-01 (D/M/YYYY and Excel dates also work)'],['Income/Expense','Expense, Income or Transfer'],['Category','Free text; new names are created automatically. Empty for transfers'],['Subcategory','Optional'],['Account','The account the money moves in or out of'],['Person','Who paid or earned it'],['Note','Optional description'],['Amount','A number, e.g. 123.45. A negative expense is a refund'],['Split','Optional: Person:amount|Person:amount, e.g. Hubby:60|Wifey:40'],['To Account','Transfers only: the receiving account'],['Owed Account','Optional, transfers only: e.g. “Wifey owes Hubby”'],['Owed Amount','Optional: positive adds to the debt, negative repays it'],[],['HOW TO IMPORT','Settings → Import → Import transactions. Delete the SAMPLE rows first. Only the first sheet is read.']];
+  var G=[['Field','What to put here'],['Date','e.g. 2026-10-01 (D/M/YYYY and Excel dates also work)'],['Income/Expense','Expense, Income or Transfer'],['Category','Free text; new names are created automatically. Empty for transfers'],['Subcategory','Optional'],
+    ['Account','The account the money moves in or out of. If the account already exists in the app, the Person must be its owner'],
+    ['Person','The owner of the Account: '+(pt?'you or your partner':'you')+', spelled exactly as in Your Profile ('+me+(pt?', '+pt:'')+'). The import is blocked if the name is not in your household, or is not the owner of that Account. Leave empty on transfers'],
+    ['Note','Optional description'],['Amount','A number, e.g. 123.45. A negative expense is a refund'],
+    ['Split','Optional: Person:amount|Person:amount'+(pt?', e.g. '+me+':60|'+pt+':40':'')+'. The share names must also be in your household'],
+    ['To Account','Transfers only: the receiving account'],
+    ['Owed Account','Optional, transfers only: '+(pt?'e.g. “'+pt+' owes '+me+'”':'needs a partner (Couple mode)')],
+    ['Owed Amount','Optional: positive adds to the debt, negative repays it'],[],
+    ['HOW TO IMPORT','Settings → Data & Sync → Import a file. Delete the SAMPLE rows first. Only the first sheet is read. If anything is blocked, nothing from the file is added and the app lists the rows to fix.']];
   shareFile('money-upload-template.xlsx',xlsxBuild([{name:'Transactions',rows:[H].concat(templateSampleRows().map(function(r){return r.map(function(v,i){return i===7&&v!==''?+v:v;});})),widths:[11,14,16,14,12,9,40,10,18,12,16,12],num:[7]},{name:'How to fill',rows:G,widths:[18,100]}]));
   toast('Excel template downloaded');
 };
@@ -11006,7 +11054,7 @@ var SET_HTML=''
       +'<button class="btn" data-act="import">'+ico('download')+' Import a file <span style="font-weight:600;opacity:.85">· JSON, CSV or Excel</span></button>'
       +'<button class="btn ghost" data-act="stmpick">'+ico('list')+' Import a bank / card statement</button>'
     +'</div>'
-    +'<div class="help small" style="margin-top:6px">Imports are added to your data and duplicates are skipped. Need a format? <button class="aulink inl" data-act="xlstpl">Download the Excel template</button></div>'
+    +'<div class="help small" style="margin-top:6px">Imports are added to your data and duplicates are skipped. The Person on each row must be the owner of its account and a member of your household, or the file is not imported. Need a format? <button class="aulink inl" data-act="xlstpl">Download the Excel template</button></div>'
     +'<div class="mgr-sec">Take data out</div>'
     +'<div class="exgrid">'
       +'<button class="exbtn" data-act="csv">'+ico('download')+'<b>Transactions</b><small>CSV · Excel-ready</small></button>'
@@ -19512,7 +19560,7 @@ function attachNormalized291(F,id){
   var aq=F.query(F.collection(FB.db,'households',id,'accounts'),F.where('memberUids','array-contains',uid));N291.unsubA=F.onSnapshot(aq,function(q){var x={};q.docs.forEach(function(d){x[d.id]=d.data();});N291.remoteA=x;N291.readyA=true;applyNormalized291();},function(e){console.warn('accounts-sync',e);});
   var tq=F.query(F.collection(FB.db,'households',id,'transactions'),F.where('viewerUids','array-contains',uid));N291.unsubT=F.onSnapshot(tq,function(q){var x={};q.docs.forEach(function(d){x[d.id]=d.data();});N291.remoteT=x;N291.readyT=true;applyNormalized291();},function(e){console.warn('transactions-sync',e);});
 }
-hhAttach=function(id){return fsMods().then(function(F){hhDetach();HH.id=id;DB.meta.hh=id;save();HH.unsub=F.onSnapshot(hhRef(F,id),function(s){if(!s.exists()){hhGone('The shared household was deleted. Your data is still on this phone.');return;}var d=s.data();HH.info={owner:d.owner,ownerEmail:d.ownerEmail||'',members:d.members||[],memberEmails:d.memberEmails||{},memberProfiles:d.memberProfiles||{},invites:d.invites||[],storageVersion:+d.storageVersion||0};renderCloudAccSafe();},function(e){hhGone(fsErr(e));});attachNormalized291(F,id);backend291('registerMemberProfile',{householdId:id,displayName:safe28(function(){return meName();},'')}).catch(function(){});return true;});};
+hhAttach=function(id){return fsMods().then(function(F){hhDetach();HH.id=id;DB.meta.hh=id;save();HH.unsub=F.onSnapshot(hhRef(F,id),function(s){if(!s.exists()){hhGone('The shared household was deleted. Your data is still on this phone.');return;}var d=s.data();HH.info={owner:d.owner,ownerEmail:d.ownerEmail||'',members:d.members||[],memberEmails:d.memberEmails||{},memberProfiles:d.memberProfiles||{},invites:d.invites||[],storageVersion:+d.storageVersion||0,mode:d.mode||''};renderCloudAccSafe();},function(e){hhGone(fsErr(e));});attachNormalized291(F,id);backend291('registerMemberProfile',{householdId:id,displayName:safe28(function(){return meName();},'')}).catch(function(){});return true;});};
 function canWriteAccount291(d,exists){var p=d.permissions[stableUid291()]||'none';return exists?(p==='owner'||p==='admin'):p==='owner';}
 function canWriteTxn291(d,exists){var a=N291.remoteA[d.accountId]||{},p=a.permissions&&a.permissions[stableUid291()]||'none';return exists?(d.createdByUid===stableUid291()?p!=='view'&&p!=='none':['full','admin','owner'].indexOf(p)>=0):d.createdByUid===stableUid291()&&['add','full','admin','owner'].indexOf(p)>=0;}
 function commitOps291(F,ops){var p=Promise.resolve();for(var i=0;i<ops.length;i+=380)(function(ch){p=p.then(function(){var b=F.writeBatch(FB.db);ch.forEach(function(o){if(o.del)b.delete(o.ref);else b.set(o.ref,o.data);});return b.commit();});})(ops.slice(i,i+380));return p;}
@@ -19534,7 +19582,7 @@ hhPush=function(){
     .catch(function(e){console.warn('normalized-push',e);syncUI('warn','Sync failed — tap');if(e&&e.code==='permission-denied')toast('A server permission rejected this change.');return false;})
     .then(function(ok){N291.pushing=false;if(N291.again){N291.again=false;setTimeout(hhPush,300);}return ok;});
 };
-hhCreate=function(){return fsMods().then(function(F){var id=hhCode(),uid=stableUid291(),em=(FB.user.email||'').toLowerCase(),emails={},profiles={};emails[uid]=em;profiles[uid]={displayName:safe28(function(){return meName();},''),email:em};return F.setDoc(hhRef(F,id),{owner:uid,ownerEmail:em,members:[uid],memberEmails:emails,memberProfiles:profiles,invites:[],storageVersion:3,schema:3,createdAt:F.serverTimestamp(),updatedAt:F.serverTimestamp()}).then(function(){return F.setDoc(F.doc(FB.db,'users',uid),{household:id,email:em},{merge:true});}).then(function(){return hhAttach(id);}).then(function(){return new Promise(function(resolve){setTimeout(resolve,400);});}).then(function(){return hhPush();});});};
+hhCreate=function(){return fsMods().then(function(F){var id=hhCode(),uid=stableUid291(),em=(FB.user.email||'').toLowerCase(),emails={},profiles={};emails[uid]=em;profiles[uid]={displayName:safe28(function(){return meName();},''),email:em};return F.setDoc(hhRef(F,id),{owner:uid,ownerEmail:em,members:[uid],memberEmails:emails,memberProfiles:profiles,invites:[],storageVersion:3,schema:3,mode:(DB.meta.usage==='adv'?'adv':'couple'),createdAt:F.serverTimestamp(),updatedAt:F.serverTimestamp()}).then(function(){return F.setDoc(F.doc(FB.db,'users',uid),{household:id,email:em},{merge:true});}).then(function(){return hhAttach(id);}).then(function(){return new Promise(function(resolve){setTimeout(resolve,400);});}).then(function(){return hhPush();});});};
 hhJoin=function(id){var em=(FB.user.email||'').toLowerCase();if(DB.meta.demo&&DB.meta.demo.on){DB.txns=DB.txns.filter(function(t){return !t.demo;});DB.meta.demo={on:0};}return backend291('joinHousehold',{householdId:id,email:em,displayName:safe28(function(){return meName();},'')}).then(function(){DB.meta.hhAt=0;DB.meta.cloudSyncOn=true;DB.meta.syncChoice='yes';save();return hhAttach(id);}).then(function(){toast('You joined the household ✓');}).catch(function(e){toast(e&&e.message?e.message:fsErr(e));});};
 hhLeave=function(){askConfirm('Leave this household? Your partner keeps the shared copy. The data on this phone stays, and you get your own cloud copy again.','Leave',function(){backend291('leaveHousehold',{householdId:HH.id}).then(function(){hhDetach();DB.meta.hh='';DB.meta.cloudSyncOn=false;save();toast('You left the household');}).catch(function(e){toast(e&&e.message?e.message:fsErr(e));});});};
 window.CMM_SERVER_POLICY={version:2,storageVersion:3,normalizedCollections:['sharedState','accounts','transactions'],joinLeave:'trusted-cloud-functions',rulesFile:'firestore.rules'};
@@ -20519,14 +20567,35 @@ function profAutoFillB33(){
   if(!c.joined)return '';
   var pr=DB.meta.profile=DB.meta.profile||{};
   if(!c.nick)return ''; /* accepted but the nickname is not known yet — retry on the next sync */
-  if(pr.partnerAuto===c.key)return ''; /* already auto-filled for this collaborator — owner edits win */
   var old=String(pr.partner||'').trim();
-  if(old===c.nick){pr.partnerAuto=c.key;save();return 'kept';}
+  if(pr.partnerAuto===c.key){
+    /* beta 62 · NAME-02: the collaborator renamed themselves later. Follow it only while the owner still uses the
+       name that was filled in automatically; an owner's own name for them is kept, with a one-line notice. */
+    if(!c.real||!pr.partnerAutoNick||c.nick===pr.partnerAutoNick)return '';
+    var was=pr.partnerAutoNick;pr.partnerAutoNick=c.nick;
+    if(old===was&&DB.people.indexOf(old)>=0){
+      if(DB.people.indexOf(c.nick)>=0){save();try{window.B62&&B62.nameClash(old,c.nick);}catch(e){n33(e,'b62:clash2');}return '';}
+      B19.rename(old,c.nick);touch();
+      try{var au2=$('authScr');if(!au2||au2.hidden)renderAll();}catch(e){n33(e,'b62:ren-ui');}
+      toast('“'+was+'” is now called “'+c.nick+'”');
+      return 'filled';
+    }
+    save();toast(c.nick+' changed their name. You still see them as “'+(old||was)+'”.');
+    return 'kept';
+  }
+  if(old===c.nick){pr.partnerAuto=c.key;pr.partnerAutoNick=c.nick;save();return 'kept';}
   if(old&&!c.real){pr.partnerAuto=c.key;save();return 'kept';} /* keep the owner's own wording */
-  if(old&&DB.people.indexOf(old)>=0&&!B19.rename(old,c.nick))pr.partner=c.nick; /* target already a person — never merge */
+  if(old&&DB.people.indexOf(old)>=0&&DB.people.indexOf(c.nick)>=0){
+    /* beta 62 · NAME-03: the collaborator's name already belongs to another person. Never report success:
+       ask whether to merge the two or keep them apart. */
+    pr.partnerAuto=c.key;pr.partnerAutoNick=c.nick;save();
+    try{window.B62&&B62.nameClash(old,c.nick);}catch(e){n33(e,'b62:clash');}
+    return 'kept';
+  }
+  if(old&&DB.people.indexOf(old)>=0)B19.rename(old,c.nick);
   else if(old!==c.nick)pr.partner=c.nick;
   if(DB.people.indexOf(c.nick)<0)DB.people.push(c.nick);
-  pr.partnerAuto=c.key;
+  pr.partnerAuto=c.key;pr.partnerAutoNick=c.nick;
   touch();
   try{
     var au=$('authScr'),lk=$('lockScr');
@@ -22340,7 +22409,8 @@ try{
    ##################################################################
    Four user requirements, implemented as one additive layer:
 
-   1. Template import guard — "Do not allow user to import data using the
+   1. Template import guard (revised in beta 62: also checks the account's owner,
+      keeps import undo + sync working) — "Do not allow user to import data using the
       template provided if the owner name in the template cannot match with
       profile name and collaborator name."
       -> importOne now validates every row's owner names (Person, Split
@@ -22434,11 +22504,25 @@ function expGuard41(key){
 expGuard41('obSkip');
 expGuard41('obFinish');
 
-/* ================= Req 1 · template import must match the household ================= */
+/* ================= Req 1 · template import must match the household (revised in beta 62) =================
+   Every row is checked BEFORE anything is written. A file is imported completely or not at all.
+   Rules, per row of a CSV / Excel / JSON-array file:
+     1. Person, Split shares and the "X owes Y" names must be the profile name or the collaborator name.
+     2. If the Account already exists and has an owner, the Person must be that owner (or one of a joint
+        pair). Split-share rows are exempt: a share that is owed back to the payer is booked to the
+        payer's account on purpose (that is exactly how the app's own CSV export writes them).
+     3. A new account cannot have two different owners inside the same file.
+     4. The user must be allowed to add to the account (shared-account permission "View only" is refused).
+   After a successful check the file is normalised (names take the household's spelling, account names take
+   the existing spelling, blank Person = the account's owner) and accounts the import creates take the owner
+   named in the file. */
+var LEDGER62=/^(.+) owes (.+)$/;
+function key62(s){return String(s==null?'':s).trim().replace(/\s+/g,' ').toLowerCase();}
 function household41(){
   var pr=(DB.meta&&DB.meta.profile)||{};
   var me=String(pr.name||'').trim(),pt='';
   try{if(isCouple())pt=String(pr.partner||partnerName()||'').trim();}catch(e){n41(e,'b41:hh');}
+  if(pt==='your partner')pt=''; /* partnerName()'s placeholder when no partner exists yet */
   if(pt&&me&&pt.toLowerCase()===me.toLowerCase())pt='';
   return {
     me:me,pt:pt,
@@ -22449,18 +22533,6 @@ function household41(){
       return !!(pt&&s===pt.toLowerCase());
     }
   };
-}
-function ownersIn41(rows,H){
-  var bad={};
-  function add(n){n=String(n||'').trim();if(n&&!H.match(n))bad[n]=1;}
-  (rows||[]).forEach(function(t){
-    if(!t)return;
-    add(t.person);
-    (Array.isArray(t.split)?t.split:[]).forEach(function(s){if(s)add(s.p);});
-    var oa=String(t.owedAcc||'');
-    if(/^.+ owes .+$/.test(oa))oa.split(' owes ').forEach(add);
-  });
-  return Object.keys(bad);
 }
 function canonical41(H){
   var map={};
@@ -22474,59 +22546,258 @@ function canonName41(map,n){
   var s=String(n||'').trim();
   return map[s.toLowerCase()]||s;
 }
-var _importOne41=importOne;
-importOne=function(f){
-  return rowsFromAnyFile(f).then(function(r){
-    if(r.dbdata)return mergeDBData(r.dbdata); /* full JSON backup — carries its own people */
-    var H=household41();
-    if(H.me){ /* no profile name yet → nothing to compare against */
-      var bad=ownersIn41(r.rows,H);
-      if(bad.length){var e=new Error('owners41');e.names=bad;throw e;}
-      var map=canonical41(H);
-      r.rows.forEach(function(t){
-        if(!t)return;
-        if(t.person)t.person=canonName41(map,t.person);
-        if(Array.isArray(t.split))t.split.forEach(function(s){if(s&&s.p)s.p=canonName41(map,s.p);});
-        var oa=String(t.owedAcc||'');
-        if(/^.+ owes .+$/.test(oa))t.owedAcc=oa.split(' owes ').map(function(x){return canonName41(map,x);}).join(' owes ');
-      });
+function ownerHas62(owner,p){
+  var k=key62(p);
+  return String(owner||'').split(' & ').some(function(x){return key62(x)===k;});
+}
+/* a split share owed back to the payer: non-transfer row whose "To Account" is "<this person> owes <payer>" */
+function shareLeg62(t){
+  if(!t||t.type==='Transfer'||!t.person)return false;
+  var m=LEDGER62.exec(String(t.to||''));
+  return !!(m&&key62(m[1])===key62(t.person));
+}
+function rowsTxt62(rs){
+  var u=[];(rs||[]).forEach(function(r){if(r&&u.indexOf(r)<0)u.push(r);});
+  if(!u.length)return '';
+  return ' (row'+(u.length>1?'s':'')+' '+u.slice(0,4).join(', ')+(u.length>4?' +'+(u.length-4)+' more':'')+')';
+}
+/* opts: replace  = the file will REPLACE all data, so only the file's own accounts exist (nothing local to compare with)
+         accts    = account objects that come with the file (JSON backups)
+         ownerRule= false skips the "Person must own the account" rows (JSON backups are written by the app itself)
+         perm     = false skips the shared-account permission check
+         names    = [[name, 'where it appears'], …] extra names to test against the household */
+function checkRows62(rows,o){
+  o=o||{};
+  var ownerRule=o.ownerRule!==false,permOn=o.perm!==false&&!o.replace;
+  var H=household41(),chk=!!H.me,map=canonical41(H);
+  var idx={};
+  if(!o.replace)DB.accounts.forEach(function(a){idx[key62(a.name)]=a;});
+  (o.accts||[]).forEach(function(a){if(a&&a.name&&!idx[key62(a.name)])idx[key62(a.name)]=a;});
+  var seen={},newOwner={},conf={};
+  var nm={},ow={},pm={};
+  function bump(b,k,row,extra){var o=b[k]||(b[k]=Object.assign({rows:[]},extra));if(row)o.rows.push(row);}
+  function fold(n){ /* an account name takes the spelling of the one that already exists (or of its first use in the file) */
+    var s=String(n==null?'':n).trim();if(!s)return s;
+    var k=key62(s),a=idx[k];
+    if(a)return a.name;
+    if(seen[k])return seen[k];
+    seen[k]=s;return s;
+  }
+  function who(n,row){ /* household check + canonical spelling */
+    var s=String(n||'').trim();if(!s||!chk)return s;
+    if(!H.match(s)){bump(nm,key62(s),row,{label:s});return s;}
+    return canonName41(map,s);
+  }
+  function ledger(n,row){return String(n).split(' owes ').map(function(x){return who(x,row);}).join(' owes ');}
+  function perm(n,row){
+    var a=idx[key62(n)];if(!a||a.recv||LEDGER62.test(a.name))return;
+    if(!permOn)return;
+    var ok=true;try{ok=canAdd59(a.name);}catch(e){n41(e,'b62:perm');}
+    if(!ok)bump(pm,key62(a.name),row,{acct:a.name});
+  }
+  (rows||[]).forEach(function(t){
+    if(!t)return;
+    var row=t._row||0,isTrf=t.type==='Transfer';
+    /* 1 · names */
+    t.person=who(t.person,row);
+    if(Array.isArray(t.split))t.split.forEach(function(s){if(s&&s.p)s.p=who(s.p,row);});
+    if(LEDGER62.test(String(t.owedAcc||'')))t.owedAcc=ledger(t.owedAcc,row);
+    if(LEDGER62.test(String(t.to||''))){t.to=ledger(t.to,row);var L=idx[key62(t.to)];if(L)t.to=L.name;}
+    else if(t.to)t.to=fold(t.to);
+    if(LEDGER62.test(String(t.account||''))){t.account=ledger(t.account,row);var LA=idx[key62(t.account)];if(LA)t.account=LA.name;}
+    else t.account=fold(t.account);
+    var acct=t.account,A=idx[key62(acct)],leg=shareLeg62(t);
+    /* 2 · owner of an account that already exists */
+    if(ownerRule&&A&&!A.recv&&!LEDGER62.test(A.name)){
+      var own=String(A.owner||'').trim();
+      if(own){
+        if(!t.person){if(own.indexOf(' & ')<0)t.person=own;} /* blank Person = the account's owner (same rule as the Add form) */
+        else if(chk&&!leg&&!ownerHas62(own,t.person))bump(ow,key62(A.name)+'|'+key62(t.person),row,{acct:A.name,owner:own,person:t.person});
+      }
+    }else if(ownerRule&&!A&&acct&&!LEDGER62.test(acct)&&!LBL_RE.test(acct)){
+      /* 3 · a new account: remember its owner, and refuse two owners for one account */
+      if(chk&&t.person&&!leg){
+        var k=key62(acct),c=conf[k]||(conf[k]={acct:acct,owners:{}}),pk=key62(t.person),o=c.owners[pk]||(c.owners[pk]={name:t.person,rows:[]});
+        if(row)o.rows.push(row);
+        if(!newOwner[k])newOwner[k]={owner:t.person};
+      }
     }
-    return importRows(r.rows);
+    /* 4 · permission on shared accounts */
+    perm(acct,row);
+    if(isTrf&&t.to&&!LEDGER62.test(t.to))perm(t.to,row);
   });
+  (o.names||[]).forEach(function(x){
+    var s=String(x[0]==null?'':x[0]).trim();if(!s||!chk||H.match(s))return;
+    var k=key62(s),b=nm[k]||(nm[k]={label:s,rows:[]});(b.wh=b.wh||{})[x[1]]=1;
+  });
+  var lines=[];
+  Object.keys(nm).forEach(function(k){var b=nm[k],w=b.wh?Object.keys(b.wh):[];lines.push('“'+b.label+'” is not in this household'+rowsTxt62(b.rows)+(w.length?(b.rows.length?' · also ':' · ')+'used as '+w.join(', '):''));});
+  Object.keys(ow).forEach(function(k){var o=ow[k];lines.push('“'+o.acct+'” belongs to '+o.owner+', but the file says '+o.person+rowsTxt62(o.rows));});
+  Object.keys(conf).forEach(function(k){
+    var ks=Object.keys(conf[k].owners);
+    if(ks.length<2)return;
+    lines.push('“'+conf[k].acct+'” has more than one owner in the file: '+ks.map(function(x){var o=conf[k].owners[x];return o.name+rowsTxt62(o.rows);}).join(' and '));
+  });
+  Object.keys(pm).forEach(function(k){lines.push('You can only view “'+pm[k].acct+'”, so you cannot add transactions to it'+rowsTxt62(pm[k].rows));});
+  return {lines:lines,newOwner:newOwner};
+}
+/* validate, import, then give the accounts this import created the owner named in the file */
+function importChecked62(rows){
+  var c=checkRows62(rows);
+  if(c.lines.length){var e=new Error('import62');e.lines=c.lines;throw e;}
+  var had={};DB.accounts.forEach(function(a){had[a.name]=1;});
+  var res=importRows(rows);
+  DB.accounts.forEach(function(a){
+    var o=c.newOwner[key62(a.name)];
+    if(!had[a.name]&&!a.owner&&!a.recv&&o)a.owner=o.owner;
+  });
+  return res;
+}
+/* ---------- JSON backups (merge-import and replace) ---------- */
+function ownerSet62(o){return String(o||'').split(' & ').map(key62).filter(Boolean).sort().join('&');}
+function fixOwner62(map,o){return String(o||'').split(' & ').map(function(x){return canonName41(map,x);}).join(' & ');}
+/* d = a full backup ({people,accounts,txns,…}); mode 'merge' adds it to the live data, 'replace' swaps everything.
+   Returns {lines:[…]}. Names in d are rewritten to the household's spelling when the check passes. */
+function checkBackup62(d,mode){
+  var H=household41();
+  if(!H.me||!d)return {lines:[]};              /* no profile yet (new phone) → nothing to compare with */
+  var replace=mode==='replace',map=canonical41(H),names=[],lines=[];
+  (d.people||[]).forEach(function(p){if(String(p||'').trim()!=='Me')names.push([p,'a person in the list']);});
+  (d.accounts||[]).forEach(function(a){
+    if(!a||!a.name)return;
+    String(a.owner||'').split(' & ').forEach(function(x){names.push([x,'the owner of “'+a.name+'”']);});
+    if(LEDGER62.test(a.name))String(a.name).split(' owes ').forEach(function(x){names.push([x,'a Between Us account']);});
+  });
+  (d.recur||[]).forEach(function(r){var t=r&&r.tpl;if(!t)return;names.push([t.person,'a recurring payment']);(Array.isArray(t.split)?t.split:[]).forEach(function(s){if(s)names.push([s.p,'a recurring payment']);});});
+  if(replace){
+    (d.goals||[]).forEach(function(g){if(g&&g.owner&&g.owner!=='couple')names.push([g.owner,'a saving goal']);});
+    Object.keys(d.budgets2||{}).forEach(function(k){if(k!=='couple')names.push([k,'a budget']);});
+    var bp=d.meta&&d.meta.profile&&String(d.meta.profile.name||'').trim();
+    if(bp&&key62(bp)!==key62(H.me))lines.push('This backup is for '+bp+'’s profile, but this device is signed in as '+H.me);
+  }
+  /* the same account name must not belong to a different owner than the one it has here */
+  if(!replace)(d.accounts||[]).forEach(function(a){
+    if(!a||!a.name||LEDGER62.test(a.name))return;
+    var la=DB.accounts.find(function(x){return key62(x.name)===key62(a.name);});
+    if(la&&la.owner&&a.owner&&ownerSet62(la.owner)!==ownerSet62(a.owner))lines.push('“'+la.name+'” belongs to '+la.owner+' here, but to '+a.owner+' in the file');
+  });
+  var c=checkRows62(d.txns,{replace:replace,accts:d.accounts,ownerRule:false,perm:!replace,names:names});
+  lines=c.lines.concat(lines);
+  if(lines.length)return {lines:lines};
+  /* passed: fold case variants onto the household spelling */
+  d.people=(d.people||[]).map(function(p){return canonName41(map,p);});
+  (d.accounts||[]).forEach(function(a){
+    if(!a)return;
+    if(a.owner)a.owner=fixOwner62(map,a.owner);
+    if(LEDGER62.test(String(a.name||'')))a.name=String(a.name).split(' owes ').map(function(x){return canonName41(map,x);}).join(' owes ');
+  });
+  (d.recur||[]).forEach(function(r){var t=r&&r.tpl;if(!t)return;if(t.person)t.person=canonName41(map,t.person);(Array.isArray(t.split)?t.split:[]).forEach(function(s){if(s&&s.p)s.p=canonName41(map,s.p);});});
+  if(replace){
+    (d.goals||[]).forEach(function(g){if(g&&g.owner&&g.owner!=='couple')g.owner=canonName41(map,g.owner);});
+    if(d.budgets2){var nb={};Object.keys(d.budgets2).forEach(function(k){nb[k==='couple'?k:canonName41(map,k)]=d.budgets2[k];});d.budgets2=nb;}
+    if(d.meta&&d.meta.profile){if(d.meta.profile.name)d.meta.profile.name=canonName41(map,d.meta.profile.name);if(d.meta.profile.partner)d.meta.profile.partner=canonName41(map,d.meta.profile.partner);}
+  }
+  return {lines:[]};
+}
+function mergeChecked62(d){
+  var c=checkBackup62(d,'merge');
+  if(c.lines.length){var e=new Error('import62');e.lines=c.lines;e.kind='backup';throw e;}
+  return mergeDBData(d);
+}
+/* Restore from a backup file / Replace all data with a .json file — every path ends in bkPreview, so the check
+   sits there: nothing is replaced, and the confirm screen is never shown, if the names do not match. */
+var _bkPreview62=bkPreview;
+bkPreview=function(t){
+  var raw=null;try{raw=JSON.parse(t);}catch(e){raw=null;}
+  var d=raw?unwrapBackup(raw):null;
+  if(d&&Array.isArray(d.txns)&&Array.isArray(d.accounts)&&Array.isArray(d.people)){
+    var c=checkBackup62(d,'replace');
+    if(c.lines.length){blocked62([{file:'This backup',lines:c.lines,kind:'backup',replace:true}],0);return;}
+    t=JSON.stringify(raw); /* names may have been tidied */
+  }
+  return _bkPreview62(t);
 };
-var _importFile41=importFile;
+/* Replace all data with a CSV / Excel file. A JSON file keeps its own route (bkOpenText → bkPreview, above). */
+var _replaceFile62=replaceFile;
+replaceFile=function(inp){
+  var f=inp.files&&inp.files[0];
+  if(!f||/\.json$/i.test(String(f.name||'')))return _replaceFile62(inp);
+  inp.value='';
+  rowsFromAnyFile(f).then(function(r){
+    if(r.dbdata){return _replaceFile62({files:[f],value:''});}
+    var rows=r.rows,c=checkRows62(rows,{replace:true});  /* the data being replaced has no accounts of its own */
+    if(c.lines.length){blocked62([{file:f.name,lines:c.lines,kind:'rows',replace:true}],0);return;}
+    askConfirm('Replace ALL current data with the contents of “'+f.name+'”? What you have now will be lost. Your profile, partner and settings are kept.','Replace',function(){
+      backupSnap('pre-replace');
+      var meta=DB.meta,collab=DB.collab,me=household41();
+      DB=defaultDB();
+      DB.meta=meta;if(collab)DB.collab=collab;
+      delete DB.meta.imports;delete DB.meta.demo;delete DB.meta.del;
+      DB.people=[me.me,me.pt].filter(Boolean);
+      ensureEntities(rows);DB.txns=rows;explodeSplits();
+      DB.accounts.forEach(function(a){var o=c.newOwner[key62(a.name)];if(!a.owner&&!a.recv&&o)a.owner=o.owner;});
+      touch();backupSnap('replace');
+      toast('Replaced ✓ '+rows.length+' transaction'+(rows.length===1?'':'s')+' loaded');
+    });
+  }).catch(function(e){console.error(e);toast('Replace failed: '+((e&&e.message)||e),{type:'error'});});
+};
+
+/* (the beta 56 wrapper that recorded each import for Recent imports → Undo was bypassed by the first version of
+   this guard — it is part of importOne again, together with the password-protected-backup check) */
+importOne=function(f){
+  var id='b'+uid(),had={},isJson=/\.json$/i.test(String(f.name||''));
+  DB.txns.forEach(function(t){had[t.id]=1;});
+  return (isJson?f.text().then(function(txt){if(txt.indexOf('"backup-enc"')>=0)throw new Error('enc');}):Promise.resolve())
+    .then(function(){return rowsFromAnyFile(f);})
+    .then(function(r){
+      var res=r.dbdata?mergeChecked62(r.dbdata):importChecked62(r.rows); /* a full JSON backup is checked against the household too */
+      var n=0;DB.txns.forEach(function(t){if(!had[t.id]){t.ib=id;n++;}});
+      if(n){DB.meta.imports=DB.meta.imports||[];DB.meta.imports.unshift({id:id,kind:'file',file:f.name,n:n,at:Date.now()});DB.meta.imports=DB.meta.imports.slice(0,30);}
+      return res;
+    });
+};
+function blocked62(blocked,tot){
+  var H=household41(),L=['Import blocked. Nothing from '+(blocked.length>1?'these files':'this file')+' was added.',''];
+  var rep=blocked.some(function(b){return b.replace;}),bk=blocked.some(function(b){return b.kind==='backup';});
+  if(rep)L[0]='Nothing was replaced. Your data is unchanged.';
+  blocked.forEach(function(b){
+    L.push('“'+b.file+'”');
+    b.lines.slice(0,8).forEach(function(x){L.push('• '+x);});
+    if(b.lines.length>8)L.push('• …and '+(b.lines.length-8)+' more');
+  });
+  L.push('');
+  L.push((H.list()?'Your household: '+H.list()+'. ':'')+(bk?'The people, account owners and names in a backup must be the ones in your household. On a new phone, sign up with the same names; to use different names, change them in Your Profile first, then try again.':'The Person on each row must be the owner of its account. Fix the file and try again.'));
+  if(tot)L.push(tot+' transaction'+(tot===1?' was':'s were')+' imported from your other files.');
+  askChoice(L.join('\n'),[]);
+  var b=document.querySelector('#chBtns [data-act=chno]');
+  if(b){b.textContent='OK';b.className='btn';}
+}
 importFile=function(inp){
   var files=Array.prototype.slice.call(inp.files||[]);
   inp.value='';
   if(!files.length)return;
-  var p=Promise.resolve(),tot=0,dup=0,bad=[],blkNames=[],blkFiles=0;
+  var p=Promise.resolve(),tot=0,dup=0,failed=[],blocked=[],why='';
   files.forEach(function(f){
     p=p.then(function(){
-      return importOne(f).then(function(r){
-        tot+=r.added;dup+=r.dup;
-        DB.meta.changedAt=Date.now();save();
-      });
+      return importOne(f).then(function(r){tot+=r.added;dup+=r.dup;});
     }).catch(function(e){
-      if(e&&e.message==='owners41'){blkNames=(blkNames||[]).concat(e.names||[]);blkFiles++;return;}
+      var m=e&&e.message;
+      if(m==='import62'){blocked.push({file:f.name,lines:e.lines||[],kind:e.kind||'rows'});return;}
       console.warn('import '+f.name,e);
-      if(e&&e.message==='collab')toast('That is a collaborator file — open it from Settings → Modes');
-      bad.push(f.name);
+      if(m==='collab')why='That is a collaborator file — open it from Settings → Modes';
+      else if(m==='enc')why='That is a password-protected backup. Use Backup & restore → Restore from a backup file.';
+      failed.push(f.name);
     });
   });
   p.then(function(){
-    save();backupSnap('import');cloudPushSoon();renderAll();
+    if(tot||dup){touch();backupSnap('import');} /* touch(): stamps the rows, syncs to the household and re-renders */
+    if(blocked.length){blocked62(blocked,tot);return;}
+    if(!tot&&!dup&&failed.length){toast(why||('Could not read '+failed[0]+(failed.length>1?' and '+(failed.length-1)+' more':'')),{type:'error'});return;}
     var m;
-    if(blkFiles){
-      var H=household41(),show=blkNames.slice(0,3).map(function(x){return '\u201c'+x+'\u201d';}).join(', ')+(blkNames.length>3?'…':'');
-      m='Import blocked — owner name'+(blkNames.length===1?'':'s')+' '+show+' '+(blkNames.length===1?'is':'are')+' not in this household'
-        +(H.list()?(' ('+H.list()+')'):'')+'. Fix the Person column in the template, then import again.';
-      if(tot)m+=' · '+tot+' transaction'+(tot===1?'':'s')+' imported from other files';
-    }else{
-      if(!tot&&!dup)m='Nothing new imported';
-      else{m='Imported '+tot+' new transaction'+(tot===1?'':'s')+' ✓';if(dup)m+=' · '+dup+' duplicate'+(dup===1?'':'s')+' skipped';}
-      if(bad.length)m+=' · '+bad.length+' file'+(bad.length===1?'':'s')+' failed';
-    }
-    toast(m);
+    if(!tot&&!dup)m='Nothing new imported';
+    else{m='Imported '+tot+' new transaction'+(tot===1?'':'s')+' ✓';if(dup)m+=' · '+dup+' duplicate'+(dup===1?'':'s')+' skipped';}
+    if(failed.length)m+=' · '+failed.length+' file'+(failed.length===1?'':'s')+' failed';
+    toast(m,failed.length?{type:'warning'}:undefined);
   });
 };
 
@@ -23281,7 +23552,7 @@ var PROV={
     write:function(ref,name,fid,text){return api('onedrive',GR+'/drives/'+ref.driveId+'/items/'+ref.id+':/'+encodeURIComponent(name)+':/content',{method:'PUT',headers:{'Content-Type':'text/plain'},body:text}).then(J).then(function(j){return {id:j.id,mod:j.lastModifiedDateTime||''};});}
   }
 };
-PX.PROV=PROV;
+PX.PROV=PROV;PX.token=token;PX.api=api;PX.configured=configured;PX.cfgMsg=cfgMsg;PX.dropToken=dropToken; /* beta 62: reused by the private space backup (ADV-01) */
 function docsToFolder(docs){
   var f=(docs||[]).filter(function(d){return d.mime==='application/vnd.google-apps.folder';})[0];
   var pid=f?f.id:((docs||[]).map(function(d){return d.parentId;}).filter(Boolean)[0]||'');
@@ -26404,3 +26675,755 @@ try{if(!window.__B60RN){var ol=document.querySelector('#pageSet details.help ol'
    names from imported files / sample data, splitting Excel "Split" shares into one row per person, mode switching
    (moving data between Personal / Couple / Advanced) and its privacy review. */
 (function(){try{if(window.pinVer36)window.pinVer36('1.60 beta 61');}catch(e){}})();
+
+;/* ===== v160b62 · import data: the Person on every row must be the account's owner and a household member ===== */
+(function(){try{if(window.pinVer36)window.pinVer36('1.60 beta 62');}catch(e){}
+try{if(!window.__B62RN){var ol=document.querySelector('#pageSet details.help ol')||document.querySelector('#view-settings details.help ol');if(ol){ol.insertAdjacentHTML('beforeend','<li><b>Beta 62:</b> Importing a file checks every row first. The Person must be a member of your household (Your Profile) and, for an account that already exists, its owner; one new account cannot have two owners in the same file. If anything fails, nothing from that file is added and the app lists the rows to fix. The same check applies to JSON backups you import, to Restore from a backup file and to Replace all data: the names must be your household’s, and a backup made for a different profile is refused before anything is replaced. Accounts created by an import take the owner named in the file, and imports are now undoable from Recent imports and sync to your partner.</li>');window.__B62RN=1;}}}catch(e){}})();
+
+;/* ===== v160b63 · Add transaction: account field restyle (CSS only, see beta 63 in the stylesheet) ===== */
+(function(){try{if(window.pinVer36)window.pinVer36('1.60 beta 63');}catch(e){}
+try{if(!window.__B63RN){var ol=document.querySelector('#pageSet details.help ol')||document.querySelector('#view-settings details.help ol');if(ol){ol.insertAdjacentHTML('beforeend','<li><b>Beta 63:</b> Add transaction has a tidier account field. Expense and Income show the account in its own card with the owner underneath, and the whole name is the tap target. Transfer shows From and To stacked in one card, lined up the same way, with the swap button between them.</li>');window.__B63RN=1;}}}catch(e){}})();
+
+;/* ===== v160b62 · Onboarding redesign + Advanced Couple private backup (onboarding-and-adv-couple-sync-mockup) =====
+   From the mockup's developer spec:
+   · ONB-01..06 · one onboarding shell with "Step n of N": Welcome → Sign in → How you use it (one screen for
+     Personal / Couple / Advanced Couple) → Detail level (Simple / Full, replaces the after-sign-in wizard) →
+     Storage & sync (per mode) → About you → First account (new) → Invite partner → Back up private space
+     (Advanced Couple) → Protect app → Ready. An invited partner joins: Welcome → Sign in → Join household (the
+     household's mode is read from households/{id}.mode, never asked) → About you → Detail level → [private space +
+     backup when the household is Advanced] → Protect app → Ready. The default "Cash" account is no longer made.
+   · JRN-01/02 · the first-steps checklist is chosen per mode × experience and is drawn on the dashboard.
+   · ADV-01/02/04/05 · automatic encrypted backup of the private space to the partner's OWN Google Drive / OneDrive
+     (own password, PBKDF2 150 000 rounds + AES-GCM, folder "Couple Money Manager Private" — a separate top-level
+     folder, so it is never inside a shared household folder), restore on a new phone, status states, and a second,
+     independent "Private space backup" setting on Data & Sync next to shared household sync.
+   · ADV-06 · Add transaction says "Will be shared with <partner>" when a private-account entry crosses into shared
+     money (split, amount owed, transfer with a shared side). Label only: no new step, dialog or toast.
+   · NAME-01 · renaming a person also moves private-account ownership (pvby), visibility-log authors and
+     name-keyed meta. NAME-02/03 live in profAutoFillB33 (beta 33 section) and B62.nameClash below.
+   · TOUR-01 · scroll lock lives in tourStart / tourEnd (core section).
+   No data migration or older-version handling (beta 61 rule). */
+(function(){'use strict';
+function n62(e,w){try{DIAG.note(e,w);}catch(_){}}
+var B62=window.B62={ver:'1.60 beta 62'};
+function Pn(){try{return partnerName()||'your partner';}catch(e){return 'your partner';}}
+function Cap(s){s=String(s||'');return s.charAt(0).toUpperCase()+s.slice(1);}
+function Me(){try{return meName()||'';}catch(e){return '';}}
+function usage(){return (DB&&DB.meta&&DB.meta.usage)||'';}
+function isAdv(){return usage()==='adv';}
+function pref(){return B28.pref.get();}
+
+/* ======================================================================
+   NAME-01 · rename keeps private accounts with their owner
+   ====================================================================== */
+var _ren62=B19.rename;
+B19.rename=function(from,to){
+  var r=_ren62.apply(this,arguments);
+  if(!r)return r;
+  to=String(to||'').trim();
+  try{
+    DB.accounts.forEach(function(a){
+      if(a.pvby===from)a.pvby=to;
+      if(Array.isArray(a.visLog))a.visLog.forEach(function(l){if(l&&l.by===from)l.by=to;});
+      if(a.partnerAccess&&typeof a.partnerAccess==='object'&&a.partnerAccess[from]!==undefined&&a.partnerAccess[to]===undefined){a.partnerAccess[to]=a.partnerAccess[from];delete a.partnerAccess[from];}
+    });
+    ['retract','retR','pvA'].forEach(function(k){var o=DB.meta[k];if(o&&typeof o==='object'&&!Array.isArray(o)&&o[from]!==undefined&&o[to]===undefined){o[to]=o[from];delete o[from];}});
+  }catch(e){n62(e,'b62:rename');}
+  return r;
+};
+/* NAME-03 · two names for one collaborator: the person decides */
+function mergePeople(from,to){
+  var i=DB.people.indexOf(to);if(i<0||DB.people.indexOf(from)<0||from===to)return false;
+  DB.people.splice(i,1);
+  if(!B19.rename(from,to)){DB.people.splice(i,0,to);return false;}
+  DB.accounts.forEach(function(a){if(a.owner&&String(a.owner).indexOf(' & ')>=0){var u=[];a.owner.split(' & ').forEach(function(x){if(u.indexOf(x)<0)u.push(x);});a.owner=u.join(' & ');}});
+  return true;
+}
+B62.merge=mergePeople;
+B62.nameClash=function(old,nick){
+  var go=function(){
+    askChoice('Your partner joined as “'+nick+'”, but a person named “'+nick+'” already exists here. Merge “'+old+'” into “'+nick+'”, or keep them as two people?',[
+      {c:'btn',l:ico('users')+' Merge into “'+nick+'”',f:function(){
+        if(mergePeople(old,nick)){var pr=DB.meta.profile||{};pr.partner=nick;touch();try{renderAll();}catch(e){}toast('Merged — “'+nick+'” is your partner everywhere');}
+        else toast('Could not merge these two people');
+      }},
+      {c:'btn ghost',l:'Keep separate',f:function(){toast('Kept as two people. Rename either one in Settings → People.');}}]);
+  };
+  if(typeof waitFree==='function')waitFree(go);else go();
+};
+/* NAME-02 · the collaborator's own device re-sends their name after a rename */
+function registerName(){
+  try{
+    if(!(FB&&FB.user&&HH&&HH.id&&HH.info)||HH.info.owner===FB.user.uid)return;
+    var nm=Me();if(!nm)return;
+    fbLoad().then(function(){return dynImport('https://www.gstatic.com/firebasejs/'+FBJS+'/firebase-functions.js');})
+      .then(function(M){return M.httpsCallable(M.getFunctions(FB.app),'registerMemberProfile')({householdId:HH.id,displayName:nm});})
+      .catch(function(e){n62(e,'b62:regname');});
+  }catch(e){n62(e,'b62:regname0');}
+}
+B62.registerName=registerName;
+if(typeof B19.profileSave==='function'){
+  var _ps62=B19.profileSave;
+  B19.profileSave=function(){var before=Me(),r=_ps62.apply(this,arguments);try{if(Me()!==before)registerName();}catch(e){n62(e,'b62:ps');}return r;};
+}
+
+/* ======================================================================
+   ADV-06 · the form says when a private-account entry will be shared
+   ====================================================================== */
+function myPriv(n){if(!n)return false;var a=null;try{a=a59(n);}catch(e){}if(!a||a.recv||a.vis!=='me')return false;var me=Me();return !me||(a.pvby||a.owner)===me;}
+function sharedAcc(n){if(!n)return false;var a=null;try{a=a59(n);}catch(e){}return !!a&&a.vis!=='me';}
+var _pi62=privInfo59;
+privInfo59=function(){
+  var r=_pi62.apply(this,arguments);
+  try{
+    if(!isAdv())return r;
+    var A=(($('fAccount')||{}).value)||'',tr=typeof F!=='undefined'&&F&&F.type==='Transfer',T=tr?((($('fTo')||{}).value)||''):'';
+    if(!myPriv(A)&&!myPriv(T))return r;
+    var split=!!(F&&F.gid)||((typeof SPLIT!=='undefined'&&SPLIT.rows)||[]).some(function(x){return x&&x.p&&x.p!==ownerOf(A)&&parseAmt(x.v)>0;});
+    var ow=$('fOwedRow'),owed=!!(ow&&!ow.hidden&&$('fOwed')&&$('fOwed').checked);
+    var cross=split||owed||(tr&&(sharedAcc(A)||sharedAcc(T)));
+    var P=esc(Pn());
+    if(cross)return {cls:'sh',ic:'users',label:'Will be shared with '+P,hint:'This entry crosses into shared money, so '+P+' sees it, with its note and category. Your account name stays hidden (shown as “'+esc(Me()||'Your')+'’s personal account”).'};
+    return {cls:'pv',ic:'lock',label:'Private · only you',hint:'This is one of your Private accounts, so this entry is visible only to you.'};
+  }catch(e){n62(e,'b62:pill');}
+  return r;
+};
+var pillT=0;
+['input','change'].forEach(function(ev){document.addEventListener(ev,function(e){
+  try{if(!isAdv()||!e.target||!e.target.closest||!e.target.closest('#sheet'))return;clearTimeout(pillT);pillT=setTimeout(function(){try{if($('sheet').classList.contains('on'))plRender();}catch(x){}},60);}catch(x){}
+},true);});
+document.addEventListener('click',function(e){
+  try{if(!isAdv()||!e.target||!e.target.closest||!e.target.closest('#sheet [data-act^=split],#sheet [data-act=spliteven],#sheet [data-act=splitrm61]'))return;clearTimeout(pillT);pillT=setTimeout(function(){try{if($('sheet').classList.contains('on'))plRender();}catch(x){}},80);}catch(x){}
+},false);
+
+/* ======================================================================
+   ADV-01/02/04/05 · private space backup in the partner's own cloud
+   ====================================================================== */
+var PX=window.PDH45||{};
+var PNAME={drive:'Google Drive',onedrive:'OneDrive',file:'a file'};
+var PFOLDER='Couple Money Manager Private',PMETA='private-meta.json',PDATA='private.cmm';
+var GD='https://www.googleapis.com/drive/v3',GR='https://graph.microsoft.com/v1.0';
+var TE=new TextEncoder(),TD=new TextDecoder();
+function b64(buf){var a=new Uint8Array(buf),s='';for(var i=0;i<a.length;i++)s+=String.fromCharCode(a[i]);return btoa(s);}
+function ub64(s){var b=atob(s),a=new Uint8Array(b.length);for(var i=0;i<b.length;i++)a[i]=b.charCodeAt(i);return a;}
+function rnd(n){var a=new Uint8Array(n);crypto.getRandomValues(a);return a;}
+function derive(pw,salt){return crypto.subtle.importKey('raw',TE.encode(String(pw)),'PBKDF2',false,['deriveKey']).then(function(k){
+  return crypto.subtle.deriveKey({name:'PBKDF2',salt:ub64(salt),iterations:150000,hash:'SHA-256'},k,{name:'AES-GCM',length:256},true,['encrypt','decrypt']);});}
+function seal(key,obj){var iv=rnd(12);return crypto.subtle.encrypt({name:'AES-GCM',iv:iv},key,TE.encode(JSON.stringify(obj))).then(function(ct){return JSON.stringify({cmm:1,iv:b64(iv),ct:b64(ct)});});}
+function unseal(key,text){var o;try{o=JSON.parse(text);}catch(e){return Promise.reject(err('data','The backup file cannot be read'));}
+  return crypto.subtle.decrypt({name:'AES-GCM',iv:ub64(o.iv)},key,ub64(o.ct)).then(function(pt){return JSON.parse(TD.decode(pt));},function(){throw err('key','Wrong backup password. Nothing was changed.');});}
+function err(kind,msg){var e=new Error(msg);e.kind=kind;return e;}
+function hash(s){return crypto.subtle.digest('SHA-256',TE.encode(s)).then(function(b){return b64(b).slice(0,24);});}
+function cfg(){var v=m59();if(!v.privBackup||typeof v.privBackup!=='object')v.privBackup={provider:'none',auto:true,state:''};return v.privBackup;}
+B62.cfg=cfg;
+function keyName(){var u='';try{u=(FB&&FB.user&&FB.user.uid)||((sessGet()||{}).email)||'';}catch(e){}return 'cmm_pb62_key:'+u;}
+function saveKey(key){return crypto.subtle.exportKey('raw',key).then(function(raw){try{localStorage.setItem(keyName(),b64(raw));}catch(e){}});}
+function loadKey(){var s='';try{s=localStorage.getItem(keyName())||'';}catch(e){}if(!s)return Promise.resolve(null);
+  return crypto.subtle.importKey('raw',ub64(s),{name:'AES-GCM'},true,['encrypt','decrypt']).catch(function(){return null;});}
+function dropKey(){try{localStorage.removeItem(keyName());}catch(e){}}
+function auto(c){c=c||cfg();return c.provider==='drive'||c.provider==='onedrive';}
+function configured(p){try{return PX.configured?PX.configured(p):false;}catch(e){return false;}}
+function cfgMsg(p){try{return PX.cfgMsg(p);}catch(e){return PNAME[p]+' is not set up in this copy of the app.';}}
+function J(r){return r.json();}
+/* the payload: your own private accounts and everything recorded on them, plus fully private entries */
+function payload(){
+  var mine={};(DB.accounts||[]).forEach(function(a){if(a&&a.vis==='me'&&myPriv(a.name))mine[a.name]=1;});
+  return {
+    accounts:(DB.accounts||[]).filter(function(a){return a&&mine[a.name];}),
+    txns:(DB.txns||[]).filter(function(t){return t&&!t.demo&&(mine[t.account]||mine[t.to]||(t.priv&&t.pl==='full'));}),
+    recur:(DB.recur||[]).filter(function(r){return r&&r.tpl&&(mine[r.tpl.account]||mine[r.tpl.to]);})
+  };
+}
+B62.payload=payload;
+/* provider calls (the beta 45 sign-in and API layer, a folder of our own) */
+var PV={
+  drive:{
+    find:function(){var q="name='"+PFOLDER+"' and mimeType='application/vnd.google-apps.folder' and trashed=false";
+      return PX.api('drive',GD+'/files?q='+encodeURIComponent(q)+'&fields=files(id,name)').then(J).then(function(j){var f=(j.files||[])[0];return f?{id:f.id}:null;});},
+    create:function(){return PX.api('drive',GD+'/files?fields=id',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:PFOLDER,mimeType:'application/vnd.google-apps.folder'})}).then(J).then(function(j){return {id:j.id};});}
+  },
+  onedrive:{
+    find:function(){return PX.api('onedrive',GR+'/me/drive/root:/'+encodeURIComponent(PFOLDER)).then(J).then(function(j){return j&&j.id?{driveId:(j.parentReference||{}).driveId,id:j.id}:null;}).catch(function(e){if(e&&e.code===404)return null;throw e;});},
+    create:function(){return PX.api('onedrive',GR+'/me/drive/root/children',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:PFOLDER,folder:{},'@microsoft.graph.conflictBehavior':'fail'})}).then(J).then(function(j){return {driveId:(j.parentReference||{}).driveId,id:j.id};});}
+  }
+};
+function files(p,ref){return PX.PROV[p].list(ref).then(function(L){var o={};L.forEach(function(f){o[f.name]=f;});return o;});}
+var ST={busy:false,timer:0,key:null};
+function classify(e){var k=e&&e.kind;return (k==='signin'||k==='auth'||k==='config'||k==='access')?'disconnected':'failed';}
+/* connect + set the password (or confirm it when a backup already exists in this account) */
+B62.setup=function(p,pw){
+  var c=cfg();
+  if(!configured(p))return Promise.reject(err('config',cfgMsg(p)));
+  if(String(pw||'').length<6)return Promise.reject(err('pw','Use at least 6 characters for the backup password.'));
+  ST.busy=true;
+  return PX.token(p,true).then(function(){return PV[p].find();}).then(function(ref){return ref||PV[p].create();}).then(function(ref){
+    return files(p,ref).then(function(F){
+      var meta=F[PMETA];
+      if(meta)return PX.PROV[p].read(ref,meta).then(function(tx){var m=JSON.parse(tx);return derive(pw,m.salt).then(function(k){return unseal(k,m.check).then(function(){return {ref:ref,key:k,salt:m.salt,metaId:meta.id,dataId:(F[PDATA]||{}).id||'',existing:true};});});});
+      var salt=b64(rnd(16));
+      return derive(pw,salt).then(function(k){return seal(k,{cmm:'private-check'}).then(function(check){
+        return PX.PROV[p].write(ref,PMETA,'',JSON.stringify({cmm:'private-backup',v:1,salt:salt,check:check})).then(function(w){return {ref:ref,key:k,salt:salt,metaId:w.id,dataId:'',existing:false};});});});
+    });
+  }).then(function(r){
+    c.provider=p;c.auto=c.auto!==false;c.ref={id:r.ref.id,driveId:r.ref.driveId||'',metaId:r.metaId,dataId:r.dataId};c.salt=r.salt;c.state='';c.askedAt=c.askedAt||Date.now();c.lastHash='';
+    ST.key=r.key;save();
+    return saveKey(r.key).then(function(){ST.busy=false;
+      if(r.existing&&r.dataId&&!payload().accounts.length)return B62.restoreWith(r.key).then(function(){return 'restored';});
+      return B62.backupNow(true).then(function(){return r.existing?'joined':'created';});
+    });
+  }).catch(function(e){ST.busy=false;throw e;});
+};
+function key(){if(ST.key)return Promise.resolve(ST.key);return loadKey().then(function(k){ST.key=k;return k;});}
+B62.backupNow=function(quiet){
+  var c=cfg();if(!auto(c))return Promise.resolve(false);
+  if(ST.busy&&!quiet)return Promise.resolve(false);
+  var body=payload(),js=JSON.stringify(body),h='';
+  return hash(js).then(function(x){h=x;return key();}).then(function(k){
+    if(!k)throw err('signin','Enter your backup password on this phone to resume backups.');
+    var ref={id:c.ref&&c.ref.id,driveId:c.ref&&c.ref.driveId};
+    return seal(k,{cmm:'private-space',v:1,at:Date.now(),by:Me(),data:body}).then(function(txt){return PX.PROV[c.provider].write(ref,PDATA,c.ref.dataId||'',txt);});
+  }).then(function(w){
+    c.ref.dataId=w.id||c.ref.dataId;c.lastAt=Date.now();c.lastHash=h;c.state='ok';save();
+    try{CMM_PRIVATE_MANIFEST.markBackup();}catch(e){n62(e,'b62:mark');}
+    paintAll();if(!quiet)toast('Private space backed up to '+PNAME[c.provider]);
+    return true;
+  }).catch(function(e){
+    c.state=classify(e);c.err=String(e&&e.message||e);save();paintAll();
+    if(!quiet)toast(c.state==='disconnected'?PNAME[c.provider]+' disconnected — tap Reconnect':'Backup failed — your data is safe on this phone');
+    return false;
+  });
+};
+/* automatic: a few seconds after a private change */
+function changed(){
+  var c=cfg();if(!isAdv()||!auto(c)||c.auto===false||c.state==='disconnected')return;
+  clearTimeout(ST.timer);
+  ST.timer=setTimeout(function(){hash(JSON.stringify(payload())).then(function(h){if(h!==c.lastHash)B62.backupNow(true);});},5000);
+}
+B62.restoreWith=function(k){
+  var c=cfg(),ref={id:c.ref.id,driveId:c.ref.driveId};
+  return files(c.provider,ref).then(function(F){var f=F[PDATA];if(!f)throw err('data','There is no private backup in '+PNAME[c.provider]+' yet.');return PX.PROV[c.provider].read(ref,f);})
+    .then(function(tx){return unseal(k,tx);}).then(function(o){
+      var d=(o&&o.data)||{},na=0,nt=0,nr=0,ids={},rids={};
+      DB.txns.forEach(function(t){ids[t.id]=1;});(DB.recur||[]).forEach(function(r){if(r&&r.id)rids[r.id]=1;});
+      (d.accounts||[]).forEach(function(a){if(a&&a.name&&!DB.accounts.some(function(x){return x.name===a.name;})){DB.accounts.push(a);na++;}});
+      (d.txns||[]).forEach(function(t){if(t&&t.id&&!ids[t.id]){DB.txns.push(t);ids[t.id]=1;nt++;}});
+      (d.recur||[]).forEach(function(r){if(r&&r.id&&!rids[r.id]){(DB.recur=DB.recur||[]).push(r);nr++;}});
+      touch();try{renderAll();}catch(e){}
+      return hash(JSON.stringify(payload())).then(function(h){c.lastHash=h;c.lastAt=c.lastAt||Date.now();c.state='ok';save();try{CMM_PRIVATE_MANIFEST.markBackup();}catch(e){}paintAll();
+        toast('Private space restored · '+na+' account'+(na===1?'':'s')+', '+nt+' transaction'+(nt===1?'':'s'));return true;});
+    });
+};
+/* restore on a new phone: sign in to the provider, find the folder, check the password */
+B62.restore=function(p,pw){
+  var c=cfg();p=p||c.provider;
+  if(!configured(p))return Promise.reject(err('config',cfgMsg(p)));
+  return PX.token(p,true).then(function(){return PV[p].find();}).then(function(ref){
+    if(!ref)throw err('data','No private backup was found in this '+PNAME[p]+' account.');
+    return files(p,ref).then(function(F){var meta=F[PMETA];if(!meta)throw err('data','No private backup was found in this '+PNAME[p]+' account.');
+      return PX.PROV[p].read(ref,meta).then(function(tx){var m=JSON.parse(tx);return derive(pw,m.salt).then(function(k){return unseal(k,m.check).then(function(){
+        c.provider=p;c.auto=c.auto!==false;c.ref={id:ref.id,driveId:ref.driveId||'',metaId:meta.id,dataId:(F[PDATA]||{}).id||''};c.salt=m.salt;c.state='';save();ST.key=k;
+        return saveKey(k).then(function(){return B62.restoreWith(k);});});});});});
+  });
+};
+B62.changePassword=function(pw){
+  var c=cfg();if(!auto(c))return Promise.reject(err('config','Turn on automatic backup first.'));
+  if(String(pw||'').length<6)return Promise.reject(err('pw','Use at least 6 characters for the backup password.'));
+  var salt=b64(rnd(16)),ref={id:c.ref.id,driveId:c.ref.driveId};
+  return derive(pw,salt).then(function(k){return seal(k,{cmm:'private-check'}).then(function(check){
+    return PX.PROV[c.provider].write(ref,PMETA,c.ref.metaId||'',JSON.stringify({cmm:'private-backup',v:1,salt:salt,check:check})).then(function(w){
+      c.ref.metaId=w.id||c.ref.metaId;c.salt=salt;ST.key=k;save();return saveKey(k);}).then(function(){c.lastHash='';return B62.backupNow(true);});});});
+};
+B62.stop=function(why){var c=cfg();c.provider='none';c.state='';c.ref=null;c.salt='';ST.key=null;dropKey();save();paintAll();if(why)toast(why);};
+/* ADV-05 · one status, used by Data & Sync, the Private tile and the onboarding summary */
+function pstatus(){
+  var c=cfg(),pn=PNAME[c.provider]||'',m=null;try{m=CMM_PRIVATE_MANIFEST.get(false);}catch(e){}
+  var hasPriv=payload().accounts.length>0;
+  if(auto(c)&&!hasPriv&&c.ref&&c.ref.dataId&&!c.lastAt)return {k:'newdev',c:'mute',t:'Private space not restored on this phone',s:'Restore it from your backup. It is never downloaded from the household.'};
+  if(auto(c)){
+    if(c.state==='failed')return {k:'failed',c:'bad',t:'Backup failed',s:'Could not reach '+pn+'. Tap Retry. Your data is safe on this phone.'};
+    if(c.state==='disconnected')return {k:'disc',c:'warn',t:pn+' disconnected',s:'Reconnect to resume automatic backups.'+(c.lastAt?' Last good backup: '+bkWhen(c.lastAt)+'.':'')};
+    if(m&&m.unbackedSince&&m.hash!==m.backupHash&&Date.now()-m.unbackedSince>=7*864e5)return {k:'due',c:'warn',t:'Backup due',s:'Your first unbacked private change is more than 7 days old.'};
+    return {k:'ok',c:'ok',t:'Backed up to '+pn,s:c.lastAt?'Last backup '+bkWhen(c.lastAt)+(c.auto===false?' · automatic backup is off':' · up to date'):'Waiting for the first backup'};
+  }
+  if(c.provider==='file'||(m&&m.lastBackupAt)){
+    if(m&&m.unbackedSince&&m.hash!==m.backupHash&&Date.now()-m.unbackedSince>=7*864e5)return {k:'due',c:'warn',t:'Backup due',s:'Your first unbacked private change is more than 7 days old.'};
+    return {k:'fileok',c:m&&m.lastBackupAt?'ok':'mute',t:m&&m.lastBackupAt?'Manual backup saved':'Manual file backup',s:m&&m.lastBackupAt?'Last file saved '+bkWhen(m.lastBackupAt)+'. Automatic backup is off.':'Save an encrypted file when you choose.'};
+  }
+  return {k:'none',c:'mute',t:'No backup set up',s:'Device only. Your private space exists on this phone only.'};
+}
+B62.status=pstatus;
+try{if(window.CMM_PRIVATE_MANIFEST)CMM_PRIVATE_MANIFEST.status=function(){var x=pstatus();return {cls:x.c==='ok'?'ok':(x.c==='mute'?'':'warn'),text:x.t,why:x.s};};}catch(e){}
+function pbDone(){var c=cfg();if(auto(c))return !!c.lastAt;var m=null;try{m=CMM_PRIVATE_MANIFEST.get(false);}catch(e){}return !!(m&&m.lastBackupAt);}
+B62.pbDone=pbDone;
+
+/* Data & Sync: shared sync (①) and private space backup (②) are two independent settings */
+var _cards62=stgCards59;
+stgCards59=function(sel,act){
+  var h=_cards62.apply(this,arguments);
+  try{if(isAdv())h=h.replace(/<button class="usecard[^"]*" data-act="[^"]*" data-v="(drive|onedrive)">[\s\S]*?<\/button>/g,'');}catch(e){n62(e,'b62:cards');}
+  return h;
+};
+function chip(v,l,on){return '<button type="button" class="'+(on?'on':'')+'" data-act="pb62prov" data-v="'+v+'">'+l+'</button>';}
+function cardHTML(){
+  var c=cfg(),st=pstatus(),P=esc(Pn()),a=auto(c);
+  var ic=st.c==='ok'?'check':(st.c==='bad'?'warn':(st.c==='warn'?'warn':'lock'));
+  var h='<h2>Private space backup · only you</h2>'
+    +'<div class="pb62st '+st.c+'"><span class="hic">'+ico(ic)+'</span><span><b>'+esc(st.t)+'</b><small>'+esc(st.s)+'</small></span></div>'
+    +'<div class="segmini" style="margin:10px 0 8px">'+chip('drive','Google Drive',c.provider==='drive')+chip('onedrive','OneDrive',c.provider==='onedrive')+chip('file','Manual file',c.provider==='file')+'</div>';
+  if(a)h+='<label class="pv-row"><span class="pv-tx"><b>Automatic backup</b><small>After each private change, a few seconds later</small></span><span class="pv-ct"><input type="checkbox" class="tgl" data-act="pb62auto"'+(c.auto!==false?' checked':'')+'></span></label>';
+  h+='<div class="pb62acts">';
+  if(a){
+    if(st.k==='disc')h+='<button class="btn sm" data-act="pb62conn" data-v="'+c.provider+'">Reconnect</button>';
+    else if(st.k==='failed')h+='<button class="btn sm" data-act="pb62now">Retry</button>';
+    else h+='<button class="btn sm" data-act="pb62now">Back up now</button>';
+    h+='<button class="btn sm ghost" data-act="pb62rest">Restore private space</button><button class="btn sm ghost" data-act="pb62pw">Change password</button><button class="btn sm ghost" data-act="pb62off">Turn off</button>';
+  }else if(c.provider==='file'){
+    h+='<button class="btn sm" data-act="pb62file">Save a backup file</button><button class="btn sm ghost" data-act="pb62rest">Restore private space</button>';
+  }else{
+    h+='<button class="btn sm ghost" data-act="pb62rest">Restore private space</button>';
+  }
+  h+='</div>'
+    +'<div class="help small" style="margin-top:10px">Contains <b>your</b> private accounts and their day-to-day transactions. '+P+' has no access to this backup. Split bills, transfers to '+P+' and amounts owed are handled with shared household sync.</div>'
+    +'<details class="pb62tbl"><summary>What leaves this phone</summary><table><tr><th>Data</th><th>Household</th><th>Your backup</th></tr>'
+    +'<tr><td>Shared &amp; joint accounts</td><td class="y">Yes</td><td class="y">Yes</td></tr>'
+    +'<tr><td>Your private accounts, everyday use</td><td class="n">Never</td><td class="y">Yes (encrypted)</td></tr>'
+    +'<tr><td>A private account’s split bill, transfer to '+P+' or amount owed</td><td class="m">Yes, automatically — that one entry, note and category included; account name hidden</td><td class="y">Yes</td></tr>'
+    +'<tr><td>'+P+'’s private accounts</td><td class="n">Never</td><td class="n">Never</td></tr></table></details>';
+  return h;
+}
+function paintCard(){
+  var sec=document.querySelector('#view-settings .setsub[data-sub="data"]');if(!sec)return;
+  var c=$('pb62Card');
+  if(!isAdv()){if(c)c.remove();return;}
+  if(!c){c=document.createElement('div');c.className='card';c.id='pb62Card';var first=sec.querySelector('.card');if(first&&first.nextSibling)sec.insertBefore(c,first.nextSibling);else sec.appendChild(c);}
+  c.innerHTML=cardHTML();
+  /* the "Private" tile in the status card follows the same status */
+  try{var t=qa('#view-settings .setsub[data-sub="data"] .b28-space').filter(function(x){return /Private/.test(x.textContent);})[0];
+    if(t){var b=t.querySelector('b');if(b)b.textContent=pstatus().t;t.classList.remove('ok','warn','bad');var cl=pstatus().c;if(cl==='ok'||cl==='warn'||cl==='bad')t.classList.add(cl);}}catch(e){n62(e,'b62:tile');}
+  /* ① label on the shared card */
+  try{var h2=sec.querySelector('.card h2');if(h2&&!/①/.test(h2.textContent)&&/status/i.test(h2.textContent))h2.textContent='① Shared household sync';}catch(e){}
+}
+function paintAll(){try{paintCard();}catch(e){n62(e,'b62:paint');}}
+B62.paint=paintAll;
+SCREEN.after('B3.renderDataSub',990000062,{call:'apply',ret:false},function(){paintAll();});
+SCREEN.on('B3.renderDataSub',990000062);
+/* small password sheet (overlay) */
+function pwSheet(title,intro,btn,onGo,opt){
+  opt=opt||{};
+  X63.ovOpen('<div class="xovh"><b>'+esc(title)+'</b><button class="xovx" data-act="x63ovx">×</button></div>'
+    +'<div class="pb62ov"><p class="help small" style="margin:0 0 8px">'+intro+'</p>'
+    +(opt.prov?'<div class="segmini" id="pb62OvProv">'+['drive','onedrive'].map(function(p){return '<button type="button" class="'+(opt.prov===p?'on':'')+'" data-act="pb62ovp" data-v="'+p+'">'+PNAME[p]+'</button>';}).join('')+'</div>':'')
+    +'<label class="aul">Backup password</label><input class="fin" id="pb62Pw" type="password" autocomplete="new-password" placeholder="6+ characters">'
+    +(opt.confirm?'<label class="aul">Type it again</label><input class="fin" id="pb62Pw2" type="password" autocomplete="new-password">':'')
+    +'<div class="auerr" id="pb62Err" hidden></div>'
+    +'<button class="btn" style="margin-top:12px" data-act="pb62go">'+esc(btn)+'</button></div>');
+  B62._go=onGo;B62._ovProv=opt.prov||'';
+}
+function ovErr(m){var e=$('pb62Err');if(e){e.hidden=!m;e.textContent=m||'';}}
+function busyBtn(on){var b=document.querySelector('#x63ov [data-act=pb62go]');if(b){b.disabled=!!on;if(on){b.dataset.t=b.dataset.t||b.textContent;b.textContent='Please wait…';}else if(b.dataset.t)b.textContent=b.dataset.t;}}
+function startAuto(p){
+  if(!configured(p)){toast(cfgMsg(p));return;}
+  pwSheet('Back up to '+PNAME[p],'Your private accounts are encrypted on this phone with a password only you know, then saved in <b>your own</b> '+PNAME[p]+' (folder “'+PFOLDER+'”). <b>If you forget the password, the backup cannot be recovered.</b> It is separate from your sign-in and from the household code.','Connect '+PNAME[p],function(pw,pw2){
+    if(pw!==pw2){ovErr('The passwords do not match.');return;}
+    busyBtn(true);
+    B62.setup(p,pw).then(function(r){X63.ovClose();paintAll();toast(r==='restored'?'Connected · private space restored':'Private space backup is on');}).catch(function(e){busyBtn(false);ovErr(e.message||String(e));});
+  },{confirm:true});
+}
+ACT.on('b62-private-backup',{
+  pb62prov:function(el){var v=el.dataset.v,c=cfg();
+    if(v==='file'){if(auto(c))askConfirm('Switch to manual files? Automatic backups to '+PNAME[c.provider]+' stop. The copy already there stays in your '+PNAME[c.provider]+'.','Switch',function(){B62.stop();var c2=cfg();c2.provider='file';save();paintAll();});else{c.provider='file';save();paintAll();}return;}
+    if(c.provider===v&&auto(c))return;startAuto(v);},
+  pb62conn:function(el){var p=el.dataset.v||cfg().provider;PX.token(p,true).then(function(){var c=cfg();c.state='';save();return key();}).then(function(k){if(!k){pwSheet('Unlock your backup','Enter your backup password once on this phone to resume automatic backups.','Continue',function(pw){busyBtn(true);B62.restore(p,pw).then(function(){X63.ovClose();}).catch(function(e){busyBtn(false);ovErr(e.message);});});return;}return B62.backupNow();}).catch(function(e){toast(e.message||'Sign-in was cancelled');});},
+  pb62now:function(){B62.backupNow();},
+  pb62auto:function(el){var c=cfg();c.auto=!!el.checked;save();if(c.auto)changed();toast(c.auto?'Automatic backup on':'Automatic backup off — use Back up now');paintAll();},
+  pb62off:function(){askConfirm('Turn off the private space backup? The copy already in your '+PNAME[cfg().provider]+' is kept; this phone stops updating it.','Turn off',function(){B62.stop('Private space backup turned off');});},
+  pb62file:function(){openMgr('bkfile');},
+  pb62pw:function(){pwSheet('Change backup password','The backup is encrypted again with the new password. The old password stops working.','Change password',function(pw,pw2){if(pw!==pw2){ovErr('The passwords do not match.');return;}busyBtn(true);B62.changePassword(pw).then(function(){X63.ovClose();toast('Backup password changed');}).catch(function(e){busyBtn(false);ovErr(e.message);});},{confirm:true});},
+  pb62rest:function(){var c=cfg();
+    if(c.provider==='file'||(!auto(c)&&!configured('drive')&&!configured('onedrive'))){openMgr('bkfile');return;}
+    pwSheet('Restore private space','Sign in to the '+(auto(c)?PNAME[c.provider]:'Google Drive or OneDrive')+' account that holds your backup and enter its password. Your private accounts are added back to this phone; shared data is not changed.','Restore',function(pw){busyBtn(true);B62.restore(B62._ovProv||c.provider,pw).then(function(){X63.ovClose();}).catch(function(e){busyBtn(false);ovErr(e.message);});},{prov:auto(c)?'':(configured('drive')?'drive':'onedrive')});},
+  pb62ovp:function(el){B62._ovProv=el.dataset.v;qa('#pb62OvProv button').forEach(function(b){b.classList.toggle('on',b===el);});},
+  pb62go:function(){var pw=(($('pb62Pw')||{}).value||''),pw2=$('pb62Pw2')?$('pb62Pw2').value:pw;if(pw.length<6){ovErr('Use at least 6 characters.');return;}if(B62._go)B62._go(pw,pw2);}
+});
+
+/* ADV-02 · switching Advanced Couple → Couple says what happens to the private backup */
+if(typeof window.usgSwitch6==='function'){
+  var _us62=window.usgSwitch6;
+  window.usgSwitch6=usgSwitch6=function(to){
+    var self=this,args=arguments;
+    if(isAdv()&&to==='couple'&&auto(cfg())){
+      askChoice('In Couple mode every household account is shared, so your private accounts become Shared after you confirm the next step. Your automatic private space backup to '+PNAME[cfg().provider]+' will stop.',[{c:'btn',l:'Continue',f:function(){_us62.apply(self,args);}}]);
+      return;
+    }
+    return _us62.apply(this,arguments);
+  };
+}
+
+/* touch(): private backup, household mode on the household record */
+var _touch62=touch;
+touch=function(){
+  var r=_touch62.apply(this,arguments);
+  try{
+    var c=cfg();
+    if(!isAdv()&&auto(c))B62.stop('Private space backup stopped — Couple mode has no private space');
+    else changed();
+  }catch(e){n62(e,'b62:touch');}
+  try{
+    var u=usage(),I=HH&&HH.info;
+    if(I&&HH.id&&FB&&FB.user&&I.owner===FB.user.uid&&(u==='couple'||u==='adv')&&I.mode!==u){
+      I.mode=u;var id=HH.id;fsMods().then(function(F){return F.updateDoc(hhRef(F,id),{mode:u});}).catch(function(e){n62(e,'b62:mode');});
+    }
+  }catch(e){n62(e,'b62:hhmode');}
+  return r;
+};
+/* ONB-05 · an invited partner follows the household's mode */
+var _rcs62=renderCloudAccSafe;
+renderCloudAccSafe=function(){
+  var r=_rcs62.apply(this,arguments);
+  try{
+    var I=HH&&HH.info,m=I&&I.mode;
+    if(m&&(m==='couple'||m==='adv')&&FB&&FB.user&&I.owner!==FB.user.uid&&usage()!==m&&usage()!=='solo'){
+      DB.meta.usage=m;if(m==='adv'){var v=m59();if(!(v.adv&&v.adv.since))v.adv={since:Date.now(),spaces:[Me()||'Me',Pn()]};}
+      save();var au=$('authScr');if(!au||au.hidden){renderAll();toast(m==='adv'?'Your household uses Advanced Couple — you now have a private space':'Your household uses Couple mode');}
+    }
+  }catch(e){n62(e,'b62:follow');}
+  return r;
+};
+
+/* ======================================================================
+   ONB · one onboarding shell
+   ====================================================================== */
+function O(){var m=DB.meta;if(!m.o62||typeof m.o62!=='object')m.o62={};return m.o62;}
+B62.o=O;
+var S=B62.s={};  /* choices on screen (not yet saved) */
+function inv(){return !!(AU.invite||O().inv);}
+function path(){if(inv())return 'invitee';var u=usage();return (u==='solo'||u==='couple'||u==='adv')&&O().mode?u:'';}
+function hhAdv(){return inv()&&usage()==='adv';}
+function flow(){
+  var p=path(),f=['welcome','signup'];
+  if(p==='invitee'){f.push('join','profile','detail');if(hhAdv())f.push('space','privbk');f.push('lock','ready');return f;}
+  f.push('mode');if(!p)return f.concat(['detail','storage','profile','account','invite','lock','ready']); /* before the choice: the Couple shape */
+  f.push('detail','storage','profile','account');
+  if(p!=='solo')f.push('invite');
+  if(p!=='solo'&&O().store==='folder')f.push('folder');
+  if(p==='adv')f.push('privbk');
+  f.push('lock','ready');return f;
+}
+B62.flow=flow;
+function done(k){
+  var o=O();
+  if(k==='folder')return !!DB.meta.pdhAsked;
+  if(k==='lock')return !!o.lock||!!lockCfg().h;
+  if(k==='profile'){var pr=DB.meta.profile||{};return !!o.profile&&!!pr.name&&DB.people.indexOf(pr.name)>=0;}
+  return !!o[k];
+}
+function nextStep(){if(!sessGet())return '';if(O().fin)return '';var f=flow();for(var i=2;i<f.length;i++)if(!done(f[i]))return f[i];return '';}
+B62.next=nextStep;
+authNextMode=function(){return nextStep();};
+function bar(k){var f=flow(),i=f.indexOf(k),n=f.length;if(i<0)return '';return '<div class="ob62bar"><span>Step '+(i+1)+' of '+n+'</span><span class="ob62prog"><i style="width:'+Math.round((i+1)/n*100)+'%"></i></span></div>';}
+function card(act,v,ic,t,d,on,pill,dis){return '<button type="button" class="usecard ob62c'+(on?' on':'')+(dis?' dis':'')+'" data-act="'+act+'" data-v="'+v+'"'+(dis?' aria-disabled="true"':'')+'>'+(pill?'<span class="pvpill">'+pill+'</span>':'')+'<span class="aucard-ic">'+ico(ic)+'</span><span style="flex:1;min-width:0"><b>'+t+'</b><small>'+d+'</small></span></button>';}
+function h3(t,d){return '<h3 class="ob62t">'+t+'</h3>'+(d?'<p class="ob62d">'+d+'</p>':'');}
+function note(t,cls){return '<div class="ob62note '+(cls||'')+'">'+t+'</div>';}
+function foot(k,opt){opt=opt||{};var f=flow(),i=f.indexOf(k),back=i>2&&k!=='join';
+  return (AU.err?'<div class="auerr">'+esc(AU.err)+'</div>':'')
+    +'<div class="ob62foot">'+(back?'<button class="btn ghost" data-act="b62back">Back</button>':'')+'<button class="btn" data-act="b62next"'+(opt.dis?' disabled':'')+'>'+(opt.label||'Continue')+'</button></div>'
+    +(opt.skip?'<button class="aulink" data-act="b62skip">'+opt.skip+'</button>':'');}
+var R={};
+R.mode=function(){var m=S.mode||usage()||'';
+  return h3('How will you use it?','Pick what fits today. Your data stays when you change it later in Settings → Modes.')
+    +card('b62pick','solo','user','Personal','Only your own money. No partner connection.',m==='solo')
+    +card('b62pick','couple','users','Couple','One shared household. Both partners see all household accounts.',m==='couple','Popular')
+    +card('b62pick','adv','shield','Advanced Couple','Shared household plus a private space for each partner.',m==='adv')
+    +'<button class="aulink" data-act="b62help">Not sure? Answer one question</button>'+foot('mode',{dis:!m});};
+R.detail=function(){var e=S.exp||(pref().experienceLevel==='full'?'full':'simple'),c=path()!=='solo';
+  return h3('How much detail do you want?','This only changes what <b>you</b> see. It never changes records'+(c?', and your partner chooses their own':'')+'.')
+    +card('b62pick','simple','check','Simple','Money in, money spent, money left, payments and plain-language insights.',e==='simple','Starting point')
+    +card('b62pick','full','flag','Full','Adds Wealth, net worth, complete Cash Flow and the full report catalogue.',e==='full')
+    +note('Not sure? Keep Simple. Switch any time in Settings → App Preferences.')+foot('detail');};
+R.storage=function(){var p=path(),solo=p==='solo',a=p==='adv',s=S.store||O().store||(solo?'device':'cloud'),P=esc(Pn());
+  var h=h3(solo?'Where should your data live?':'How will you two sync?',solo?'Back up and, if you like, sync across your own devices.':a?'This is for <b>shared</b> money only. Your private accounts never leave your phone as they are. You choose how to back them up in a later step.':'Both phones see the same household data.');
+  if(solo)h+=card('b62pick','device','phone','This phone only','No sync. Add a backup any time.',s==='device')
+    +card('b62pick','drive','cloud','My Google Drive','Encrypted personal backup file in your own Drive.',s==='drive')
+    +card('b62pick','onedrive','cloud','My OneDrive','Encrypted personal backup file in your own OneDrive.',s==='onedrive')
+    +card('b62pick','cloud','cloud','Couple Money Cloud','Live sync across your own signed-in devices.',s==='cloud','Suggested');
+  else{h+=card('b62pick','cloud','cloud','Couple Money Cloud','Live sync between your two phones. Nothing else to set up.',s==='cloud','Suggested')
+    +card('b62pick','folder','folder','A folder in one partner’s Drive or OneDrive','Live sync through an encrypted folder you own. Set up after the invite.',s==='folder')
+    +card('b62pick','device','phone','This phone only',a?'Shared money stays on this phone. '+Cap(P)+' gets no live updates.':'Both partners use this one phone. No live sync.',s==='device');
+    if(a)h+=note('<b>Private accounts stay on your phone by default.</b> Transfers, split bills and amounts owed between you and '+P+' do cross over.','k');}
+  if(!fbOnSite()&&(s==='cloud'))h+=note('Cloud sync starts when you open the app from its website and sign in there.','w');
+  return h+foot('storage');};
+R.profile=function(){var pr=DB.meta.profile||{},p=path(),c=p==='couple'||p==='adv',iv=p==='invitee';
+  return h3(iv?'Confirm your details':'About you','Your name shows on the accounts you own'+(p!=='solo'?' and on shared activity':'')+'.')
+    +'<label class="aul">Your name</label><input class="fin" id="ob62Me" autocomplete="given-name" placeholder="e.g. Huei" value="'+esc(S.me!=null?S.me:(pr.name&&pr.name!=='Me'?pr.name:''))+'">'
+    +(iv?'':'<label class="aul">Currency</label><input class="fin" id="ob62Cur" maxlength="4" autocapitalize="characters" value="'+esc(S.cur!=null?S.cur:(DB.meta.currency||'RM'))+'">')
+    +(c?'<label class="aul">Partner’s name <span class="muted" style="text-transform:none;font-weight:500">(optional)</span></label><input class="fin" id="ob62Pt" placeholder="e.g. Kim" value="'+esc(S.pt!=null?S.pt:(pr.partner||''))+'">':'')
+    +foot('profile');};
+R.account=function(){var p=path(),a=p==='adv',c=p==='couple',t=S.atype||'Bank',me=Me()||'Me',P=Pn(),sp=S.space||'private',ow=S.owner||'me';
+  var h=h3('Add your first account','Start with the one you use most'+(pref().experienceLevel==='full'?'. Loans, cards, property and vehicles come later':'')+'.')
+    +'<label class="aul">Type</label><div class="segmini">'+['Bank','Cash','e-Wallet','Card'].map(function(x){return '<button type="button" class="'+(t===x?'on':'')+'" data-act="b62at" data-v="'+x+'">'+x+'</button>';}).join('')+'</div>'
+    +'<label class="aul">Account name</label><input class="fin" id="ob62AccN" placeholder="e.g. Maybank savings" value="'+esc(S.accN||'')+'">'
+    +'<label class="aul">'+(t==='Card'?'Amount owed today':'Balance today')+' ('+esc(DB.meta.currency||'RM')+')</label><input class="fin" id="ob62AccB" inputmode="decimal" placeholder="0.00" value="'+esc(S.accB||'')+'">';
+  if(c)h+='<label class="aul">Whose account is it?</label><div class="segmini">'+[['me',me],['partner',P==='your partner'?'Partner':P],['joint','Joint']].map(function(x){return '<button type="button" class="'+(ow===x[0]?'on':'')+'" data-act="b62ow" data-v="'+x[0]+'">'+esc(x[1])+'</button>';}).join('')+'</div>'+note('In Couple, every household account is visible to both of you.');
+  if(a)h+='<label class="aul">Who can see it?</label><div class="segmini"><button type="button" class="'+(sp==='private'?'on':'')+'" data-act="b62sp" data-v="private">'+ico('lock')+' Only me</button><button type="button" class="'+(sp==='shared'?'on':'')+'" data-act="b62sp" data-v="shared">'+ico('users')+' Shared</button></div>'
+    +note(sp==='private'?'Private: '+esc(P)+' cannot see this account, its balance or its everyday transactions. If you transfer from it to a shared account, split a bill from it, or it ends up owing '+esc(P)+' money, that one entry becomes visible to them, with its note and category — the account name stays hidden.':'Shared: both of you see this account and its transactions.',sp==='private'?'k':'');
+  return h+foot('account',{skip:'Skip. Add an opening balance later'});};
+R.invite=function(){var a=path()==='adv',P=esc(Pn());
+  return h3('Invite '+P,a?Cap(P)+' will see <b>Shared</b> accounts, plus anything from your private space that is split, transferred to them, or owed between you.':Cap(P)+' will see every household account and can add transactions.')
+    +'<label class="aul">Partner’s email</label><input class="fin" id="ob62Inv" type="email" autocapitalize="off" placeholder="partner@example.com" value="'+esc(S.inv||DB.meta.pendingInvite||'')+'">'
+    +note('Skip it if you like. “Invite '+P+'” stays on your first-steps list until it is done.','w')
+    +(FB&&FB.user?'':note('The invitation is sent once you are signed in to the cloud (open the app from its website).'))
+    +foot('invite',{skip:'I’ll do this later'});};
+R.join=function(){var J=S.join,P=esc(J&&J.owner||Pn());
+  if(!J||J.loading){if(!J)lookUp();return h3('Join your partner’s household','Looking for your invitation…')+'<div class="ob62spin"></div>'+foot('join',{dis:true});}
+  if(!J.id)return h3('Join your partner’s household',J.why||'We could not find an invitation for this email yet.')
+    +note('Ask your partner to invite <b>'+esc((sessGet()||{}).email||'this email')+'</b>. You can continue now — you join as soon as the invitation is found, and the app follows the household’s mode.','w')
+    +'<button class="aulink" data-act="b62look">Look again</button>'+foot('join');
+  var a=J.mode==='adv';
+  return h3('Join '+P+'’s household','The household’s mode is read automatically. It is not asked again.')
+    +'<div class="usecard ob62c on"><span class="aucard-ic">'+ico(a?'shield':'users')+'</span><span><b>'+(a?'Advanced Couple':'Couple')+'</b><small>'+(a?'You share some accounts and keep your own private space.':'One shared household. You both see every account.')+'</small></span></div>'
+    +'<div class="ob62kv"><span>You can see</span><b>'+(a?'Shared accounts':'All household accounts')+'</b></div>'
+    +'<div class="ob62kv"><span>'+P+' can see</span><b>'+(a?'Shared accounts, plus split, transfer and owed entries touching your private space':'All household accounts')+'</b></div>'
+    +'<div class="ob62kv"><span>Sync</span><b>Live, via '+P+'’s household</b></div>'+foot('join',{label:'Join household'});};
+R.space=function(){var P=esc(Pn());
+  return h3('Your private space','Only you can see accounts you mark Private — unless a transaction crosses into shared money.')
+    +'<div class="usecard ob62c"><span class="aucard-ic">'+ico('lock')+'</span><span><b>Private account</b><small>Stays on your phone. Never uploaded to the household as itself.</small></span></div>'
+    +'<div class="usecard ob62c"><span class="aucard-ic">'+ico('refresh')+'</span><span><b>Split bill, transfer or amount owed</b><small>If it touches '+P+'’s money, that one entry — note and category included — becomes visible to them automatically. The private account’s name stays hidden.</small></span></div>'
+    +'<div class="usecard ob62c"><span class="aucard-ic">'+ico('users')+'</span><span><b>Shared account</b><small>Both of you see it. Good for joint bills.</small></span></div>'
+    +note('Next, choose how to back up your private space.')+foot('space');};
+R.privbk=function(){var p=S.pbk||'drive',a=p==='drive'||p==='onedrive',P=esc(Pn());
+  function pc(v){var ok=configured(v);return card('b62pick',v,'cloud',PNAME[v]+' · automatic',ok?'Encrypted copy in your own '+PNAME[v]+', updated after each change.':esc(PNAME[v]+' is not set up in this copy of the app yet.'),p===v,ok?'':'Not set up',!ok);}
+  return h3('Back up your private space','Your private accounts live <b>only on this phone</b> and are not uploaded to the household. If you lose the phone without a backup, they are gone — along with their everyday transactions.')
+    +pc('drive')+pc('onedrive')
+    +card('b62pick','file','download','Save a file myself','Encrypted file through the share sheet. You choose when.',p==='file')
+    +'<label class="aul">Backup password</label><input class="fin" id="bkPw" type="password" autocomplete="new-password" placeholder="6+ characters">'
+    +'<label class="aul">Type it again</label><input class="fin" id="bkPw2" type="password" autocomplete="new-password">'
+    +note('Only you hold this password and it is never stored. <b>If you forget it, the backup cannot be recovered.</b> It is separate from your sign-in and from the household code.','w')
+    +(a?note(Cap(P)+' cannot see or restore this backup. It is stored apart from any shared household folder.'):'')
+    +note('Split bills, transfers to '+P+' and amounts owed are handled automatically in the background — this backup is for your everyday private activity.','k')
+    +foot('privbk',{label:a?'Connect '+PNAME[p]:'Save backup file',skip:'Later. Add it to my first steps',dis:a&&!configured(p)});};
+R.lock=function(){
+  return h3('Protect this phone','A 6-digit PIN keeps anyone else out of the app. It is separate from your sign-in password.')
+    +'<div class="ob62pin">'+'<i></i>'.repeat(6)+'</div>'
+    +note('Forgot it later? Reset it with an emailed code or Google re-sign-in.')+foot('lock',{label:'Set 6-digit PIN',skip:'Not now'});};
+R.ready=function(){var p=path(),full=pref().experienceLevel==='full',a=payload().accounts,fa=O().acc||'',L=jrList().slice(0,5),st=storageMode();
+  var mt=p==='invitee'?(usage()==='adv'?'Advanced Couple':'Couple'):({solo:'Personal',couple:'Couple',adv:'Advanced Couple'})[p];
+  var h=h3('You are set up','Change either choice later in Settings. No data moves.')
+    +'<div class="usecard ob62c on"><span class="aucard-ic">'+ico('check')+'</span><span><b>'+mt+' · '+(full?'Full':'Simple')+'</b><small>'+(full?'You will land on Wealth.':'You will land on Money.')+'</small></span></div>'
+    +'<div class="ob62kv"><span>First account</span><b>'+(fa?(isAdv()&&a.some(function(x){return x.name===fa;})?ico('lock')+' ':'')+esc(fa):'Add from first steps')+'</b></div>';
+  if(p==='couple'||p==='adv'||p==='invitee')h+='<div class="ob62kv"><span>Shared sync</span><b>'+({household:'Couple Money Cloud',pdh:'Household folder',device:'This phone only'})[st]+(O().store==='folder'&&st!=='pdh'?' · folder pending':'')+'</b></div>';
+  if(p==='solo')h+='<div class="ob62kv"><span>Storage</span><b>'+({device:'This phone only',drive:'My Google Drive',onedrive:'My OneDrive',household:'Your devices (cloud)'})[st]+'</b></div>';
+  if(isAdv())h+='<div class="ob62kv"><span>Private space backup</span><b>'+esc(pstatus().t)+'</b></div>';
+  h+='<div class="aul" style="margin-top:16px">First steps on your dashboard</div>'+L.map(function(x){return '<div class="ob62ck"><i></i><span><b>'+esc(x.t)+'</b><small>'+esc(x.d)+'</small></span></div>';}).join('');
+  return h+foot('ready',{label:'Open dashboard'});};
+function welcome(){
+  return '<div class="ob62wel">'+h3('Your money, on your own or together','Track spending, accounts and goals. Share only what you decide to share.')+'</div>'
+    +card('auwel','go','spark','Start new','Set up for yourself, or with a partner',!inv())
+    +card('auwel','inv','mail','I have an invite','Join a household your partner already created',false)
+    +'<button class="aulink" data-act="aumode" data-m="login">I already have an account · Log in</button>';
+}
+function lookUp(){
+  S.join={loading:true};
+  if(!(FB&&FB.user&&fbOnSite())){S.join={id:'',why:'Joining needs the cloud: open the app from its website and sign in with the email your partner invited.'};setTimeout(function(){try{if(AU.mode==='join')renderAuth();}catch(e){}},0);return;}
+  var em=(FB.user.email||'').toLowerCase();
+  fsMods().then(function(F){return F.getDocs(F.query(F.collection(FB.db,'households'),F.where('invites','array-contains',em)));}).then(function(qs){
+    var d=qs.docs[0];if(!d){S.join={id:''};return;}
+    var x=d.data(),own=(x.memberProfiles||{})[x.owner]||{};
+    S.join={id:d.id,mode:x.mode==='adv'?'adv':'couple',owner:own.displayName||String(x.ownerEmail||'').split('@')[0]||''};
+    DB.meta.usage=S.join.mode;save();
+  }).catch(function(e){n62(e,'b62:look');S.join={id:'',why:'Your invitation could not be checked right now.'};}).then(function(){try{if(AU.mode==='join')renderAuth();}catch(e){}});
+}
+/* the outermost renderAuth step: the whole flow after sign-in, plus the welcome copy and the step bar */
+SCREEN.around('renderAuth',990000062,function(prev){return function(){
+  var b=$('auBody'),s=$('auSub');
+  try{
+    if(AU.mode==='welcome'){if(s)s.textContent='';b.innerHTML=welcome();return;}
+    if(sessGet()&&AU.mode!=='signup'&&AU.mode!=='login'){
+      var k=nextStep();
+      if(!k){if(!O().fin)return prev.apply(this,arguments);authFinish();return;}
+      AU.mode=k;if(s)s.textContent='';
+      if(k==='folder'){try{rAuthHHF59();}catch(e){n62(e,'b62:hhf');}if(s)s.textContent='';b.insertAdjacentHTML('afterbegin',bar(k));return;}
+      b.innerHTML=bar(k)+R[k]();
+      if(b.parentNode&&b.parentNode.scrollIntoView)try{$('authScr').scrollTop=0;}catch(e){}
+      return;
+    }
+  }catch(e){n62(e,'b62:auth');}
+  prev.apply(this,arguments);
+  try{if((AU.mode==='signup'||AU.mode==='login')&&!sessGet()&&AU.mode==='signup'){b.insertAdjacentHTML('afterbegin',bar('signup'));if(inv()&&s)s.textContent='Sign in to join — use the email address your partner invited.';}}catch(e){n62(e,'b62:bar');}
+};});
+SCREEN.on('renderAuth',990000062);
+/* keep what is typed when a screen re-renders */
+function keep(){
+  var g=function(id){var e=$(id);return e?e.value:null;};
+  if(g('ob62Me')!=null)S.me=g('ob62Me');if(g('ob62Pt')!=null)S.pt=g('ob62Pt');if(g('ob62Cur')!=null)S.cur=g('ob62Cur');
+  if(g('ob62AccN')!=null)S.accN=g('ob62AccN');if(g('ob62AccB')!=null)S.accB=g('ob62AccB');if(g('ob62Inv')!=null)S.inv=g('ob62Inv');
+}
+function go(){AU.err='';renderAuth();}
+function bad(m){AU.err=m;keep();renderAuth();}
+function save62(){save();}
+/* saving each step */
+var SAVE={
+  mode:function(){var m=S.mode||usage();if(!m)return bad('Choose how you will use the app.');
+    if(O().mode&&usage()&&usage()!==m){O().invite=0;O().privbk=0;O().storage=0;}
+    DB.meta.usage=m;O().mode=1;AU.avis=m==='couple'?'shared':'me';
+    if(m==='adv'){var v=m59();if(!(v.adv&&v.adv.since))v.adv={since:Date.now(),spaces:[Me()||'Me',Pn()]};}
+    save62();go();},
+  detail:function(){var e=S.exp||(pref().experienceLevel==='full'?'full':'simple'),p=pref();
+    p.experienceLevel=e;p.experienceSelectedAt=Date.now();p.experienceSelectionSource='onboarding';p.onboardingComplete=true;p.experienceTourComplete=p.experienceTourComplete||{};B28.pref.set(p);
+    DB.meta.expOnboarded=true;V63.itab=e==='simple'?'cash':'wealth';try{sessionStorage.setItem('v63itab',V63.itab);}catch(x){}
+    O().detail=1;save62();go();},
+  storage:function(){var p=path(),s=S.store||O().store||(p==='solo'?'device':'cloud'),v=m59();
+    O().store=s;var k=s==='cloud'?'household':(s==='folder'?'device':s);
+    v.storage=k;DB.meta.storageAsked=1;v.providerAsked=1;
+    if(k==='household'){DB.meta.syncChoice='yes';DB.meta.cloudSyncOn=true;}else{DB.meta.syncChoice='no';DB.meta.cloudSyncOn=false;}
+    if(k==='drive'||k==='onedrive')v.provider=k;
+    O().storage=1;save62();if(k==='household'&&FB&&FB.user)setTimeout(hhStart,500);go();},
+  profile:function(){keep();var me=String(S.me||'').trim(),pt=String(S.pt||'').trim(),cur=String(S.cur||'').trim(),pr=DB.meta.profile||{};
+    if(!me)return bad('Enter your name to continue.');
+    if(pt&&pt.toLowerCase()===me.toLowerCase())return bad('Your partner needs a different name.');
+    if(DB.people.length===1&&DB.people[0]==='Me'&&!DB.txns.some(function(t){return t.person==='Me';}))DB.people=[];
+    if(pr.name&&pr.name!==me&&DB.people.indexOf(pr.name)>=0&&DB.people.indexOf(me)<0)B19.rename(pr.name,me);else if(DB.people.indexOf(me)<0)DB.people.push(me);
+    if(pt){if(pr.partner&&pr.partner!==pt&&DB.people.indexOf(pr.partner)>=0&&DB.people.indexOf(pt)<0)B19.rename(pr.partner,pt);else if(DB.people.indexOf(pt)<0)DB.people.push(pt);}
+    pr=DB.meta.profile=DB.meta.profile||{};pr.name=me;if(path()!=='invitee')pr.partner=pt;
+    try{collabCfg().me=me;}catch(e){}
+    if(cur&&path()!=='invitee')DB.meta.currency=cur;
+    if(isAdv()){var v=m59();v.adv=v.adv||{since:Date.now()};v.adv.spaces=[me,pt||Pn()];}
+    O().profile=1;touch();go();},
+  account:function(skip){keep();var p=path(),me=Me(),t=S.atype||'Bank',o=O();
+    function dflt(a){return a&&!a.owner&&!a.recv&&!+a.start&&(a.name==='Cash'||a.name==='Bank')&&!DB.txns.some(function(x){return x.account===a.name||x.to===a.name;});}
+    if(skip){
+      DB.accounts=DB.accounts.filter(function(a){return !(dflt(a)&&a.name==='Bank');});
+      DB.accounts.forEach(function(a){if(dflt(a)&&a.name==='Cash'){a.owner=me;if(p!=='couple'){a.vis='me';a.pvby=me;}}});
+      o.account=1;o.acc='';touch();go();return;}
+    var n=String(S.accN||'').trim(),bal=parseAmt(S.accB||'')||0;
+    if(!n)return bad('Give the account a name, or skip this step.');
+    if(DB.accounts.some(function(a){return a.name.toLowerCase()===n.toLowerCase()&&!dflt(a)&&a.name!==o.acc;}))return bad('You already have an account with that name.');
+    if(o.acc)DB.accounts=DB.accounts.filter(function(a){return a.name!==o.acc;});
+    DB.accounts=DB.accounts.filter(function(a){return !dflt(a);});
+    if(DB.accTypes.indexOf(t)<0)DB.accTypes.push(t);
+    var acc={name:n,type:t,start:t==='Card'?-Math.abs(bal):bal,owner:me,cycle:0,dueDays:20};
+    if(p==='couple'){var ow=S.owner||'me',pt=(DB.meta.profile||{}).partner||'';if(ow==='partner'&&pt)acc.owner=pt;else if(ow==='joint'&&pt)acc.owner=me+' & '+pt;}
+    else if(p==='solo'||(p==='adv'&&(S.space||'private')==='private')){acc.vis='me';acc.pvby=me;}
+    DB.accounts.push(acc);o.account=1;o.acc=n;touch();go();},
+  invite:function(skip){keep();
+    if(!skip){var e=String(S.inv||'').trim().toLowerCase();
+      if(!emailOK(e))return bad('Enter your partner’s email address.');
+      if(e===((sessGet()||{}).email||''))return bad('That is your own email address.');
+      DB.meta.pendingInvite=e;toast('Invitation saved for '+e+(FB&&FB.user?'':'. It is sent once you are signed in to the cloud.'));}
+    DB.meta.inviteAsked=1;O().invite=1;save62();go();},
+  join:function(){var J=S.join||{},v=m59();
+    DB.meta.usage=J.mode||usage()||'couple';v.storage='household';DB.meta.storageAsked=1;DB.meta.syncChoice='yes';DB.meta.cloudSyncOn=true;
+    O().join=1;O().mode=1;O().storage=1;save62();
+    if(J.id&&FB&&FB.user){V56.joined=Date.now();try{hhJoin(J.id);}catch(e){n62(e,'b62:join');}}
+    go();},
+  space:function(){O().space=1;save62();go();},
+  privbk:function(skip){var c=cfg();c.askedAt=Date.now();m59().privBkAsked=1;
+    if(skip){if(!auto(c)&&c.provider!=='file')c.provider='none';c.later=1;O().privbk=1;save62();go();return;}
+    var p=S.pbk||'drive',pw=($('bkPw')||{}).value||'',pw2=($('bkPw2')||{}).value||'';
+    if(pw.length<6)return bad('Use at least 6 characters for the backup password.');
+    if(pw!==pw2)return bad('The passwords do not match.');
+    var btn=document.querySelector('#auBody [data-act=b62next]');if(btn){btn.disabled=true;btn.textContent='Please wait…';}
+    if(p==='file'){
+      Promise.resolve(bkFileGo()).then(function(ok){if(ok){c.provider='file';c.later=0;O().privbk=1;save62();go();}else{AU.err='The backup file was not saved. Try again, or choose Later.';renderAuth();}});
+      return;}
+    B62.setup(p,pw).then(function(){c.later=0;O().privbk=1;save62();go();}).catch(function(e){AU.err=e.message||String(e);renderAuth();});},
+  lock:function(skip){if(skip){DB.meta.lockAsked=1;O().lock=1;save62();go();return;}
+    B62.lockWait=1;lockShow('set1');},
+  ready:function(){finish();}
+};
+B62.SAVE=SAVE;
+function finish(){
+  var o=O();o.fin=1;DB.meta.onb=1;DB.meta.lockAsked=1;
+  var j=jr();jrInit();j.v62=1;
+  var p=pref();if(!p.onboardingComplete){p.onboardingComplete=true;p.experienceSelectionSource=p.experienceSelectionSource||'onboarding';B28.pref.set(p);}
+  V63.itab=p.experienceLevel==='full'?'wealth':'cash';try{sessionStorage.setItem('v63itab',V63.itab);}catch(e){}
+  V56.lockNext=0;touch();
+  if(inv()){AU.invite=1;
+    var me=Me();DB.accounts=DB.accounts.filter(function(a){return !(a.name==='Bank'&&!a.owner&&!+a.start&&!DB.txns.some(function(t){return t.account==='Bank'||t.to==='Bank';}));});
+    DB.accounts.forEach(function(a){if(a.name==='Cash'&&!a.owner&&!+a.start){a.owner=me;if(isAdv()){a.vis='me';a.pvby=me;}}});}
+  authFinish();
+  try{X63.apply();}catch(e){}
+  setTimeout(function(){try{renderJourney();}catch(e){}},50);
+}
+B62.finish=finish;
+/* the PIN sheet closes → back to onboarding */
+if(window.PINR&&PINR.close){var _pc62=PINR.close;PINR.close=function(){var r=_pc62.apply(this,arguments);try{if(B62.lockWait){B62.lockWait=0;O().lock=1;DB.meta.lockAsked=1;save62();if(!$('authScr').hidden)go();}}catch(e){n62(e,'b62:pin');}return r;};}
+ACT.on('b62-onboarding',{
+  auwel:function(el,next){O().inv=el.dataset.v==='inv'?1:0;if(el.dataset.v!=='inv')AU.invite=0;save62();return next(el);},
+  b62pick:function(el){var v=el.dataset.v,k=AU.mode;if(el.getAttribute('aria-disabled')==='true'){toast(cfgMsg(v));return;}keep();
+    if(k==='mode')S.mode=v;else if(k==='detail')S.exp=v;else if(k==='storage')S.store=v;else if(k==='privbk')S.pbk=v;
+    var pw=($('bkPw')||{}).value,pw2=($('bkPw2')||{}).value;go();if(k==='privbk'){if($('bkPw'))$('bkPw').value=pw||'';if($('bkPw2'))$('bkPw2').value=pw2||'';}},
+  b62help:function(){askChoice('Do both of you need accounts the other can’t see? Couple shares everything. Advanced Couple adds private accounts.',[
+    {c:'btn',l:'No — use Couple',f:function(){S.mode='couple';go();}},{c:'btn ghost',l:'Yes — use Advanced Couple',f:function(){S.mode='adv';go();}}]);},
+  b62at:function(el){keep();S.atype=el.dataset.v;go();},
+  b62ow:function(el){keep();S.owner=el.dataset.v;go();},
+  b62sp:function(el){keep();S.space=el.dataset.v;go();},
+  b62look:function(){S.join=null;go();},
+  b62next:function(){var k=AU.mode;if(SAVE[k])SAVE[k](false);},
+  b62skip:function(){var k=AU.mode;if(SAVE[k])SAVE[k](true);},
+  b62back:function(){keep();var f=flow(),i=f.indexOf(AU.mode);for(var j=i-1;j>=2;j--){var k=f[j];if(k==='join')break;if(k==='folder'){DB.meta.pdhAsked=0;}else if(k==='lock'){O().lock=0;}else O()[k]=0;if(k!=='folder'||true)break;}AU.err='';save62();renderAuth();}
+});
+
+/* ======================================================================
+   JRN-01/02 · first steps per mode × experience, on the dashboard
+   ====================================================================== */
+function jrFlag(k){return !!jr()[k];}
+var J62={
+  invite:function(){return {k:'invite',t:'Invite '+Pn(),d:'Pending until they accept',done:function(){var I=HH&&HH.info;return !!(I&&(I.members||[]).length>=2)||(function(){try{return !!pdh59().acceptedAt;}catch(e){return false;}})();}};},
+  pbk:function(iv){return {k:'pbk62',t:'Back up your private space',d:iv?'Add a backup so it is not lost with this phone':'Not backed up yet. It exists only on this phone',done:pbDone};},
+  privacc:function(){return {k:'privacc62',t:'Add your first private account',d:'Only you can see it',done:function(){return payload().accounts.length>0;}};},
+  shared:function(){return {k:'shared62',t:'Check the shared accounts',d:'See what '+Pn()+' has set up',done:function(){return jrFlag('shv62');}};},
+  txn:function(){return {k:'txn',t:'Add your first transaction',d:'Tap + and save one',done:function(){return DB.txns.some(function(t){return !t.demo;});}};},
+  split:function(){return {k:'split',t:'Split your first bill',d:'Share a bill and track who owes whom',done:function(){return DB.txns.some(function(t){return !t.demo&&t.group;});}};},
+  preview:function(){return {k:'preview62',t:'Preview what '+Pn()+' sees',d:'Check nothing private is shared',done:function(){return jrFlag('pv62');}};},
+  budget:function(){return {k:'budget',t:'Set a monthly budget',d:'Know what is left each month',done:function(){try{return JR56.budget.done();}catch(e){return false;}}};},
+  wealth:function(){return {k:'wealth62',t:'Open Wealth',d:'See net worth once balances are in',done:function(){return jrFlag('wl62');}};},
+  asset:function(){return {k:'asset62',t:'Add a loan, card or asset',d:'So net worth is complete',done:function(){return DB.accounts.some(function(a){return ['Loan','Hire Purchase','Card','Property','Vehicle','Investment','Other Asset'].indexOf(a.type)>=0;});}};},
+  backup:function(){return {k:'backup62',t:'Confirm your backup',d:'Check the choice you just made',done:function(){return jrFlag('bk62');}};}
+};
+jrList=function(){
+  var f=pref().experienceLevel==='full',iv=inv(),u=usage(),L=[];
+  if(iv){if(u==='adv'&&!pbDone())L.push(J62.pbk(true));if(u==='adv')L.push(J62.privacc());L.push(J62.shared());}
+  if(!iv&&(u==='adv'||u==='couple'))L.push(J62.invite());
+  if(!iv&&u==='adv'&&cfg().later)L.push(J62.pbk(false));
+  if(!iv)L.push(J62.txn());
+  if(u==='couple'||(iv&&u!=='adv'))L.push(J62.split());
+  if(u==='adv'&&!iv)L.push(J62.preview());
+  L.push(f?J62.wealth():J62.budget());
+  if(f)L.push(J62.asset());
+  if(u==='solo'||!u)L.push(J62.backup());
+  return L.slice(0,5);
+};
+var GO={
+  pbk62:function(){gotoView('settings');setTimeout(function(){try{B3.setGo('data');setTimeout(function(){var c=$('pb62Card');if(c)c.scrollIntoView({block:'center'});},120);}catch(e){}},60);},
+  privacc62:function(){gotoView('accounts');},
+  shared62:function(){jr().shv62=1;save();gotoView('accounts');},
+  preview62:function(){jr().pv62=1;save();try{B20.pvOpen();}catch(e){gotoView('settings');}},
+  wealth62:function(){jr().wl62=1;save();V63.itab='wealth';try{sessionStorage.setItem('v63itab','wealth');}catch(e){}gotoView('overview');renderOverview();},
+  asset62:function(){gotoView('accounts');},
+  backup62:function(){jr().bk62=1;save();gotoView('settings');setTimeout(function(){try{B3.setGo('data');}catch(e){}},60);}
+};
+ACT.on('b62-journey',{jr62go:function(el){var f=GO[el.dataset.k];if(f)f();setTimeout(function(){try{renderJourney();}catch(e){}},300);}});
+SCREEN.base('renderJourney',990000062,function(){
+  var box=$('jrnBox');if(!box)return;
+  var ov=$('view-overview');if(ov&&box.parentNode!==ov)ov.insertBefore(box,ov.firstChild);else if(ov&&ov.firstChild!==box)ov.insertBefore(box,ov.firstChild);
+  var j=jr();JR=jrList();
+  if(!sessGet()||j.hide||!j.start){box.innerHTML='';return;}
+  var L=JR,n=L.filter(function(x){return x.done();}).length,tot=L.length;
+  if(!tot||n>=tot){if(tot&&!j.celebrated){j.celebrated=1;save();toast('First steps done! You know your way around 🎉');}box.innerHTML='';return;}
+  var open=j.open!==0,next=L.filter(function(x){return !x.done();})[0];
+  box.innerHTML='<div class="card jrn"><div class="jrhead" data-act="jrtoggle"><div><b>'+ico('flag')+' First steps</b><small>'+n+' of '+tot+' done'+(next&&!open?' · next: '+esc(next.t):'')+'</small></div><span class="muted">'+ico(open?'chevdown':'chevright')+'</span><button class="jrskip" data-act="jrhide">Skip</button></div>'
+    +'<div class="jrbar"><i style="width:'+(n/tot*100).toFixed(0)+'%"></i></div>'
+    +(open?'<div class="jrlist">'+L.map(function(x){var d=x.done(),nx=next&&next.k===x.k,btn='';
+      if(!d){if(GO[x.k])btn='<button class="btn sm'+(nx?'':' ghost')+'" data-act="jr62go" data-k="'+x.k+'">'+(nx?'Show me':'Open')+'</button>';else if(TOURS[x.k])btn='<button class="btn sm'+(nx?'':' ghost')+'" data-act="tour" data-k="'+x.k+'">'+(nx?'Show me':'Try')+'</button>';}
+      return '<div class="jrrow'+(d?' done':'')+(nx?' next':'')+'"><span class="jrck">'+(d?ico('check'):'')+'</span><span class="jrtx"><b>'+esc(x.t)+'</b><small>'+esc(x.d)+'</small></span>'+btn+'</div>';}).join('')+'</div>':'')
+    +'</div>';
+});
+SCREEN.on('renderJourney',990000062);
+SCREEN.after('renderOverview',990000062,{call:'apply',ret:false},function(){try{renderJourney();}catch(e){n62(e,'b62:jrn');}});
+SCREEN.on('renderOverview',990000062);
+
+/* ---------- version + release note ---------- */
+try{if(window.pinVer36)window.pinVer36('1.60 beta 64');}catch(e){}
+try{if(!window.__B64RN){var ol=document.querySelector('#pageSet details.help ol')||document.querySelector('#view-settings details.help ol');
+  if(ol){ol.insertAdjacentHTML('beforeend','<li><b>Beta 64:</b> New step-by-step onboarding (mode, detail level, storage, your first account, invite, private backup, PIN) with a first-steps list on the dashboard. Advanced Couple can back up the private space automatically to your own Google Drive or OneDrive. Renaming yourself keeps your private accounts. Add transaction says when a private entry will be shared. The guided tour keeps the screen still.</li>');window.__B64RN=1;}}}catch(e){}
+})();
