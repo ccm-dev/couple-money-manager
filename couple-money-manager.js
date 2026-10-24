@@ -1,5 +1,7 @@
 "use strict";
 
+/* Beta 78: Cloud Functions region. Must match setGlobalOptions in functions/index.js (D-33). */
+var CMM_FN_REGION='asia-southeast1';
 /* ===== beta 75 · page-file check =====
    The page (index.html) and this script must come from the same build. When a phone or host keeps an
    older index.html, this script still loads but the Transactions toolbar, the Filters sheet and the
@@ -7,7 +9,7 @@
    place before anything is drawn, loads the matching stylesheet, and clears the offline copies so
    the next start fetches fresh files. Help & About then says "old page file". */
 var PAGE75=(function(){
-  var JSV='1.60-beta.76',out={js:JSV,page:'',stale:false,fixed:false};
+  var JSV='1.60-beta.78',out={js:JSV,page:'',stale:false,fixed:false};
   try{
     var m=document.querySelector('meta[name="app-version"]');out.page=m?m.content:'';
     out.stale=out.page!==JSV;
@@ -9152,10 +9154,6 @@ SCREEN.base('B3.renderDataSub',90039357,function(){
     h+='<div class="help small">Nothing is uploaded. Without a backup, losing this device can mean losing your data.</div>';
   }
   b.innerHTML=h;
-  var ai=$('aiDataB3');
-  if(ai){var pc=privCfg();
-    ai.innerHTML='<label class="pv-row"><span class="pv-ic">'+ico('spark')+'</span><span class="pv-tx"><b>Send notes to the online AI</b><small>Only used when Gemini or OpenAI is connected. Private transactions go as amount only; anything hidden from you is never sent.</small></span><span class="pv-ct"><input type="checkbox" class="tgl"'+(!!pc.aiNotes?' checked':'')+' onchange="var c=privCfg();c.aiNotes=this.checked;privSave(c)"></span></label>';
-  }
   if($('bkSub2'))$('bkSub2').textContent=BK.log.length?BK.log.length+' kept · latest '+bkWhen(BK.log[0].at):'auto · every change';
   if($('bkSub'))$('bkSub').textContent=$('bkSub2').textContent;
 });
@@ -11246,10 +11244,11 @@ var SET_HTML=''
     +'</div>'
     +'<div class="card"><h2>Household &amp; membership</h2><div id="fbBody"></div></div>'
   +'</section>'
-  /* Privacy & Security — exactly two controls (plan §2/§9) */
+  /* Privacy & Security — Protect this device, Privacy Screen, AI notes (beta 77) */
   +'<section class="setsub" data-sub="privacy" hidden><div class="card"><h2>Privacy &amp; Security</h2>'
     +'<div class="mgr-sec" style="margin-top:2px">Protect this device</div><div class="pv-grp" id="pvLockB3"></div>'
     +'<div class="mgr-sec">Privacy Screen</div><div class="pv-grp" id="pvScrB3"></div>'
+    +'<div class="mgr-sec">AI notes</div><div class="pv-grp" id="pvAiB3"></div>'
     +'<div hidden id="privBody"></div>'
   +'</div></section>'
   /* Data & Sync (plan §9) */
@@ -11270,7 +11269,6 @@ var SET_HTML=''
       +'<button class="exbtn" data-act="psum">'+ico('download')+'<b>Per person</b><small>CSV · monthly totals</small></button>'
       +'<button class="exbtn" data-act="bkdown">'+ico('save')+'<b>Full backup</b><small>JSON · re-importable</small></button>'
     +'</div>'
-    +'<div class="mgr-sec">AI &amp; data</div><div id="aiDataB3"></div>'
     +'<input type="file" id="fileStmt" accept=".csv,.txt,.tsv,.xlsx,.xls,.pdf" hidden onchange="stmFile(this)">'
     +'<input type="file" id="fileImport" accept=".json,.csv,.txt,.tsv,.xlsx,.xls" multiple hidden onchange="importFile(this)">'
     +'<div hidden id="fbBody2"></div><span hidden id="fbSub"></span>'
@@ -17157,15 +17155,14 @@ function build(){
   /* Preferences card (smart defaults) */
   var pref=document.createElement('div');pref.className='card';pref.id='ds22Pref';
   pref.innerHTML='<h2>Preferences <span class="sub">smart defaults</span></h2><div id="ds22Rem"></div>';
-  var aiNode=$('aiDataB3');
   if(heads.ai)heads.ai.remove();
   /* Import & export card (collapsed) */
   var io=document.createElement('div');io.className='card';io.id='ds22IO';
   io.innerHTML='<details class="ds22-det" id="ds22IODet"'+(D22.ioOpen?' open':'')+' ontoggle="D22.ioOpen=this.open"><summary>'+ico('swap')+'<span class="st">Import &amp; export<small>Bank statements, files, CSV and full backups</small></span><span class="chev">'+ico('chevright')+'</span></summary><div class="ds22-in" id="ds22IOIn"></div></details>';
   var ioIn=io.querySelector('#ds22IOIn');
   function moveFrom(start,stopAt){var n=start;while(n){var nx=n.nextElementSibling;if(stopAt.indexOf(n)>=0)break;if(n.tagName==='INPUT'||n.hidden)break;ioIn.appendChild(n);n=nx;}}
-  if(heads.inn)moveFrom(heads.inn,[heads.out,heads.ai,$('aiDataB3')].filter(Boolean));
-  if(heads.out)moveFrom(heads.out,[heads.ai,$('aiDataB3')].filter(Boolean));
+  if(heads.inn)moveFrom(heads.inn,[heads.out,heads.ai].filter(Boolean));
+  if(heads.out)moveFrom(heads.out,[heads.ai].filter(Boolean));
   /* Restore lives with "Bring data in" so every experience level can recover a phone */
   var grid=ioIn.querySelector('[data-act=import]');grid=grid&&grid.parentNode;
   if(grid)grid.insertAdjacentHTML('beforeend','<button class="btn ghost" data-act="bkrestorefile">'+ico('recycle')+' Restore a full backup <span style="font-weight:600;opacity:.85">· replaces data after preview</span></button>');
@@ -17187,7 +17184,6 @@ function build(){
     +'<div id="ds22Couple"></div>'
     +'<div class="mgr-sec">Sync diagnostics</div><div id="ds22Diag"></div>');
   if($('storeBody'))advIn.querySelector('#ds22Folder').appendChild($('storeBody'));
-  if(aiNode){advIn.insertAdjacentHTML('beforeend','<div class="mgr-sec">AI assistant</div>');advIn.appendChild(aiNode);}
   /* order: Status · Household & membership · Preferences · Import & export · Advanced */
   var hh=$('fbBody')?$('fbBody').closest('.card'):null;
   var after=card;
@@ -17252,7 +17248,7 @@ D22.paintAdv=function(){
   var cp=isCouple(),adv=isAdv();
   var f=$('ds22Folder');if(f)f.hidden=!cp;
   if(cp)qa('#storeBody .pdhsolo').forEach(function(x){x.remove();});
-  var sub=$('ds22AdvSub');if(sub)sub.textContent=adv?'Backup history, household folder, partner activity, diagnostics':(cp?'Backup history, AI notes, household folder, diagnostics':'Backup history, diagnostics');
+  var sub=$('ds22AdvSub');if(sub)sub.textContent=adv?'Backup history, household folder, partner activity, diagnostics':(cp?'Backup history, household folder, diagnostics':'Backup history, diagnostics');
   /* Advanced Couple only: partner controls pointer + partner activity (audit trail) */
   var c=$('ds22Couple');
   if(c){
@@ -18278,6 +18274,13 @@ SCREEN.after('B3.renderPrivSub',280001000,{call:'apply',ret:false},function(){
   if(note)note.insertAdjacentHTML('beforebegin',row);else el.insertAdjacentHTML('beforeend',row);
 });
 SCREEN.on('B3.renderPrivSub',280001000);
+/* beta 77: AI notes is a privacy choice, so it lives in Privacy & Security (same mm_priv.aiNotes setting) */
+SCREEN.after('B3.renderPrivSub',280001500,{call:'apply',ret:false},function(){
+  var el=$('pvAiB3');if(!el)return;
+  el.innerHTML=pvRow('spark','Send notes to the online AI','Only used when Gemini or OpenAI is connected. Private transactions go as amount only; anything hidden from you is never sent.',
+    '<input type="checkbox" class="tgl"'+(privCfg().aiNotes?' checked':'')+' onchange="var c=privCfg();c.aiNotes=this.checked;privSave(c)">',true);
+});
+SCREEN.on('B3.renderPrivSub',280001500);
 /* Settings › Your Profile: how you sign in + Change password */
 SCREEN.after('B3.renderProfileSub',280002000,{call:'apply',ret:false},function(){
   var anchor=$('profNameB3');if(!anchor)return;
@@ -19759,7 +19762,7 @@ function txnDoc291(t,accByName){
   return {id:String(t.id),visibility:'shared',accountId:r.accountId,toAccountId:r.toAccountId,createdByUid:created,viewerUids:view,record:r,updatedAt:+t.u||+t.lastEditedAt||Date.now(),updatedByUid:stableUid291()};
 }
 function normalizedSnapshot291(){ensureIds291();var sh=buildSharedView(DB,{purpose:'normalized-cloud',now:Date.now()}),docsA=[],byName={};(sh.accounts||[]).forEach(function(a){var d=accountDoc291(a);docsA.push(d);byName[a.name]=d;});var docsT=(sh.txns||[]).filter(function(t){return t&&t.id;}).map(function(t){return txnDoc291(t,byName);}).filter(function(t){return t.accountId;});var state=cmm291Clone(sh);delete state.accounts;delete state.txns;return {state:state,accounts:docsA,transactions:docsT};}
-function backend291(name,data){return fbLoad().then(function(){return dynImport('https://www.gstatic.com/firebasejs/'+FBJS+'/firebase-functions.js');}).then(function(M){return M.httpsCallable(M.getFunctions(FB.app),name)(data||{});});}
+function backend291(name,data){return fbLoad().then(function(){return dynImport('https://www.gstatic.com/firebasejs/'+FBJS+'/firebase-functions.js');}).then(function(M){return M.httpsCallable(M.getFunctions(FB.app,CMM_FN_REGION),name)(data||{});});}
 function resetNormalized291(){['unsubA','unsubT','unsubS'].forEach(function(k){if(N291[k])try{N291[k]();}catch(e){}N291[k]=null;});N291.remoteA={};N291.remoteT={};N291.state=null;N291.readyA=N291.readyT=N291.readyS=false;}
 var _hhDetach291=hhDetach;hhDetach=function(){resetNormalized291();return _hhDetach291.apply(this,arguments);};
 function applyNormalized291(){if(N291.applying||!N291.readyA||!N291.readyT||!N291.readyS||!N291.state)return;N291.applying=true;try{var R=cmm291Clone(N291.state.record||{});R.accounts=Object.keys(N291.remoteA).map(function(k){return cmm291Clone(N291.remoteA[k].record);});R.txns=Object.keys(N291.remoteT).map(function(k){return cmm291Clone(N291.remoteT[k].record);});R.meta=R.meta||{changedAt:N291.state.changedAt||0,del:{}};mergeShared(R);ensureIds291();stampInit();save();renderAll();}catch(e){console.warn('normalized-apply',e);}finally{N291.applying=false;}}
@@ -26954,7 +26957,7 @@ function registerName(){
     if(!(FB&&FB.user&&HH&&HH.id&&HH.info)||HH.info.owner===FB.user.uid)return;
     var nm=Me();if(!nm)return;
     fbLoad().then(function(){return dynImport('https://www.gstatic.com/firebasejs/'+FBJS+'/firebase-functions.js');})
-      .then(function(M){return M.httpsCallable(M.getFunctions(FB.app),'registerMemberProfile')({householdId:HH.id,displayName:nm});})
+      .then(function(M){return M.httpsCallable(M.getFunctions(FB.app,CMM_FN_REGION),'registerMemberProfile')({householdId:HH.id,displayName:nm});})
       .catch(function(e){n62(e,'b62:regname');});
   }catch(e){n62(e,'b62:regname0');}
 }
@@ -28265,6 +28268,8 @@ ACT.on('beta-76-profile-invite',{
     }catch(e){n76(e,'b76:inv');}
   }
 });
-try{if(window.pinVer36)window.pinVer36('1.60 beta 76'+(PAGE75.stale?' · old page file ('+(PAGE75.page||'none')+')':''));}catch(e){}
+try{if(window.pinVer36)window.pinVer36('1.60 beta 78'+(PAGE75.stale?' · old page file ('+(PAGE75.page||'none')+')':''));}catch(e){}
 try{if(!window.__B76RN){var ol=document.querySelector('#pageSet details.help ol')||document.querySelector('#view-settings details.help ol');if(ol){ol.insertAdjacentHTML('beforeend','<li><b>Beta 76:</b> Your Profile › Invite collaborator now opens the invite in Data &amp; Sync: the Household folder card if your household uses a Google Drive or OneDrive folder, otherwise the Household row (Couple Money Cloud).</li>');window.__B76RN=1;}}}catch(e){}
+try{if(!window.__B77RN){var ol=document.querySelector('#pageSet details.help ol')||document.querySelector('#view-settings details.help ol');if(ol){ol.insertAdjacentHTML('beforeend','<li><b>Beta 77:</b> Send notes to the online AI moved from Data &amp; Sync › Advanced to Settings › Privacy &amp; Security, under AI notes. Your choice is kept.</li>');window.__B77RN=1;}}}catch(e){}
+try{if(!window.__B78RN){var ol=document.querySelector('#pageSet details.help ol')||document.querySelector('#view-settings details.help ol');if(ol){ol.insertAdjacentHTML('beforeend','<li><b>Beta 78:</b> Household features (join, leave, name change) now use the Singapore server (asia-southeast1).</li>');window.__B78RN=1;}}}catch(e){}
 })();
