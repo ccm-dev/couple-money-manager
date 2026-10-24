@@ -826,12 +826,6 @@ body.sheeton .toast{border-radius:16px}
 
 /* ---------- 1. toolbar: one slim row (search + 2 icon buttons) ---------- */
 #view-txns>.card{padding:12px 12px 10px}
-#view-txns .srchw .fin{border-radius:999px;background:var(--bg);border-color:transparent;box-shadow:none;padding:11px 42px 11px 16px;font-size:var(--fs-14)}
-#view-txns .srchw .fin:focus{background:var(--card);border-color:var(--accent);box-shadow:var(--ring)}
-#view-txns .srchw .srchx{background:transparent}
-#txFilterBtn,#txSelToggle.ic{width:42px;min-width:42px;padding:0;justify-content:center;border-radius:13px;white-space:nowrap}
-#txFilterBtn{position:relative}
-#txFilterBtn .fbadge{position:absolute;top:-4px;right:-4px;min-width:18px;height:18px;border-radius:10px;box-shadow:0 0 0 2px var(--card);padding:0 4px}
 #txSummary{font-size:var(--fs-12);letter-spacing:.1px}
 
 /* ---------- 2. day flow:flat list + sticky frosted date captions ---------- */
@@ -2392,11 +2386,11 @@ button.fline.acr-nav:active{opacity:.65}
 /* ================= v1.60 beta 40 — add transaction v2.1 (mockup updates) =================
    1. Amount hero: 46 px, refund chip inline to the right, caret while the keypad is open,
       long values shrink to 34 px.
-   2. Account row: the read-only owner chip sits on a second line under the account name
-      and always follows the chosen account's owner (beta 42 — no editable owner field,
+   2. Account row: the read-only account owner chip sits on a second line under the account name
+      and always follows the chosen account (beta 42 — no editable account owner field,
       no arrow beside the field); Advanced Couple private accounts show a "Private account" hint.
-   3. Transfer: From ⇄ To flow tiles (owner chip under each), the Between Us entry is
-      created automatically when the owners differ — no checkbox.
+   3. Transfer: From ⇄ To flow tiles (account owner chip under each), the Between Us entry is
+      created automatically when the account owners differ — no checkbox.
    4. ONE keypad, docked inside the open sheet (never above the nav, never over a footer);
       dim / ✕ / Back close the keypad first, then the sheet.
    5. ONE money-field style (.af40 family): standard for starting balance / goal target /
@@ -2419,7 +2413,7 @@ button.fline.acr-nav:active{opacity:.65}
 #sheet.form61 .ad-amt61.focus40{border-color:var(--accent);box-shadow:var(--ring)}
 #ad-amtsub61,#fAmtSub61:empty{display:none}
 
-/* ---- account row: owner chip on its own line under the account name ---- */
+/* ---- account row: account owner chip on its own line under the account name ---- */
 #sheet.form61 .ad-card61>.row61>.acc-col61{flex:1;min-width:0;display:flex;flex-direction:column;align-items:flex-end;gap:4px}
 #sheet.form61 .ad-card61>.row61>.acc-col61 select.fin{width:100%}
 #sheet.form61 .ad-card61>.row61>.acc-col61 .own61{max-width:100%}
@@ -2439,7 +2433,7 @@ button.fline.acr-nav:active{opacity:.65}
 #sheet.form61 .ad-flow61>.row61 .chev61{display:none}
 #sheet.form61 .ad-flow61 .swap61{align-self:center;width:36px;height:36px;border-radius:50%;flex:none}
 
-/* ---- owed: automatic between different owners — the checkbox retires, the hint stays ---- */
+/* ---- owed: automatic between different account owners — the checkbox retires, the hint stays ---- */
 #fOwedRow.auto40{background:transparent}
 #fOwedRow.auto40>label{cursor:default}
 #fOwedRow.auto40 input[type=checkbox]{display:none}
@@ -2462,8 +2456,8 @@ body.calc-on #mgrSheet #mgrBody{padding-bottom:315px}
 .af40.cell40 input.fin{font-size:var(--fs-14);font-weight:700;letter-spacing:0}
 .bgrow .af40{min-height:40px;background:var(--card)}
 
-/* beta 42: the owner select is retired — the owner follows the chosen account and is
-   not editable, so the second line only ever shows the read-only owner chip */
+/* beta 42: the account owner select is retired — the account owner follows the chosen account and is
+   not editable, so the second line only ever shows the read-only account owner chip */
 #sheet.form61 .ad-card61>.row61>.acc-col61 #fOwnerRow{flex-direction:row;align-items:center;gap:6px;min-height:0;border:0;background:transparent;padding:0;margin:0;width:100%;display:flex}
 #sheet.form61 .ad-card61>.row61>.acc-col61 #fOwnerRow[hidden]{display:none}
 #sheet.form61 .acc-col61 #fOwnerRow>label,#sheet.form61 .acc-col61 #fOwnerRow>svg{display:none}
@@ -2967,7 +2961,7 @@ details.calc51 p{margin-top:6px;line-height:1.5}
 /* beta 58: tab bars inside a scrolling page stick right under that page's header */
 .page .stab{top:var(--stick58,-11px)}
 
-/* ===== beta 59 · Add transaction: account field without a box, owner on its own line in a small box =====
+/* ===== beta 59 · Add transaction: account field without a box, account owner on its own line in a small box =====
    Expense / Income: one "Paid from" / "Paid into" field. Transfer: From ⇄ To side by side.
    The native drop-down stays (the phone's own picker); it is shown as plain bold text with a chevron. */
 #sheet.form61 .ad-flow61>.row61{background:transparent!important;border:0!important;border-radius:0!important;padding:2px 0 0!important;min-height:0!important;gap:4px!important;box-shadow:none!important}
@@ -2987,7 +2981,6 @@ details.calc51 p{margin-top:6px;line-height:1.5}
 
 /* ===== beta 59 · Transactions tab uses the Accounts tab look ===== */
 #view-txns #t59pt{padding-top:2px}
-#view-txns #t59chips{padding-top:0}
 #txList .rowsw{border-radius:18px}
 #txList .day-h{letter-spacing:.5px}
 #txList .day-h span:last-child{font-size:var(--fs-13,13px);font-weight:800;color:var(--text,var(--ink));letter-spacing:0}
@@ -3006,7 +2999,7 @@ details.calc51 p{margin-top:6px;line-height:1.5}
 #chMsg{white-space:pre-line;text-align:left;max-height:55vh;overflow-y:auto;overflow-wrap:anywhere}
 
 /* ===== v1.60 beta 63 · Add transaction: account field as a tidy card =====
-   Expense / Income: one card row under "Account": icon · account name (full-width picker) · owner underneath.
+   Expense / Income: one card row under "Account": icon · account name (full-width picker) · account owner underneath.
    Transfer: From and To stacked in one card, same row layout, swap button sits on the divider between them. */
 #sheet.form61 .ad-flow61{display:flex!important;flex-direction:column!important;align-items:stretch!important;gap:0!important;
   background:color-mix(in srgb,var(--bg) 55%,var(--card));border:1px solid var(--hair);border-radius:16px;margin-bottom:16px;overflow:visible}
@@ -3032,7 +3025,7 @@ details.calc51 p{margin-top:6px;line-height:1.5}
   font-size:var(--fs-16,16px)!important;font-weight:800!important;line-height:1.25;text-align:left;text-align-last:left;
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis;background-position:right 0 center!important;background-size:18px 18px!important}
 #sheet.form61 .ad-flow61 .acc-col61 select.fin:focus-visible{outline:0!important}
-/* owner: a quiet line under the name, lined up with it */
+/* account owner: a quiet line under the name, lined up with it */
 #sheet.form61 .ad-flow61 .own61{display:inline-flex;align-self:flex-start;align-items:center;gap:5px;max-width:100%;padding:0!important;margin:0;
   border:0!important;background:none!important;box-shadow:none!important;border-radius:0!important;
   font-size:var(--fs-13,13px)!important;font-weight:600!important;color:var(--muted)!important;line-height:1.3}
@@ -3083,3 +3076,139 @@ details.calc51 p{margin-top:6px;line-height:1.5}
 .pb62tbl th,.pb62tbl td{text-align:left;padding:6px 4px;border-bottom:1px solid var(--line);vertical-align:top}
 .pb62tbl td.y{color:var(--inc);font-weight:700}.pb62tbl td.n{color:var(--exp);font-weight:700}.pb62tbl td.m{color:var(--warn)}
 .pb62ov{padding:4px 2px 8px}
+
+/* beta 67 · mode / leave request card in Settings › Modes */
+.m67req{border:1px solid var(--accent);border-radius:14px;padding:12px 14px;margin:0 0 12px;background:var(--card)}
+.m67req.m67done{border-color:var(--line)}
+.m67req b{display:flex;align-items:center;gap:6px;font-size:var(--fs-14)}
+.m67req b svg{width:16px;height:16px;flex:none}
+.m67req small{display:block;color:var(--muted);font-size:var(--fs-12);line-height:1.5;margin-top:4px}
+.m67req .btnrow{margin-top:10px}
+
+/* ===== beta 71 · Transactions filter (transactions-filter-mockup) ===== */
+#view-txns{--txf71h:0px}
+.txf71{position:sticky;top:calc(62px + env(safe-area-inset-top));z-index:7;margin:0 -12px 2px;padding:10px 12px 6px;background:color-mix(in srgb,var(--bg) 94%,transparent);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px)}
+#txList .dayg>.day-h{top:calc(62px + env(safe-area-inset-top) + var(--txf71h))}
+.txf71-srch{position:relative}
+.txf71-srch .txf71-si{position:absolute;left:13px;top:50%;transform:translateY(-50%);color:var(--muted);width:16px;height:16px;pointer-events:none;z-index:1}
+.txf71-srch input.fin{width:100%;margin:0;border:1.5px solid transparent;border-radius:999px;background:var(--card);padding:11px 58px 11px 38px;font-size:var(--fs-14);box-shadow:var(--shadow);min-height:46px;-webkit-appearance:none;appearance:none}
+.txf71-srch input.fin::-webkit-search-cancel-button{display:none}
+.txf71-srch input.fin:focus{border-color:var(--accent);box-shadow:var(--ring)}
+.txf71-srch.hasq input.fin{padding-right:94px}
+.txf71-srch .srchx{right:50px;width:28px;height:28px}
+.txf71-fbtn{position:absolute;right:2px;top:50%;transform:translateY(-50%);width:44px;height:44px;border-radius:50%;display:grid;place-items:center;color:var(--ink);background:none;border:0}
+.txf71-fbtn svg.icn{width:19px;height:19px}
+.txf71-fbtn.on{background:var(--accent-soft);color:var(--accent)}
+.txf71-fbtn .bd{position:absolute;top:1px;right:0;min-width:18px;height:18px;border-radius:9px;background:var(--accent);color:#fff;font-size:11px;font-weight:800;display:grid;place-items:center;padding:0 4px;box-shadow:0 0 0 2px var(--card)}
+.txf71-fbtn .bd[hidden]{display:none}
+.txf71-tseg{display:flex;background:var(--card);border-radius:13px;padding:3px;gap:3px;margin-top:9px;box-shadow:var(--shadow)}
+.txf71-tseg button{flex:1;text-align:center;min-height:38px;border-radius:10px;font-size:var(--fs-13);font-weight:800;color:var(--muted);background:none;border:0}
+.txf71-tseg button.on{background:var(--accent-soft);color:var(--accent)}
+.txf71-tseg button.on.e{background:var(--exp-soft);color:var(--exp)}
+.txf71-tseg button.on.n{background:var(--inc-soft);color:var(--inc)}
+.txf71-act{display:flex;gap:7px;overflow-x:auto;padding:9px 12px 2px;margin:0 -12px;scrollbar-width:none;align-items:center;min-height:44px}
+.txf71-act::-webkit-scrollbar{display:none}
+.txf71-act[hidden]{display:none}
+.txf71-achip{flex:none;display:inline-flex;align-items:center;gap:7px;min-height:36px;padding:0 10px 0 13px;border-radius:999px;background:var(--accent-soft);color:var(--accent);font-size:var(--fs-13);font-weight:700;white-space:nowrap;border:0}
+.txf71-achip svg.icn{width:13px;height:13px}
+.txf71-arst{flex:none;min-height:36px;padding:0 6px;color:var(--accent);font-size:var(--fs-13);font-weight:800;background:none;border:0}
+.txf71-sum{display:flex;align-items:center;gap:8px;padding:8px 2px 2px;font-size:var(--fs-12);color:var(--muted);font-weight:650}
+.txf71-sum .g{flex:1;min-width:0}
+.txf71-sum b{color:var(--ink)}
+.txf71-sum #txSelToggle{flex:none;min-height:36px}
+#txList mark.txf71-m{background:color-mix(in srgb,var(--warn,#d97706) 30%,transparent);color:inherit;border-radius:3px;padding:0 1px}
+.txf71-empty{background:var(--card);border-radius:18px;margin-top:14px;padding:26px 18px;text-align:center;box-shadow:var(--shadow)}
+.txf71-empty .big{width:54px;height:54px;border-radius:50%;background:var(--accent-soft);color:var(--accent);display:grid;place-items:center;margin:0 auto 10px;font-size:inherit}
+.txf71-empty .big svg.icn{width:26px;height:26px}
+.txf71-empty b{font-size:var(--fs-15);margin-bottom:4px}
+.txf71-empty p{font-size:var(--fs-13);color:var(--muted);line-height:1.5;margin-bottom:12px}
+.txf71-empty .sg{display:grid;gap:8px}
+.txf71-empty .sg .btn{width:100%;min-height:44px}
+/* sheet */
+#txfSheet{display:flex;flex-direction:column;padding:0;overflow:hidden;max-height:88dvh}
+#txfSheet .grab{margin:8px auto 2px;flex:none}
+.txf71-shead{display:flex;align-items:center;padding:6px 14px 8px 18px;flex:none}
+.txf71-shead b{flex:1;font-size:var(--fs-18);letter-spacing:-.2px}
+.txf71-x{width:44px;height:44px;border-radius:12px;display:grid;place-items:center;color:var(--muted);background:none;border:0}
+.txf71-x svg.icn{width:20px;height:20px}
+.txf71-sbody{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;padding:0 18px 12px}
+.txf71-sfoot{flex:none;display:flex;gap:10px;padding:10px 16px calc(18px + env(safe-area-inset-bottom));border-top:1px solid var(--hair);background:var(--card)}
+.txf71-sfoot .btn{flex:1;min-height:48px;margin:0}
+.txf71-sfoot .btn.ghost{flex:0 0 30%}
+#txfSheet .acc{border-bottom:1px solid var(--hair)}
+#txfSheet .ah{display:flex;align-items:center;gap:10px;width:100%;min-height:58px;padding:6px 2px;background:none;border:0;text-align:left;color:var(--ink)}
+#txfSheet .ah .an{font-size:var(--fs-15);font-weight:700;flex:none}
+#txfSheet .ah .as{flex:1;text-align:right;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:var(--fs-13);color:var(--muted);font-weight:600}
+#txfSheet .ah .as.on{color:var(--accent);font-weight:800}
+#txfSheet .ah svg.icn{width:16px;height:16px;color:var(--muted);transition:transform .15s;flex:none}
+#txfSheet .acc.open .ah svg.icn{transform:rotate(180deg)}
+#txfSheet .ab{padding:0 0 12px}
+#txfSheet .sec{padding:0;margin:0}
+#txfSheet h5{font-size:var(--fs-12);font-weight:700;color:var(--muted);margin:12px 0 7px}
+#txfSheet .cw{display:flex;flex-wrap:wrap;gap:8px}
+#txfSheet .cw .chip{display:inline-flex;align-items:center;gap:5px;min-height:40px;padding:0 13px;border-radius:999px;background:var(--card);border:1.5px solid var(--line);font-size:var(--fs-13);font-weight:700;color:var(--ink);white-space:nowrap;box-shadow:none}
+#txfSheet .cw .chip.on{background:var(--accent-soft);border-color:color-mix(in srgb,var(--accent) 55%,transparent);color:var(--accent)}
+#txfSheet .cw .chip i{font-style:normal;font-size:11.5px;color:var(--muted);font-weight:700}
+#txfSheet .cw .chip.on i{color:var(--accent)}
+#txfSheet .cw .chip.z{opacity:.5}
+#txfSheet .av{width:22px;height:22px;border-radius:50%;background:var(--accent);color:#fff;font-size:11px;font-weight:800;display:grid;place-items:center;margin-left:-4px}
+#txfSheet .av.b{background:var(--accent-2)}
+#txfSheet .av.j{background:var(--muted)}
+#txfSheet .grp{font-size:11.5px;font-weight:800;color:var(--muted);margin:10px 0 4px;letter-spacing:.3px}
+#txfSheet .arow{display:flex;align-items:center;gap:12px;width:100%;min-height:52px;padding:6px 4px;border:0;border-bottom:1px solid var(--hair);background:none;text-align:left;color:var(--ink)}
+#txfSheet .ck{width:22px;height:22px;border-radius:7px;border:2px solid var(--line);display:grid;place-items:center;color:transparent;flex:none}
+#txfSheet .ck svg.icn{width:13px;height:13px;stroke-width:3}
+#txfSheet .arow.on .ck,#txfSheet .ddr.on .ck{background:var(--accent);border-color:var(--accent);color:#fff}
+#txfSheet .arow .nm{flex:1;min-width:0}
+#txfSheet .arow .nm b{display:block;font-size:14.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#txfSheet .arow .nm small{font-size:var(--fs-12);color:var(--muted)}
+#txfSheet .cnt{font-size:12.5px;font-weight:800;color:var(--muted)}
+#txfSheet .arow.z{opacity:.55}
+#txfSheet .lockp{display:inline-flex;align-items:center;gap:3px;font-size:10.5px;font-weight:800;color:var(--warn,#d97706);background:color-mix(in srgb,var(--warn,#d97706) 14%,transparent);padding:1px 7px;border-radius:99px;margin-left:5px;vertical-align:middle}
+#txfSheet .lockp svg.icn{width:10px;height:10px}
+#txfSheet .dd{border:1.5px solid var(--line);border-radius:14px;background:var(--bg);overflow:hidden}
+#txfSheet .ddq{position:relative;border-bottom:1px solid var(--hair);background:var(--card)}
+#txfSheet .ddq svg.icn{position:absolute;left:13px;top:50%;transform:translateY(-50%);color:var(--muted);width:15px;height:15px}
+#txfSheet .ddq input{width:100%;border:0;outline:0;background:transparent;padding:13px 12px 13px 38px;font-size:14.5px;color:var(--ink)}
+#txfSheet .ddl{max-height:250px;overflow-y:auto;overscroll-behavior:contain}
+#txfSheet .ddg{position:sticky;top:0;z-index:1;padding:7px 14px;font-size:11px;font-weight:800;letter-spacing:.6px;text-transform:uppercase;color:var(--muted);background:var(--bg);border-bottom:1px solid var(--hair)}
+#txfSheet .ddr{display:flex;align-items:center;gap:12px;width:100%;min-height:48px;padding:6px 14px;border:0;border-bottom:1px solid var(--hair);background:var(--card);text-align:left;color:var(--ink)}
+#txfSheet .ddr:last-child{border-bottom:0}
+#txfSheet .ddr.on{background:var(--accent-soft)}
+#txfSheet .ddr .nm{flex:1;min-width:0;font-size:14.5px;font-weight:600}
+#txfSheet .ddr.z{opacity:.5}
+#txfSheet .ddf{display:flex;justify-content:space-between;align-items:center;padding:8px 14px;min-height:44px;font-size:var(--fs-12);color:var(--muted);font-weight:650;border-top:1px solid var(--hair);background:var(--card)}
+#txfSheet .ddf button{color:var(--accent);font-weight:800;font-size:12.5px;padding:8px 0;background:none;border:0}
+#txfSheet .two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px}
+#txfSheet .two>*{min-width:0}
+#txfSheet .two label{display:block;font-size:11.5px;font-weight:700;color:var(--muted);margin-bottom:4px}
+#txfSheet .two input.fin{margin:0;width:100%;min-height:46px}
+#txfSheet .amtf{display:flex;align-items:center;gap:6px;border:1.5px solid var(--line);border-radius:12px;padding:0 12px;background:var(--bg);min-height:48px}
+#txfSheet .amtf:focus-within{border-color:var(--accent);box-shadow:var(--ring)}
+#txfSheet .amtf span{font-size:var(--fs-12);font-weight:800;color:var(--muted)}
+#txfSheet .amtf input{flex:1;min-width:0;border:0;background:transparent;outline:none;text-align:right;font-size:16px;font-weight:800;color:var(--ink)}
+#txfSheet .trow{display:flex;align-items:center;gap:12px;width:100%;min-height:56px;padding:6px 2px;border:0;border-bottom:1px solid var(--hair);background:none;text-align:left;color:var(--ink);border-radius:0;box-shadow:none}
+#txfSheet .trow:last-child{border-bottom:0}
+#txfSheet .trow .tx2{flex:1}
+#txfSheet .trow .tx2 b{display:block;font-size:14.5px}
+#txfSheet .trow .tx2 small{display:block;font-size:var(--fs-12);color:var(--muted);margin-top:1px;line-height:1.4;font-weight:500}
+#txfSheet .tg{width:44px;height:26px;border-radius:13px;background:var(--line);position:relative;flex:none;transition:background .15s}
+#txfSheet .tg:after{content:'';position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.3);transition:left .15s}
+#txfSheet .tg.on{background:var(--accent)}
+#txfSheet .tg.on:after{left:21px}
+#txfSheet .sseg{display:flex;background:var(--bg);border-radius:12px;padding:3px;gap:3px}
+#txfSheet .sseg button{flex:1;text-align:center;min-height:42px;border-radius:9px;font-size:var(--fs-13);font-weight:800;color:var(--muted);background:none;border:0}
+#txfSheet .sseg button.on{background:var(--card);color:var(--ink);box-shadow:var(--shadow)}
+@media(prefers-reduced-motion:reduce){#txfSheet .ah svg.icn,#txfSheet .tg,#txfSheet .tg:after{transition:none}}
+
+/* ===== beta 73 · Insights / Reports page title (same as Transactions #t59pt) ===== */
+.t73pt{padding-top:2px;min-height:40px}
+
+/* ===== beta 74 · smaller page title row on Insights, Transactions, Accounts, Reports (user request) =====
+   20 px title, 34 px round + (its tap area stays 44 px), less space under the row. */
+.a48pt{padding:0 4px 6px;margin-top:-6px;gap:8px;min-height:40px}
+.a48pt h1{font-size:var(--fs-20);letter-spacing:-.3px;line-height:1.2}
+.a48pt .a48plus{width:34px;height:34px;position:relative;box-shadow:0 3px 8px color-mix(in srgb,var(--accent) 35%,transparent)}
+.a48pt .a48plus:after{content:'';position:absolute;inset:-5px}
+.a48pt .a48plus .icn,.a48pt .a48plus svg{width:17px;height:17px}
+#view-txns #t59pt,.t73pt{padding-top:0}
