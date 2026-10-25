@@ -9,7 +9,7 @@ var CMM_FN_REGION='asia-southeast1';
    place before anything is drawn, loads the matching stylesheet, and clears the offline copies so
    the next start fetches fresh files. Help & About then says "old page file". */
 var PAGE75=(function(){
-  var JSV='1.60-beta.81',out={js:JSV,page:'',stale:false,fixed:false};
+  var JSV='1.60-beta.87',out={js:JSV,page:'',stale:false,fixed:false};
   try{
     var m=document.querySelector('meta[name="app-version"]');out.page=m?m.content:'';
     out.stale=out.page!==JSV;
@@ -889,8 +889,41 @@ function dedupeDB(){
   DB.txns=out;
   return dup;
 }
-/* append imported rows to the live DB (entities auto-created, splits exploded, dupes skipped) */
-function importRows(rows){
+/* ===== beta 86: confirm duplicates before an import writes anything =====
+   The file import used to drop duplicate rows silently. Now the import asks first:
+   the user decides whether rows that already exist in the app are imported again
+   (legitimate repeat transactions survive) or skipped (the old behaviour). */
+var IMP86={resolve:null}; /* pending duplicate question — Cancel/close must still resolve the import chain */
+/* how many of these rows already exist in the app — the exact matching dedupeDB uses
+   (content fingerprint; grouped rows must match their own group, groupless rows match loosely) */
+function dupCount86(rows){
+  var e={},l={},n=0;
+  DB.txns.forEach(function(t){e[txnKey(t,0)]=1;l[txnKey(t,1)]=1;});
+  (rows||[]).forEach(function(t){if(t&&t.date&&isFinite(t.amount)&&(e[txnKey(t,0)]||(!t.group&&l[txnKey(t,1)])))n++;});
+  return n;
+}
+/* ask what to do with the duplicates; resolves true = import everything, false = skip them.
+   beta 86: the caller performs the import once with the answer — Cancel/close = skip. */
+function askDup86(rows,n){
+  return new Promise(function(res){
+    var done=false;
+    function go(keep){if(done)return;done=true;IMP86.resolve=null;res(keep);}
+    IMP86.resolve=function(){go(false);};
+    askChoice('This file has '+n+' transaction'+(n===1?'':'s')+' already in the app. Import the duplicates too, or skip them?',[
+      {c:'btn',l:'Skip the duplicates',f:function(){go(false);}},
+      {c:'btn ghost',l:'Import everything',f:function(){go(true);}}
+    ]);
+  });
+}
+ACT.on('v160-b86-import-dup',{
+  chno:function(el,next){ /* Cancel on any choice dialog — resolves a pending import question first */
+    try{if(IMP86.resolve)IMP86.resolve();}catch(e){}
+    next(el);
+  }
+});
+/* append imported rows to the live DB (entities auto-created, splits exploded, dupes skipped)
+   beta 86: keep=true imports everything as-is, duplicates included — the user asked for it */
+function importRows(rows,keep){
   ensureEntities(rows);
   var b0=DB.txns.length,ids={};
   DB.txns.forEach(function(t){ids[t.id]=1;});
@@ -901,15 +934,32 @@ function importRows(rows){
   });
   explodeSplits();
   var mid=DB.txns.length;
-  var dup=dedupeDB();
-  return {added:mid-dup-b0,dup:dup};
+  var dup=keep?0:dedupeDB();
+  return {added:mid-dup-b0,dup:dup,kept:!!keep};
 }
-/* merge a full-DB JSON snapshot into the live DB — lists are UNIONED, existing values win */
-function mergeDBData(d){
+/* beta 86: files may carry account types this app does not have (e.g. "others"). Recognised names
+   are mapped onto the app's own types, a type the file itself defines with a kind (a real custom
+   type from a backup) is kept as-is, and anything else is NOT added to the type list — the accounts
+   that used it fall back to a real type below. Balances and history never change, only the label. */
+function impType86(ty,fm){
+  ty=String(ty==null?'':ty).trim();if(!ty)return '';
+  if(DB.accTypes.indexOf(ty)>=0)return ty; /* already known — includes types the user created in Settings */
+  var k=ty.toLowerCase(),AL={'others':'Other Asset','other':'Other Asset','ewallet':'e-Wallet','e wallet':'e-Wallet','e-wallet':'e-Wallet','credit card':'Card','creditcard':'Card','housing loan':'Loan','personal loan':'Loan','education loan':'Loan','other loan':'Loan','car loan':'Hire Purchase','hire purchase':'Hire Purchase','car / hire purchase loan':'Hire Purchase'};
+  if(AL[k])return AL[k];
+  var caps=['Cash','Bank','Card','eWallet','e-Wallet','Credit Card','Loan','Hire Purchase','Property','Vehicle','Investment','Other Asset','Between Us'];
+  for(var i=0;i<caps.length;i++)if(caps[i].toLowerCase()===k)return caps[i];
+  if(fm&&(fm.kind==='asset'||fm.kind==='liability'))return ty; /* a type the file itself defines */
+  return ''; /* not a type this app knows — do not import it as one */
+}
+/* merge a full-DB JSON snapshot into the live DB — lists are UNIONED, existing values win
+   beta 86: keep=true imports the snapshot's transactions as-is, duplicates included */
+function mergeDBData(d,keep){
   (d.people||[]).forEach(function(p){p=String(p||'').trim();if(p&&DB.people.indexOf(p)<0)DB.people.push(p);});
   (d.accTypes||[]).forEach(function(ty){
-    ty=String(ty||'').trim();if(!ty)return;
-    var fm=(d.accTypeMeta&&d.accTypeMeta[ty])||{},cy=parseInt(fm.cycle,10);
+    var raw=String(ty==null?'':ty).trim();if(!raw)return; /* beta 86 */
+    var fm0=(d.accTypeMeta&&d.accTypeMeta[raw])||{}; /* beta 86: the file's own definition decides custom types */
+    ty=impType86(raw,fm0);if(!ty)return; /* beta 86: unknown types (e.g. "others") never enter the app's type list */
+    var fm=(d.accTypeMeta&&d.accTypeMeta[ty])||fm0,cy=parseInt(fm.cycle,10);
     if(DB.accTypes.indexOf(ty)<0){
       DB.accTypes.push(ty);
       DB.accTypeMeta[ty]={kind:fm.kind==='liability'?'liability':'asset',cycle:(cy>=1&&cy<=31)?cy:0};
@@ -924,7 +974,10 @@ function mergeDBData(d){
     if(!nm||DB.accounts.some(function(x){return x.name===nm;}))return;
     if(/^.+ owes .+$/.test(nm)){ensureRecvAcc(nm);return;}
     var cy=parseInt(a.cycle,10);
-    DB.accounts.push({name:nm,start:(isFinite(+a.start))?+a.start:0,type:DB.accTypes.indexOf(a.type)>=0?a.type:DB.accTypes[0],owner:typeof a.owner==='string'?a.owner:'',cycle:(cy>=1&&cy<=31)?cy:0});
+    var at=impType86(a.type); /* beta 86: map or validate the account's type */
+    if(at&&DB.accTypes.indexOf(at)<0){DB.accTypes.push(at);DB.accTypeMeta[at]=DB.accTypeMeta[at]||{kind:(at==='Loan'||at==='Hire Purchase'||at==='Card'||at==='Credit Card')?'liability':'asset',cycle:0};} /* beta 86: a mapped type must exist before accounts use it */
+    if(!at)at=DB.accTypes[0]; /* beta 86: unknown type falls back to a real type */
+    DB.accounts.push({name:nm,start:(isFinite(+a.start))?+a.start:0,type:at,owner:typeof a.owner==='string'?a.owner:'',cycle:(cy>=1&&cy<=31)?cy:0});
   });
   Object.keys(d.categories||{}).forEach(function(ty){
     var arr=(d.categories[ty]||[]).map(function(c){return String(c||'').trim();}).filter(Boolean);
@@ -944,7 +997,7 @@ function mergeDBData(d){
     if(!DB.recur.some(function(x){return x&&x.tpl&&rk(x)===rk(r);}))DB.recur.push(r);
   });
   /* meta (currency / theme / cloud stamps) intentionally NOT imported — local settings win */
-  return importRows((d.txns||[]).map(function(t){if(typeof t.to!=='string')t.to='';return t;}));
+  return importRows((d.txns||[]).map(function(t){if(typeof t.to!=='string')t.to='';return t;}),keep);
 }
 /* read any supported file into {rows:[txns]} or {dbdata:parsed JSON DB} */
 function rowsFromAnyFile(f){
@@ -19566,7 +19619,12 @@ X63.obFinish=function(){
   var s=X63.ob;if(!s)return;var rec=s.rec||X63.obRec(),choice=s.choice||rec.l,p=prefGet28();p.experienceLevel=choice;p.experienceSelectedAt=Date.now();p.experienceSelectionSource='onboarding';p.onboardingComplete=true;p.onboardingRecommendation=rec.l;p.onboardingRecommendationReasons=reasonCodes28(s,rec);p.experienceTourComplete=p.experienceTourComplete||{};prefSet28(p);
   trackExperience28('experience_selected',{level:choice,source:'onboarding',reasons:p.onboardingRecommendationReasons.join('|')});V63.itab=choice==='simple'?'cash':'wealth';try{sessionStorage.setItem('v63itab',V63.itab);}catch(e){}X63.obClose();X63.apply();gotoView('overview');toast(choice==='simple'?'Simple experience set — Money comes first':'Full experience set — Wealth comes first');setTimeout(function(){if(choice==='full')fullWelcome291();else firstAccount28();},320);
 };
-X63.obSkip=function(){var p=prefGet28();p.experienceLevel='simple';p.experienceSelectedAt=Date.now();p.experienceSelectionSource='skipped';p.onboardingComplete=true;p.onboardingRecommendationReasons=['skip_simple'];prefSet28(p);trackExperience28('experience_selected',{level:p.experienceLevel,source:'skipped',reasons:p.onboardingRecommendationReasons[0]});X63.obClose();V63.itab=p.experienceLevel==='simple'?'cash':'wealth';X63.apply();toast(isNew?'Simple experience set — you can switch any time':'Experience kept — change it any time in Settings');setTimeout(firstAccount28,320);};
+X63.obSkip=function(){var p=prefGet28(); /* beta 83: closing these questions must never switch an experience the user already chose — only an unanswered first run defaults to Simple. The choice itself only changes how Insights is presented. */
+  var ans=(p.onboardingComplete===true)||((p.experienceSelectionSource==='skipped'||p.experienceSelectionSource==='onboarding'||p.experienceSelectionSource==='settings')&&p.experienceSelectedAt);
+  if(!ans){p.experienceLevel='simple';p.experienceSelectedAt=Date.now();p.experienceSelectionSource='skipped';p.onboardingRecommendationReasons=['skip_simple'];}
+  p.onboardingComplete=true;prefSet28(p);
+  trackExperience28('experience_selected',{level:p.experienceLevel,source:ans?(p.experienceSelectionSource||'settings'):'skipped',reasons:(p.onboardingRecommendationReasons||['skip_simple']).join('|')});
+  X63.obClose();V63.itab=p.experienceLevel==='simple'?'cash':'wealth';X63.apply();toast(ans?'Experience kept — change it any time in Settings':'Simple experience set — you can switch any time');setTimeout(firstAccount28,320);};
 function fullWelcome291(){X63.ovOpen('<div class="xovh"><b>Welcome to Full Experience</b><button class="xovx" data-act="x63ovx">×</button></div><div class="b28-welcome"><div><b>1 · Wealth</b><small>Start with Net Worth and Asset mix.</small></div><div><b>2 · Cash Flow</b><small>See income, spending and Change in Cash.</small></div><div><b>3 · Reports</b><small>Open any card for the full catalogue and drill-downs.</small></div></div><button class="btn" data-act="b291tourdone">Show me Wealth</button>');}
 fullWelcome28=fullWelcome291;
 ACT.on('beta-28.1-private-preferences',{x63wvset:function(el){X63.wvPick(el.dataset.v);},b28tourgo:function(){X63.ovClose();V63.itab='wealth';renderOverview();gotoView('overview');},b291tourdone:function(){var p=prefGet28();p.experienceTourComplete=p.experienceTourComplete||{};p.experienceTourComplete.full=true;prefSet28(p);trackExperience28('experience_tour_completed',{level:'full'});X63.ovClose();V63.itab='wealth';renderOverview();gotoView('overview');}});
@@ -22700,11 +22758,11 @@ function checkRows62(rows,o){
   return {lines:lines,newOwner:newOwner};
 }
 /* validate, import, then give the accounts this import created the account owner named in the file */
-function importChecked62(rows){
+function importChecked62(rows,keep){ /* beta 86: keep = import duplicates as-is (the user chose to) */
   var c=checkRows62(rows);
   if(c.lines.length){var e=new Error('import62');e.lines=c.lines;throw e;}
   var had={};DB.accounts.forEach(function(a){had[a.name]=1;});
-  var res=importRows(rows);
+  var res=importRows(rows,keep);
   DB.accounts.forEach(function(a){
     var o=c.newOwner[key62(a.name)];
     if(!had[a.name]&&!a.owner&&!a.recv&&o)a.owner=o.owner;
@@ -22757,10 +22815,10 @@ function checkBackup62(d,mode){
   }
   return {lines:[]};
 }
-function mergeChecked62(d){
+function mergeChecked62(d,keep){ /* beta 86 */
   var c=checkBackup62(d,'merge');
   if(c.lines.length){var e=new Error('import62');e.lines=c.lines;e.kind='backup';throw e;}
-  return mergeDBData(d);
+  return mergeDBData(d,keep);
 }
 /* Restore from a backup file / Replace all data with a .json file — every path ends in bkPreview, so the check
    sits there: nothing is replaced, and the confirm screen is never shown, if the names do not match. */
@@ -22808,10 +22866,16 @@ importOne=function(f){
   return (isJson?f.text().then(function(txt){if(txt.indexOf('"backup-enc"')>=0)throw new Error('enc');}):Promise.resolve())
     .then(function(){return rowsFromAnyFile(f);})
     .then(function(r){
-      var res=r.dbdata?mergeChecked62(r.dbdata):importChecked62(r.rows); /* a full JSON backup is checked against the household too */
-      var n=0;DB.txns.forEach(function(t){if(!had[t.id]){t.ib=id;n++;}});
-      if(n){DB.meta.imports=DB.meta.imports||[];DB.meta.imports.unshift({id:id,kind:'file',file:f.name,n:n,at:Date.now()});DB.meta.imports=DB.meta.imports.slice(0,30);}
-      return res;
+      /* beta 86: count rows that already exist and ask before anything is written */
+      var rows=r.dbdata?(Array.isArray(r.dbdata.txns)?r.dbdata.txns:[]):r.rows,n=dupCount86(rows);
+      var run=function(keep){
+        var res=r.dbdata?mergeChecked62(r.dbdata,keep):importChecked62(r.rows,keep); /* a full JSON backup is checked against the household too */
+        var n2=0;DB.txns.forEach(function(t){if(!had[t.id]){t.ib=id;n2++;}});
+        if(n2){DB.meta.imports=DB.meta.imports||[];DB.meta.imports.unshift({id:id,kind:'file',file:f.name,n:n2,at:Date.now()});DB.meta.imports=DB.meta.imports.slice(0,30);}
+        return res;
+      };
+      if(n>0)return askDup86(rows,n).then(run);
+      return run(false);
     });
 };
 function blocked62(blocked,tot){
@@ -22834,10 +22898,10 @@ importFile=function(inp){
   var files=Array.prototype.slice.call(inp.files||[]);
   inp.value='';
   if(!files.length)return;
-  var p=Promise.resolve(),tot=0,dup=0,failed=[],blocked=[],why='';
+  var p=Promise.resolve(),tot=0,dup=0,kept=false,failed=[],blocked=[],why='';
   files.forEach(function(f){
     p=p.then(function(){
-      return importOne(f).then(function(r){tot+=r.added;dup+=r.dup;});
+      return importOne(f).then(function(r){tot+=r.added;dup+=r.dup;if(r.kept)kept=true;});
     }).catch(function(e){
       var m=e&&e.message;
       if(m==='import62'){blocked.push({file:f.name,lines:e.lines||[],kind:e.kind||'rows'});return;}
@@ -22853,7 +22917,7 @@ importFile=function(inp){
     if(!tot&&!dup&&failed.length){toast(why||('Could not read '+failed[0]+(failed.length>1?' and '+(failed.length-1)+' more':'')),{type:'error'});return;}
     var m;
     if(!tot&&!dup)m='Nothing new imported';
-    else{m='Imported '+tot+' new transaction'+(tot===1?'':'s')+' ✓';if(dup)m+=' · '+dup+' duplicate'+(dup===1?'':'s')+' skipped';}
+    else{m='Imported '+tot+' new transaction'+(tot===1?'':'s')+' ✓';if(dup)m+=' · '+dup+' duplicate'+(dup===1?'':'s')+' skipped';else if(kept)m+=' · duplicates included';}
     if(failed.length)m+=' · '+failed.length+' file'+(failed.length===1?'':'s')+' failed';
     toast(m,failed.length?{type:'warning'}:undefined);
   });
@@ -24605,9 +24669,12 @@ function txRowHTML(x,a){
   var fl='';
   if(!t.masked){if(t.group||hasSplit(t))fl+=ico('users');if(t.recur)fl+=ico('repeat');if(t.priv)fl+=ico('lock');}
   var bal=(x.b!=null&&isFinite(x.b)&&!hid(a))?'<small>Bal '+M(x.b)+'</small>':'';
+  /* beta 84: money out reads in the expense red (class o) — the month headers, the day nets
+     elsewhere and .pos/.neg already use green/red, so a signed minus in plain ink was the odd
+     one out. Money in keeps its green; the amount keeps the signed delta. */
   return '<button type="button" class="a48tx" data-act="txn" data-id="'+esc(t.id)+'"><span class="a48ti '+(isT?'n':(pos&&!owe(a)?'in':''))+'">'+ico(icFor(t))+whoTxBubble(t)+'</span>'
     +'<span class="a48mid"><b>'+title+(fl?' <span class="a48fl">'+fl+'</span>':'')+'</b><small>'+sub+'</small></span>'
-    +'<span class="a48end"><b class="'+(pos?'p':'')+'">'+(pos?'+':'−')+MA(x.d)+'</b>'+bal+'</span></button>';
+    +'<span class="a48end"><b class="'+(pos?'p':'o')+'">'+(pos?'+':'−')+MA(x.d)+'</b>'+bal+'</span></button>';
 }
 /* beta 80: Transactions-style day headers inside the Activity list — "Tue, 13 Oct 2026" with the
    day's net for this account (the same signed deltas the rows and the month net use). Rows keep
@@ -24842,7 +24909,8 @@ function propRow(x,a,noDate){
   var sub=t.masked?'Details hidden':(t.type==='Transfer'?(esc(t.account)+' → '+esc(t.to||'?')+(t.note?' · '+esc(t.note):'')):([t.subcategory?esc(t.category):'',t.note&&!t.masked?esc(t.note):''].filter(Boolean).join(' · ')||esc(t.type)));
   var fl='';
   if(!t.masked){if(t.group||hasSplit(t))fl+=ico('users');if(t.recur)fl+=ico('repeat');if(t.priv)fl+=ico('lock');}
-  return '<button type="button" class="a48tx" data-act="txn" data-id="'+esc(t.id)+'"><span class="a48ti '+(t.type==='Transfer'?'n':(inc?'in':''))+'">'+ico(icFor(t))+whoTxBubble(t)+'</span><span class="a48mid"><b>'+title+(fl?' <span class="a48fl">'+fl+'</span>':'')+'</b><small>'+sub+'</small></span><span class="a48end"><b class="'+(inc?'p':'')+'">'+(inc?'+':'−')+MA(x.e)+'</b><small>'+(inc?'Income':'Cost')+'</small></span></button>';
+  /* beta 84: costs join income in colour on the asset Activity too — cost red (class o), income green */
+  return '<button type="button" class="a48tx" data-act="txn" data-id="'+esc(t.id)+'"><span class="a48ti '+(t.type==='Transfer'?'n':(inc?'in':''))+'">'+ico(icFor(t))+whoTxBubble(t)+'</span><span class="a48mid"><b>'+title+(fl?' <span class="a48fl">'+fl+'</span>':'')+'</b><small>'+sub+'</small></span><span class="a48end"><b class="'+(inc?'p':'o')+'">'+(inc?'+':'−')+MA(x.e)+'</b><small>'+(inc?'Income':'Cost')+'</small></span></button>';
 }
 function propRecent(a){
   /* beta 52: income & costs on the new account page — 12-month totals, the linked categories and
@@ -27201,9 +27269,9 @@ function path(){if(inv())return 'invitee';var u=usage();return (u==='solo'||u===
 function hhAdv(){return inv()&&usage()==='adv';}
 function flow(){
   var p=path(),f=['welcome','signup'];
-  if(p==='invitee'){f.push('join','profile','detail');if(hhAdv())f.push('space','privbk');f.push('lock','ready');return f;}
-  f.push('mode');if(!p)return f.concat(['detail','storage','profile','account','invite','lock','ready']); /* before the choice: the Couple shape */
-  f.push('detail','storage','profile','account');
+  if(p==='invitee'){f.push('join','profile','needs','detail');if(hhAdv())f.push('space','privbk');f.push('lock','ready');return f;} /* beta 86: the experience wizard's two questions are now onboarding steps — Q1 'needs' sits right before the detail choice (Q2) */
+  f.push('mode');if(!p)return f.concat(['needs','detail','storage','profile','account','invite','lock','ready']); /* before the choice: the Couple shape */
+  f.push('needs','detail','storage','profile','account'); /* beta 86: needs step added */
   if(p!=='solo')f.push('invite');
   if(p!=='solo'&&O().store==='folder')f.push('folder');
   if(p==='adv')f.push('privbk');
@@ -27235,10 +27303,29 @@ R.mode=function(){var m=S.mode||usage()||'';
     +card('b62pick','couple','users','Couple','One shared household. Both partners see all household accounts.',m==='couple','Popular')
     +card('b62pick','adv','shield','Advanced Couple','Shared household plus a private space for each partner.',m==='adv')
     +'<button class="aulink" data-act="b62help">Not sure? Answer one question</button>'+foot('mode',{dis:!m});};
+/* beta 86: the experience wizard's two questions are now part of the onboarding steps.
+   Q1 = the needs step below; Q2 = the detail step that follows it. The recommendation
+   reads the needs answers with the same rules as the wizard (X63.obRec) and is only a
+   suggestion — the choice on the detail step always wins. */
+function needsRec86(){
+  var q=S.q1||{},sel=Object.keys(q).filter(function(k){return q[k];});
+  if(q.nw||q.reports)return {l:'full',r:['you selected Net Worth and detailed reports']};
+  if(q.pv&&S.q3==='yes')return {l:'full',r:['you want property, vehicle and investment values included in your overall position']};
+  if(sel.length&&(q.track||q.bills||q.shared))return {l:'simple',r:['you selected everyday money and payment tracking']};
+  return null;
+}
+R.needs=function(){S.q1=S.q1||{};var ic={track:'repeat',bills:'calendar',shared:'users',pv:'home',nw:'chart',reports:'receipt'};
+  return h3('What would you like help with first?','Select all that apply. We use this to suggest a starting point — you always make the final choice.')
+    +X63.Q1.map(function(o){return card('b62need',o[0],ic[o[0]]||'check',o[1],o[2],!!S.q1[o[0]]);}).join('')
+    +foot('needs');};
 R.detail=function(){var e=S.exp||(pref().experienceLevel==='full'?'full':'simple'),c=path()!=='solo';
+  var rec=needsRec86(); /* beta 86 */
   return h3('How much detail do you want?','This only changes what <b>you</b> see. It never changes records'+(c?', and your partner chooses their own':'')+'.')
-    +card('b62pick','simple','check','Simple','Money in, money spent, money left, payments and plain-language insights.',e==='simple','Starting point')
-    +card('b62pick','full','flag','Full','Adds Wealth, net worth, complete Cash Flow and the full report catalogue.',e==='full')
+    +card('b62pick','simple','check','Simple','Money in, money spent, money left, payments and plain-language insights.',e==='simple',rec&&rec.l==='simple'?'Recommended':'')
+    +card('b62pick','full','flag','Full','Adds Wealth, net worth, complete Cash Flow and the full report catalogue.',e==='full',rec&&rec.l==='full'?'Recommended':'')
+    +(S.q1&&S.q1.pv?'<div class="aul" style="margin-top:14px">Include property, vehicle or investment values in your overall position?</div>' /* beta 86: the wizard's follow-up rides here too */
+      +card('b62q3','yes','check','Yes — include them','They count toward my overall position.',S.q3==='yes')
+      +card('b62q3','no','check','No — keep those separate','Track them, but keep the overall position to money.',S.q3==='no'):'')
     +note('Not sure? Keep Simple. Switch any time in Settings → App Preferences.')+foot('detail');};
 R.storage=function(){var p=path(),solo=p==='solo',a=p==='adv',s=S.store||O().store||(solo?'device':'cloud'),P=esc(Pn());
   var h=h3(solo?'Where should your data live?':'How will you two sync?',solo?'Back up and, if you like, sync across your own devices.':a?'This is for <b>shared</b> money only. Your private accounts never leave your phone as they are. You choose how to back them up in a later step.':'Both phones see the same household data.');
@@ -27266,7 +27353,7 @@ R.account=function(){var p=path(),a=p==='adv',c=p==='couple',t=S.atype||'Bank',m
   if(c)h+='<label class="aul">Whose account is it?</label><div class="segmini">'+[['me',me],['partner',P==='your partner'?'Partner':P],['joint','Joint']].map(function(x){return '<button type="button" class="'+(ow===x[0]?'on':'')+'" data-act="b62ow" data-v="'+x[0]+'">'+esc(x[1])+'</button>';}).join('')+'</div>'+note('In Couple, every household account is visible to both of you.');
   if(a)h+='<label class="aul">Who can see it?</label><div class="segmini"><button type="button" class="'+(sp==='private'?'on':'')+'" data-act="b62sp" data-v="private">'+ico('lock')+' Only me</button><button type="button" class="'+(sp==='shared'?'on':'')+'" data-act="b62sp" data-v="shared">'+ico('users')+' Shared</button></div>'
     +note(sp==='private'?'Private: '+esc(P)+' cannot see this account, its balance or its everyday transactions. If you transfer from it to a shared account, split a bill from it, or it ends up owing '+esc(P)+' money, that one entry becomes visible to them, with its note and category — the account name stays hidden.':'Shared: both of you see this account and its transactions.',sp==='private'?'k':'');
-  return h+foot('account',{skip:'Skip. Add an opening balance later'});};
+  return h+foot('account',{skip:'Skip, add an account later'});};
 R.invite=function(){var a=path()==='adv',P=esc(Pn());
   return h3('Invite '+P,a?Cap(P)+' will see <b>Shared</b> accounts, plus anything from your private space that is split, transferred to them, or owed between you.':Cap(P)+' will see every household account and can add transactions.')
     +'<label class="aul">Partner’s email</label><input class="fin" id="ob62Inv" type="email" autocapitalize="off" placeholder="partner@example.com" value="'+esc(S.inv||DB.meta.pendingInvite||'')+'">'
@@ -27367,7 +27454,9 @@ var SAVE={
     DB.meta.usage=m;O().mode=1;AU.avis=m==='couple'?'shared':'me';
     if(m==='adv'){var v=m59();if(!(v.adv&&v.adv.since))v.adv={since:Date.now(),spaces:[Me()||'Me',Pn()]};}
     save62();go();},
+  needs:function(){S.q1=S.q1||{};try{DB.meta.onbQ1=JSON.parse(JSON.stringify(S.q1));}catch(e){}O().needs=1;save62();go();}, /* beta 86: keep the needs answers with the onboarding record */
   detail:function(){var e=S.exp||(pref().experienceLevel==='full'?'full':'simple'),p=pref();
+    try{var rc=needsRec86();if(rc){DB.meta.onboardingRecommendation=rc.l;DB.meta.onboardingRecommendationReasons=rc.r.slice();}}catch(x){} /* beta 86: same fields the experience wizard writes */
     p.experienceLevel=e;p.experienceSelectedAt=Date.now();p.experienceSelectionSource='onboarding';p.onboardingComplete=true;p.experienceTourComplete=p.experienceTourComplete||{};B28.pref.set(p);
     DB.meta.expOnboarded=true;V63.itab=e==='simple'?'cash':'wealth';try{sessionStorage.setItem('v63itab',V63.itab);}catch(x){}
     O().detail=1;save62();go();},
@@ -27433,6 +27522,7 @@ var SAVE={
 B62.SAVE=SAVE;
 function finish(){
   var o=O();o.fin=1;DB.meta.onb=1;DB.meta.lockAsked=1;
+  try{choiceClose();}catch(e){} /* beta 83: a question left open since an older build (it used to open invisibly under this screen) must not resurface over the app the moment setup closes */
   var j=jr();jrInit();j.v62=1;
   var p=pref();if(!p.onboardingComplete){p.onboardingComplete=true;p.experienceSelectionSource=p.experienceSelectionSource||'onboarding';B28.pref.set(p);}
   V63.itab=p.experienceLevel==='full'?'wealth':'cash';try{sessionStorage.setItem('v63itab',V63.itab);}catch(e){}
@@ -27457,6 +27547,8 @@ ACT.on('b62-onboarding',{
   b62at:function(el){keep();S.atype=el.dataset.v;go();},
   b62ow:function(el){keep();S.owner=el.dataset.v;go();},
   b62sp:function(el){keep();S.space=el.dataset.v;go();},
+  b62need:function(el){S.q1=S.q1||{};S.q1[el.dataset.v]=!S.q1[el.dataset.v];go();}, /* beta 86: multi-select on the needs step */
+  b62q3:function(el){S.q3=el.dataset.v;go();}, /* beta 86: include property/vehicle/investment values in the overall position? */
   b62look:function(){S.join=null;go();},
   b62next:function(){var k=AU.mode;if(SAVE[k])SAVE[k](false);},
   b62skip:function(){var k=AU.mode;if(SAVE[k])SAVE[k](true);},
@@ -28002,7 +28094,9 @@ function historyCard(){
     +L.slice(0,20).map(function(h){return '<div class="k-fl"><span>'+E((ML[h.from]||h.from||'?')+' → '+(ML[h.to]||h.to||'?'))+'<small>'+E(h.by||'—')+'</small></span><b>'+fmtDayY(h.at)+'</b></div>';}).join('')+'</details>';
 }
 function modesPage(){
-  return banner()+householdCard()+'<div class="k-lbl">Mode</div>'+['solo','couple','adv'].map(modeCard).join('')
+  /* beta 87: the "Mode" label above the three mode cards is gone — the page is titled
+     Modes and each card names itself, so the only label left outside a box was this one */
+  return banner()+householdCard()+['solo','couple','adv'].map(modeCard).join('')
     +'<button class="k-cmp" data-act="m79cmp"><span>Not sure which fits? Compare modes</span>'+ic('chevright')+'</button>'
     +'<div class="k-foot1">'+ic('shield')+'<span>Switching keeps your history and saves a safety backup first. Nothing is shared until you choose.</span></div>'
     +historyCard();
@@ -28011,10 +28105,11 @@ function pageBox(k){
   var sec=document.querySelector('#pageSet .setsub[data-sub="'+k+'"]')||document.querySelector('#view-settings .setsub[data-sub="'+k+'"]');if(!sec)return null;
   var box=null;for(var i=0;i<sec.children.length;i++)if(sec.children[i].classList.contains('m79'))box=sec.children[i];
   if(!box){box=document.createElement('div');box.className='m79 k-page';box.id=k+'79';sec.appendChild(box);}
+  else if(!box.classList.contains('k-page'))box.classList.add('k-page'); /* beta 87: pre-b10 boxes get the page spacing too */
   return box;
 }
 SCREEN.base('B3.renderModeSub',990079000,function(){
-  try{var box=pageBox('mode');if(box)box.innerHTML=modesPage();}catch(e){n79(e,'b79:modes');}
+  try{var box=pageBox('mode');if(box){box.innerHTML=modesPage();k87inbox(box); /* beta 87: sub-headers inside their box */}}catch(e){n79(e,'b79:modes');}
 });
 SCREEN.on('B3.renderModeSub',990079000);
 
@@ -28535,7 +28630,9 @@ function dataMain(){
     if(st==='cloud'){sub='Couple Money Cloud';pill=cloudPill();}
     else if(st==='folder'){sub=fPN()+' · live sync';var fp=fhero();pill=[fp.cls==='ok'?'ok':fp.cls==='bad'?'bad':'warn',fp.pill];}
     if(!unset)b+='<div class="k-lbl">Our household</div><div class="k-card">'+rw('d79gosync',st==='folder'?'folder':'cloud',sub,col?P+' manages sync for your household':'People, sign-in and status','<span class="k-st k-'+pill[0]+'">'+pill[1]+'</span>')+'</div>';
-    b+='<div class="k-grp">'+ic('user')+' Just you <span style="font-weight:600;color:var(--muted)">· on your own phone and accounts</span></div>';
+    /* beta 84 kept a separate "Just you · on your own phone and accounts" heading for Advanced
+       Couple above the private-space label — beta 87 folds it into that label as a sub-line
+       (see the adv block below): one sub-header, inside the box, like every other screen. */
   }
   if(sl&&st!=='device'){
     var pl=st==='cloud'?cloudPill():(function(){var fp=fhero();return [fp.cls==='ok'?'ok':fp.cls==='bad'?'bad':'warn',fp.pill];})();
@@ -28543,11 +28640,13 @@ function dataMain(){
   }
   if(adv){
     var ph=privHero(),ps=pbState(),fix=ps!=='none'&&ps!=='empty'?pbButton():null;
-    b+='<div class="k-lbl">Private space sync <span class="k-who" style="margin-left:6px">Only you</span></div><div class="k-card k-pad">'+heroHTML({cls:ph.cls,ic:ph.ic,t:ph.t,s:ph.s,btn:fix&&ps!=='ok'?fix:null})
+    /* beta 87: the beta-84 "Just you · on your own phone and accounts" line (Advanced Couple only)
+       rides along as a sub-line of this label; the mover then puts the label inside its box. */
+    b+='<div class="k-lbl">Private space sync <span class="k-who" style="margin-left:6px">Only you</span>'+(sl?'':'<small class="k-lsub">Just you · on your own phone and accounts</small>')+'</div><div class="k-card k-pad">'+heroHTML({cls:ph.cls,ic:ph.ic,t:ph.t,s:ph.s,btn:fix&&ps!=='ok'?fix:null})
       +'<div style="margin:10px -12px -12px"><button class="k-rw" data-act="d79gopriv"><span class="k-rt" style="font-weight:700;font-size:13px">'+(ps==='none'?'Choose where to sync':ps==='empty'?'Sync options':'Sync options and what leaves this phone')+'</span><span class="k-chev">'+ic('chevright')+'</span></button></div></div>';
   }
   var A=alertCfg();
-  b+='<div class="k-lbl">Alerts</div><div class="k-card">'+rw('d79alerts','bell','Sync alerts','Tells you if sync stops or fails · '+(A.push?'Banner and phone notification':'Banner only'))+'</div>';
+  b+='<div class="k-lbl">Alerts</div><div class="k-card">'+rw('d79alerts','bell','Sync alerts','Tells you if sync stops or fails · '+(A.banner?(A.push?'Banner and phone notification':'Banner only'):(A.push?'Phone notification only':'Off — status stays here')))+'</div>'; /* beta 85: subtitle follows the In-app banner switch */
   var l=lastBk(),bkSub=l?'Saves an encrypted file · last '+fmtDT(l):'Saves an encrypted file to keep somewhere safe · none yet',n=(window.BK&&BK.log)?BK.log.length:0,v=m59();
   b+='<div class="k-lbl">Backup &amp; restore <span style="text-transform:none;letter-spacing:0;font-weight:600"> · a full copy you can restore</span></div><div class="k-card">'
     +rw('d79bknow','save','Back up now',bkSub,(!l&&sl&&st==='device')?'<span class="k-st k-warn">Needed</span>':'')
@@ -28659,7 +28758,7 @@ function folderActive(){
         :'<p>Use the email '+P+' signs in to '+pn+' with. Needs <b>Can edit</b>.</p><div style="display:flex;gap:7px"><input class="k-inp" id="pdh45Em" data-ds="em" type="email" autocapitalize="off" style="margin:0;flex:1" placeholder="partner@gmail.com" value="'+E(DS.em||p.email||'')+'"><button class="k-btn k-sm" style="flex:none" data-act="pdh45share">Share</button></div><button class="k-lk" style="margin-top:8px" data-act="pdhshare">I shared it in '+pn+' myself</button>')+'</div></div>'
       +'<div class="k-stp"><span class="k-num">2</span><div class="k-sb2"><b>Send the household code<span></span></b><p>Send it separately. It unlocks the encrypted files and is never stored in the folder.</p>'+codeBox()+'<button class="k-btn" style="margin-top:9px" data-act="d79fsend">'+ic('send')+' Send code to '+P+'</button></div></div></div>';
   }
-  b+='<div class="k-lbl">'+pn+'</div><div class="k-card k-pad" style="padding-top:4px;padding-bottom:4px">'+kv('Folder',E(p.folder||'Couple Money Manager')+' · '+pn)+kv('Signed in as',E(p.acct||'—'))
+  b+='<div class="k-lbl">'+pn+'</div><div class="k-card k-pad">'+kv('Folder',E(p.folder||'Couple Money Manager')+' · '+pn)+kv('Signed in as',E(p.acct||'—')) /* beta 87: tight inline padding removed — an in-box label now opens this card */
     +(sl?'':kv('Household owner',E(o?(ME()||'You')+' · you':(p.owner||OTH()))))+(is||(o&&!sl&&!fj)?'':kv('Last sync',X.last?fmtAgo(X.last):'Not yet'))+'</div>';
   if(o&&(sl||fj)&&!is&&p.code)b+='<div class="k-lbl">'+(sl?'Code for your other phones':'Household code')+'</div><div class="k-card k-pad">'+codeBox()+note('info',sl?'Enter it on another phone to add it.':'Give it to '+P+' if they need to join again.','margin:8px 0 0')+'</div>';
   if(sl)b+='<div class="k-lbl">Your phones</div><div class="k-card"><div class="k-rw"><span class="k-ri">'+ic('phone')+'</span><span class="k-rt">This phone<small>'+(X.last?'Synced '+fmtAgo(X.last):'Not synced yet')+'</small></span><span class="k-st k-'+(hh.cls==='ok'?'ok':'warn')+'">'+(hh.cls==='ok'?'Live':hh.pill)+'</span></div><div class="k-rw"><span class="k-ri">'+ic('phone')+'</span><span class="k-rt">Add another phone<small>Open the app there, choose '+pn+', sign in with the same account and enter the code above</small></span></div></div>';
@@ -28684,14 +28783,14 @@ function privPage(){
   var ph=privHero(),pb=pbButton(),P=E(OTH()),s=pbState(),m=pbMethod(),set=m!=='none',c=privCfg();
   var b='<div class="k-card k-pad">'+heroHTML({cls:ph.cls,ic:ph.ic,t:ph.t,s:ph.s,btn:s==='ok'?null:pb})+'</div>';
   if(s!=='empty'){
-    b+='<div class="k-lbl">'+(set?'Where your private space is kept':'Choose where to sync')+'</div>'+PB_OPTS.map(function(o){return '<button class="k-opt'+(m===o[0]?' k-on':'')+'" data-act="d79pbmethod" data-v="'+o[0]+'"><span class="k-oi">'+ic(o[1])+'</span><span style="flex:1"><b>'+o[2]+(m===o[0]?' <span class="k-pill">Current</span>':'')+'</b><small>'+o[3]+(m==='drive'&&o[0]==='drive'?' · now '+PROVN[c.provider]:'')+'</small></span></button>';}).join('');
+    b+='<div class="k-lbl">'+(set?'Where your private space is kept':'Choose where to sync')+'</div><div class="k-card k-pbwrap">'+PB_OPTS.map(function(o){return '<button class="k-opt'+(m===o[0]?' k-on':'')+'" data-act="d79pbmethod" data-v="'+o[0]+'"><span class="k-oi">'+ic(o[1])+'</span><span style="flex:1"><b>'+o[2]+(m===o[0]?' <span class="k-pill">Current</span>':'')+'</b><small>'+o[3]+(m==='drive'&&o[0]==='drive'?' · now '+PROVN[c.provider]:'')+'</small></span></button>';}).join('')+'</div>'; /* beta 87: the options sit in one box under an in-box label */
     if(m==='cloud')b+='<div class="k-blk"><h4>How it stays separate from the household</h4><ul><li>'+ic('check','g')+'<span>Stored as its <b>own data set</b> under your account — not inside the household</span></li><li>'+ic('check','g')+'<span>Household sync never reads or writes it</span></li><li>'+ic('check','g')+'<span>'+P+'’s app can’t open it, and neither can '+P+'</span></li><li>'+ic('check','g')+'<span>Ending the household doesn’t delete it</span></li></ul></div>';
     if(set)b+='<div class="k-card" style="margin-top:4px"><div class="k-rw"><span class="k-rt">Automatic sync<small>A few seconds after each private change</small></span><button class="k-tg'+(c.auto!==false?' k-on':'')+'" data-act="d79pbauto" role="switch" aria-checked="'+(c.auto!==false)+'" aria-label="Automatic sync"></button></div>'
       +'<button class="k-rw" data-act="d79pbpw"><span class="k-rt">Change private password</span><span class="k-chev">'+ic('chevright')+'</span></button><button class="k-rw" data-act="d79pbrestore"><span class="k-rt">Restore private space</span><span class="k-chev">'+ic('chevright')+'</span></button></div>'
       +note('info','Private sync stays on so a lost phone never loses your private accounts. You can change where it goes at any time.','margin-top:8px');
     else b+='<div style="margin-top:10px"><button class="k-btn k-ghost" data-act="d79pbrestore">'+ic('recycle')+' Restore private space</button></div>';
   }
-  b+='<div class="k-lbl">What leaves this phone</div><div class="k-card k-pad" style="padding-top:2px;padding-bottom:2px">'
+  b+='<div class="k-lbl">What leaves this phone</div><div class="k-card k-pad">' /* beta 87: tight inline padding removed — an in-box label now opens this card */
     +kv('Shared &amp; joint accounts','Household sync')
     +kv('Your private accounts',(m==='cloud'?'Your private cloud only':m==='drive'?'Your private file only':'Nowhere yet')+' · encrypted · never the household')
     +kv('A private split bill or transfer to '+P,'Household sync, that one entry · account name hidden')
@@ -28723,7 +28822,7 @@ function advPage(){
   b+='<div class="k-lbl">Recent sync alerts</div><div class="k-card">'+(H.length?H.map(function(x){var c=x.cls==='bad'?'exp':x.cls==='warn'?'warn':'inc';return '<div class="k-snap"><span class="k-ri" style="width:30px;height:30px;border-radius:10px;background:var(--'+c+'-soft);color:var(--'+c+');display:flex;align-items:center;justify-content:center">'+ic(x.ic)+'</span><span class="k-n">'+E(x.t)+'<small>'+E(x.w)+'</small></span></div>';}).join(''):'<div class="k-snap"><span class="k-n">No sync alerts yet</span></div>')+'</div>';
   var ver='';try{ver=V59.ver||'';}catch(e){}
   var na=DB.accounts.filter(function(a){return a&&!a.recv&&!/^.+ owes .+$/.test(a.name);}).length;
-  b+='<div class="k-lbl">Sync details</div><div class="k-card k-pad k-diag" style="padding-top:2px;padding-bottom:6px">'
+  b+='<div class="k-lbl">Sync details</div><div class="k-card k-pad k-diag">' /* beta 87: tight inline padding removed — an in-box label now opens this card */
     +kv('App version',E(ver))+kv('Network',offline()?'Offline':'Online')+kv('Kept in',storeName())+kv('Signed in',signed()?E(myEmail()):'No')
     +(stKind()==='cloud'?(sl?'':kv('Household ID',E(String(HH.id||DB.meta.hh||'—').slice(0,6))+'…'))+kv('Last cloud push',DB.meta.cloudPushedAt?fmtDT(DB.meta.cloudPushedAt):'Never'):'')
     +(stKind()==='folder'?kv('Folder files',fFiles()+' of '+NFILES)+kv('Last sync',X.last?fmtDT(X.last):'Never'):'')
@@ -28737,11 +28836,28 @@ function diagText(){
 }
 
 /* ---------- drawing ---------- */
+/* ===== v160b87: Settings sub-headers live inside their box =====
+   The b79 pages rendered their section label (.k-lbl) between the boxes while the
+   older Settings screens keep every sub-header inside the card. One mover runs after
+   each b79 paint and tucks each label into the box it introduces, so every screen
+   under Settings presents its sub-headers the same way. Labels are plain text —
+   moving them never touches the delegated data-act handling. */
+function k87inbox(root){
+  try{
+    qa('.k-lbl',root).forEach(function(lb){
+      if(!lb.parentNode||!(lb.parentNode.classList&&lb.parentNode.classList.contains('k-card'))){
+        var nx=lb.nextElementSibling;
+        if(nx&&nx.classList&&nx.classList.contains('k-card')){lb.removeAttribute('style');nx.insertBefore(lb,nx.firstChild);}
+      }
+    });
+  }catch(e){try{n79(e,'b87:inbox');}catch(x){}}
+}
 function setHTML(box,html){
   if(box.__h===html)return;
   var ae=document.activeElement,id=ae&&box.contains(ae)?ae.id:'',val=id?ae.value:'',ss=null;
   try{if(id&&ae.selectionStart!=null)ss=[ae.selectionStart,ae.selectionEnd];}catch(e){}
   box.innerHTML=html;box.__h=html;
+  k87inbox(box); /* beta 87: sub-headers inside their box */
   if(id){var f=$(id);if(f){try{f.value=val;f.focus();if(ss)f.setSelectionRange(ss[0],ss[1]);}catch(e){}}}
 }
 B79.setHTML=setHTML;
@@ -29133,7 +29249,7 @@ function stepSent(){
   var P=E(OTH()),em=E(invitedEmail()||AP.email),pend=!!DB.meta.pendingInvite&&!hhOn(),code=hhCodeTxt();
   return fh(3)+'<div class="k-scr k-fl" id="ap79scr">'
     +'<div class="k-hero k-'+(pend?'warn':'ok')+'" role="status"><span class="k-hi">'+ic(pend?'clock':'check')+'</span><span><b>'+(pend?'Invitation saved':'Invitation ready for '+P)+'</b><small>'+(pend?'It’s sent when you’re back online. ':'')+'The app doesn’t email it — tell '+P+' to open the app and sign in with <span style="font-weight:800;color:var(--ink)">'+em+'</span>.</small></span></div>'
-    +'<div class="k-lbl" style="margin-top:14px">What '+P+' does</div><div class="k-card">'
+    +'<div class="k-card" style="margin-top:14px"><div class="k-lbl">What '+P+' does</div>' /* beta 87: label inside the box */
     +'<div class="k-stp"><span class="k-num">1</span><div class="k-sb2"><b>Open Couple Money Manager<span></span></b><p>Tap <b>I have an invite</b>.</p></div></div>'
     +'<div class="k-stp"><span class="k-num">2</span><div class="k-sb2"><b>Sign in with '+em+'<span></span></b><p>Google or email and password.</p></div></div>'
     +'<div class="k-stp"><span class="k-num">3</span><div class="k-sb2"><b>Tap Join household<span></span></b><p>You then choose what '+P+' sees.</p></div></div></div>'
@@ -29273,7 +29389,7 @@ SCREEN.afterDraw(function(){
   try{
     var sec=document.querySelector('.setsub[data-sub="profile"]');if(!sec||mode()==='solo'||sec.hidden&&!sec.classList.contains('on'))return;
     var row=$('pf79row'),html=profileRow();
-    if(!row){var first=sec.querySelector('.card');if(!first)return;row=document.createElement('div');row.id='pf79row';row.className='m79';first.parentNode.insertBefore(row,first.nextSibling);}
+    if(!row){var first=sec.querySelector('.card');if(!first)return;row=document.createElement('div');row.id='pf79row';row.className='m79 k-page';first.parentNode.insertBefore(row,first.nextSibling);} /* beta 87: k-page so the card gets the page spacing */
     if(row.__h!==html){row.innerHTML=html;row.__h=html;}
     /* the older partner field, invite button and caption are replaced by this row */
     ['profPartRowB3','b19RolePart','b41InvWrap'].forEach(function(id){var x=$(id);if(x)x.hidden=true;});
@@ -29294,7 +29410,7 @@ function profileRow(){
   else if(!known())r='<div class="k-rw" style="padding:4px 0"><span class="k-av k-ghost">+</span><span class="k-rt">No partner yet<small>Add their name and invite them</small></span><button class="k-mini k-fill" data-act="ap79open" data-e="profile">Add partner</button></div>';
   else if(invitedEmail())r='<div class="k-rw" style="padding:4px 0"><span class="k-av">'+E(initial(OTH()))+'</span><span class="k-rt">'+P+'<small>Invited · waiting to join</small></span><button class="k-mini" data-act="ap79open" data-e="manage">Manage</button></div>';
   else r='<div class="k-rw" style="padding:4px 0"><span class="k-av">'+E(initial(OTH()))+'</span><span class="k-rt">'+P+'<small>Not invited yet</small></span><button class="k-mini k-fill" data-act="ap79open" data-e="invite">Invite</button></div>';
-  return '<div class="k-lbl">Your partner</div><div class="k-card k-pad" style="padding-top:8px;padding-bottom:8px">'+r+'</div>';
+  return '<div class="k-card k-pad"><div class="k-lbl">Your partner</div>'+r+'</div>'; /* beta 87: label inside the box, like every other Settings sub-header */
 }
 
 /* the invitee: a link from the household owner (?invite=email&from=name) puts “I have an invite” first */
@@ -29319,7 +29435,7 @@ SCREEN.afterDraw(function(){
    Offline only after 15 minutes and only when changes are waiting; one "working again" line when fixed.
    ===================================================================== */
 var MIN15=15*60000;
-function alertCfg(){var a=DB.meta.alerts79;if(!a||typeof a!=='object')a=DB.meta.alerts79={push:typeof Notification!=='undefined'&&Notification.permission==='granted',remind:true};return a;}
+function alertCfg(){var a=DB.meta.alerts79;if(!a||typeof a!=='object')a=DB.meta.alerts79={push:typeof Notification!=='undefined'&&Notification.permission==='granted',remind:true};if(a.banner===undefined)a.banner=true; /* beta 85: banner switch defaults on — existing configs without the key keep the always-on behaviour */ return a;}
 function alLog(){var l=DB.meta.alertLog79;if(!l||typeof l!=='object')l=DB.meta.alertLog79={open:{},hist:[]};l.open=l.open||{};l.hist=l.hist||[];return l;}
 var AL79={offAt:navigator.onLine===false?Date.now():0,fail:{},ok:'',okT:0};
 B79.AL=AL79;
@@ -29417,10 +29533,11 @@ function insightsBar(al){
 function alPaint(){
   try{
     var al=syncAlerts(),v=$('view-overview');
+    var inapp=alertCfg().banner!==false; /* beta 85: the In-app banner switch governs the Insights banner and the Settings dot */
     if(v){var bx=$('al79bar');if(!bx){bx=document.createElement('div');bx.id='al79bar';bx.className='m79 k-albar79';v.insertBefore(bx,v.firstChild);}
       if(v.firstChild!==bx)v.insertBefore(bx,v.firstChild);
-      var h=insightsBar(al);bx.hidden=!h;if(bx.__h!==h){bx.innerHTML=h;bx.__h=h;}}
-    var bad=al.some(function(x){return x.sev==='bad';}),warn=al.some(function(x){return x.sev!=='info';});
+      var h=inapp?insightsBar(al):'';bx.hidden=!h;if(bx.__h!==h){bx.innerHTML=h;bx.__h=h;}}
+    var bad=inapp&&al.some(function(x){return x.sev==='bad';}),warn=inapp&&al.some(function(x){return x.sev!=='info';});
     var sm=$('sum_dataB3');
     if(sm){var row=sm.closest('button,.srow,.trow,.arow')||sm.parentNode;row.classList.add('srow79');
       var t=warn?String(al.filter(function(x){return x.sev!=='info';})[0].t).replace(/<[^>]+>/g,''):storeName();if(sm.textContent!==t)sm.textContent=t;sm.classList.toggle('warn',warn);
@@ -29447,7 +29564,7 @@ SHEETS.alertSettings=function(){
   var A=alertCfg(),sup=typeof Notification!=='undefined',perm=sup?Notification.permission:'';
   return {title:'Sync alerts',icon:'bell',
     body:'<div class="k-lead">We tell you if sync <b>stops</b> or <b>fails</b>, so nothing quietly stays on one phone.</div><div class="k-lst">'
-      +'<div class="k-li"><span class="k-n">In-app banner<small>At the top of Insights and a dot on Settings · always on</small></span><span class="k-tg k-on" style="opacity:.55" aria-hidden="true"></span></div>'
+      +'<div class="k-li" data-act="al79tgbanner" role="switch" aria-checked="'+!!A.banner+'" tabindex="0" style="cursor:pointer"><span class="k-n">In-app banner<small>'+(A.banner?'At the top of Insights and a dot on Settings':'Off · sync status stays on Data &amp; Sync')+'</small></span><span class="k-tg'+(A.banner?' k-on':'')+'"></span></div>' /* beta 85: was a static always-on look-alike with no tap target — now a real switch */
       +'<div class="k-li" data-act="al79tgpush" role="switch" aria-checked="'+!!A.push+'" tabindex="0" style="cursor:pointer"><span class="k-n">Phone notification<small>'+(!sup?'Not supported in this browser':perm==='denied'?'Blocked in your browser settings':A.push?'On · once when it starts':'Off · you’ll only see the banner')+'</small></span><span class="k-tg'+(A.push?' k-on':'')+'"></span></div>'
       +'<div class="k-li" data-act="al79tgremind" role="switch" aria-checked="'+!!A.remind+'" tabindex="0" style="cursor:pointer"><span class="k-n">Remind me after 24 hours<small>If it’s still not fixed</small></span><span class="k-tg'+(A.remind?' k-on':'')+'"></span></div></div>'
       +'<div class="k-blk"><h4>When you’ll hear from us</h4><ul><li>'+ic('cloudoff','a')+'<span><b>Stopped</b> — signed out, paused, access lost: right away</span></li><li>'+ic('warn','a')+'<span><b>Failed</b> — after 15 minutes of failed retries</span></li><li>'+ic('clock','a')+'<span><b>Offline</b> — only after 15 minutes, and only if changes are waiting</span></li><li>'+ic('check','a')+'<span><b>Fixed</b> — one “Sync is working again” message</span></li></ul></div>'
@@ -29457,6 +29574,7 @@ SHEETS.alertSettings=function(){
 ACT.on('b79-alerts',{
   al79fix:function(el){alFix(el.dataset.id);},
   al79details:function(el){alFix(el.dataset.id,true);},
+  al79tgbanner:function(){var A=alertCfg();A.banner=!A.banner;save();paintSheets();dsPaint(false);alPaint();}, /* beta 85: in-app banner switch — repaints the sheet, the Data & Sync row and the Insights banner/Settings dot */
   al79tgpush:function(){var A=alertCfg();
     if(A.push){A.push=false;save();paintSheets();dsPaint(false);return;}
     if(typeof Notification==='undefined'){toast('This browser does not support notifications');return;}
@@ -29523,4 +29641,109 @@ function n81(e,w){try{DIAG.note(e,w||'b81');}catch(_){}}
 try{if(window.pinVer36)window.pinVer36('1.60 beta 81');}catch(e){n81(e,'b81:pin');}
 try{if(!window.__B81RN){var ol=document.querySelector('#pageSet details.help ol')||document.querySelector('#view-settings details.help ol');
   if(ol){ol.insertAdjacentHTML('beforeend','<li><b>Beta 81:</b> Property and Vehicle Activity now shows costs and income exactly like the money accounts: each row carries the same information as a Transactions row (same title and subtitle, split / recurring / private marks, owner bubble), the date sits once in a day header, and within a day the newest entry is the first row — value updates newest first, so the top row\u2019s new value is the recorded value on top of the screen. Year headers show the year\u2019s income minus costs, like the month headers elsewhere, and the Income &amp; costs card on the page groups its rows under the same day headers.</li>');window.__B81RN=1;}}}catch(e){n81(e,'b81:rn');}
+})();
+
+/* ===== v160b82 · onboarding “Not sure?” question is visible again =====
+   The link on the “How will you use it?” setup step (“Not sure? Answer one question”) did open its
+   question dialog, but the dialog was painted underneath the setup screen itself (dialog layer 79,
+   setup screen layer 190), so tapping the link looked dead. The dialog layer is now above every
+   full-screen shell (setup screen 190, experience wizard / lock 200, PIN 210; toasts stay on top),
+   so the question and its two answers — Couple or Advanced Couple — show on top, and picking one
+   selects that mode on the step. Nothing else changed. */
+(function(){'use strict';
+function n82(e,w){try{DIAG.note(e,w||'b82');}catch(_){}}
+try{if(window.pinVer36)window.pinVer36('1.60 beta 82');}catch(e){n82(e,'b82:pin');}
+try{if(!window.__B82RN){var ol=document.querySelector('#pageSet details.help ol')||document.querySelector('#view-settings details.help ol');
+  if(ol){ol.insertAdjacentHTML('beforeend','<li><b>Beta 82:</b> Fixed: on the \u201cHow will you use it?\u201d setup step, the \u201cNot sure? Answer one question\u201d link did nothing \u2014 the question opened underneath the setup screen. The question now opens on top, and the answer you pick selects Couple or Advanced Couple for you.</li>');window.__B82RN=1;}}}catch(e){n82(e,'b82:rn');}
+})();
+
+/* ===== v160b83 · setup questions tidy-up =====
+   1. The one-question helper on "How will you use it?" ("Not sure? Answer one question") no longer
+      resurfaces over the app after setup finishes. On the previous build the question could open
+      invisibly underneath the setup screen and stay open; when setup closed, it suddenly appeared
+      over Insights. Setup now closes any open question as it finishes (and beta 82 already shows
+      the question on top of the setup screen the moment it is opened).
+   2. The account step's skip link now reads "Skip, add an account later" (was "Skip. Add an opening
+      balance later").
+   3. Your Simple or Full choice is now locked in once made. Closing the extra experience questions
+      ("Start simple. Reveal more when you need it.") no longer switches the experience back to
+      Simple by itself — only an unanswered first run starts in Simple, and only you can change the
+      experience in Settings. The choice only changes how Insights is presented; records, balances
+      and modes are never touched. */
+(function(){'use strict';
+function n83(e,w){try{DIAG.note(e,w||'b83');}catch(_){}}
+try{if(window.pinVer36)window.pinVer36('1.60 beta 83');}catch(e){n83(e,'b83:pin');}
+try{if(!window.__B83RN){var ol=document.querySelector('#pageSet details.help ol')||document.querySelector('#view-settings details.help ol');
+  if(ol){ol.insertAdjacentHTML('beforeend','<li><b>Beta 83:</b> Fixed: the \u201cNot sure? Answer one question\u201d helper could reappear over the app right after setup finished \u2014 it had opened invisibly underneath the setup screen earlier and stayed open. Setup now closes any open question as it finishes. The account step\u2019s skip link now reads \u201cSkip, add an account later\u201d. And your Simple or Full choice is locked in: the extra experience questions can no longer switch it back to Simple by themselves \u2014 only you change it in Settings. The choice only changes how Insights is presented; your records stay exactly as they are.</li>');window.__B83RN=1;}}}catch(e){n83(e,'b83:rn');}
+})();
+
+/* ===== v160b84 · Data & Sync heading only in Advanced Couple · Activity money-out in red =====
+   1. Data & Sync: the "Just you · on your own phone and accounts" heading sat between "Our
+      household" and Alerts in every shared mode. It introduces the private-space section, which
+      only exists in Advanced Couple — in plain Couple it dangled above Alerts with nothing under
+      it. It now shows in Advanced Couple only (Personal never had it).
+   2. Account Activity: money out (the signed − amounts, expenses and transfers out alike) now
+      reads in the expense red and money in keeps its green — the same green/red the month
+      headers, the Overview figures and the rest of the app already use. Property and Vehicle
+      cost rows get the same red. Amounts, balances and records are unchanged — colour only. */
+(function(){'use strict';
+function n84(e,w){try{DIAG.note(e,w||'b84');}catch(_){}}
+try{if(window.pinVer36)window.pinVer36('1.60 beta 84');}catch(e){n84(e,'b84:pin');}
+try{if(!window.__B84RN){var ol=document.querySelector('#pageSet details.help ol')||document.querySelector('#view-settings details.help ol');
+  if(ol){ol.insertAdjacentHTML('beforeend','<li><b>Beta 84:</b> Data &amp; Sync tidy-up: the \u201cJust you \u00b7 on your own phone and accounts\u201d line now shows only in Advanced Couple, where the private-space section lives under it \u2014 Couple no longer shows it. And on an account\u2019s Activity screen, money going out now shows in red and money coming in stays green, the same as everywhere else in the app. Colour only \u2014 amounts, balances and records are unchanged.</li>');window.__B84RN=1;}}}catch(e){n84(e,'b84:rn');}
+})();
+
+/* ===== v160b85 · the Sync alerts "In-app banner" switch works · Money Available box plain white with gaps =====
+   1. The In-app banner row on the Sync alerts panel looked exactly like the other switches but was
+      a static, always-on look-alike with no tap target, so tapping it did nothing. It is now a real
+      switch: off hides the alert banner at the top of Insights and the "Needs attention" dot on
+      Settings; the phone-notification switch keeps working on its own. Sync status itself always
+      stays on the Data & Sync page, and existing phones keep the banner on until you turn it off.
+   2. The Money Available box on the Money tab was an accent-tinted card sitting directly on the
+      "This month" box below it. It is now a plain white card like the boxes around it, with the
+      same 12 px gap between boxes. Presentation only — no numbers move. */
+(function(){'use strict';
+function n85(e,w){try{DIAG.note(e,w||'b85');}catch(_){}}
+try{if(window.pinVer36)window.pinVer36('1.60 beta 85');}catch(e){n85(e,'b85:pin');}
+try{if(!window.__B85RN){var ol=document.querySelector('#pageSet details.help ol')||document.querySelector('#view-settings details.help ol');
+  if(ol){ol.insertAdjacentHTML('beforeend','<li><b>Beta 85:</b> The \u201cIn-app banner\u201d switch on Sync alerts now works \u2014 tap it to show or hide the alert banner on Insights and the dot on Settings; phone notifications keep their own switch, and sync status always stays on Data &amp; Sync. The Money Available box on the Money tab is now a plain white card like the boxes around it, with a clear gap between boxes.</li>');window.__B85RN=1;}}}catch(e){n85(e,'b85:rn');}
+})();
+
+/* ===== v160b86 · the experience questions join the onboarding steps · import asks about duplicates · no unknown account types from import =====
+   1. The two questions from "Answer 2 short questions" ("What would you like help with first?" and
+      "How much detail do you want?") are now steps inside setup itself, in that order, with a
+      suggestion drawn from the answers — the choice stays with the user. The separate question
+      popup is no longer needed after setup; it stays available for "Redo the questions".
+   2. Importing a file used to drop duplicate rows silently. It now asks first: "This file has N
+      transactions already in the app" — skip the duplicates (as before) or import everything
+      again, for example when two identical purchases on the same day are real.
+   3. A file could bring in account types the app does not have (an asset type called "others").
+      Recognised names are mapped to the app's own types, a type the file itself defines with a
+      kind is kept, and anything else is no longer invented — its accounts fall back to a real
+      type. Balances and history never change, only the label. */
+(function(){'use strict';
+function n86(e,w){try{DIAG.note(e,w||'b86');}catch(_){}}
+try{if(window.pinVer36)window.pinVer36('1.60 beta 86');}catch(e){n86(e,'b86:pin');}
+try{if(!window.__B86RN){var ol=document.querySelector('#pageSet details.help ol')||document.querySelector('#view-settings details.help ol');
+  if(ol){ol.insertAdjacentHTML('beforeend','<li><b>Beta 86:</b> The two experience questions \u2014 \u201cWhat would you like help with first?\u201d and \u201cHow much detail do you want?\u201d \u2014 are now part of the setup steps, with a suggestion based on your answers; your choice always wins. Importing a file now asks first when some rows already exist: skip the duplicates or import everything. Import also no longer creates account types the app does not have (such as \u201cothers\u201d): common names are mapped to the app\u2019s own types and anything unknown falls back to a real type \u2014 balances and history never change.</li>');window.__B86RN=1;}}}catch(e){n86(e,'b86:rn');}
+})();
+
+/* ===== v160b87 · Settings sub-headers: one presentation on every screen under Settings =====
+   1. The b79 screens (Modes, Data & Sync and its sub-pages, Your Profile's partner row, Add
+      partner) rendered their section label OUTSIDE the box it introduces, while the older
+      Settings screens keep every sub-header inside the card. A small mover now tucks each
+      label into its box at paint time, and the pages space their boxes directly.
+   2. Sub-header type is now identical everywhere under Settings: 12px · weight 800 · .5px
+      tracking · uppercase · muted. Previously .card h2 was 13px/700/.4px, the b79 labels
+      11.5px/800/.6px (and the Advanced Couple group heading 12.5px in accent colour with a
+      divider line) and .mgr-sec 12px/800/.5px.
+   3. Advanced Couple's "Just you · on your own phone and accounts" heading (beta 84) folds
+      into the "Private space sync · Only you" label as a sub-line, so the section keeps one
+      sub-header inside its box. The redundant "Mode" label above the three mode cards is
+      gone — the page is titled Modes and each card names itself. Presentation only. */
+(function(){'use strict';
+function n87(e,w){try{DIAG.note(e,w||'b87');}catch(_){}}
+try{if(window.pinVer36)window.pinVer36('1.60 beta 87');}catch(e){n87(e,'b87:pin');}
+try{if(!window.__B87RN){var ol=document.querySelector('#pageSet details.help ol')||document.querySelector('#view-settings details.help ol');
+  if(ol){ol.insertAdjacentHTML('beforeend','<li><b>Beta 87:</b> Settings screens now present every section heading the same way: the heading sits inside the box it introduces (Modes, Data &amp; Sync and their sub-pages, Your Profile, Add partner), and all headings share one type \u2014 same size, weight and spacing. Advanced Couple\u2019s \u201cJust you\u201d line now sits under \u201cPrivate space sync\u201d inside its box, and the redundant \u201cMode\u201d label above the three mode cards is gone. Presentation only \u2014 nothing moves in your data.</li>');window.__B87RN=1;}}}catch(e){n87(e,'b87:rn');}
 })();
