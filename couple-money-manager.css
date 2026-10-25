@@ -407,7 +407,7 @@ button.fline{font:inherit;color:inherit;text-align:left}
 
 /* v1.48 */
 .aibtn{display:inline-flex;align-items:center;gap:5px;flex:none;font-size:var(--fs-13);font-weight:800;color:var(--accent);background:var(--accent-soft);border-radius:999px;padding:7px 12px}
-#chmodal{z-index:79}
+#chmodal{z-index:215} /* beta 82: was 79 — below #authScr (190), so askChoice opened invisibly under the onboarding screen; now above every app shell (#authScr 190, #x63ob/#lockScr 200, #pinR 210), below only toasts */
 #aiOvl{z-index:74}#aiSheet{z-index:75;height:88vh;max-height:88vh;display:flex;flex-direction:column;overflow:hidden}
 .ailog{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:8px;padding:4px 2px 8px}
 .aim{max-width:88%;padding:9px 12px;border-radius:14px;font-size:var(--fs-14);line-height:1.55;overflow-wrap:anywhere}
@@ -1476,9 +1476,9 @@ html[data-mode="dark"] #toastUndo{box-shadow:0 6px 16px rgba(2,6,23,.25)}
 .mq2 b{font-size:var(--fs-16);letter-spacing:-.2px}
 .mq2 b.pos{color:var(--inc)}
 .mq2 b.neg{color:var(--exp)}
-.moneyavail18{display:flex;align-items:center;gap:12px;width:100%;text-align:left;padding:14px;border-radius:16px;
- background:linear-gradient(135deg,color-mix(in srgb,var(--accent) 14%,var(--card)),var(--card));
- border:1.5px solid color-mix(in srgb,var(--accent) 30%,transparent)}
+.moneyavail18{display:flex;align-items:center;gap:12px;width:100%;text-align:left;padding:14px;border-radius:16px;margin-bottom:12px;
+ background:var(--card);
+ border:1px solid var(--hair);box-shadow:var(--shadow)} /* beta 85: plain white card like the boxes below it (was an accent-tinted gradient), and its own 12px gap so it no longer sits on the next box */
 .moneyavail18 .ma-ic{width:42px;height:42px;border-radius:13px;background:var(--accent);color:var(--white);display:flex;
  align-items:center;justify-content:center;flex:none;box-shadow:0 6px 16px color-mix(in srgb,var(--accent) 40%,transparent)}
 .moneyavail18 .ma-ic svg{width:20px;height:20px}
@@ -3264,8 +3264,20 @@ details.calc51 p{margin-top:6px;line-height:1.5}
 .m79 .k-busy{opacity:.6;pointer-events:none}
 .m79 .k-hide{display:none!important}
 
-.m79 .k-lbl{font-size:11.5px;letter-spacing:.6px;text-transform:uppercase;font-weight:800;color:var(--muted);margin:14px 4px 7px}
-.m79 .k-grp{display:flex;align-items:center;gap:8px;font-size:12.5px;font-weight:800;color:var(--accent);margin:20px 4px 2px;padding-top:12px;border-top:2px solid var(--line)}
+/* beta 87: one sub-header type everywhere under Settings — 12px · 800 · .5px tracking · muted (was 11.5px/.6px) */
+.m79 .k-lbl{font-size:var(--fs-12);letter-spacing:.5px;text-transform:uppercase;font-weight:800;color:var(--muted);margin:14px 4px 7px}
+/* beta 87: the sub-header sits INSIDE the box it introduces (k87inbox() in the JS moves it in at paint time) */
+.m79 .k-card>.k-lbl{margin:0;padding:11px 14px 3px}
+.m79 .k-card.k-pad>.k-lbl{padding:2px 0 7px}
+.m79 .k-card.k-hh>.k-lbl{padding:9px 0 3px}
+.m79 .k-card>.k-lbl+*{border-top:0}
+.m79 .k-lsub{display:block;font-size:var(--fs-11);font-weight:700;letter-spacing:.3px;text-transform:none;color:var(--muted);margin-top:2px}
+/* beta 87: the private-space option tiles live in one box, label on top */
+.m79 .k-card.k-pbwrap{padding:4px 10px 10px}
+.m79 .k-card.k-pbwrap>.k-lbl{padding:11px 4px 3px}
+.m79 .k-pbwrap .k-opt{margin:8px 0 0}
+/* beta 87: pages space their boxes directly — the labels no longer carry the gap */
+.m79.k-page>.k-card{margin:0 0 12px}
 .m79 .k-card{background:var(--card);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow)}
 .m79 .k-btn{width:100%;padding:13px;border-radius:14px;color:#fff;font-weight:800;font-size:15px;text-align:center;background:linear-gradient(145deg,var(--accent),var(--accent-2) 140%);box-shadow:0 2px 6px rgba(23,32,58,.12),0 6px 16px var(--accent-glow),inset 0 1.5px 0 rgba(255,255,255,.28);display:flex;align-items:center;justify-content:center;gap:7px}
 .m79 .k-btn.k-ghost{background:var(--bg);color:var(--ink);box-shadow:none;border:1px solid var(--line)}
@@ -3318,7 +3330,7 @@ details.calc51 p{margin-top:6px;line-height:1.5}
 .m79 .k-sb .k-lead{font-size:13.5px;color:var(--muted);margin-bottom:10px}
 .m79 .k-sb .k-lead b{color:var(--ink)}
 .m79 .k-blk{background:var(--bg);border-radius:14px;padding:11px 13px;margin-bottom:9px}
-.m79 .k-blk h4{font-size:11.5px;letter-spacing:.5px;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
+.m79 .k-blk h4{font-size:var(--fs-12);font-weight:800;letter-spacing:.5px;text-transform:uppercase;color:var(--muted);margin-bottom:6px} /* beta 87: same type as every sub-header (was 11.5px/700) */
 .m79 .k-blk ul{list-style:none;display:grid;gap:6px}
 .m79 .k-blk li{font-size:13px;display:flex;gap:8px;align-items:flex-start}
 .m79 .k-blk li .icn{width:15px;height:15px;margin-top:2px;flex:none}
@@ -3384,7 +3396,7 @@ details.calc51 p{margin-top:6px;line-height:1.5}
 .m79 .k-st.k-warn{background:var(--warn-soft);color:var(--warn)}
 .m79 .k-st.k-bad{background:var(--exp-soft);color:var(--exp)}
 .m79 .k-st.k-off{background:var(--bg);color:var(--muted)}
-.m79 .k-sec{padding:12px 14px 4px;font-size:11.5px;letter-spacing:.5px;text-transform:uppercase;font-weight:800;color:var(--muted)}
+.m79 .k-sec{padding:12px 14px 4px;font-size:var(--fs-12);letter-spacing:.5px;text-transform:uppercase;font-weight:800;color:var(--muted)} /* beta 87: 12px, was 11.5px */
 .m79 .k-stp{display:flex;gap:11px;padding:13px 14px;border-top:1px solid var(--line)}
 .m79 .k-stp:first-child{border-top:0}
 .m79 .k-stp .k-num{width:26px;height:26px;border-radius:50%;background:var(--accent);color:#fff;font-size:13px;font-weight:800;display:flex;align-items:center;justify-content:center;flex:none;margin-top:1px}
@@ -3497,3 +3509,9 @@ details.calc51 p{margin-top:6px;line-height:1.5}
 .a48dhd span+span{font-weight:800;color:var(--ink);font-size:var(--fs-13);letter-spacing:0;text-transform:none;font-variant-numeric:tabular-nums}
 .a48mid .a48fl{color:var(--muted);font-weight:600;white-space:nowrap}
 .a48mid .a48fl svg{width:12px;height:12px;vertical-align:-2px}
+
+/* ===== v160b87: Settings sub-headers share one type — 12px · 800 · .5px tracking =====
+   .card h2 was 13px/700/.4px while the b79 pages' labels were 11.5px and .mgr-sec 12px/800;
+   every box sub-header under Settings (page title cards, section labels, b79 labels) now
+   reads the same. Scoped to the Settings containers — reports/insights h2s are untouched. */
+#pageSet .card h2,#view-settings .card h2{font-size:var(--fs-12);font-weight:800;letter-spacing:.5px}
