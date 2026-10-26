@@ -9,7 +9,7 @@ var CMM_FN_REGION='asia-southeast1';
    place before anything is drawn, loads the matching stylesheet, and clears the offline copies so
    the next start fetches fresh files. Help & About then says "old page file". */
 var PAGE75=(function(){
-  var JSV='1.60-beta.89',out={js:JSV,page:'',stale:false,fixed:false};
+  var JSV='1.60-beta.94',out={js:JSV,page:'',stale:false,fixed:false};
   try{
     var m=document.querySelector('meta[name="app-version"]');out.page=m?m.content:'';
     out.stale=out.page!==JSV;
@@ -27864,7 +27864,7 @@ SHEETS.ask=function(p){
   return {title:'Propose switching to '+ML[p.to],icon:'send',
     body:'<div class="k-lead">Only <b>'+P+'</b>, the household owner, can change between Couple and Advanced Couple. <b>Nothing changes until '+P+' accepts.</b></div>'
       +(d?'<div class="k-opt k-on" style="cursor:default"><span class="k-oi">'+ic(MIC[p.to])+'</span><span style="flex:1"><b>'+ML[p.to]+'</b><small>'+MC[p.to].tag+'</small></span></div><div class="k-blk"><h4>If '+P+' accepts</h4>'+list(d.chg,'a','chevright')+'</div>':'')
-      +note('clock',P+' has 7 days to answer. No answer: nothing changes.'),
+      +note('clock',(invMail()?P+' gets an email and sees it in the app. ':'')+P+' has 7 days to answer. No answer: nothing changes.'),
     foot:'<button class="k-btn" data-act="m79sendreq" data-to="'+p.to+'">'+ic('send')+' Send proposal to '+P+'</button>'};
 };
 SHEETS.share=function(p){
@@ -28633,7 +28633,7 @@ SHEETS.syncPropose=function(){
     body:'<div class="k-lead">Only <b>'+P+'</b>, the household owner, can change how your household syncs. <b>Nothing changes until '+P+' accepts.</b></div>'
       +'<div class="k-opt k-on" style="cursor:default"><span class="k-oi">'+ic(to==='pdh'?'folder':'cloud')+'</span><span style="flex:1"><b>'+METH[to]+'</b><small>'+methodDesc(to)+'</small></span></div>'
       +'<div class="k-blk"><h4>If '+P+' accepts</h4>'+list(to==='pdh'?[P+' connects Google Drive or OneDrive and shares the sync folder','You connect, choose the shared files and enter the household code','Sync moves from Couple Money Cloud']:['Both phones sync through Couple Money Cloud','You sign in once and join','The Google Drive or OneDrive folder stays, unused'],'a','chevright')+'</div>'
-      +note('clock',P+' has 7 days to answer. No answer: nothing changes.'),
+      +note('clock',(invMail()?P+' gets an email and sees it in the app. ':'')+P+' has 7 days to answer. No answer: nothing changes.'),
     foot:'<button class="k-btn" data-act="d79sendsync" data-to="'+to+'">'+ic('send')+' Send proposal to '+P+'</button>'};
 };
 SHEETS.syncAnswer=function(){
@@ -28971,21 +28971,24 @@ function stepEmail(){
     +ff('<button class="k-btn" data-act="ap79send"'+(sg?'':' disabled')+'>'+ic('mail')+' '+(off?'Save invitation':'Create invitation')+'</button><button class="k-btn k-ghost" data-act="ap79later">Invite later</button>');
 }
 function hhCodeTxt(){return HH.id||'';}
+/* beta 94: the invitation is emailed by the householdInviteEmail function once CMM_CONFIG.requestEmails is on */
+function invMail(){try{return !!(window.CMM_CONFIG&&window.CMM_CONFIG.requestEmails);}catch(e){return false;}}
 function stepSent(){
-  var P=E(OTH()),em=E(invitedEmail()||AP.email),pend=!!DB.meta.pendingInvite&&!hhOn(),code=hhCodeTxt();
+  var P=E(OTH()),em=E(invitedEmail()||AP.email),pend=!!DB.meta.pendingInvite&&!hhOn(),code=hhCodeTxt(),ml=invMail();
   return fh(3)+'<div class="k-scr k-fl" id="ap79scr">'
-    +'<div class="k-hero k-'+(pend?'warn':'ok')+'" role="status"><span class="k-hi">'+ic(pend?'clock':'check')+'</span><span><b>'+(pend?'Invitation saved':'Invitation ready for '+P)+'</b><small>'+(pend?'It’s sent when you’re back online. ':'')+'The app doesn’t email it — tell '+P+' to open the app and sign in with <span style="font-weight:800;color:var(--ink)">'+em+'</span>.</small></span></div>'
+    +'<div class="k-hero k-'+(pend?'warn':'ok')+'" role="status"><span class="k-hi">'+ic(pend?'clock':'check')+'</span><span><b>'+(pend?'Invitation saved':'Invitation ready for '+P)+'</b><small>'+(ml?(pend?'We email '+P+' when you’re back online. ':'We emailed '+P+' the steps. ')+'They sign in with <span style="font-weight:800;color:var(--ink)">'+em+'</span>.':(pend?'It’s sent when you’re back online. ':'')+'The app doesn’t email it — tell '+P+' to open the app and sign in with <span style="font-weight:800;color:var(--ink)">'+em+'</span>.')+'</small></span></div>'
     +'<div class="k-card" style="margin-top:14px"><div class="k-lbl">What '+P+' does</div>' /* beta 87: label inside the box */
     +'<div class="k-stp"><span class="k-num">1</span><div class="k-sb2"><b>Open Couple Money Manager<span></span></b><p>Tap <b>I have an invite</b>.</p></div></div>'
     +'<div class="k-stp"><span class="k-num">2</span><div class="k-sb2"><b>Sign in with '+em+'<span></span></b><p>Google or email and password.</p></div></div>'
     +'<div class="k-stp"><span class="k-num">3</span><div class="k-sb2"><b>Tap Join household<span></span></b><p>You then choose what '+P+' sees.</p></div></div></div>'
     +note('clock','The invitation stays open until you cancel it.','margin-top:10px')
     +'<details class="k-card k-det" style="margin-top:8px"><summary>If '+P+' can’t find it <span>'+ic('chevdown')+'</span></summary><div class="k-dd">'
+    +(ml?'<div>'+ic('mail')+'<span>Ask '+P+' to check Spam or Promotions for an email from Couple Money.</span></div>':'')
     +'<div>'+ic('mail')+'<span>The email must match exactly. Check for typos or a different address.</span></div>'
     +'<div>'+ic('key')+'<span>Email sign-ups verify their email first. After that, tap <b>Look again</b>.</span></div>'
     +(code?'<div>'+ic('link')+'<span>Fallback: Couple Money Cloud → Join with a code. Household code <b>'+E(code)+'</b>.</span></div>':'')+'</div></details>'
     +'<div style="display:flex;gap:14px;margin:12px 2px 4px"><button class="k-lk" data-act="ap79change">Change email</button><button class="k-lk" style="color:var(--exp)" data-act="ap79cancelask">Cancel invitation</button></div></div>'
-    +ff('<button class="k-btn" data-act="ap79msg">'+ic('send')+' Send '+P+' a message</button><button class="k-btn k-ghost" data-act="ap79share">Choose what '+P+' sees</button><button class="k-btn k-ghost" data-act="ap79done">Done</button>');
+    +ff((mode()==='solo'?'':'<button class="k-btn" data-act="ap79msg">'+ic('send')+' Send '+P+' a message</button>')+'<button class="k-btn k-ghost" data-act="ap79share">Choose what '+P+' sees</button><button class="k-btn k-ghost" data-act="ap79done">Done</button>');
 }
 function stepFolder(){
   var P=E(OTH());
@@ -29027,7 +29030,7 @@ function sendInvite(em){
   return Promise.resolve('saved');
 }
 SHEETS.ap_msg=function(){var P=E(OTH());
-  return {title:'Send '+P+' a message',icon:'send',body:'<div class="k-lead">The app doesn’t email the invitation, so send '+P+' these steps.</div><div class="k-bubble">'+E(msgText()).replace(/\n/g,'<br>')+'</div>'+note('info','The message includes the app link. It never includes the household code.'),
+  return {title:'Send '+P+' a message',icon:'send',body:'<div class="k-lead">'+(invMail()?'We emailed '+P+' already. You can also send these steps yourself.':'The app doesn’t email the invitation, so send '+P+' these steps.')+'</div><div class="k-bubble">'+E(msgText()).replace(/\n/g,'<br>')+'</div>'+note('info','The message includes the app link. It never includes the household code.'),
     foot:'<button class="k-btn" data-act="ap79sharego">'+ic('send')+' Share</button><button class="k-btn k-ghost" data-act="ap79copymsg">'+ic('copy')+' Copy text</button>'};};
 SHEETS.ap_cancel=function(){var P=E(OTH());
   return {title:'Cancel the invitation?',icon:'x',body:'<div class="k-lead">'+P+' can’t join with <b>'+E(invitedEmail()||AP.email)+'</b> any more. You can invite again any time.</div>',
@@ -29080,7 +29083,7 @@ ACT.on('b79-partner',{
     if(!emailOK(v)){AP.emailErr='Enter your partner’s email address.';apPaint();return;}
     if(v===String(myEmail()).toLowerCase()){AP.emailErr='That is your own email address.';apPaint();return;}
     AP.emailErr='';busy(el,true);
-    sendInvite(v).then(function(r){AP.step='sent';apPaint();toast(r==='saved'?'Invitation saved. It’s sent when you’re back online.':'Invitation created for '+v+'.');})
+    sendInvite(v).then(function(r){AP.step='sent';apPaint();toast(r==='saved'?'Invitation saved. It’s sent when you’re back online.':(invMail()?'Invitation emailed to '+v+'.':'Invitation created for '+v+'.'));})
       .catch(function(e){busy(el,false);AP.emailErr=fsErr(e);apPaint();});
   },
   ap79change:function(){AP.email=invitedEmail()||AP.email;AP.step='email';apPaint();},
@@ -29557,3 +29560,5 @@ try{X63.wealthVis=function(){return 'hidden';};}catch(e){}
 
 /* ===== beta 92 · version pin (old Show more reports code removed) ===== */
 try{if(window.pinVer36)window.pinVer36('1.60 beta 92'+(window.PAGE75&&PAGE75.stale?' · old page file ('+(PAGE75.page||'none')+')':''));}catch(e){}
+/* ===== beta 94 · version pin (invitation email) ===== */
+try{if(window.pinVer36)window.pinVer36('1.60 beta 94'+(window.PAGE75&&PAGE75.stale?' · old page file ('+(PAGE75.page||'none')+')':''));}catch(e){}
