@@ -1526,7 +1526,7 @@ header h1 *:not(img):not(svg):not(.logo):not(.applogo){font-size:0}
 /* Simple:transfers are neutral */
 .xtxrow .vv.trf{color:var(--muted)}
 /* Simple:no period picker (fixed to this month) */
-body.simple21 #perBody>.perctl, body.simple21 #view-overview .perbar{display:none!important}
+body.simple21 #perBody>.perctl{display:none!important}
 /* report group pages:the period belongs inside a report, not on the list */
 #repDyn:has(.famrow)>.perbar{display:none}
 /* backups row:2 × 2 instead of four squeezed buttons */
@@ -3503,6 +3503,25 @@ details.calc51 p{margin-top:6px;line-height:1.5}
 .m79 .k-albar .k-abbtn{flex:none;width:auto;padding:9px 12px;font-size:12.5px}
 .m79 .k-albar.k-ok .k-ab{display:block}
 
+/* ===== beta 80 · invitee onboarding (mockup) ===== */
+#authScr .ob80col{flex-direction:column;align-items:stretch;gap:8px}
+#authScr .ob80col .btn{width:100%;margin:0}
+#authScr .ob80blk{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:10px 12px;margin:10px 0}
+#authScr .ob80blk h4{margin:0 0 6px;font-size:var(--fs-12,12px);text-transform:uppercase;letter-spacing:.04em;color:var(--muted)}
+#authScr .ob80blk ul{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+#authScr .ob80blk li{display:flex;gap:8px;align-items:flex-start;line-height:1.4}
+#authScr .ob80blk li svg{flex:none;width:16px;height:16px;margin-top:2px;color:var(--accent)}
+#authScr .ob80hero{display:flex;gap:12px;align-items:center;padding:14px;border-radius:16px;background:var(--good-soft,#e7f7ee);color:var(--ink)}
+#authScr .ob80hero b{display:block}
+#authScr .ob80hero small{display:block;color:var(--muted);margin-top:2px}
+#authScr .ob80hi{flex:none;width:36px;height:36px;border-radius:50%;display:grid;place-items:center;background:var(--good,#16a34a);color:#fff}
+#authScr .ob80hi svg{width:18px;height:18px}
+#authScr .ob80ex{font-size:var(--fs-12,12px);color:var(--muted);margin:-4px 2px 10px}
+#authScr .ob80in{display:inline;padding:0;margin:0 0 0 4px;font-size:inherit}
+#authScr .ob80chip{display:inline-flex;gap:6px;align-items:center;padding:5px 10px;border-radius:999px;background:var(--good-soft,#e7f7ee);color:var(--good,#16a34a);font-weight:700;font-size:var(--fs-12,12px);margin:0 0 10px}
+#authScr .ob80chip svg{width:14px;height:14px}
+#authScr .ob80ok{display:inline-block;margin-left:6px;padding:1px 7px;border-radius:999px;background:var(--good-soft,#e7f7ee);color:var(--good,#16a34a);font-size:11px;font-weight:700;vertical-align:1px}
+
 /* ===== beta 80 · Activity day headers (Transactions style) + row flags ===== */
 .a48dhd{display:flex;justify-content:space-between;align-items:baseline;gap:8px;padding:12px 2px 3px;font-size:var(--fs-11);font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.5px}
 .a48card .a48dhd:first-child{padding-top:2px}
@@ -3515,3 +3534,117 @@ details.calc51 p{margin-top:6px;line-height:1.5}
    every box sub-header under Settings (page title cards, section labels, b79 labels) now
    reads the same. Scoped to the Settings containers — reports/insights h2s are untouched. */
 #pageSet .card h2,#view-settings .card h2{font-size:var(--fs-12);font-weight:800;letter-spacing:.5px}
+
+/* ===== beta 89 · Settings type roles: one style per role on every Settings page and sheet =====
+   Presentation only. Scoped to Settings: the Settings home (#view-settings), its sub-pages (#pageSet),
+   the Data & Sync / Modes sheets (#sh79), Manage Lists sheets (#mgrSheet, #mgrOvl) and the
+   Experience Level sheet (#x63ov). Colours use the theme variables, so dark mode and the
+   Text size setting keep working.
+   Roles: title 18/800 · section header 12/800 caps muted, text only · card title 15/700 ·
+   row label 14/700 · row helper 12/600 muted · lead 13/400 muted · note 12/400 muted ·
+   text link 12/800 accent · list item 13/400 · amount 14/800. */
+
+/* 1 · Screen and sheet titles */
+#view-settings .sethdr25 b,#pageSet #setTitle,#sh79 .k-sh h3,#mgrTitle,#x63ov .xovh b{
+  font-size:var(--fs-18);font-weight:800;letter-spacing:-.2px;color:var(--ink)}
+#mgrTitle{font-size:var(--fs-18)!important} /* the title carries an inline 16px */
+
+/* 2 · Section headers and sub-headers: one type style, text only (no icon) */
+:is(#view-settings,#pageSet,#sh79,#mgrSheet,#mgrOvl,#x63ov) :is(.card>h2,.k-lbl,.mgr-sec,.k-sec,.k-blk>h4,.mgr-lb,.f-row>label,.m27ty){
+  font-size:var(--fs-12);font-weight:800;letter-spacing:.5px;text-transform:uppercase;color:var(--muted);font-family:inherit}
+:is(#view-settings,#pageSet,#sh79,#mgrSheet,#mgrOvl,#x63ov) :is(.card>h2,.k-lbl,.mgr-sec,.k-sec,.k-blk>h4,.mgr-lb)>svg.icn,
+#mgrTitle svg.icn,#sh79 .k-sh>svg{display:none}
+/* Danger zone's header was red with a warning icon; it now reads like every other header (the red row icons stay) */
+#pageSet .card>h2[style*="--exp"]{color:var(--muted)!important}
+/* text that sits inside a header line (".. · a full copy you can restore", the sub-line under a header) */
+:is(#pageSet,#sh79) .k-lbl>span:not(.k-who),:is(#pageSet,#sh79) .k-lbl>.k-lsub,#pageSet .card>h2 .sub{
+  font-size:var(--fs-12);font-weight:600;letter-spacing:0;text-transform:none;color:var(--muted)}
+
+/* 3 · Card titles (status heroes, mode cards) */
+:is(#pageSet .m79,#sh79) .k-hero b,:is(#pageSet .m79,#sh79) .k-mc .k-nm b{font-size:var(--fs-15);font-weight:700;letter-spacing:-.1px}
+
+/* 4 · Row labels */
+#view-settings .srow .stx b,
+:is(#pageSet,#sh79,#mgrSheet,#mgrOvl,#x63ov) :is(.pv-tx>b,.trow>.lb,.arow .atx>b,.mgr-row>.lb,.xexprow .lb>b),
+:is(#pageSet .m79,#sh79) :is(.k-rw .k-rt,.k-snap .k-n,.k-li .k-n,.k-hhr .k-n,.k-rw.k-kv .k-rt b,.k-stp .k-sb2>b,details>summary),
+:is(#pageSet .m79,#sh79) .k-opt>span>b,
+#pageSet #b28Acct .fline>span{
+  font-size:var(--fs-14);font-weight:700;letter-spacing:0;color:var(--ink)}
+body :is(#pageSet .m79,#sh79) .k-rw.k-kv .k-rt{font-size:var(--fs-12);font-weight:600;color:var(--muted)}
+
+/* 5 · Row helper (the line under a row label) */
+#view-settings .srow .stx small,
+:is(#pageSet,#sh79,#mgrSheet,#mgrOvl,#x63ov) :is(.pv-tx>small,.trow>.lb>small,.arow .atx>small,.mgr-row>.lb>small,.xexprow .lb>small),
+:is(#pageSet .m79,#sh79) :is(.k-rw .k-rt small,.k-snap .k-n small,.k-li .k-n small,.k-hhr .k-n small,.k-mc .k-nm>span),
+:is(#pageSet .m79,#sh79) .k-opt>span>small,
+#pageSet #b28Acct .fline>span>small{
+  font-size:var(--fs-12);font-weight:600;letter-spacing:0;color:var(--muted)}
+
+/* 6 · Lead text (intro under a title, body of a status card) and notes */
+:is(#pageSet .m79,#sh79) :is(.k-lead,.k-hero small,.k-stp .k-sb2 p){font-size:var(--fs-13);font-weight:400;color:var(--muted)}
+:is(#pageSet,#sh79,#mgrSheet,#mgrOvl,#x63ov) :is(.help,.help.small,.b19role,.muted.small),
+:is(#pageSet .m79,#sh79) :is(.k-note,.k-foot1,.k-hhnote){font-size:var(--fs-12);font-weight:400;color:var(--muted)}
+
+/* 7 · Text links and small text buttons */
+:is(#pageSet,#sh79,#mgrSheet,#x63ov) :is(.lg46 a,.ibtn,.k-lk){font-size:var(--fs-12);font-weight:800}
+#pageSet .m79 .k-cmp{font-size:var(--fs-14);font-weight:700}
+
+/* 8 · Bullet lists (mode cards, sheet explanations) */
+:is(#pageSet .m79,#sh79) :is(.k-mc li,.k-blk li){font-size:var(--fs-13);font-weight:400}
+
+/* 9 · Amounts in rows */
+:is(#mgrSheet,#mgrOvl) .mamt,#pageSet .arow .aam{font-size:var(--fs-14);font-weight:800}
+
+/* 10 · One font family: the support-details values used a monospace face */
+#pageSet .m79 .k-diag .k-fl2 b{font-family:inherit;font-size:var(--fs-13)}
+#pageSet #b28Acct .fline .ibtn{white-space:nowrap;flex:none}
+/* rows and texts that carried their own inline size */
+#pageSet .m79 .k-rw .k-rt[style*="font-size"]{font-size:var(--fs-14)!important;font-weight:700!important}
+#sh79 .k-pick b{font-size:var(--fs-14);font-weight:700}
+#sh79 .k-pick div{font-size:var(--fs-12);font-weight:600}
+#pageSet .m79 .k-det .k-dd{font-size:var(--fs-12)}
+
+
+/* ===== beta 89 · Settings layout: one row design, one card width, tidy headers =====
+   Presentation only, scoped to Settings (#view-settings, #pageSet, #mgrSheet). Follows the
+   "Settings type roles" block. One row: 34 px icon tile (accent tint), 12 px gap, 12 px top/bottom,
+   a 1 px line between rows, 18 px muted chevron. Rows sit straight in the card (no grey inner box). */
+
+/* 4 · one card width: the beta 79 cards line up with the older cards (same edges, same 14 px inset) */
+#pageSet .m79.k-page{padding-left:0;padding-right:0}
+#pageSet .m79 .k-card.k-pad{padding-left:14px;padding-right:14px}
+#pageSet .m79 .k-card:not(.k-pad)>.k-lbl{padding-left:14px;padding-right:14px}
+
+/* 5 · one row design */
+#view-settings .srow,#pageSet :is(.trow,.arow,.pv-row){padding:12px 2px;gap:12px;min-height:58px;border-bottom:1px solid var(--line)}
+#pageSet .m79 .k-rw{padding:12px 14px;gap:12px;min-height:58px}
+#pageSet .m79 .k-card.k-pad .k-rw{padding-left:0;padding-right:0}
+#pageSet .rows>:last-child,#pageSet .pv-grp>.pv-row:last-child{border-bottom:0}
+/* icon tiles */
+#view-settings .srow .sic,#pageSet :is(.arow .aic,.pv-row .pv-ic),#pageSet .m79 .k-rw .k-ri{
+  width:34px;height:34px;border-radius:11px;flex:none;display:flex;align-items:center;justify-content:center;
+  background:var(--accent-soft);color:var(--accent)}
+/* destructive rows keep the red tile (every Danger zone row, and the Danger zone row on the Settings home) */
+#view-settings .srow.dz .sic,#pageSet .setsub[data-sub="danger"] .arow .aic{background:var(--exp-soft);color:var(--exp)}
+#view-settings .srow .sic svg,#pageSet :is(.arow .aic,.pv-row .pv-ic) svg,#pageSet .m79 .k-rw .k-ri svg{width:18px;height:18px}
+/* chevrons */
+#view-settings .srow .sch,#pageSet :is(.arow .sch,.trow .amt2.muted),#pageSet .m79 .k-rw .k-chev{color:var(--muted);opacity:1;flex:none;display:flex;align-items:center}
+#view-settings .srow .sch svg,#pageSet :is(.arow .sch,.trow .amt2.muted) svg,#pageSet .m79 .k-rw .k-chev svg{width:18px;height:18px}
+/* toggle rows: no grey inner box; they read like every other row (fixes "Hide amounts in notifications" sitting outside the box) */
+#pageSet .pv-grp{background:transparent;border:0;border-radius:0;margin:0}
+#pageSet .pv-grp+.pv-grp,#pageSet .pv-grp+.pv-row,#pageSet #remMask28{border-top:1px solid var(--line)}
+#pageSet .mgr-sec{margin:14px 0 2px}
+#pageSet .card>.mgr-sec:first-of-type{margin-top:0}
+
+/* 3 · Manage Lists: the row icon becomes a tile on the left, like every other Settings page */
+#pageSet .setsub[data-sub="lists"] .trow>.lb{display:grid;grid-template-columns:34px 1fr;column-gap:12px;align-items:center;white-space:normal}
+#pageSet .setsub[data-sub="lists"] .trow>.lb>svg.icn{grid-row:1 / span 2;width:34px;height:34px;padding:8px;box-sizing:border-box;border-radius:11px;background:var(--accent-soft);color:var(--accent)}
+#pageSet .setsub[data-sub="lists"] .trow>.lb>small{grid-column:2}
+
+/* 1 · Danger zone: the card no longer repeats the page title */
+#pageSet .setsub[data-sub="danger"]>.card>h2{display:none}
+#pageSet .setsub[data-sub="danger"]>.card>.help.small:first-of-type{margin-top:0}
+
+/* 6 · Manage Lists sheets: group headers ("Huei · 5 accounts", "Expense · 13 categories") use the section header style */
+#mgrSheet .day-h>span:first-child{font-size:var(--fs-12);font-weight:800;letter-spacing:.5px;text-transform:uppercase;color:var(--muted)}
+#mgrSheet .day-h>span:last-child:not(:first-child){font-size:var(--fs-12);font-weight:600;letter-spacing:0;text-transform:none;color:var(--muted)}
