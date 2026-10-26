@@ -91,7 +91,6 @@ main{padding:calc(68px + env(safe-area-inset-top)) 12px calc(100px + env(safe-ar
 .bal-chip{flex:none;min-width:118px;background:var(--bg);border:1px solid var(--line);border-radius:14px;padding:10px 12px}
 .bal-chip .nm{font-size:var(--fs-11);color:var(--muted);font-weight:700;display:flex;gap:5px;align-items:center;white-space:nowrap}
 .bal-chip .amt{font-size:var(--fs-16);font-weight:800;margin-top:3px}
-.bal-total .amt{font-size:var(--fs-20);font-weight:800}
 /* generic rows (2-col) */
 .rows .trow{display:flex;align-items:center;gap:10px;padding:9px 2px;border-bottom:1px solid var(--line);width:100%}
 .rows .trow:last-child{border-bottom:0}
@@ -102,8 +101,6 @@ main{padding:calc(68px + env(safe-area-inset-top)) 12px calc(100px + env(safe-ar
 .trow .amt2{font-size:var(--fs-14);font-weight:800;white-space:nowrap}
 .trow .rk{width:22px;height:22px;border-radius:7px;background:var(--bg);color:var(--muted);font-size:var(--fs-11);font-weight:800;display:flex;align-items:center;justify-content:center;flex:none}
 /* donut */
- .donut-wrap .rows{flex:1;min-width:0;max-height:150px;overflow-y:auto}
-.dlegend .trow{padding:5px 2px}
 /* charts */
 .chart-scroll{overflow-x:auto;scrollbar-width:none}
 .chart-scroll::-webkit-scrollbar{display:none}
@@ -122,10 +119,7 @@ main{padding:calc(68px + env(safe-area-inset-top)) 12px calc(100px + env(safe-ar
 .txn .mid b{display:block;font-size:var(--fs-14);font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .txn .mid small{color:var(--muted);font-size:var(--fs-11);display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .txn .amt{font-weight:800;font-size:var(--fs-14);white-space:nowrap}
-.fbadge{min-width:17px;height:17px;border-radius:9px;background:var(--accent);color:var(--white);font-size:var(--fs-11);font-weight:800;display:inline-flex;align-items:center;justify-content:center;padding:0 5px;margin-left:3px;line-height:1}
 /* accounts */
-.acc-top .nm{font-weight:700;font-size:var(--fs-15);flex:1;min-width:0}
-.acc-top .bal{font-weight:800;font-size:var(--fs-16);white-space:nowrap}
 .ibtn{border:1px solid var(--line);border-radius:9px;padding:6px 12px;font-size:var(--fs-12);font-weight:700;color:var(--muted);background:var(--bg)}
 /* theme swatches & split editor (R2/R3) */
 .sw{width:32px;height:32px;border-radius:50%;border:3px solid var(--card);box-shadow:0 0 0 1.5px var(--line);flex:none}
@@ -156,8 +150,6 @@ main{padding:calc(68px + env(safe-area-inset-top)) 12px calc(100px + env(safe-ar
 .btn.sm{width:auto;padding:9px 15px;font-size:var(--fs-13);border-radius:11px;flex:none}
 .cat-chips{display:flex;flex-wrap:wrap;gap:7px}
 .cat-chips .chip{padding:8px 12px;font-size:var(--fs-13)}
-.fgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.fgrid .fin,.fgrid select.fin{padding:9px 10px;font-size:var(--fs-13);width:100%}
 /* bottom nav */
 .nav{position:fixed;bottom:0;left:0;right:0;z-index:46;background:var(--card);box-shadow:0 -2px 12px rgba(23,32,58,.08);display:flex;align-items:stretch;padding:6px 8px calc(6px + env(safe-area-inset-bottom));max-width:100%}
 .nbtn{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 0 3px;color:var(--muted);font-size:var(--fs-11);font-weight:700;border-radius:12px;min-width:0}
@@ -223,8 +215,6 @@ button.fin.pick::after{content:'▾';color:var(--muted);font-weight:800;font-siz
 .mamt{font-size:var(--fs-13);font-weight:800;white-space:nowrap}
 .amt .cur2{font-size:var(--fs-11);font-weight:700;opacity:.55;letter-spacing:.3px}
 /* accounts type subtotal headers (v1.6) */
-.tyhead .tysub{font-size:var(--fs-15);font-weight:800;color:var(--ink);flex:none}
-.tyhead .tysub.neg{color:var(--exp)}
 /* balance breakdown & cycle cards (v1.7) */
 .fline{display:flex;justify-content:space-between;align-items:baseline;gap:10px;padding:7px 2px;border-bottom:1px dashed var(--line);font-size:var(--fs-13)}
 .fline span{color:var(--muted);font-weight:600;min-width:0}
@@ -258,7 +248,6 @@ button.fin.pick::after{content:'▾';color:var(--muted);font-weight:800;font-siz
 .asum-l3{padding-left:26px}
 .asum-r{display:flex;align-items:center;gap:7px;flex:none}
 .asum-ch{color:var(--muted);font-size:var(--fs-11);width:13px;text-align:center;flex:none;font-weight:800}
-.asum-liab{font-size:var(--fs-11);font-weight:800;color:var(--warn);border:1px solid var(--warn);border-radius:6px;padding:1px 5px;margin-left:5px;text-transform:uppercase;letter-spacing:.4px;vertical-align:1px}
 .asum-drill{flex:none;font-size:var(--fs-13);opacity:.65;padding:6px 4px;margin:-6px -2px}
 /* fullscreen report page (v1.5) — same layer as the drill page (the two never open together); still under the footer nav (v1.11) */
 #pageReport{z-index:42} /* v1.34:same as .page — report's back row must clear the app header */
@@ -267,9 +256,7 @@ button.fin.pick::after{content:'▾';color:var(--muted);font-weight:800;font-siz
 .txn.sel .ck{background:var(--accent);border-color:var(--accent);color:var(--white)}
 #txList:not(.selmode) .ck{display:none}
 /* v1.35:tap a transaction to expand its details inline — caret affordance + detail card */
-.txn .crt{flex:none;color:var(--muted);font-size:var(--fs-13);font-weight:800;opacity:.55;transition:transform .18s ease;margin-left:-2px}
 .txn.open{background:linear-gradient(90deg,rgba(37,99,235,.06),rgba(37,99,235,0));border-radius:10px}
-.txn.open .crt{transform:rotate(90deg);opacity:.9}
 .txdetail{margin:-4px 0 8px;padding:10px 12px;background:var(--card);border:1px solid var(--line);border-radius:14px;font-size:var(--fs-13);box-shadow:var(--shadow)}
 .txdetail .kvr{display:flex;justify-content:space-between;gap:12px;padding:3px 0;border-bottom:1px dashed var(--line)}
 .txdetail .kvr:last-of-type{border-bottom:0}
@@ -302,7 +289,7 @@ h2 svg.icn{width:1.18em;height:1.18em;vertical-align:-0.22em}
 
 /* ===== v1.36:UI/UX pass + couple reports ===== */
 body{font-variant-numeric:tabular-nums}
-.small{font-size:var(--fs-12)}.stat small,.donut-c span{font-size:var(--fs-12)}.amt .cur2{font-size:var(--fs-11)}
+.small{font-size:var(--fs-12)}.stat small{font-size:var(--fs-12)}.amt .cur2{font-size:var(--fs-11)}
 .ibtn{min-height:40px;min-width:40px;display:inline-flex;align-items:center;justify-content:center;gap:4px}
 .backbtn{width:44px;height:44px}.chip{min-height:38px}.chip .x{padding:6px 2px 6px 6px;opacity:.8}
 .btn.red-solid{background:var(--exp);color:var(--white)}
@@ -315,7 +302,6 @@ body{font-variant-numeric:tabular-nums}
 details.more{border:1px dashed var(--line);border-radius:12px;padding:10px 12px;margin-bottom:12px}
 details.more summary{cursor:pointer;font-weight:800;font-size:var(--fs-13);color:var(--accent)}
 details.more[open] summary{margin-bottom:10px}
-.subnew .fin{padding:9px 10px;font-size:var(--fs-14)}
 .tiles{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .tile{display:flex;flex-direction:column;gap:3px;border:1px solid var(--line);border-radius:14px;padding:11px 12px;background:var(--bg);min-height:84px}
 .tile:active{background:var(--line)}
@@ -328,7 +314,6 @@ details.more[open] summary{margin-bottom:10px}
 .rtab td{padding:8px 4px;border-bottom:1px dashed var(--line);vertical-align:top}
 .rtab tr:last-child td{border-bottom:0}.rtab .r{text-align:right;white-space:nowrap}.rtab tfoot td{font-weight:800;border-top:1.5px solid var(--line)}
 .bbar{height:8px;border-radius:5px;background:var(--line);overflow:hidden;margin-top:10px}.bbar i{display:block;height:100%;border-radius:5px}
-.pernav .ibtn[disabled]{opacity:.35}
 .hgrid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
 .hhead div{font-size:var(--fs-12);color:var(--muted);text-align:center;font-weight:800;padding-bottom:2px}
 .hcell{border:1px solid var(--line);border-radius:9px;min-height:50px;padding:4px;display:flex;flex-direction:column;justify-content:space-between}
@@ -350,7 +335,6 @@ details.more[open] summary{margin-bottom:10px}
 .card .dayg{box-shadow:none}
 
 /* v1.39:account months — month-end balance on top, net movement underneath */
-.mstack .mbal.neg{color:var(--exp)}
 
 /* v1.40:split bill = one collapsible row */
 .txn.grp .gchev{display:inline-block;width:0;height:0;margin:0 7px 2px 1px;vertical-align:middle;border-top:4px solid transparent;border-bottom:4px solid transparent;border-left:5px solid var(--muted);transition:transform .15s ease}
@@ -406,8 +390,7 @@ button.fline{font:inherit;color:inherit;text-align:left}
 .cycrow .lb{white-space:normal}.cycrow .amt2{margin-left:auto}
 
 /* v1.48 */
-.aibtn{display:inline-flex;align-items:center;gap:5px;flex:none;font-size:var(--fs-13);font-weight:800;color:var(--accent);background:var(--accent-soft);border-radius:999px;padding:7px 12px}
-#chmodal{z-index:215} /* beta 82: was 79 — below #authScr (190), so askChoice opened invisibly under the onboarding screen; now above every app shell (#authScr 190, #x63ob/#lockScr 200, #pinR 210), below only toasts */
+#chmodal{z-index:215} /* beta 82: now above onboarding, #authScr and #lockScr, below only toasts */
 #aiOvl{z-index:74}#aiSheet{z-index:75;height:88vh;max-height:88vh;display:flex;flex-direction:column;overflow:hidden}
 .ailog{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:8px;padding:4px 2px 8px}
 .aim{max-width:88%;padding:9px 12px;border-radius:14px;font-size:var(--fs-14);line-height:1.55;overflow-wrap:anywhere}
@@ -430,7 +413,6 @@ button.fline{font:inherit;color:inherit;text-align:left}
 body.calc-on .sheet.on{padding-bottom:calc(330px + env(safe-area-inset-bottom))}
 
 /* v1.50 */
-.srchw{position:relative;flex:1;min-width:0}
 .srchx{position:absolute;right:6px;top:50%;transform:translateY(-50%);width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--muted);background:var(--line)}
 .srchx svg{width:14px;height:14px}
 .calcw{position:relative;display:block}
@@ -449,7 +431,6 @@ body.calc-on .sheet.on{padding-bottom:calc(330px + env(safe-area-inset-bottom))}
 .stmrow.off{opacity:.45}
 .stmrow .fin{padding:8px 9px;font-size:var(--fs-13)}
 .stck{width:18px;height:18px;accent-color:var(--accent)}
-.stty.exp{background:var(--exp-soft);color:var(--exp)}.stty.inc{background:var(--inc-soft);color:var(--inc)}
 #lockScr{position:fixed;inset:0;z-index:200;background:var(--bg);display:flex;align-items:center;justify-content:center;padding:24px}
 .lkbox{width:100%;max-width:300px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:12px}
 .lklogo{width:56px;height:56px;border-radius:16px;background:linear-gradient(140deg,var(--accent),var(--accent-2));color:var(--white);display:flex;align-items:center;justify-content:center}
@@ -505,7 +486,6 @@ body.authon{overflow:hidden}
 .jrtx{flex:1;min-width:0}.jrtx b{display:block;font-size:var(--fs-14)}.jrtx small{display:block;font-size:var(--fs-12);color:var(--muted);font-weight:600}
 .jrrow.done .jrtx b{text-decoration:line-through;color:var(--muted)}
 .jrfoot .aulink{margin-top:6px}
-.iostip .aulink{margin:6px 0 0;text-align:left}
 #tourRing{position:fixed;z-index:150;border-radius:14px;pointer-events:none;box-shadow:0 0 0 3px var(--accent),0 0 0 9999px rgba(10,14,26,.55);transition:all .25s ease}
 #tourTip{position:fixed;z-index:151;left:12px;right:12px;max-width:420px;margin:0 auto;background:var(--card);color:var(--ink);border-radius:14px;padding:12px 14px;box-shadow:0 12px 30px rgba(0,0,0,.35);font-size:var(--fs-14);line-height:1.45;transition:top .25s ease}
 #tourTip.center{top:auto}
@@ -555,7 +535,7 @@ body.authon{overflow:hidden}
 .pschart{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;min-height:130px;width:100%;border:1.5px dashed var(--line);border-radius:14px;color:var(--muted);font-weight:700;font-size:var(--fs-13);text-align:center;padding:16px;-webkit-user-select:none;user-select:none;cursor:pointer}
 .pschart svg.icn{width:22px;height:22px;color:var(--accent)}
 .pschart small{font-weight:600;font-size:var(--fs-12)}
-body.ps .bvbar i,body.ps .gbar i,body.ps .bbar i,body.ps .tbars i{opacity:0}
+body.ps .bvbar i,body.ps .gbar i,body.ps .bbar i{opacity:0}
 body.ps .hcell{background:var(--card)!important}
 body.ps .hcell b,body.ps .hcell.hot span{color:var(--muted)!important}
 #eyeBtn.on{color:var(--white);background:var(--accent)}
@@ -566,7 +546,6 @@ body.ps .hcell b,body.ps .hcell.hot span{color:var(--muted)!important}
 .stmsec{display:flex;justify-content:space-between;align-items:center;font-size:var(--fs-12);font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;margin:14px 2px 6px}
 .stmsec.warn{color:var(--warn)}
 .stmmatch{font-size:var(--fs-12);color:var(--warn);font-weight:700;margin-top:6px;line-height:1.45}
-.stmrow .stmtop{grid-template-columns:22px 1fr 92px 96px}
 .stmrow select.fin{padding:8px 6px;font-size:var(--fs-13)}
 .stmopt{display:flex;align-items:center;gap:6px;font-size:var(--fs-12);font-weight:700;color:var(--muted);margin-top:6px}
 .stmopt input{width:17px;height:17px;accent-color:var(--accent)}
@@ -592,14 +571,6 @@ body.ps .hcell b,body.ps .hcell.hot span{color:var(--muted)!important}
 .expchips{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:10px}
 .exgrid.two{grid-template-columns:1fr 1fr}
 .implist .mgr-row{padding:9px 2px}
-@media print{
-  body>*:not(#printArea){display:none!important}
-  html,body{background:var(--white)!important;color:var(--black)!important}
-  #printArea{display:block!important;padding:0;color:var(--black);font-family:-apple-system,"Segoe UI",Roboto,sans-serif}
-}
-.prt .sub{color:var(--gray-600);font-size:var(--fs-12);margin-bottom:14px}
-.prt .r{text-align:right;white-space:nowrap}
-.prt .note{font-size:var(--fs-11);color:var(--gray-600);margin-top:10px}
 /* v1.57 */
 .perbar{display:flex;align-items:center;gap:8px;padding:8px}
 .perchip{flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;gap:1px;background:var(--bg);border-radius:12px;padding:8px 10px;text-align:center}
@@ -620,9 +591,9 @@ body.sheeton .toast.on{transform:translateX(-50%)}
 .sr3 .stamt{text-align:right;font-weight:800}
 .peeked{outline:2px dashed var(--accent);outline-offset:2px;border-radius:8px}
 /* 24. minimum 12px text */
-.small,.help.small,.card h2 .sub,.trow .lb small,.mgr-row .lb small,.asum-row .lb small,.txn .mid small,.day-h,.dayg .day-h,.mini,.daybal,.tbal,.txn .amt .tbal,.mini .minibal,.stat small,.kpi small,.donut-c span,.tyhead .tyn,.mgr-sec,.mgr-lb,.f-row label,.aul,.gbadge,.pvpill,.autochip,.pill,.asum-liab,.goal small,.bvrow small,.hcell span,.hcell b,.tbars small,.hhead div,.jrtx small,.jrhead small,.stmsec,.stmmatch,.exbtn small,.tile small,.bal-chip .nm,.cpv,.lkmsg,.amt .cur2,.fbadge,.rtab th,.pwrules,.jrskip,#tourTip .tst,.aim .src,.stty{font-size:var(--fs-12)!important}
+.small,.help.small,.card h2 .sub,.trow .lb small,.mgr-row .lb small,.asum-row .lb small,.txn .mid small,.day-h,.dayg .day-h,.mini,.daybal,.tbal,.txn .amt .tbal,.mini .minibal,.stat small,.kpi small,.mgr-sec,.mgr-lb,.f-row label,.aul,.gbadge,.pvpill,.autochip,.pill,.goal small,.bvrow small,.hcell span,.hcell b,.hhead div,.jrtx small,.jrhead small,.stmsec,.stmmatch,.exbtn small,.tile small,.bal-chip .nm,.cpv,.lkmsg,.amt .cur2,.rtab th,.pwrules,.jrskip,#tourTip .tst,.aim .src{font-size:var(--fs-12)!important}
 .nbtn{font-size:var(--fs-12)}
-.asum-liab,.gbadge,.pvpill,.autochip{padding:2px 7px}
+.gbadge,.pvpill,.autochip{padding:2px 7px}
 .card h2{font-size:var(--fs-13)}
 
 /* ---- 02-v159-b2.css ---- */
@@ -704,14 +675,11 @@ html[data-mode="dark"]{--shadow:0 1px 2px rgba(0,0,0,.42),0 6px 20px rgba(0,0,0,
 .hdr{background:color-mix(in srgb,var(--card) 82%,transparent);-webkit-backdrop-filter:saturate(1.6) blur(16px);backdrop-filter:saturate(1.6) blur(16px);box-shadow:none;border-bottom:1px solid var(--hair);padding-bottom:10px}
 .hdr .logo{border-radius:12px;box-shadow:inset 0 1px 0 rgba(255,255,255,.4),inset 0 -7px 12px rgba(0,0,0,.14),0 2px 6px rgba(23,32,58,.22),0 0 0 1px color-mix(in srgb,var(--accent) 18%,transparent)}
 .hdr h1{letter-spacing:-.2px}
-.aibtn{box-shadow:inset 0 0 0 1.5px color-mix(in srgb,var(--accent) 22%,transparent)}
 .sync{border:1px solid var(--hair);background:color-mix(in srgb,var(--bg) 72%,var(--card))}
 .sync.ok .dot{box-shadow:0 0 0 3px color-mix(in srgb,var(--inc) 18%,transparent)}
 @media (max-width:430px){
   .hdr{gap:8px;padding-left:12px;padding-right:10px}
   .hdr h1{font-size:var(--fs-14)}
-  .aibtn{font-size:0;gap:0;padding:0;min-width:40px;height:40px;justify-content:center}
-  .aibtn svg.icn{width:20px;height:20px;margin:0}
   .sync{font-size:var(--fs-11);padding:5px 9px;gap:5px}
 }
 
@@ -759,8 +727,6 @@ html[data-mode="dark"]{--shadow:0 1px 2px rgba(0,0,0,.42),0 6px 20px rgba(0,0,0,
 .hbtn:active{transform:scale(.92);background:var(--bg)}
 .exbtn,.usecard,.ccrow{transition:var(--press-t)}
 .exbtn:active,.usecard:active,.ccrow:active{transform:scale(.98)}
-.aibtn{transition:var(--press-t)}
-.aibtn:active{transform:scale(.95)}
 .backbtn{transition:var(--press-t)}
 .backbtn:active{transform:scale(.92);background:var(--line)}
 
@@ -826,7 +792,6 @@ body.sheeton .toast{border-radius:16px}
 
 /* ---------- 1. toolbar: one slim row (search + 2 icon buttons) ---------- */
 #view-txns>.card{padding:12px 12px 10px}
-#txSummary{font-size:var(--fs-12);letter-spacing:.1px}
 
 /* ---------- 2. day flow:flat list + sticky frosted date captions ---------- */
 #txList{padding-top:2px}
@@ -875,24 +840,10 @@ body.sheeton .toast{border-radius:16px}
 .usecard.mode6.on .pvpill{background:var(--accent);color:var(--white)}
 .m6go{background:var(--bg);color:var(--muted)}
 .m6rec{display:inline-block;margin-left:6px;padding:2px 8px;border-radius:999px;background:var(--accent-soft);color:var(--accent);font-size:var(--fs-11);font-weight:800;text-transform:uppercase;letter-spacing:.5px;vertical-align:1px}
-.m6note{font-size:var(--fs-12);line-height:1.55;color:var(--muted);margin:8px 2px 0}
-.m6link{margin:10px 2px 0}
 
 /* ---------- 2. second (Private space) sync-status row ---------- */
 .ds-status.m6p{margin-top:6px}
 
-/* ---------- 3. Compare-modes tables (plan 5 / 6 / 10) ---------- */
-.m6cmp{overflow-x:auto;margin:2px 0 6px}
-.m6cmp table{width:100%;border-collapse:collapse;font-size:var(--fs-12)}
-.m6cmp th,.m6cmp td{padding:7px 8px;border-bottom:1px solid var(--hair);text-align:left;vertical-align:top}
-.m6cmp th{font-size:var(--fs-11);text-transform:uppercase;letter-spacing:.07em;color:var(--muted);font-weight:800}
-.m6cmp td:first-child{font-weight:600;min-width:118px}
-.m6cmp th:not(:first-child),.m6cmp td:not(:first-child){text-align:center;min-width:64px}
-.m6cmp .yes{color:var(--inc);font-weight:800}
-.m6cmp .no{color:var(--muted);font-weight:600}
-.m6cmp .sug{color:var(--accent);font-weight:700}
-.m6cmp tr:last-child td{border-bottom:0}
-.m6h{margin:14px 2px 6px}
 
 /* ---------- 4. mode-switch / blocker rows (adv→couple destinations) ---------- */
 .m6dest{display:grid;gap:5px;margin:7px 0 3px}
@@ -903,11 +854,6 @@ body.sheeton .toast{border-radius:16px}
 
 /* ---------- 5. onboarding decision cards reuse .usecard; keep them tappable-wide ---------- */
 #auBody .usecard{width:100%;text-align:left}
-@media (max-width:430px){
-  .m6cmp table{font-size:var(--fs-12)}
-  .m6cmp th,.m6cmp td{padding:6px}
-  .m6cmp td:first-child{min-width:104px}
-}
 
 /* ---- 07-v160-b1-dashboard.css ---- */
 
@@ -944,9 +890,6 @@ body.sheeton .toast{border-radius:16px}
 
 /* v1.60 beta 2 — Privacy screen redesign, ported from v1.60 */
 /* ===== v1.60 Privacy ===== */
-.pv-hero .sh{flex:none;width:42px;height:42px;border-radius:13px;background:var(--card);color:var(--accent);display:flex;align-items:center;justify-content:center}
-.pv-hero .sh svg{width:22px;height:22px}
-.pv-pill.ok{background:var(--inc-soft);color:var(--inc)}.pv-pill.warn{background:color-mix(in srgb,var(--warn) 16%,var(--card));color:var(--warn)}
 .pv-grp{background:var(--bg);border-radius:16px;overflow:hidden}
 .pv-row{display:flex;align-items:center;gap:12px;padding:12px 12px;border-bottom:1px solid var(--line);width:100%;text-align:left}
 .pv-row:last-child{border-bottom:0}
@@ -960,7 +903,6 @@ label.pv-row{cursor:pointer}
 .pv-ct select.fin{width:auto;max-width:140px;margin:0;padding:7px 8px;font-size:var(--fs-13)}
 .pv-note{font-size:var(--fs-12);color:var(--muted);margin:8px 6px 0;line-height:1.45}
 .pv-note.warn{color:var(--warn)}
-.pv-det .dayg{margin:0 0 4px;border:0;box-shadow:none;background:transparent}
 
 /* ---- 09-v160-b2-transactions.css ---- */
 
@@ -1136,9 +1078,6 @@ body.hdrscrolled .hdr{background:color-mix(in srgb,var(--card) 78%,transparent)!
 /* v1.60 beta 16 — Insights & Reports IA + Vehicles + Property (v1.63 plan + Property docx) */
 
 /* ---------- header:avatar + reminder bell ---------- */
-.pbtn{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:var(--accent-soft);color:var(--accent);font-weight:800;font-size:var(--fs-14);flex:none;position:relative;border:1.5px solid color-mix(in srgb,var(--accent) 35%,transparent)}
-.pbtn svg{width:19px;height:19px}
-.pbtn .bdg{position:absolute;top:-3px;right:-3px;min-width:15px;height:15px;border-radius:999px;background:var(--exp);color:var(--white);font-size:var(--fs-11);font-weight:800;display:flex;align-items:center;justify-content:center;padding:0 3px;border:1.5px solid var(--card)}
 header.hdr h1{min-width:0}
 
 /* ---------- Insights sub-tab bar ---------- */
@@ -1186,10 +1125,6 @@ header.hdr h1{min-width:0}
 .wfrow .wb i.neu{background:var(--accent)}
 .wfrow .wv{text-align:right;font-weight:800;font-size:var(--fs-13);white-space:nowrap}
 .wftot{border-top:1.5px solid var(--line);margin-top:4px;padding-top:8px}
-.uprow .nm{flex:1;min-width:0}
-.uprow .nm b{font-size:var(--fs-14);display:block}
-.uprow .nm small{display:block;color:var(--muted);font-size:var(--fs-12);margin-top:1px}
-.uprow .amt{font-weight:800;font-size:var(--fs-14);white-space:nowrap}
 .pill{display:inline-flex;align-items:center;padding:2.5px 8px;border-radius:999px;font-size:var(--fs-11);font-weight:800;letter-spacing:.2px}
 .pill.over{background:color-mix(in srgb,var(--exp) 14%,transparent);color:var(--exp)}
 .pill.today{background:color-mix(in srgb,var(--warn) 20%,transparent);color:var(--warn)}
@@ -1253,21 +1188,17 @@ details.adv{border-style:dashed}
 .loanpick input{width:17px;height:17px;accent-color:var(--accent)}
 
 /* ---------- reminder centre / reminders ---------- */
-.bellrow .nm{flex:1;min-width:0}
-.bellrow .nm b{display:block;font-size:var(--fs-14)}
-.bellrow .nm small{display:block;color:var(--muted);font-size:var(--fs-12);margin-top:1px}
 
 /* ---------- misc ---------- */
 .note-soft{background:var(--bg);border-radius:12px;padding:9px 12px;font-size:var(--fs-12);color:var(--muted);margin:8px 0}
-.kvtable .fline span{color:var(--muted)}
 
 
 /* ---- 14-v160-b7-finance-metrics-runtime.css ---- */
 #perBody .dh-row.b7x{grid-template-columns:repeat(2,1fr);row-gap:12px}#perBody .dh-row.b7x button:nth-child(odd){border-left:0;padding-left:0}
 /* ---- 15-v160-b10-drilldowns-nav-runtime.css ---- */
-/* D3:expenses red, income green, transfer stays ink */#txList .txn .amt.neg,#drillBody .txn .amt.neg{color:var(--exp)}#txList .txn .amt.pos,#drillBody .txn .amt.pos{color:var(--inc)}/* D2:stamped tiles keep the lt class (keeps the beta5 polish away) - restyle per type */.tic5.lt{background:var(--bg)!important;color:var(--muted)!important;box-shadow:inset 0 0 0 1px var(--hair)!important;font-size:inherit}.tic5.lt.in{background:var(--inc-soft)!important;color:var(--inc)!important;box-shadow:none!important}.tic5.lt.tr{background:var(--accent-soft)!important;color:var(--accent)!important;box-shadow:none!important}/* D5:account summary sections never clip */.asum-sec .lb b{font-size:var(--fs-14);text-transform:uppercase;letter-spacing:.4px}.asum-row .lb small{white-space:normal}.asum-row .asum-r{max-width:62%}#accList .asum-l3 .trow .lb,#accList .asum-l3 .arow .lb{padding-left:2px}/* D6:mode tabs */#b10modeTabs{display:flex;gap:6px}#b10modeTabs button{flex:1;white-space:nowrap}/* drill merged rows keep the same anatomy as the transactions list */#drillBody .txn{width:100%;text-align:left}
+/* D3:expenses red, income green, transfer stays ink */#txList .txn .amt.neg,#drillBody .txn .amt.neg{color:var(--exp)}#txList .txn .amt.pos,#drillBody .txn .amt.pos{color:var(--inc)}/* D2:stamped tiles keep the lt class (keeps the beta5 polish away) - restyle per type */.tic5.lt{background:var(--bg)!important;color:var(--muted)!important;box-shadow:inset 0 0 0 1px var(--hair)!important;font-size:inherit}.tic5.lt.in{background:var(--inc-soft)!important;color:var(--inc)!important;box-shadow:none!important}.tic5.lt.tr{background:var(--accent-soft)!important;color:var(--accent)!important;box-shadow:none!important}/* D5:account summary sections never clip */.asum-row .lb small{white-space:normal}.asum-row .asum-r{max-width:62%}#accList .asum-l3 .trow .lb,#accList .asum-l3 .arow .lb{padding-left:2px}/* drill merged rows keep the same anatomy as the transactions list */#drillBody .txn{width:100%;text-align:left}
 /* ---- 16-v160-b11-between-us-runtime.css ---- */
-.m6pre{margin:10px 2px 0;border:1px solid var(--line);border-radius:12px;padding:2px 12px 8px;background:color-mix(in srgb,var(--muted) 6%,transparent)}.m6pre-h{font-size:var(--fs-11);font-weight:800;letter-spacing:.7px;color:var(--muted);text-transform:uppercase;padding:8px 0 2px}.m6pre-r{display:flex;gap:8px;align-items:flex-start;padding:4px 0;font-size:var(--fs-12);line-height:1.5;color:var(--text);font-weight:600}.m6pre-r .icn{width:15px;height:15px;flex:none;color:var(--inc);margin-top:2px}/* ---- 17-v160-b12-settings-summary-runtime.css ---- */
+/* ---- 17-v160-b12-settings-summary-runtime.css ---- */
 .toast.on{pointer-events:auto}#toastX{display:none;background:rgba(255,255,255,.16);border:0;color:inherit;border-radius:999px;width:26px;height:26px;min-height:26px;padding:0;margin-left:12px;align-items:center;justify-content:center;flex:none;cursor:pointer}#toastX .icn{width:14px;height:14px}.toast.on #toastX{display:inline-flex}#toastX:active{transform:scale(.9)}.dins .dt .b12due{display:block;font-weight:700;color:var(--text);opacity:.85;margin-top:3px}.asum-l2 b{font-size:var(--fs-13);letter-spacing:.2px}
 /* ---- 18-v160-b13-toasts-runtime.css ---- */
 /* toast v13:tint tokens (light) */:root{--t13i:#f3f5f8;--t13o:#e2f7ec;--t13w:#fdf3d9;--t13e:#fdecec;--t13ibg:#d9ebfc;--t13iig:#2e90fa;--t13obg:#cfeedd;--t13oig:#12a150;--t13wbg:#fcebc2;--t13wig:#e8930c;--t13ebg:#fcd9d5;--t13eig:#de3c39;--t13icnt:#39445a;--t13ocnt:#0f9d58;--t13wcnt:#d97d06;--t13ecnt:#de3c39;--t13mut:#98a2b3;--t13btn:#ffffff;--t13btnbd:rgba(16,24,40,.12)}html[data-mode="dark"]{--t13i:#1c2434;--t13o:#122b20;--t13w:#2e2410;--t13e:#33191b;--t13ibg:rgba(110,177,255,.14);--t13iig:#6eb1ff;--t13obg:rgba(74,222,128,.14);--t13oig:#4ade80;--t13wbg:rgba(245,185,63,.14);--t13wig:#f5b93f;--t13ebg:rgba(248,113,113,.14);--t13eig:#f87171;--t13icnt:#aeb9ce;--t13ocnt:#4ade80;--t13wcnt:#f5b93f;--t13ecnt:#f87171;--t13mut:#77839c;--t13btn:rgba(255,255,255,.05);--t13btnbd:rgba(232,237,248,.16)}@media (prefers-color-scheme:dark){html:not([data-mode="light"]){--t13i:#1c2434;--t13o:#122b20;--t13w:#2e2410;--t13e:#33191b;--t13ibg:rgba(110,177,255,.14);--t13iig:#6eb1ff;--t13obg:rgba(74,222,128,.14);--t13oig:#4ade80;--t13wbg:rgba(245,185,63,.14);--t13wig:#f5b93f;--t13ebg:rgba(248,113,113,.14);--t13eig:#f87171;--t13icnt:#aeb9ce;--t13ocnt:#4ade80;--t13wcnt:#f5b93f;--t13ecnt:#f87171;--t13mut:#77839c;--t13btn:rgba(255,255,255,.05);--t13btnbd:rgba(232,237,248,.16)}}.toast{left:50%;right:auto;bottom:calc(96px + env(safe-area-inset-bottom));width:min(420px,calc(100% - 28px));max-width:none;background:transparent;color:var(--ink);padding:5px 5px 3px;border-radius:20px;box-shadow:none;display:block;text-align:left;font-size:var(--fs-13);font-weight:500;transform:translateX(-50%) translateY(16px)}.toast.on{transform:translateX(-50%) translateY(0);opacity:1}body.sheeton .toast{border-radius:20px}.b13card{position:relative;display:flex;align-items:flex-start;gap:10px;background:var(--card);border-radius:16px;padding:12px 12px 12px 12px;box-shadow:var(--shadow-lg,0 6px 14px rgba(0,0,0,.12),0 18px 40px rgba(0,0,0,.16))}.b13ico{width:34px;height:34px;min-height:34px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;flex:none;margin-top:1px}.b13ico .icn{width:19px;height:19px}.b13txt{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}#toastTitle{font-size:var(--fs-14);font-weight:800;color:var(--ink);line-height:1.35;letter-spacing:.1px;padding-right:26px}#toastMsg{font-size:var(--fs-13);color:var(--muted);line-height:1.5;word-break:break-word}.b13acts{display:none;justify-content:flex-end;gap:8px;margin-top:9px}.toast.act .b13acts{display:flex}#toastUndo{display:none;margin:0;background:var(--t13btn);border:1px solid var(--t13btnbd);color:var(--ink);border-radius:999px;padding:7px 14px;min-height:32px;font-size:var(--fs-13);font-weight:800;font-family:inherit;align-items:center;gap:6px;box-shadow:0 1px 2px rgba(0,0,0,.06);flex:none;cursor:pointer}.toast.act #toastUndo{display:inline-flex}#toastUndo:active{transform:scale(.95);opacity:.85}#toastUndo .icn{width:14px;height:14px}#toastBar{display:none!important}#toastX{position:absolute;top:9px;right:9px;margin:0;width:28px;height:28px;min-height:28px;background:transparent;color:var(--muted);border:0;border-radius:999px;padding:0;display:none;align-items:center;justify-content:center;flex:none;cursor:pointer}.toast.on #toastX{display:inline-flex}#toastX:active{transform:scale(.9)}#toastX .icn{width:15px;height:15px}.b13foot{margin-top:9px;text-align:center;font-size:var(--fs-12);font-weight:600;color:var(--t13mut);letter-spacing:.1px}#toastCnt{font-weight:800}.toast.b13info{background:var(--t13i)}  .toast.b13info .b13ico{background:var(--t13ibg);color:var(--t13iig)} .toast.b13info #toastCnt{color:var(--t13icnt)}.toast.b13ok{background:var(--t13o)}     .toast.b13ok   .b13ico{background:var(--t13obg);color:var(--t13oig)} .toast.b13ok   #toastCnt{color:var(--t13ocnt)}.toast.b13warn{background:var(--t13w)}   .toast.b13warn .b13ico{background:var(--t13wbg);color:var(--t13wig)} .toast.b13warn #toastCnt{color:var(--t13wcnt)}.toast.b13err{background:var(--t13e)}    .toast.b13err  .b13ico{background:var(--t13ebg);color:var(--t13eig)} .toast.b13err  #toastCnt{color:var(--t13ecnt)}
@@ -1410,15 +1341,6 @@ html[data-mode="dark"] #toastUndo{box-shadow:0 6px 16px rgba(2,6,23,.25)}
 .at18rows .help{margin-top:10px}
 
 /* ================= D · Experience Level:onboarding + sheets ================= */
-#x63ob{position:fixed;inset:0;z-index:200;background:var(--bg);overflow-y:auto;
- padding:calc(20px + env(safe-area-inset-top)) 14px calc(28px + env(safe-area-inset-bottom));
- max-width:560px;margin:0 auto;left:0;right:0}
-#x63ob .xob-top{display:flex;align-items:center;gap:8px;margin-bottom:14px}
-#x63ob .xob-step{font-size:var(--fs-11);font-weight:800;letter-spacing:.6px;text-transform:uppercase;color:var(--muted)}
-#x63ob .xob-prog{flex:1;height:4px;border-radius:999px;background:var(--bg);overflow:hidden}
-#x63ob .xob-prog i{display:block;height:100%;border-radius:999px;background:var(--accent);transition:width .25s ease}
-.xob-h1{font-size:var(--fs-20);font-weight:800;line-height:1.3;margin:6px 0 6px}
-.xob-sub{font-size:var(--fs-13);color:var(--muted);line-height:1.55;margin-bottom:14px}
 .xq18{display:flex;align-items:flex-start;gap:10px;width:100%;text-align:left;padding:12px;border-radius:14px;
  background:var(--card);border:1.5px solid var(--hair);margin-bottom:8px;box-shadow:var(--shadow)}
 .xq18 .xqbox{width:20px;height:20px;border-radius:6px;border:2px solid var(--line);flex:none;margin-top:1px;
@@ -1428,16 +1350,6 @@ html[data-mode="dark"] #toastUndo{box-shadow:0 6px 16px rgba(2,6,23,.25)}
 .xq18 .xqbox svg{width:12px;height:12px;stroke-width:3}
 .xq18 b{display:block;font-size:var(--fs-14)}
 .xq18 small{display:block;color:var(--muted);font-size:var(--fs-12);margin-top:1px;line-height:1.4}
-.xrec18{border-radius:16px;padding:14px;border:1.5px solid color-mix(in srgb,var(--accent) 40%,transparent);
- background:color-mix(in srgb,var(--accent) 6%,var(--card));margin-bottom:10px}
-.xrec18 b{font-size:var(--fs-14)}
-.xrec18 ul{margin:8px 0 0;padding-left:18px;color:var(--muted);font-size:var(--fs-12);line-height:1.55}
-.aubadge18{display:inline-flex;align-items:center;padding:2.5px 9px;border-radius:999px;font-size:var(--fs-11);
- font-weight:800;letter-spacing:.2px;background:var(--accent);color:var(--white);margin-bottom:8px}
-.xchoice18{position:relative}
-.xchoice18 .aubadge18{position:absolute;top:10px;right:10px}
-.xfoot18{display:flex;gap:8px;margin-top:14px}
-.xfoot18 .btn{flex:1;margin:0}
 
 /* overlay (info sheets + experience switch + wealth features) */
 #x63ov{position:fixed;inset:0;z-index:190;display:none}
@@ -1469,13 +1381,6 @@ html[data-mode="dark"] #toastUndo{box-shadow:0 6px 16px rgba(2,6,23,.25)}
 .xexprow .st{font-weight:800;font-size:var(--fs-12);color:var(--accent);white-space:nowrap}
 
 /* ================= E · Simple Money tab ================= */
-.mq2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.mq2>div{background:var(--bg);border-radius:14px;padding:11px 12px;text-align:left;position:relative}
-.mq2 .mlab{display:flex;align-items:center;font-size:var(--fs-12);font-weight:700;color:var(--muted);margin-bottom:3px}
-.mq2 .mlab .infob18{margin-left:auto}
-.mq2 b{font-size:var(--fs-16);letter-spacing:-.2px}
-.mq2 b.pos{color:var(--inc)}
-.mq2 b.neg{color:var(--exp)}
 .moneyavail18{display:flex;align-items:center;gap:12px;width:100%;text-align:left;padding:14px;border-radius:16px;margin-bottom:12px;
  background:var(--card);
  border:1px solid var(--hair);box-shadow:var(--shadow)} /* beta 85: plain white card like the boxes below it (was an accent-tinted gradient), and its own 12px gap so it no longer sits on the next box */
@@ -1500,7 +1405,6 @@ html[data-mode="dark"] #toastUndo{box-shadow:0 6px 16px rgba(2,6,23,.25)}
 /* ---- 22-v160-b20-overlay.css ---- */
 
 /* beta 20:experience overlay never covers the lock screen; partner-view preview page */
-#x63ob{z-index:150}
 #pagePVP20{z-index:48;background:var(--bg)}
 .b20pvpbar{position:sticky;top:0;z-index:2;display:flex;align-items:center;gap:10px;
  padding:calc(10px + env(safe-area-inset-top)) 14px 10px;background:color-mix(in srgb,var(--accent-2) 12%,var(--card));
@@ -1516,7 +1420,7 @@ input.b20ferr{border-color:var(--exp)!important}
 /* ================= v1.60 beta 21 — review fixes ================= */
 /* header:logo only — the name was always cut to "Cou…" */
 header h1, .top h1{font-size:0!important;width:auto!important;flex:none!important}
-header h1 *:not(img):not(svg):not(.logo):not(.applogo){font-size:0}
+header h1 *:not(img):not(svg):not(.logo){font-size:0}
 /* tap targets ≥ 36 px */
 #syncChip{min-height:36px;padding-left:10px;padding-right:10px;font-size:var(--fs-12)}
 .trendchips button,[data-act=v63tr],[data-act=v63uph]{min-height:36px;min-width:44px;font-size:var(--fs-13)}
@@ -1611,8 +1515,6 @@ body.simple21 #perBody>.perctl{display:none!important}
 
 /* ================= v1.60 beta 25 ================= */
 /* card footer link (Where the money went → Spending analysis) */
-.cardlink25{display:flex;align-items:center;justify-content:space-between;width:100%;margin-top:6px;padding:11px 2px 3px;border-top:1px solid var(--hair);color:var(--accent);font-weight:700;font-size:var(--fs-14)}
-.cardlink25 .icn{width:16px;height:16px}
 /* reminder centre */
 .rem25box{background:var(--bg);border-radius:14px;padding:4px 12px 2px;margin-top:10px}
 .rem25box:first-child{margin-top:2px}
@@ -1630,17 +1532,13 @@ body.simple21 #perBody>.perctl{display:none!important}
 .rem25row .chev{color:var(--muted);display:flex}.rem25row .chev .icn{width:16px;height:16px}
 .rem25empty{padding:14px 4px;color:var(--muted)}
 #mgrTitle .info23{margin-left:8px}
-/* profile button: initial + gear */
-#hdrAvatar16{overflow:visible}
-#hdrAvatar16 .gear25{position:absolute;right:-4px;bottom:-4px;width:17px;height:17px;border-radius:50%;background:var(--card);color:var(--accent);display:grid;place-items:center;box-shadow:0 0 0 1.5px var(--card),0 1px 3px rgba(0,0,0,.18)}
-#hdrAvatar16 .gear25 svg{width:12px;height:12px}
 /* header sync: icon + status dot (details in Settings › Data & Sync) */
 #syncChip{width:36px;height:36px;min-height:36px;padding:0!important;border-radius:50%;justify-content:center;position:relative;max-width:none;gap:0}
 #syncChip .sic25{display:flex;color:var(--muted)}#syncChip .sic25 .icn{width:18px;height:18px}
 #syncChip .dot{position:absolute;right:5px;top:5px;width:9px;height:9px;box-shadow:0 0 0 2px var(--card)!important}
 #syncChip.bad .sic25{color:var(--exp)}
 .vh25{position:absolute!important;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
-.hdr .hbtn,.hdr .aibtn,.hdr .pbtn{width:36px;height:36px;min-width:36px}
+.hdr .hbtn{width:36px;height:36px;min-width:36px}
 /* structural Back = arrow; period / wizard steps keep chevrons and words, so the two never look alike */
 .backbtn{font-size:0!important;width:38px;height:38px;display:grid;place-items:center;border-radius:12px}
 .backbtn::before{content:'';width:20px;height:20px;background:currentColor;
@@ -1649,9 +1547,6 @@ body.simple21 #perBody>.perctl{display:none!important}
 .sethdr25{display:flex;align-items:center;gap:8px;margin:2px 0 10px}
 .sethdr25 b{font-size:var(--fs-18)}
 /* wizard stepper */
-.ob25step{display:flex;gap:10px;margin-top:10px}
-.ob25step .btn{flex:1;width:auto!important;margin:0!important}
-.ob25step .btn.ghost{flex:0 0 34%}
 
 /* ===== v1.60 beta 26 — Insights ↔ Reports ===== */
 .card h2 .det26{order:9;margin-left:auto;padding:6px 0 6px 10px;min-height:32px;font-size:var(--fs-12);font-weight:700;color:var(--accent);text-transform:none;letter-spacing:0;white-space:nowrap;background:none}
@@ -1948,8 +1843,6 @@ body.tx61on #ovl.on{background:transparent;-webkit-backdrop-filter:none;backdrop
 #sheet.form61 .ad-card61>.row61>label{flex:none;width:62px;margin:0;font-size:var(--fs-13);font-weight:600;color:var(--muted);text-transform:none;letter-spacing:0}
 #sheet.form61 .ad-card61 select.fin{flex:1;min-width:0;width:auto;border:0;background:transparent;box-shadow:none;padding:10px 0;text-align:right;text-align-last:right;
   font-size:var(--fs-15);font-weight:650;color:var(--ink);-webkit-appearance:none;appearance:none;cursor:pointer}
-#sheet.form61 .ad-card61 .chev61{color:var(--muted);flex:none;display:flex}
-#sheet.form61 .ad-card61 .chev61 svg{width:17px;height:17px}
 .own61{display:inline-flex;align-items:center;gap:4px;font-size:var(--fs-12);font-weight:700;color:var(--muted);padding:3px 9px;border-radius:999px;background:var(--card);box-shadow:inset 0 0 0 1px var(--hair);flex:none;max-width:40%}
 .own61 svg{width:12px;height:12px}.own61 span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .swap61{width:34px;height:34px;border-radius:50%;background:var(--accent-soft);color:var(--accent);display:flex;align-items:center;justify-content:center;flex:none}
@@ -2014,20 +1907,6 @@ body.calc-on #sheet.sx61 .sx-body61{padding-bottom:300px}
 body.calc-on .sheet.on .sheet-foot{visibility:hidden}
 
 /* ===== v1.60 beta 28.1 — completed specification review ===== */
-.b28-house{padding:0;overflow:hidden}
-.b28-house-row{display:flex;align-items:center;gap:12px;width:100%;min-height:58px;padding:11px 14px}
-.b28-house-row .hi{width:36px;height:36px;border-radius:12px;display:grid;place-items:center;background:var(--accent-soft);color:var(--accent);flex:none}
-.b28-house-row>span:nth-child(2){display:flex;flex-direction:column;gap:2px;flex:1;min-width:0}
-.b28-house-row b{font-size:var(--fs-14)}
-.b28-house-row small{font-size:var(--fs-12);color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.b28-house-row .manage{font-size:var(--fs-13);font-weight:800;color:var(--accent)}
-.b28-space-status{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
-.b28-space{display:flex;gap:8px;align-items:center;min-width:0;padding:9px 10px;border:1px solid var(--line);border-radius:12px;background:var(--card)}
-.b28-space>span:first-child{color:var(--muted);flex:none}.b28-space.ok>span:first-child{color:var(--inc)}.b28-space.warn>span:first-child{color:var(--warn)}.b28-space.bad>span:first-child{color:var(--exp)}
-.b28-space>span:last-child{display:flex;flex-direction:column;min-width:0}.b28-space small{font-size:var(--fs-11);color:var(--muted)}.b28-space b{font-size:var(--fs-12);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.b28-short{border:1px solid color-mix(in srgb,var(--warn) 35%,var(--line));background:color-mix(in srgb,var(--warn) 8%,var(--card));margin-bottom:8px}
-.b28-welcome{display:grid;gap:8px;margin:12px 0}.b28-welcome>div{border:1px solid var(--line);border-radius:12px;padding:11px 12px;background:var(--bg)}.b28-welcome b,.b28-welcome small{display:block}.b28-welcome small{margin-top:3px;color:var(--muted);line-height:1.4}
-@media(max-width:360px){.b28-space-status{grid-template-columns:1fr}.b28-house-row{padding-left:12px;padding-right:12px}}
 
 /* ---- 50-v160-b29-header-menu.css ---- */
 
@@ -2429,8 +2308,6 @@ button.fline.acr-nav:active{opacity:.65}
 #sheet.form61 .ad-flow61>.row61>.acc-col61 select.fin{text-align:left;text-align-last:left;padding:2px 0}
 /* beta 42: the small arrow beside the account field is retired — the whole row opens
    the picker, so the chevron adds nothing */
-#sheet .chev61{display:none!important}
-#sheet.form61 .ad-flow61>.row61 .chev61{display:none}
 #sheet.form61 .ad-flow61 .swap61{align-self:center;width:36px;height:36px;border-radius:50%;flex:none}
 
 /* ---- owed: automatic between different account owners — the checkbox retires, the hint stays ---- */
@@ -2519,7 +2396,6 @@ body.calc-on #mgrSheet #mgrBody{padding-bottom:315px}
 .hist44 .fline>span{display:flex;flex-direction:column;min-width:0}
 .hist44 .fline>span small{color:var(--muted);font-size:var(--fs-11)}
 .hist44 .fline>b{flex:none;font-weight:600;color:var(--muted);font-size:var(--fs-12)}
-.mh44{margin-top:12px;padding:0 12px;border-radius:14px;background:var(--bg)}
 #drillBody.acr-on>.hist44{order:7}
 
 /* ===== v1.60 beta 45 · household folder (Google Drive / OneDrive) ===== */
@@ -2707,8 +2583,6 @@ button.a48row:active,button.a48tx:active{background:color-mix(in srgb,var(--acce
 .a48seg button.on{background:var(--accent-soft);color:var(--accent)}
 .a48ib{width:40px;height:40px;border-radius:12px;background:var(--card);border:1px solid var(--hair);display:flex;align-items:center;justify-content:center;flex:none;color:var(--muted);cursor:pointer}
 .a48ib.on{background:var(--accent-soft);color:var(--accent);border-color:transparent}
-.a48per{display:inline-flex;align-items:center;gap:5px;padding:0 11px;height:38px;border-radius:12px;background:var(--card);border:1px solid var(--hair);font:inherit;font-size:12.5px;font-weight:800;color:var(--ink);flex:none;white-space:nowrap;cursor:pointer}
-.a48per .icn,.a48per svg{width:15px;height:15px}
 .a48srch{margin:0 0 10px}
 .a48mhd{display:flex;justify-content:space-between;padding:6px 4px;font-size:var(--fs-12);font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.5px}
 .a48mhd span:last-child{text-transform:none;letter-spacing:0}
@@ -2840,11 +2714,6 @@ button.a48row:active,button.a48tx:active{background:color-mix(in srgb,var(--acce
   #toast.t49,#toast.t49.out{transform:none!important;transition:opacity .15s}
   #toast.t49.bump .t49card,#toast.t49.shake .t49card{animation:none}
 }
-
-/* ===== v1.60 beta 50 — Household card only under the Household row; current-mode marker ===== */
-.card.hh50{display:none!important}
-.card.hh50.hh50on{display:block!important;margin-top:-4px}
-#b10modeTabs button.cur50::before{content:"";display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--inc);margin-right:5px;vertical-align:1px}
 
 /* ===== v1.60 beta 51 — Insights & Reports redesign ===== */
 :root{--warn-soft51:color-mix(in srgb,var(--warn) 14%,var(--card))}
@@ -3078,12 +2947,6 @@ details.calc51 p{margin-top:6px;line-height:1.5}
 .pb62ov{padding:4px 2px 8px}
 
 /* beta 67 · mode / leave request card in Settings › Modes */
-.m67req{border:1px solid var(--accent);border-radius:14px;padding:12px 14px;margin:0 0 12px;background:var(--card)}
-.m67req.m67done{border-color:var(--line)}
-.m67req b{display:flex;align-items:center;gap:6px;font-size:var(--fs-14)}
-.m67req b svg{width:16px;height:16px;flex:none}
-.m67req small{display:block;color:var(--muted);font-size:var(--fs-12);line-height:1.5;margin-top:4px}
-.m67req .btnrow{margin-top:10px}
 
 /* ===== beta 71 · Transactions filter (transactions-filter-mockup) ===== */
 #view-txns{--txf71h:0px}
@@ -3101,21 +2964,12 @@ details.calc51 p{margin-top:6px;line-height:1.5}
 .txf71-fbtn.on{background:var(--accent-soft);color:var(--accent)}
 .txf71-fbtn .bd{position:absolute;top:1px;right:0;min-width:18px;height:18px;border-radius:9px;background:var(--accent);color:#fff;font-size:11px;font-weight:800;display:grid;place-items:center;padding:0 4px;box-shadow:0 0 0 2px var(--card)}
 .txf71-fbtn .bd[hidden]{display:none}
-.txf71-tseg{display:flex;background:var(--card);border-radius:13px;padding:3px;gap:3px;margin-top:9px;box-shadow:var(--shadow)}
-.txf71-tseg button{flex:1;text-align:center;min-height:38px;border-radius:10px;font-size:var(--fs-13);font-weight:800;color:var(--muted);background:none;border:0}
-.txf71-tseg button.on{background:var(--accent-soft);color:var(--accent)}
-.txf71-tseg button.on.e{background:var(--exp-soft);color:var(--exp)}
-.txf71-tseg button.on.n{background:var(--inc-soft);color:var(--inc)}
 .txf71-act{display:flex;gap:7px;overflow-x:auto;padding:9px 12px 2px;margin:0 -12px;scrollbar-width:none;align-items:center;min-height:44px}
 .txf71-act::-webkit-scrollbar{display:none}
 .txf71-act[hidden]{display:none}
 .txf71-achip{flex:none;display:inline-flex;align-items:center;gap:7px;min-height:36px;padding:0 10px 0 13px;border-radius:999px;background:var(--accent-soft);color:var(--accent);font-size:var(--fs-13);font-weight:700;white-space:nowrap;border:0}
 .txf71-achip svg.icn{width:13px;height:13px}
 .txf71-arst{flex:none;min-height:36px;padding:0 6px;color:var(--accent);font-size:var(--fs-13);font-weight:800;background:none;border:0}
-.txf71-sum{display:flex;align-items:center;gap:8px;padding:8px 2px 2px;font-size:var(--fs-12);color:var(--muted);font-weight:650}
-.txf71-sum .g{flex:1;min-width:0}
-.txf71-sum b{color:var(--ink)}
-.txf71-sum #txSelToggle{flex:none;min-height:36px}
 #txList mark.txf71-m{background:color-mix(in srgb,var(--warn,#d97706) 30%,transparent);color:inherit;border-radius:3px;padding:0 1px}
 .txf71-empty{background:var(--card);border-radius:18px;margin-top:14px;padding:26px 18px;text-align:center;box-shadow:var(--shadow)}
 .txf71-empty .big{width:54px;height:54px;border-radius:50%;background:var(--accent-soft);color:var(--accent);display:grid;place-items:center;margin:0 auto 10px;font-size:inherit}
@@ -3243,10 +3097,6 @@ details.calc51 p{margin-top:6px;line-height:1.5}
 #ap79 .k-fh{padding-top:calc(14px + env(safe-area-inset-top))}
 #ap79 .k-scr{flex:1;overflow-y:auto;padding:8px 18px 14px}
 #ap79 .k-ffoot{padding-bottom:calc(16px + env(safe-area-inset-bottom))}
-#ap79 .k-wtop{display:flex;align-items:center;gap:10px;justify-content:center;padding:calc(20px + env(safe-area-inset-top)) 16px 8px;flex:none}
-#ap79 .k-wtop b{font-size:15px}
-#ap79 .k-logo{width:38px;height:38px;border-radius:12px;background:linear-gradient(145deg,#ec4899,#8b5cf6);color:#fff;display:flex;align-items:center;justify-content:center}
-#ap79 .k-ob{display:flex;align-items:center;gap:10px;padding:2px 18px 0;font-size:12px;font-weight:700;color:var(--muted);flex:none}
 /* Sync alerts: Insights banner, Settings badge, header chip */
 .k-albar79{position:sticky;top:calc(56px + env(safe-area-inset-top));z-index:30;margin:-4px -12px 10px}
 .m79 .k-albar{padding:10px 12px}
@@ -3256,13 +3106,10 @@ details.calc51 p{margin-top:6px;line-height:1.5}
 .srow79 .k-st.k-bad{background:var(--exp-soft);color:var(--exp)}.srow79 .k-st.k-warn{background:color-mix(in srgb,var(--warn) 14%,var(--card));color:var(--warn)}
 .srow79 .k-dot2{width:9px;height:9px;border-radius:50%;background:var(--exp);display:inline-block;margin-left:6px}
 .srow79 .k-dot2.k-warn{background:var(--warn)}
-.m79 .k-spin{width:38px;height:38px;border-radius:50%;border:4px solid var(--line);border-top-color:var(--accent);margin:34px auto;animation:k79sp .9s linear infinite}
 .m79 .k-fsel{padding:7px 9px;border-radius:9px;border:1px solid var(--line);background:var(--card);color:var(--ink);font-size:12.5px;max-width:100%}
 .m79 .k-chip{display:inline-block;font-size:11px;font-weight:800;padding:2px 8px;border-radius:99px;background:var(--accent-soft);color:var(--accent)}
 .m79 .k-chip.k-g{background:var(--inc-soft);color:var(--inc)}
 .m79 .k-bubble{max-width:100%;padding:10px 12px;border-radius:16px;font-size:13.5px;line-height:1.45;margin-bottom:10px;background:var(--accent-soft);border-top-right-radius:5px}
-.m79 .k-busy{opacity:.6;pointer-events:none}
-.m79 .k-hide{display:none!important}
 
 /* beta 87: one sub-header type everywhere under Settings — 12px · 800 · .5px tracking · muted (was 11.5px/.6px) */
 .m79 .k-lbl{font-size:var(--fs-12);letter-spacing:.5px;text-transform:uppercase;font-weight:800;color:var(--muted);margin:14px 4px 7px}
@@ -3440,10 +3287,6 @@ details.calc51 p{margin-top:6px;line-height:1.5}
 .m79 .k-snap:first-child{border-top:0}
 .m79 .k-snap .k-n{flex:1;min-width:0;font-size:13.5px;font-weight:800}
 .m79 .k-snap .k-n small{display:block;color:var(--muted);font-weight:600;font-size:12px}
-.m79 .k-pk{display:flex;align-items:center;gap:10px;padding:9px 12px;border-bottom:1px solid var(--line);font-size:13px}
-.m79 .k-pk .k-cb{width:20px;height:20px;border-radius:6px;border:2px solid var(--line);flex:none;display:flex;align-items:center;justify-content:center;color:#fff}
-.m79 .k-pk.k-on .k-cb{background:var(--accent);border-color:var(--accent)}
-.m79 .k-pk .k-cb .icn{width:13px;height:13px;stroke-width:3}
 .m79 .k-who{font-size:11px;font-weight:800;color:var(--accent);background:var(--accent-soft);padding:2px 8px;border-radius:99px}
 .m79 .k-diag .k-fl2 b{font-family:ui-monospace,Menlo,monospace;font-size:12px}
 .m79 .k-fh{display:flex;align-items:center;gap:12px;padding:14px 14px 6px;flex:none}
@@ -3461,10 +3304,6 @@ details.calc51 p{margin-top:6px;line-height:1.5}
 .m79 .k-chipok{display:inline-flex;align-items:center;gap:6px;background:var(--inc-soft);color:var(--inc);font-weight:800;font-size:12.5px;padding:5px 11px;border-radius:99px;margin-bottom:8px}
 .m79 .k-chipok .icn{width:15px;height:15px}
 .m79 .k-signed{display:flex;gap:7px;align-items:center;font-size:12.5px;color:var(--muted);margin-bottom:10px}
-.m79 .k-or{display:flex;align-items:center;gap:10px;color:var(--muted);font-size:12px;margin:12px 0}
-.m79 .k-or::before,.m79 .k-or::after{content:"";flex:1;height:1px;background:var(--line)}
-.m79 .k-spin{width:38px;height:38px;border-radius:50%;border:4px solid var(--line);border-top-color:var(--accent);margin:34px auto;animation:k79sp .9s linear infinite}
-.m79 to{transform:rotate(360deg)}
 .m79 .k-bubble{max-width:88%;padding:10px 12px;border-radius:16px;font-size:13.5px;line-height:1.45;margin-bottom:6px;position:relative}
 .m79 .k-bubble.k-out{background:var(--accent-soft);border-top-right-radius:5px;margin-left:auto}
 .m79 .k-opt small b{display:inline;font-size:inherit;font-weight:800;color:var(--ink)}
@@ -3472,20 +3311,6 @@ details.calc51 p{margin-top:6px;line-height:1.5}
 .m79 .k-opt.k-off .k-oi{background:var(--line);color:var(--muted)}
 .m79 .k-opt.k-off .k-st{display:inline-flex;gap:3px;align-items:center}
 .m79 .k-opt.k-off .k-st .icn{width:11px;height:11px}
-.m79 .k-al{display:flex;gap:11px;border-radius:16px;padding:12px 13px;margin-bottom:10px;border:1.5px solid var(--exp);background:var(--exp-soft)}
-.m79 .k-al.k-warn{border-color:var(--warn);background:var(--warn-soft)}
-.m79 .k-al.k-info{border-color:var(--accent);background:var(--accent-soft)}
-.m79 .k-al.k-ok{border-color:var(--inc);background:var(--inc-soft)}
-.m79 .k-al .k-ai{width:34px;height:34px;border-radius:11px;background:var(--card);display:flex;align-items:center;justify-content:center;flex:none;color:var(--exp)}
-.m79 .k-al.k-warn .k-ai{color:var(--warn)}
-.m79 .k-al.k-info .k-ai{color:var(--accent)}
-.m79 .k-al.k-ok .k-ai{color:var(--inc)}
-.m79 .k-al .k-ab{flex:1;min-width:0}
-.m79 .k-al .k-ah{display:flex;justify-content:space-between;gap:8px;align-items:flex-start}
-.m79 .k-al .k-ah b{font-size:14px;line-height:1.3}
-.m79 .k-al small{display:block;font-size:12.5px;color:var(--muted);margin-top:3px}
-.m79 .k-al .k-am{font-size:11px;color:var(--muted);margin-top:4px;font-weight:600}
-.m79 .k-al .k-btnrow{margin-top:9px}
 .m79 .k-albar{display:flex;gap:10px;align-items:center;padding:34px 12px 10px;background:var(--exp-soft);border-bottom:2px solid var(--exp);flex:none;position:relative;z-index:5}
 .m79 .k-albar.k-warn{background:var(--warn-soft);border-bottom-color:var(--warn)}
 .m79 .k-albar.k-info{background:var(--accent-soft);border-bottom-color:var(--accent)}
@@ -3648,3 +3473,354 @@ body :is(#pageSet .m79,#sh79) .k-rw.k-kv .k-rt{font-size:var(--fs-12);font-weigh
 /* 6 · Manage Lists sheets: group headers ("Huei · 5 accounts", "Expense · 13 categories") use the section header style */
 #mgrSheet .day-h>span:first-child{font-size:var(--fs-12);font-weight:800;letter-spacing:.5px;text-transform:uppercase;color:var(--muted)}
 #mgrSheet .day-h>span:last-child:not(:first-child){font-size:var(--fs-12);font-weight:600;letter-spacing:0;text-transform:none;color:var(--muted)}
+
+/* ===== beta 95 · Insights typography + fixed filter level =====
+   One inherited font family and a consistent role-based type scale across Wealth, Cash Flow / Money
+   and Couple. The period/person control remains pinned directly below the sticky Insights tabs. */
+#view-overview #perBody{
+  --ins95-section:var(--fs-12);
+  --ins95-body:var(--fs-13);
+  --ins95-support:var(--fs-12);
+  font-family:inherit;
+}
+#view-overview #perBody :is(button,input,select){font-family:inherit}
+/* Sticky stack: app header → Insights tabs → period/person control. */
+#view-overview #perBody>.stab{
+  top:calc(66px + env(safe-area-inset-top));
+  z-index:32;
+  margin-bottom:8px;
+}
+#view-overview #perBody>.perbar{
+  position:sticky;
+  top:calc(118px + env(safe-area-inset-top));
+  z-index:31;
+  margin-bottom:12px;
+  border:1px solid var(--line);
+  background:color-mix(in srgb,var(--card) 94%,transparent);
+  -webkit-backdrop-filter:saturate(1.35) blur(14px);
+  backdrop-filter:saturate(1.35) blur(14px);
+  box-shadow:var(--shadow);
+}
+#view-overview #perBody>.perbar .perchip b{font-size:var(--fs-14);font-weight:800;line-height:1.25;color:var(--ink)}
+#view-overview #perBody>.perbar .perchip small{font-size:var(--ins95-support);font-weight:700;line-height:1.25;color:var(--accent)}
+/* Section headers use one size; supporting sub-headers use one size. */
+#view-overview #perBody :is(.hero51>h2,.ins51 .tag,.moneyavail18 .tx small){
+  font-size:var(--ins95-section);
+  font-weight:800;
+  line-height:1.25;
+  letter-spacing:.5px;
+  text-transform:uppercase;
+}
+#view-overview #perBody .ins51 .when{font-size:var(--ins95-support);font-weight:700;color:var(--muted);line-height:1.35}
+#view-overview #perBody .ins51 .find{font-size:var(--fs-15);font-weight:800;line-height:1.35;color:var(--ink)}
+#view-overview #perBody :is(.ins51 .why,.ins51 .act,.whyrow51 span,.gl51,.moneyavail18 .tx em,.note-soft,.disc51){
+  font-size:var(--ins95-support);
+  line-height:1.45;
+}
+#view-overview #perBody :is(.sentence51,.mover51,.duo51 .dl,.banner51,.undo51){font-size:var(--ins95-body);line-height:1.4}
+#view-overview #perBody .whyrow51 span{font-weight:700;color:var(--ink)}
+#view-overview #perBody .gl51{font-weight:700;color:var(--muted)}
+#view-overview #perBody .bars51 div{font-size:var(--fs-11);font-weight:700;color:var(--muted)}
+#view-overview #perBody :is(.ins51 .why,.moneyavail18 .tx em,.note-soft,.disc51){color:var(--muted)}
+#view-overview #perBody .info51{font-family:inherit;font-size:var(--fs-11);font-style:normal;font-weight:800}
+@media(max-width:350px){
+  #view-overview #perBody>.perbar{top:calc(118px + env(safe-area-inset-top))}
+}
+
+/* ===== beta 96 · Insights drill-down/detail typography + sticky scope controls =====
+   The twelve report pages opened from Insights share beta 95's type roles. Their period/person
+   control stays immediately below the fixed report header; report tabs stack below that control.
+   Reminder centre is the other Insights detail destination and uses the same role hierarchy. */
+#pageReport{
+  /* .page is the scroll container and already has top padding. Beta 58 stores header bottom minus
+     that padding in --stick58, so this lands exactly below the fixed header on every safe-area size. */
+  --ins96-report-top:var(--stick58,-11px);
+  --ins96-report-tabs-top:calc(var(--stick58,-11px) + 68px);
+}
+#pageReport #repDyn{
+  --ins96-section:var(--fs-12);
+  --ins96-body:var(--fs-13);
+  --ins96-support:var(--fs-12);
+  font-family:inherit;
+}
+#pageReport #repDyn :is(button,input,select,table,summary){font-family:inherit}
+#pageReport #repTitle{font-family:inherit;font-size:var(--fs-15)!important;font-weight:800;color:var(--ink)}
+#pageReport #repSub{font-family:inherit;font-size:var(--fs-12);font-weight:600;color:var(--muted)}
+
+/* Sticky stack: report header → period/person control → report-specific tabs. */
+#pageReport #repDyn>.perbar{
+  position:sticky;
+  top:var(--ins96-report-top);
+  z-index:32;
+  margin-bottom:12px;
+  border:1px solid var(--line);
+  background:color-mix(in srgb,var(--card) 94%,transparent);
+  -webkit-backdrop-filter:saturate(1.35) blur(14px);
+  backdrop-filter:saturate(1.35) blur(14px);
+  box-shadow:var(--shadow);
+}
+#pageReport #repDyn>.perbar .perchip b{font-size:var(--fs-14);font-weight:800;line-height:1.25;color:var(--ink)}
+#pageReport #repDyn>.perbar .perchip small{font-size:var(--ins96-support);font-weight:700;line-height:1.25;color:var(--accent)}
+#pageReport #repDyn>.stab{
+  top:var(--ins96-report-tabs-top);
+  z-index:31;
+  background:color-mix(in srgb,var(--card) 94%,transparent);
+  -webkit-backdrop-filter:saturate(1.35) blur(14px);
+  backdrop-filter:saturate(1.35) blur(14px);
+}
+
+/* One report type hierarchy: section, finding, body and supporting text. */
+#pageReport #repDyn :is(.card>h2,.mgr-sec){
+  font-size:var(--ins96-section);
+  font-weight:800;
+  line-height:1.25;
+  letter-spacing:.5px;
+  text-transform:uppercase;
+  color:var(--muted);
+}
+#pageReport #repDyn .ins51 .tag{
+  font-size:var(--ins96-section);
+  font-weight:800;
+  line-height:1.25;
+  letter-spacing:.5px;
+  text-transform:uppercase;
+}
+#pageReport #repDyn .ins51 .find{font-size:var(--fs-15);font-weight:800;line-height:1.35;color:var(--ink)}
+#pageReport #repDyn :is(.sentence51,.mover51,.duo51 .dl,.fline,.wfrow,.hbrow,.rtab,.help){font-size:var(--ins96-body);line-height:1.4}
+#pageReport #repDyn :is(.card>h2 .sub,.ins51 .when,.ins51 .why,.gl51,.bars51 div,.help.small,.note-soft,.disc51,.lgrow .nm small,.famrow .ftx small,.hbrow .hv small){
+  font-size:var(--ins96-support);
+  line-height:1.45;
+  color:var(--muted);
+}
+#pageReport #repDyn :is(.lgrow .nm,.famrow .ftx b){font-size:var(--fs-14);font-weight:700;color:var(--ink)}
+#pageReport #repDyn :is(.lgrow .vv,.hbrow .hv,.wfrow .wv,.fline>b,.trow .amt2){font-size:var(--fs-14);font-weight:800}
+#pageReport #repDyn .whyrow51 span{font-size:var(--ins96-support);font-weight:700;color:var(--ink);line-height:1.45}
+#pageReport #repDyn .bars51 div{font-weight:700}
+#pageReport #repDyn .info51{font-family:inherit!important;font-size:var(--fs-11)!important;font-style:normal!important;font-weight:800!important}
+
+/* Reminder centre: same roles; Household / Mine remains at one level while the sheet scrolls. */
+#mgrSheet.ins96-detail{font-family:inherit}
+#mgrSheet.ins96-detail :is(button,input,select){font-family:inherit}
+#mgrSheet.ins96-detail #mgrTitle{font-size:var(--fs-15)!important;font-weight:800;color:var(--ink)}
+#mgrSheet.ins96-detail :is(.rem25h){font-size:var(--fs-12);font-weight:800;letter-spacing:.5px;text-transform:uppercase}
+#mgrSheet.ins96-detail :is(.rem54sub,.r32sum span,.rem25row .nm small,.r32note){font-size:var(--fs-12);font-weight:600;line-height:1.45;color:var(--muted)}
+#mgrSheet.ins96-detail .r32sum b{font-size:var(--fs-15);font-weight:800;color:var(--ink)}
+#mgrSheet.ins96-detail .rem25row .nm b{font-size:var(--fs-14);font-weight:700;line-height:1.35;color:var(--ink)}
+#mgrSheet.ins96-detail .rem25row .amt{font-size:var(--fs-14);font-weight:800}
+#mgrSheet.ins96-detail .r44own{
+  position:sticky;
+  top:-8px;
+  z-index:5;
+  padding:8px 0;
+  background:color-mix(in srgb,var(--card) 94%,transparent);
+  -webkit-backdrop-filter:saturate(1.35) blur(14px);
+  backdrop-filter:saturate(1.35) blur(14px);
+}
+#mgrSheet.ins96-detail .r44own button{font-size:var(--fs-12);font-weight:800}
+
+
+
+/* ===== beta 97 · Insights secondary screens: hierarchy + sticky scope =====
+   Report-derived transaction lists, account pages, transaction details and action sheets inherit the
+   beta 95/96 type roles. Any period/person control stays directly below its secondary page header. */
+#pageDrill.ins97-secondary,
+#pageAcc48.ins97-secondary,
+#mgrSheet.ins97-secondary,
+#txSheet61.ins97-secondary,
+#sheet.ins97-secondary{
+  --ins97-section:var(--fs-12);
+  --ins97-body:var(--fs-13);
+  --ins97-support:var(--fs-12);
+  font-family:inherit;
+}
+#pageDrill.ins97-secondary :is(button,input,select,table,summary),
+#pageAcc48.ins97-secondary :is(button,input,select,table,summary),
+#mgrSheet.ins97-secondary :is(button,input,select,table,summary),
+#txSheet61.ins97-secondary :is(button,input,select,table,summary),
+#sheet.ins97-secondary :is(button,input,select,table,summary){font-family:inherit}
+
+/* Transaction lists opened from a report row. */
+#pageDrill.ins97-secondary .crumb{font-size:var(--ins97-support);font-weight:600;color:var(--muted)}
+#pageDrill.ins97-secondary .crumb button{font-size:var(--ins97-support);font-weight:700}
+#pageDrill.ins97-secondary .crumb .cur{max-width:min(58vw,300px);font-size:var(--fs-15);font-weight:800;color:var(--ink)}
+#pageDrill.ins97-secondary #drillBody>.ins97-scopebar{
+  position:sticky;
+  /* #pageDrill has 70px top padding; -14px pins the bar at the 56px header bottom. */
+  top:-14px;
+  z-index:12;
+  margin-bottom:12px;
+  border:1px solid var(--line);
+  background:color-mix(in srgb,var(--card) 94%,transparent);
+  -webkit-backdrop-filter:saturate(1.35) blur(14px);
+  backdrop-filter:saturate(1.35) blur(14px);
+  box-shadow:var(--shadow);
+}
+#pageDrill.ins97-secondary #drillBody>.ins97-scopebar .perchip b{font-size:var(--fs-14);font-weight:800;line-height:1.25;color:var(--ink)}
+#pageDrill.ins97-secondary #drillBody>.ins97-scopebar .perchip small{font-size:var(--ins97-support);font-weight:700;line-height:1.25;color:var(--accent)}
+#pageDrill.ins97-secondary #drillBody>.ins97-fixed .perchip{width:100%}
+#pageDrill.ins97-secondary #drillBody :is(.card>h2,.day-h>span:first-child,.mgr-sec){
+  font-size:var(--ins97-section);
+  font-weight:800;
+  line-height:1.25;
+  letter-spacing:.5px;
+  text-transform:uppercase;
+  color:var(--muted);
+}
+#pageDrill.ins97-secondary #drillBody .card>h2 .sub,
+#pageDrill.ins97-secondary #drillBody .day-h>span:last-child,
+#pageDrill.ins97-secondary #drillBody :is(.txn .mid small,.help.small,.txdetail .kvr .k){font-size:var(--ins97-support);font-weight:600;line-height:1.45;color:var(--muted)}
+#pageDrill.ins97-secondary #drillBody .txn .mid b{font-size:var(--fs-14);font-weight:700;line-height:1.35;color:var(--ink)}
+#pageDrill.ins97-secondary #drillBody :is(.txn .amt,.txn .amt2){font-size:var(--fs-14);font-weight:800}
+#pageDrill.ins97-secondary #drillBody .txdetail{font-size:var(--ins97-body);line-height:1.45}
+#pageDrill.ins97-secondary #drillBody .txdetail .kvr .v{font-size:var(--ins97-body);font-weight:600;color:var(--ink)}
+
+/* Account pages reached from Net Worth, Asset Mix, Debts, Cards, value history or a nested list. */
+#pageAcc48.ins97-secondary .a48tt small{font-size:var(--ins97-support);font-weight:600;color:var(--muted)}
+#pageAcc48.ins97-secondary .a48tt b{font-size:var(--fs-15);font-weight:800;color:var(--ink)}
+#pageAcc48.ins97-secondary :is(.a48ch,.a48mhd,.a48dhd){font-size:var(--ins97-section);font-weight:800;line-height:1.25;letter-spacing:.5px;text-transform:uppercase;color:var(--muted)}
+#pageAcc48.ins97-secondary :is(.a48mid b,.a48nm b,.a48gh b,.a48kv b){font-size:var(--fs-14);font-weight:700;line-height:1.35;color:var(--ink)}
+#pageAcc48.ins97-secondary :is(.a48mid small,.a48nm small,.a48end small,.a48mini,.a48mini2,.a48hp,.a48empty,.a48sub){font-size:var(--ins97-support);line-height:1.45;color:var(--muted)}
+#pageAcc48.ins97-secondary :is(.a48end b,.a48kv,.a48row .vv){font-size:var(--fs-14);font-weight:800}
+#pageAcc48.ins97-secondary .perbar.a89per{
+  position:sticky;
+  top:calc(52px + env(safe-area-inset-top));
+  z-index:4;
+  margin-bottom:12px;
+  border:1px solid var(--line);
+  background:color-mix(in srgb,var(--card) 94%,transparent);
+  -webkit-backdrop-filter:saturate(1.35) blur(14px);
+  backdrop-filter:saturate(1.35) blur(14px);
+  box-shadow:var(--shadow);
+}
+#pageAcc48.ins97-secondary .perbar.a89per .perchip b{font-size:var(--fs-14);font-weight:800;line-height:1.25;color:var(--ink)}
+#pageAcc48.ins97-secondary .perbar.a89per .perchip small{font-size:var(--ins97-support);font-weight:700;line-height:1.25;color:var(--accent)}
+
+/* Nested details and action sheets have the same title / section / supporting-text roles. */
+#txSheet61.ins97-secondary .sx-head61 b,
+#sheet.ins97-secondary .sx-head61 b,
+#mgrSheet.ins97-secondary #mgrTitle{font-size:var(--fs-15)!important;font-weight:800;color:var(--ink)}
+#txSheet61.ins97-secondary .dt-card>h3,
+#sheet.ins97-secondary .dt-card>h3,
+#mgrSheet.ins97-secondary :is(.mgr-lb,.mgr-sec,.day-h>span:first-child){font-size:var(--ins97-section);font-weight:800;letter-spacing:.5px;text-transform:uppercase;color:var(--muted)}
+#txSheet61.ins97-secondary :is(.dt-k,.dt-v small,.dt-who .nm small,.dt-meta),
+#sheet.ins97-secondary :is(.dt-k,.dt-v small,.dt-who .nm small,.dt-meta),
+#mgrSheet.ins97-secondary :is(.help.small,.mgr-row small,.day-h>span:last-child){font-size:var(--ins97-support);line-height:1.45;color:var(--muted)}
+#txSheet61.ins97-secondary :is(.dt-v,.dt-who .nm,.dt-who .am),
+#sheet.ins97-secondary :is(.dt-v,.dt-who .nm,.dt-who .am),
+#mgrSheet.ins97-secondary :is(.mgr-row .lb,.trow .lb){font-size:var(--fs-14);font-weight:700;color:var(--ink)}
+
+
+/* ===== beta 98 · Reports typography and fixed scope level (re-applied) =====
+   Re-applies the beta 98 Reports review to the verified beta 97 OneDrive baseline.
+   Reports home, all report pages and report-opened secondary screens use one inherited font,
+   one role-based hierarchy and the same sticky period/person stack as Insights. */
+#view-reports,#pageReport{font-family:inherit}
+#view-reports :is(button,input,select),#pageReport :is(button,input,select,table,summary){font-family:inherit}
+#view-reports .a48pt h1{font-size:var(--fs-20);font-weight:700;line-height:1.2;color:var(--ink)}
+#view-reports .search51 input{font-size:var(--fs-14);font-weight:500;color:var(--ink)}
+#view-reports .grp51>.gt b,
+#view-reports .grp51>button .gt b{font-size:var(--fs-15);font-weight:800;line-height:1.3;color:var(--ink)}
+#view-reports .grp51>button .gt small{font-size:var(--fs-12);font-weight:600;line-height:1.4;color:var(--muted)}
+#view-reports .famrow .ftx b{font-size:var(--fs-14);font-weight:700;line-height:1.35;color:var(--ink)}
+#view-reports .famrow .ftx small{font-size:var(--fs-12);font-weight:600;line-height:1.4;color:var(--muted)}
+#view-reports .grp51 .gn{font-size:var(--fs-12);font-weight:800;color:var(--muted)}
+/* Beta 96 already pins report period/person controls and report tabs. Keep that stack explicit. */
+#pageReport #repDyn>.perbar{position:sticky;top:var(--ins96-report-top);z-index:32}
+#pageReport #repDyn>.stab{position:sticky;top:var(--ins96-report-tabs-top);z-index:31}
+
+/* ===== beta 99 · Accounts + Transactions detailed UI review =====
+   One font family and one role-based hierarchy on both navigation tabs and every screen opened
+   from them. Section headers are 12/800 uppercase; supporting sub-lines are 12/600; row titles are
+   14/700; row amounts are 14/800. Person and period controls stay at a fixed level while scrolling. */
+:is(#view-accounts,#pageAcc48,#mgrSheet.acc99-screen,#view-txns,#txfSheet,#txSheet61,#sheet){font-family:inherit}
+:is(#view-accounts,#pageAcc48,#mgrSheet.acc99-screen,#view-txns,#txfSheet,#txSheet61,#sheet) :is(button,input,select,textarea,table,summary){font-family:inherit}
+
+/* Accounts home: title, section/group roles, rows and the sticky person scope. */
+#acc48home>.a48chips{
+  position:sticky;top:calc(62px + env(safe-area-inset-top));z-index:7;
+  margin:0 -12px 12px;padding:8px 12px;
+  background:color-mix(in srgb,var(--bg) 94%,transparent);
+  -webkit-backdrop-filter:saturate(1.35) blur(14px);backdrop-filter:saturate(1.35) blur(14px)
+}
+#acc48home>.a48chips .a48chip{font-size:var(--fs-13);font-weight:700}
+#acc48home .a48gh>b{font-size:var(--fs-14);font-weight:800;line-height:1.3;color:var(--ink)}
+#acc48home .a48gh>small{font-size:var(--fs-12);font-weight:600;color:var(--muted)}
+#acc48home .a48row .a48nm>b{font-size:var(--fs-14);font-weight:700;line-height:1.35;color:var(--ink)}
+#acc48home .a48row .a48nm>small{font-size:var(--fs-12);font-weight:600;line-height:1.4;color:var(--muted)}
+#acc48home .a48row .vv{font-size:var(--fs-14);font-weight:800;color:var(--ink)}
+#acc48home .a48row .a48end>small{font-size:var(--fs-12);font-weight:600;color:var(--muted)}
+
+/* Account pages: fixed header, heroes, tabs, cards, month/day sections and rows. */
+#pageAcc48 .a48tt small{font-size:var(--fs-12);font-weight:600;color:var(--muted)}
+#pageAcc48 .a48tt b{font-size:var(--fs-15);font-weight:800;line-height:1.25;color:var(--ink)}
+#pageAcc48 .a48nm>b{font-size:var(--fs-15);font-weight:800;line-height:1.3;color:var(--ink)}
+#pageAcc48 .a48nm>small{font-size:var(--fs-12);font-weight:600;line-height:1.4;color:var(--muted)}
+#pageAcc48 .a48tabs button{font-size:var(--fs-13);font-weight:800}
+#pageAcc48 :is(.a48lab,.a48ch,.a48mhd,.a48dhd){font-size:var(--fs-12);font-weight:800;line-height:1.25;letter-spacing:.5px;text-transform:uppercase;color:var(--muted)}
+#pageAcc48 .a48dhd>span:last-child{font-size:var(--fs-13);font-weight:800;letter-spacing:0;text-transform:none;color:var(--ink)}
+#pageAcc48 :is(.a48mid>b,.a48kv>b,.a48gh>b){font-size:var(--fs-14);font-weight:700;line-height:1.35;color:var(--ink)}
+#pageAcc48 :is(.a48mid>small,.a48end>small,.a48mini,.a48mini2,.a48hp,.a48empty,.a48sub){font-size:var(--fs-12);font-weight:600;line-height:1.45;color:var(--muted)}
+#pageAcc48 :is(.a48end>b,.a48row .vv,.a48kv){font-size:var(--fs-14);font-weight:800}
+/* The Activity period control now sticks for every account entry point, not only an Insights chain. */
+#pageAcc48 .perbar.a89per{
+  position:sticky!important;top:calc(52px + env(safe-area-inset-top))!important;z-index:8;
+  margin-bottom:12px;border:1px solid var(--line);
+  background:color-mix(in srgb,var(--card) 94%,transparent);
+  -webkit-backdrop-filter:saturate(1.35) blur(14px);backdrop-filter:saturate(1.35) blur(14px);
+  box-shadow:var(--shadow)
+}
+#pageAcc48 .perbar.a89per .perchip b{font-size:var(--fs-14);font-weight:800;line-height:1.25;color:var(--ink)}
+#pageAcc48 .perbar.a89per .perchip small{font-size:var(--fs-12);font-weight:700;line-height:1.25;color:var(--accent)}
+
+/* Account Add / Edit / Close, menus, value, statement, category and reminder sheets. */
+#mgrSheet.acc99-screen #mgrTitle{font-size:var(--fs-18)!important;font-weight:800;color:var(--ink)}
+#mgrSheet.acc99-screen :is(.a48ol,.a48fl>label,.a48mhd,.mgr-sec,.mgr-lb,.day-h>span:first-child){font-size:var(--fs-12);font-weight:800;letter-spacing:.5px;text-transform:uppercase;color:var(--muted)}
+#mgrSheet.acc99-screen :is(.a48oc b,.a48ctx b,.a48menu b,.mgr-row .lb,.trow .lb){font-size:var(--fs-14);font-weight:700;line-height:1.35;color:var(--ink)}
+#mgrSheet.acc99-screen :is(.a48oc small,.a48ctx small,.mgr-row small,.trow small,.help,.help.small,.day-h>span:last-child){font-size:var(--fs-12);font-weight:600;line-height:1.45;color:var(--muted)}
+#mgrSheet.acc99-screen :is(.mamt,.amt2){font-size:var(--fs-14);font-weight:800}
+
+/* Transactions home: current sticky search/filter toolbar, day sections and transaction rows. */
+#view-txns .a48pt h1{font-size:var(--fs-20);font-weight:700;line-height:1.2;color:var(--ink)}
+#view-txns .txf71{font-family:inherit}
+#view-txns .txf71-srch input.fin{font-size:var(--fs-14);font-weight:500;color:var(--ink)}
+#view-txns .txf71-achip{font-size:var(--fs-13);font-weight:700}
+#txList .dayg>.day-h>span:first-child{font-size:var(--fs-12);font-weight:800;letter-spacing:.5px;text-transform:uppercase;color:var(--muted)}
+#txList .dayg>.day-h>span:last-child{font-size:var(--fs-13);font-weight:800;letter-spacing:0;text-transform:none;color:var(--ink)}
+#txList .txr .txr-t .n{font-size:var(--fs-14);font-weight:700;line-height:1.35;color:var(--ink)}
+#txList .txr :is(.txr-s,.txr-x){font-size:var(--fs-12);font-weight:600;line-height:1.4;color:var(--muted)}
+#txList .txr .txr-amt{font-size:var(--fs-14);font-weight:800}
+#txList .txr .txr-amt .cur2{font-size:inherit!important;font-weight:inherit!important}
+
+/* Filters: one sheet title, section title, sub-section title, row and supporting-text hierarchy. */
+#txfSheet #txfTitle{font-size:var(--fs-18);font-weight:800;letter-spacing:-.2px;color:var(--ink)}
+#txfSheet .ah .an{font-size:var(--fs-14);font-weight:700;color:var(--ink)}
+#txfSheet .ah .as{font-size:var(--fs-12);font-weight:600;color:var(--muted)}
+#txfSheet :is(.sec>h5,.sec>.grp,.ddg){font-size:var(--fs-12);font-weight:800;letter-spacing:.5px;text-transform:uppercase;color:var(--muted)}
+#txfSheet :is(.arow .nm>b,.trow .tx2>b,.ddr .nm){font-size:var(--fs-14);font-weight:700;color:var(--ink)}
+#txfSheet :is(.arow .nm>small,.trow .tx2>small,.help.small,.ddf){font-size:var(--fs-12);font-weight:600;line-height:1.45;color:var(--muted)}
+#txfSheet :is(.two label,.sec label){font-size:var(--fs-12);font-weight:600;color:var(--muted)}
+#txfSheet .chip{font-size:var(--fs-13);font-weight:700}
+
+/* Transaction detail, Add / Edit / Copy, split bill, repeat and breakdown sub-screens. */
+#txSheet61 .sx-head61 b,#sheet .sx-head61 b,#sheet #sheetTitle{font-size:var(--fs-15)!important;font-weight:800;color:var(--ink)}
+#txSheet61 :is(.dt-card>h3,.dt-k),#sheet :is(.dt-card>h3,.mgr-lb){font-size:var(--fs-12);font-weight:800;letter-spacing:.5px;text-transform:uppercase;color:var(--muted)}
+#txSheet61 :is(.dt-v,.dt-who .nm,.dt-who .am){font-size:var(--fs-14);font-weight:600;line-height:1.4;color:var(--ink)}
+#txSheet61 :is(.dt-v>small,.dt-who .nm>small,.dt-meta){font-size:var(--fs-12);font-weight:600;line-height:1.45;color:var(--muted)}
+#sheet .ad-flow61 label{font-size:var(--fs-12);font-weight:800;letter-spacing:.5px;text-transform:uppercase;color:var(--muted)}
+#sheet :is(.help,.help.small){font-size:var(--fs-12);font-weight:600;line-height:1.45;color:var(--muted)}
+#sheet :is(.ad-cat61,.ad-opt61,.pk-row61){font-size:var(--fs-13);font-weight:700}
+
+/* beta 99 review refinements: selectors used by the rendered home/form markup. */
+#acc48home .a48sec>b{font-size:var(--fs-12);font-weight:800;line-height:1.25;letter-spacing:.5px;text-transform:uppercase;color:var(--muted)}
+#acc48home .a48sec>span{font-size:var(--fs-13);font-weight:800;color:var(--ink)}
+#acc48home .a48row .a48mid>b{font-size:var(--fs-14);font-weight:700;line-height:1.35;color:var(--ink)}
+#acc48home .a48row .a48mid>small{font-size:var(--fs-12);font-weight:600;line-height:1.4;color:var(--muted)}
+#acc48home .a48row .a48end>b{font-size:var(--fs-14);font-weight:800}
+#acc48home .a48gh>b>small{font-size:var(--fs-12);font-weight:600;color:var(--muted)}
+#mgrSheet.acc99-screen label{font-size:var(--fs-12);font-weight:800;letter-spacing:.5px;text-transform:uppercase;color:var(--muted)}
+#sheet.form61 label:not(.mgr-row){font-size:var(--fs-12);font-weight:800;letter-spacing:.5px;text-transform:uppercase;color:var(--muted)}
+#sheet.form61 .pc62{font-size:var(--fs-12);font-weight:600;line-height:1.4;color:var(--muted)}
+
+/* beta 102: invite link box (Add partner, sent step) */
+.m79 .k-codebox.k-link code{font-size:13px;letter-spacing:0;font-weight:600;white-space:normal;word-break:break-all;line-height:1.4}
+.m79 .k-codebox.k-link .k-mini{flex:none;display:inline-flex;align-items:center;gap:5px}
