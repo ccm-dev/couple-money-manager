@@ -329,7 +329,7 @@
      This URL matches FIREBASE_CONFIG.projectId (money-manager-f91c3) and the function's
      asia-southeast1 deployment region. Deploy the updated functions/pin-reset.js before release. -->
 <script>window.CMM_CONFIG={pinResetApi:'https://asia-southeast1-money-manager-f91c3.cloudfunctions.net/pinReset',
-  requestEmails:false,   /* beta 94: set to true only after the email functions are deployed with the SMTP secrets (functions/README.md). Then the Add partner screens say the invitation was emailed. */
+  requestEmails:true,   /* beta 94: set to true only after the email functions are deployed with the SMTP secrets (functions/README.md). Then the Add partner screens say the invitation was emailed. */
   /* Household folder (beta 45) — see HOUSEHOLD_FOLDER_SETUP.md. Leave a value empty and that provider shows “not set up”. */
   googleClientId:'609634460790-33l3asn0qa25d6iki1c0kp3n313prpkd.apps.googleusercontent.com',   /* Google Cloud OAuth 2.0 client ID (type: Web application), Drive API + Picker API enabled */
   googleApiKey:'AIzaSyA66ZCGv2TEEo7ON6ewQuuM6JaHjRBHqqM',     /* Google Cloud API key (browser key, restricted to this site + Google Picker API) */
