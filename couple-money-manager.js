@@ -9,14 +9,14 @@ var CMM_FN_REGION='asia-southeast1';
    place before anything is drawn, loads the matching stylesheet, and clears the offline copies so
    the next start fetches fresh files. Help & About then says "old page file". */
 var PAGE75=(function(){
-  var JSV='1.60-beta.94',out={js:JSV,page:'',stale:false,fixed:false};
+  var JSV='1.60-beta.102',out={js:JSV,page:'',stale:false,fixed:false};
   try{
     var m=document.querySelector('meta[name="app-version"]');out.page=m?m.content:'';
     out.stale=out.page!==JSV;
     var tx=document.getElementById('view-txns');
     if(tx&&!document.getElementById('txf71')){
       var old=tx.querySelector(':scope > .card');
-      if(old)old.insertAdjacentHTML('beforebegin',"<div class=\"txf71\" id=\"txf71\">\n      <div class=\"txf71-srch\" id=\"txfSrch\">\n        <svg class=\"icn txf71-si\" viewBox=\"0 0 24 24\" aria-hidden=\"true\"><circle cx=\"11\" cy=\"11\" r=\"7\"/><path d=\"m21 21-4.3-4.3\"/></svg>\n        <input class=\"fin\" id=\"txSearch\" type=\"search\" placeholder=\"Search transactions\u2026\" autocomplete=\"off\" aria-label=\"Search transactions\" oninput=\"TXF.q=this.value;$('txClr').hidden=!this.value;renderTxns()\">\n        <button type=\"button\" class=\"srchx\" id=\"txClr\" data-act=\"txclr\" hidden aria-label=\"Clear search\"><svg class=\"icn\" viewBox=\"0 0 24 24\" aria-hidden=\"true\"><line x1=\"18\" y1=\"6\" x2=\"6\" y2=\"18\"/><line x1=\"6\" y1=\"6\" x2=\"18\" y2=\"18\"/></svg></button>\n        <button type=\"button\" class=\"txf71-fbtn\" id=\"txFilterBtn\" data-act=\"txfilter\" aria-label=\"Filters\" aria-haspopup=\"dialog\"><svg class=\"icn\" viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6\"/></svg><span class=\"bd\" id=\"txFilterN\" hidden></span></button>\n      </div>\n      <div class=\"txf71-tseg\" id=\"txfType\" role=\"group\" aria-label=\"Type\"></div>\n      <div class=\"txf71-act\" id=\"txfAct\" hidden></div>\n      <div class=\"txf71-sum\"><span class=\"g\" id=\"txSummary\"></span><button type=\"button\" class=\"ibtn\" id=\"txSelToggle\" data-act=\"selmode\" hidden>Exit</button></div>\n    </div>");else tx.insertAdjacentHTML('afterbegin',"<div class=\"txf71\" id=\"txf71\">\n      <div class=\"txf71-srch\" id=\"txfSrch\">\n        <svg class=\"icn txf71-si\" viewBox=\"0 0 24 24\" aria-hidden=\"true\"><circle cx=\"11\" cy=\"11\" r=\"7\"/><path d=\"m21 21-4.3-4.3\"/></svg>\n        <input class=\"fin\" id=\"txSearch\" type=\"search\" placeholder=\"Search transactions\u2026\" autocomplete=\"off\" aria-label=\"Search transactions\" oninput=\"TXF.q=this.value;$('txClr').hidden=!this.value;renderTxns()\">\n        <button type=\"button\" class=\"srchx\" id=\"txClr\" data-act=\"txclr\" hidden aria-label=\"Clear search\"><svg class=\"icn\" viewBox=\"0 0 24 24\" aria-hidden=\"true\"><line x1=\"18\" y1=\"6\" x2=\"6\" y2=\"18\"/><line x1=\"6\" y1=\"6\" x2=\"18\" y2=\"18\"/></svg></button>\n        <button type=\"button\" class=\"txf71-fbtn\" id=\"txFilterBtn\" data-act=\"txfilter\" aria-label=\"Filters\" aria-haspopup=\"dialog\"><svg class=\"icn\" viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6\"/></svg><span class=\"bd\" id=\"txFilterN\" hidden></span></button>\n      </div>\n      <div class=\"txf71-tseg\" id=\"txfType\" role=\"group\" aria-label=\"Type\"></div>\n      <div class=\"txf71-act\" id=\"txfAct\" hidden></div>\n      <div class=\"txf71-sum\"><span class=\"g\" id=\"txSummary\"></span><button type=\"button\" class=\"ibtn\" id=\"txSelToggle\" data-act=\"selmode\" hidden>Exit</button></div>\n    </div>");
+      if(old)old.insertAdjacentHTML('beforebegin',"<div class=\"txf71\" id=\"txf71\">\n      <div class=\"txf71-srch\" id=\"txfSrch\">\n        <svg class=\"icn txf71-si\" viewBox=\"0 0 24 24\" aria-hidden=\"true\"><circle cx=\"11\" cy=\"11\" r=\"7\"/><path d=\"m21 21-4.3-4.3\"/></svg>\n        <input class=\"fin\" id=\"txSearch\" type=\"search\" placeholder=\"Search transactions\u2026\" autocomplete=\"off\" aria-label=\"Search transactions\" oninput=\"TXF.q=this.value;$('txClr').hidden=!this.value;renderTxns()\">\n        <button type=\"button\" class=\"srchx\" id=\"txClr\" data-act=\"txclr\" hidden aria-label=\"Clear search\"><svg class=\"icn\" viewBox=\"0 0 24 24\" aria-hidden=\"true\"><line x1=\"18\" y1=\"6\" x2=\"6\" y2=\"18\"/><line x1=\"6\" y1=\"6\" x2=\"18\" y2=\"18\"/></svg></button>\n        <button type=\"button\" class=\"txf71-fbtn\" id=\"txFilterBtn\" data-act=\"txfilter\" aria-label=\"Filters\" aria-haspopup=\"dialog\"><svg class=\"icn\" viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6\"/></svg><span class=\"bd\" id=\"txFilterN\" hidden></span></button>\n      </div>\n      <div class=\"txf71-act\" id=\"txfAct\" hidden></div>\n      <button type=\"button\" class=\"ibtn\" id=\"txSelToggle\" data-act=\"selmode\" hidden>Exit</button>\n    </div>");else tx.insertAdjacentHTML('afterbegin',"<div class=\"txf71\" id=\"txf71\">\n      <div class=\"txf71-srch\" id=\"txfSrch\">\n        <svg class=\"icn txf71-si\" viewBox=\"0 0 24 24\" aria-hidden=\"true\"><circle cx=\"11\" cy=\"11\" r=\"7\"/><path d=\"m21 21-4.3-4.3\"/></svg>\n        <input class=\"fin\" id=\"txSearch\" type=\"search\" placeholder=\"Search transactions\u2026\" autocomplete=\"off\" aria-label=\"Search transactions\" oninput=\"TXF.q=this.value;$('txClr').hidden=!this.value;renderTxns()\">\n        <button type=\"button\" class=\"srchx\" id=\"txClr\" data-act=\"txclr\" hidden aria-label=\"Clear search\"><svg class=\"icn\" viewBox=\"0 0 24 24\" aria-hidden=\"true\"><line x1=\"18\" y1=\"6\" x2=\"6\" y2=\"18\"/><line x1=\"6\" y1=\"6\" x2=\"18\" y2=\"18\"/></svg></button>\n        <button type=\"button\" class=\"txf71-fbtn\" id=\"txFilterBtn\" data-act=\"txfilter\" aria-label=\"Filters\" aria-haspopup=\"dialog\"><svg class=\"icn\" viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6\"/></svg><span class=\"bd\" id=\"txFilterN\" hidden></span></button>\n      </div>\n      <div class=\"txf71-act\" id=\"txfAct\" hidden></div>\n      <button type=\"button\" class=\"ibtn\" id=\"txSelToggle\" data-act=\"selmode\" hidden>Exit</button>\n    </div>");
       if(old)old.remove();
       out.fixed=true;
     }
@@ -244,6 +244,7 @@ function parseAmt(v){
   var n=parseFloat(v);
   return isNaN(n)?0:(neg?-Math.abs(n):n);
 }
+function flowEffect(type,amount){amount=+amount||0;return type==='Income'?amount:(type==='Expense'?-amount:0);}
 function fmt(n){
   var neg=n<0;n=Math.abs(Math.round(n*100)/100);
   var p=n.toFixed(2).split('.');
@@ -1293,11 +1294,12 @@ function miniTxn(t,bal,flip,dt){
   /* v1.12: inside a receivable drill a split-share leg (to = the receivable) is a credit → show + */
   var redn=!isTrf&&!flip&&t.type==='Expense'&&t.amount<0; /* v1.24: negative expense = reduction */
   var fd=flip?legDelta(t):0; /* v1.37 */
-  var cls=isTrf?'':(flip?(fd<0?'neg':'pos'):((t.type==='Income'||redn)?'pos':'neg'));
-  var pre=flip?(fd<0?'-':'+'):((t.type==='Income'||redn)?'+':(isTrf?'⇄ ':'-'));
+  var eff=flowEffect(t.type,t.amount);
+  var cls=isTrf?'':(flip?(fd<0?'neg':'pos'):(eff>0?'pos':'neg'));
+  var pre=flip?(fd<0?'−':'+'):(isTrf?'⇄ ':(eff>0?'+':'−'));
   /* v1.8/v1.9: optional running balance (account balance AFTER this txn) under the amount,
      in parentheses like the Money Manager reference app */
-  return '<button class="mini" data-act="txn" data-id="'+t.id+'" aria-label="edit transaction"><span class="l"><b>'+lb+'</b>'+(t.subcategory?' · '+esc(t.subcategory):'')+(t.note?' — '+esc(t.note):'')+' · '+via+'</span><span class="r"><span class="amt2 '+cls+'">'+pre+money(flip?Math.abs(fd):(redn?-t.amount:t.amount))+'</span>'+(bal!==undefined?'<span class="minibal">Bal '+money(bal)+'</span>':'')+'</span><span class="ed">'+ico('pencil')+'</span></button>';
+  return '<button class="mini" data-act="txn" data-id="'+t.id+'" aria-label="edit transaction"><span class="l"><b>'+lb+'</b>'+(t.subcategory?' · '+esc(t.subcategory):'')+(t.note?' — '+esc(t.note):'')+' · '+via+'</span><span class="r"><span class="amt2 '+cls+'">'+pre+money(flip?Math.abs(fd):Math.abs(t.amount))+'</span>'+(bal!==undefined?'<span class="minibal">Bal '+money(bal)+'</span>':'')+'</span><span class="ed">'+ico('pencil')+'</span></button>';
 }
 function dayRows(list,mode){
   var db=dayBreakdown(list,mode);
@@ -1434,6 +1436,7 @@ var TXF71=(function(){
   /* ---------- toolbar ---------- */
   function chipsList(){var F=TXF,c=[];
     if(F.period.k!=='month')c.push({d:'period',l:periodLabel()});
+    if(F.type!=='all')c.push({d:'type',l:lblType(F.type)});
     F.who.forEach(function(v){c.push({d:'who',v:v,l:whoLbl(v)});});
     F.acc.forEach(function(v){c.push({d:'acc',v:v,l:v});});
     F.cat.forEach(function(v){c.push({d:'cat',v:v,l:v});});
@@ -1444,16 +1447,12 @@ var TXF71=(function(){
     return c;}
   function toolbar(n){
     var F=TXF;
-    var ts=$('txfType');
-    if(ts)ts.innerHTML=['all','Expense','Income','Transfer'].map(function(t){var on=F.type===t;
-      return '<button type="button" class="'+(on?'on'+(t==='Expense'?' e':t==='Income'?' n':''):'')+'" data-act="txftype" data-v="'+t+'" aria-pressed="'+on+'">'+lblType(t)+'</button>';}).join('');
     var c=chipsList(),ac=$('txfAct');
     if(ac){ac.hidden=!c.length;ac.innerHTML=c.map(function(x){return '<button type="button" class="txf71-achip" data-act="txfrmchip" data-d="'+x.d+'" data-v="'+esc(x.v||'')+'" aria-label="Remove '+esc(x.l)+' filter">'+esc(x.l)+ico('x')+'</button>';}).join('')
       +(c.length>1?'<button type="button" class="txf71-arst" data-act="txfreset1">Reset</button>':'');}
-    var b=badgeS(),fb=$('txFilterBtn'),fn=$('txFilterN');
+    var b=badgeN(),fb=$('txFilterBtn'),fn=$('txFilterN');
     if(fb){fb.classList.toggle('on',!!b);fb.setAttribute('aria-label','Filters'+(b?', '+b+' active':''));}
     if(fn){fn.hidden=!b;fn.textContent=b;}
-    var sm=$('txSummary');if(sm)sm.innerHTML='<b>'+n+'</b> transaction'+(n===1?'':'s')+' · '+esc(periodLabel());
     var sr=$('txfSrch');if(sr)sr.classList.toggle('hasq',!!F.q);
   }
   function emptyHTML(){
@@ -1465,10 +1464,11 @@ var TXF71=(function(){
       +((badgeN()||TXF.q)?'<button type="button" class="btn sm" data-act="txfreset1" data-all="1">Reset everything</button>':'')+'</div></div>';
   }
   /* ---------- Filters sheet ---------- */
-  function secs(){var s=['period'];if(couple())s.push('who');s.push('acc','cat','amt','more');if(adv())s.push('space');return s;}
+  function secs(){var s=['period','type'];if(couple())s.push('who');s.push('acc','cat','amt','more');if(adv())s.push('space');return s;}
   function lst(a,none){return a.length?(a.length<=2?a.map(whoLbl).join(', '):whoLbl(a[0])+' +'+(a.length-1)):none;}
   function secSum(k){var F=TXF;switch(k){
     case 'period':return {t:periodLabel(),on:F.period.k!=='month'};
+    case 'type':return {t:lblType(F.type),on:F.type!=='all'};
     case 'who':return {t:lst(F.who,'Anyone'),on:F.who.length>0};
     case 'acc':return {t:lst(F.acc,'All accounts'),on:F.acc.length>0};
     case 'cat':return {t:lst(F.cat,'All categories'),on:F.cat.length>0};
@@ -1476,7 +1476,7 @@ var TXF71=(function(){
     case 'more':{var a=[];if(F.between)a.push('Between Us');if(F.rec)a.push('Recurring');return {t:a.length?a.join(', '):'Off',on:a.length>0};}
     case 'space':return {t:spaceLbl()==='Space'?'All':spaceLbl(),on:F.space!=='all'};
   }return {t:'',on:false};}
-  var SECT={period:'Period',who:'Who',acc:'Account',cat:'Category',amt:'Amount',more:'More',space:'Space'};
+  var SECT={period:'Period',type:'Type',who:'Who',acc:'Account',cat:'Category',amt:'Amount',more:'More',space:'Space'};
   function chk(){return '<span class="ck">'+ico('check')+'</span>';}
   function catList(){
     var F=TXF,q=UI.catQ.toLowerCase(),p=list('cat'),cnt={};
@@ -1502,6 +1502,8 @@ var TXF71=(function(){
       return '<div class="sec"><div class="cw">'+pr.map(function(p){return '<button type="button" class="chip'+(F.period.k===p[0]?' on':'')+'" data-act="txfper" data-v="'+p[0]+'">'+p[1]+'</button>';}).join('')+'</div>'
         +'<h5>Pick a month</h5><div class="cw">'+ms.map(function(k2){var c=mc[k2]||0;return '<button type="button" class="chip'+(F.period.k==='ym'&&F.period.ym===k2?' on':'')+(c?'':' z')+'" data-act="txfper" data-v="ym" data-ym="'+k2+'">'+MONTHS[+k2.slice(5)-1]+'<i>'+c+'</i></button>';}).join('')+'</div>'
         +'<h5>Custom range</h5><div class="two"><div><label for="txfFrom">From</label><input class="fin" type="date" id="txfFrom" data-txfin="from" value="'+(F.period.k==='custom'&&F.period.from||'')+'" max="'+td+'"></div><div><label for="txfTo">To</label><input class="fin" type="date" id="txfTo" data-txfin="to" value="'+(F.period.k==='custom'&&F.period.to||'')+'" max="'+td+'"></div></div></div>';}
+    case 'type':
+      return '<div class="sec"><div class="cw">'+['all','Expense','Income','Transfer'].map(function(t){var on=F.type===t;return '<button type="button" class="chip'+(on?' on':'')+'" data-act="txftype" data-v="'+t+'" aria-pressed="'+on+'">'+lblType(t)+'</button>';}).join('')+'</div></div>';
     case 'who':{
       var P=[[me(),'',me()+' (you)'],[pa(),'b',pa()],['Joint','j','Joint accounts']].filter(function(x){return x[0];}),pl=list('who');
       return '<div class="sec"><div class="cw">'+P.map(function(x){var c=rows(pl.filter(function(t){return whoHit(t,x[0]);})),on=F.who.indexOf(x[0])>=0;
@@ -2122,7 +2124,7 @@ function updateSplitHint(){
   if(!h)return;
   if(!SPLIT.rows.length){h.textContent='';return;}
   var raw=parseAmt($('fAmount').value),amt=Math.abs(raw),sum=0;
-  var refund=F.type==='Expense'&&raw<0,inc=F.type==='Income';
+  var refund=F.type==='Expense'&&raw<0,inc=F.type==='Income',incRed=inc&&raw<0;
   SPLIT.rows.forEach(function(r){sum+=Math.abs(parseAmt(r.v));});
   var left=Math.round((amt-sum)*100)/100;
   var kind=refund?'refund':(inc?'income':'bill');
@@ -2133,6 +2135,7 @@ function updateSplitHint(){
     var dbt=SPLIT.rows.map(function(r){return {p:(r.p||'').trim(),v:Math.abs(parseAmt(r.v))};}).filter(function(x){return x.p&&x.p!==payer&&x.v>0;});
     var eff=dbt.map(function(d){
       if(refund)return esc(d.p)+' owes '+esc(payer)+' '+money(d.v)+' less';
+      if(incRed)return esc(payer)+' owes '+esc(d.p)+' '+money(d.v)+' less';
       if(inc)return esc(payer)+' owes '+esc(d.p)+' '+money(d.v)+' (their share)';
       return esc(d.p)+' owes '+esc(payer)+' '+money(d.v);
     });
@@ -3031,7 +3034,7 @@ function remToggle(){
 /* ---------- transaction list drill (daily spending, charts, categories) ---------- */
 function openTxnList(title,fn){DRILL.open=true;DRILL.level='list';DRILL.acc='';DRILL.person='';DRILL.list={title:title,fn:fn};renderDrill();showPage();}
 function listRow(t){
-  var isTrf=t.type==='Transfer',redn=!isTrf&&t.type==='Expense'&&t.amount<0,cls=(t.type==='Income'||redn)?'pos':'neg',pre=(t.type==='Income'||redn)?'+':'-';
+  var isTrf=t.type==='Transfer',eff=flowEffect(t.type,t.amount),cls=isTrf?'':(eff>0?'pos':'neg'),pre=isTrf?'⇄ ':(eff>0?'+':'−');
   var sub=(t.note?esc(t.note)+' · ':'')+whoStr(t)+' · '+esc(t.account);
   return '<button class="txn" data-act="txn" data-id="'+t.id+'"><span class="mid"><b>'+esc(t.category)+(t.subcategory?' · '+esc(t.subcategory):'')+'</b><small>'+sub+'</small></span><span class="amt '+cls+'">'+pre+(cur()?'<small class="cur2">'+esc(cur())+'</small> ':'')+fmt(Math.abs(t.amount))+'</span></button>';
 }
@@ -4833,7 +4836,7 @@ setTimeout(function(){try{if(location.hash==='#add'&&sessGet()&&$('authScr').hid
       setInterval(function(){reg.update().catch(function(){});},3600000);
     }).catch(function(e){console.warn('sw',e);});
     var done=false;navigator.serviceWorker.addEventListener('controllerchange',function(){if(done||!hadCtrl||!accepted)return;done=true;location.reload();});
-    try{if(sessionStorage.getItem('cmmJustUpdated')){sessionStorage.removeItem('cmmJustUpdated');setTimeout(function(){var v='';try{v=(document.querySelector('meta[name=app-version]')||{}).content||'';}catch(e){}toast('Updated'+(v?' to v'+v.replace(/-beta\./,' beta '):''),{type:'success',sub:'You are on the latest version.'});},1200);}}catch(e){}
+    try{if(sessionStorage.getItem('cmmJustUpdated')){sessionStorage.removeItem('cmmJustUpdated');setTimeout(function(){toast('App updated',{type:'success',sub:'You are using the latest version.'});},1200);}}catch(e){}
   });
 })();
 
@@ -6460,9 +6463,10 @@ SCREEN.base('renderTxns',88539,function __base_renderTxns(){
       var isTrf=t.type==='Transfer';
       var redn=!isTrf&&t.type==='Expense'&&v<0; /* v1.24: negative expense = reduction in expenses */
       var sub=isTrf?(esc(t.account)+' → '+esc(t.to||'?')+(t.owedAcc?' · '+esc(t.owedAcc):'')+(t.note?' · '+esc(t.note):'')):((t.note?esc(t.note)+' · ':'')+(whoStr(t)+' · '+esc(t.account))+(t.to?' · '+esc(t.to):'')+(redn?' · <span style="color:var(--inc)">expense reduction</span>':'')); /* v1.28: note reads first */
-      var cls=isTrf?'':((t.type==='Income'||redn)?'pos':'neg');
-      var pre=isTrf?'':((t.type==='Income'||redn)?'+':'-'); /* the amount sign tells the type */
-      var av=redn?-v:v;
+      var eff=flowEffect(t.type,v);
+      var cls=isTrf?'':(eff>0?'pos':'neg');
+      var pre=isTrf?'':(eff>0?'+':'−'); /* opposite sign reduces Expense or Income */
+      var av=Math.abs(v);
       var openRow=!selMode&&EXP.txn===t.id;
       return '<button class="txn'+(child?' kid':'')+(selMode&&BSEL.ids.indexOf(t.id)>=0?' sel':'')+(openRow?' open':'')+'" data-act="txn" data-id="'+t.id+'">'+(selMode?'<span class="ck">'+ico('check')+'</span>':'')+'<span class="mid"><b>'+esc(isTrf?'Transfer':t.category)+(t.subcategory?' · '+esc(t.subcategory):'')+'</b><small>'+sub+'</small></span><span class="amt '+cls+'">'+pre+(cur()?'<small class="cur2">'+esc(cur())+'</small> ':'')+fmt(av)+(shareMode&&!isTrf&&v!==t.amount?' <small style="font-weight:600;opacity:.65">/ '+fmt(t.amount)+'</small>':'')+'</span>'+''+'</button>'+(openRow?txDetailHTML(t):'');
     }
@@ -6479,7 +6483,7 @@ SCREEN.base('renderTxns',88539,function __base_renderTxns(){
       var t0=legs[0],tot=0,ppl=[],allSel=selMode;
       legs.forEach(function(x){tot+=vOf(x);if(ppl.indexOf(x.person)<0)ppl.push(x.person);if(BSEL.ids.indexOf(x.id)<0)allSel=false;});
       tot=Math.round(tot*100)/100;
-      var redn=t0.type==='Expense'&&tot<0,cls=(t0.type==='Income'||redn)?'pos':'neg',pre=(t0.type==='Income'||redn)?'+':'-';
+      var redn=t0.type==='Expense'&&tot<0,eff=flowEffect(t0.type,tot),cls=eff>0?'pos':'neg',pre=eff>0?'+':'−';
       var open=!!EXP.grp[gid];
       var sub=(t0.note?esc(t0.note)+' · ':'')+ico('users')+' Split · '+ppl.map(esc).join(' + ')+' · '+esc(t0.account)+(redn?' · <span style="color:var(--inc)">refund</span>':'');
       var h='<button class="txn grp'+(open?' open':'')+(allSel?' sel':'')+'" data-act="txgrp" data-g="'+esc(gid)+'">'+(selMode?'<span class="ck">'+ico('check')+'</span>':'')
@@ -6613,12 +6617,6 @@ try{B10.fixTiles();}catch(e){console.warn('b10tiles',e);}
 /* — from core/09-transactions-view.js:130 — */
 SCREEN.base('renderAccounts',96788,function __base_renderAccounts(){
   var bl=balances();
-  var n=bl.rows.length;
-  if($('accAsOf'))$('accAsOf').textContent=(n?n+(n===1?' account':' accounts'):'')+(bl.latest?((n?' · ':'')+'as at '+dLabelYW(bl.latest)):'');
-  if($('accTotal'))$('accTotal').textContent=money(bl.rows.reduce(function(s,r){return s+r.bal;},0));
-  var asA=0,asL=0;
-  bl.rows.forEach(function(r){var a=DB.accounts.find(function(x){return x.name===r.name;});if(a&&accTypeKind(a.type)==='liability')asL+=r.bal;else asA+=r.bal;});
-  if($('accSplit'))$('accSplit').innerHTML=bl.rows.length?('Assets <b class="pos">'+money(asA)+'</b> · Debts <b class="'+(asL<0?'neg':'')+'">'+(asL<0?money(-asL)+' owed':money(asL))+'</b>'):'';
   $('accList').innerHTML=bl.rows.length?accSummaryHTML(bl.rows):'<div class="empty"><div class="big">'+ico('card')+'</div><b>No accounts</b><p>Add your first account below.</p></div>';
 });
 SCREEN.on('renderAccounts',96788);
@@ -6676,7 +6674,6 @@ try{
       if(btn)btn.style.margin='0 0 0 auto'; /* Collapse all right-aligned on the header row */
       h2.style.display='flex';h2.style.alignItems='center';h2.style.gap='8px';
     }
-    qa('.asum-liab').forEach(function(el){el.remove();}); /* R11: no debt badge */
   }catch(e){console.warn('b12acc',e);}
 });
 
@@ -7508,9 +7505,10 @@ SCREEN.base('renderDrill',69977,function __base_renderDrill(){
         var redn=!isTrf&&!flipLeg&&t.type==='Expense'&&t.amount<0; /* v1.24: expense reduction */
         var ld=flipLeg?legDelta(t):0; /* v1.37 */
         var sub=isTrf?(esc(t.account)+' → '+esc(t.to||'?')+(t.owedAcc?' · '+esc(t.owedAcc):'')+(t.note?' · '+esc(t.note):'')):((t.note?esc(t.note)+' · ':'')+(whoStr(t)+' · '+esc(t.account))+(t.to?' · '+esc(t.to):'')+(redn?' · <span style="color:var(--inc)">expense reduction</span>':''));
-        var cls=isTrf?'':(flipLeg?(ld<0?'neg':'pos'):((t.type==='Income'||redn)?'pos':'neg'));
-        var pre=isTrf?'':(flipLeg?(ld<0?'-':'+'):((t.type==='Income'||redn)?'+':'-'));
-        var av=flipLeg?Math.abs(ld):(redn?-t.amount:t.amount);
+        var eff=flowEffect(t.type,t.amount);
+        var cls=isTrf?'':(flipLeg?(ld<0?'neg':'pos'):(eff>0?'pos':'neg'));
+        var pre=isTrf?'':(flipLeg?(ld<0?'−':'+'):(eff>0?'+':'−'));
+        var av=flipLeg?Math.abs(ld):Math.abs(t.amount);
         var sv=isTrf?((t.to===DRILL.acc?1:-1)*t.amount):(flipLeg?ld:((t.type==='Income')?t.amount:-t.amount)); /* display-signed value (a reduction is +), so the day net reconciles with the rows */
         dn+=sv;dnet+=sv;dN++;
         return '<button class="txn" data-act="txn" data-id="'+t.id+'"><span class="mid"><b>'+esc(isTrf?'Transfer':t.category)+(t.subcategory?' · '+esc(t.subcategory):'')+'</b><small>'+sub+'</small></span><span class="amt '+cls+'">'+pre+(cur()?'<small class="cur2">'+esc(cur())+'</small> ':'')+fmt(av)+'</span></button>';
@@ -8208,7 +8206,7 @@ try{
 /* — from core/13-split-editor-r2.js:87 — */
 SCREEN.base('saveTxn',152032,function __base_saveTxn(){
   var amt=parseAmt($('fAmount').value);
-  if(F.type==='Expense'?!amt:!(amt>0)){toast('Please enter an amount');return;} /* v1.24: a negative expense = reduction in expenses */
+  if(F.type==='Transfer'?!(amt>0):!amt){toast('Please enter an amount');return;} /* beta 93: opposite sign reduces Expense or Income; transfers stay positive */
   var date=$('fDate').value||todayStr();
   var note=$('fNote').value.trim();
   var wasNew=!F.id;
@@ -8274,7 +8272,7 @@ SCREEN.base('saveTxn',152032,function __base_saveTxn(){
       if(F.id)DB.txns=DB.txns.filter(function(x){return x.id!==F.id;});
       DB.txns=DB.txns.concat(legsF);
       closeSheet();touch();
-      toast((wasNew?'Added ✓ ':'Updated ✓ ')+legsF.length+' shares · '+(sg<0?'refund ':(F.type==='Income'?'income ':''))+money(absA)+' · '+debtors.length+' ledger'+(debtors.length>1?'s':'')+' updated');
+      toast((wasNew?'Added ✓ ':'Updated ✓ ')+legsF.length+' shares · '+(F.type==='Income'?(sg<0?'income reduction ':'income '):(sg<0?'expense reduction ':''))+money(absA)+' · '+debtors.length+' ledger'+(debtors.length>1?'s':'')+' updated');
       F.id=null;return;
     }
   }
@@ -8687,7 +8685,7 @@ SCREEN.base('txDetailHTML',90060426,function(t){
   if(hasSplit(t))h+=kv('Split',t.split.map(function(s){return esc(s.p)+' '+fmt(Math.max(0,+s.v||0));}).join(' \u00b7 '));
   h+=kv('Description',t.note?esc(t.note):'');
   h+=kv('Note',t.noteLong?esc(t.noteLong):'');
-  h+=kv('Amount',(isTrf?'':((t.type==='Income'||redn)?'+':'-'))+money(Math.abs(t.amount)));
+  h+=kv('Amount',(isTrf?'':(flowEffect(t.type,t.amount)>0?'+':'−'))+money(Math.abs(t.amount)));
   try{h+=aud59(t);}catch(e){DIAG.note(e,"22-v160-b3-settings:814");}
   return '<div class="txdetail">'+h+'<div class="detacts">'
     +'<button class="ibtn" data-act="txcopy" data-id="'+t.id+'">'+ico('plus')+' Copy</button>'
@@ -10420,46 +10418,6 @@ function modeLabel6(m){return m==='adv'?'Advanced Couple':(m==='couple'?'Couple'
 
 SCREEN.on('renderSettings',50002586);
 
-/* ---------- 3. Compare modes (plan 5 / 6 / 10) ---------- */
-MGR_TITLE.modecmp=ico('sliders')+' Compare modes';
-V56.mgr.modecmp=function(){
-  function cell(v){if(v==='Y')return '<span class="yes">Yes</span>';if(v==='—')return '<span class="no">—</span>';return v;}
-  function tbl(head,rows){
-    return '<div class="m6cmp"><table><tr>'+head.map(function(h){return '<th>'+h+'</th>';}).join('')+'</tr>'
-      +rows.map(function(r){return '<tr><td>'+r[0]+'</td>'+r.slice(1).map(function(v){return '<td>'+cell(v)+'</td>';}).join('')+'</tr>';}).join('')+'</table></div>';
-  }
-  var H=['Feature','Personal','Couple','Advanced'];
-  $('mgrBody').innerHTML='<div class="help small" style="margin-bottom:10px"><b>Not sure?</b> Ask: <i>do both partners need accounts the other cannot see?</i> No → Couple. Yes → Advanced Couple.</div>'
-    +'<div class="mgr-sec" style="margin-top:2px">What each mode does</div>'
-    +tbl(H,[
-      ['Household workspace','—','Yes','Yes'],
-      ['Shared accounts','—','Yes','Yes'],
-      ['Private accounts inside the household','—','No','Yes'],
-      ['Partner permissions','—','Yes','Yes'],
-      ['Between Us net balance · partial settlements','—','Yes','Yes'],
-      ['Household cloud sync','—','Recommended','Recommended'],
-      ['Separate private space per partner','—','—','Yes'],
-      ['Personal encrypted backup','Yes','Household backup','Yes, for each person'],
-      ['Privacy Screen &amp; App lock','Yes','Yes','Yes'],
-      ['Moving private items','—','Limited','Full']
-    ])
-    +'<div class="mgr-sec m6h">Default storage by mode</div>'
-    +tbl(['Mode','Default','Also good'],[
-      ['Personal','Device only','Personal encrypted backup'],
-      ['Couple','Household cloud sync','Shared device only'],
-      ['Advanced Couple','Household cloud + private spaces','Household cloud + private on device']
-    ])
-    +'<div class="mgr-sec m6h">Storage &amp; privacy rules</div>'
-    +tbl(['Rule','Personal','Couple','Advanced'],[
-      ['Default visibility of new accounts','Personal','Shared','Private'],
-      ['Backed up by','You','Household owner','Household owner + each person'],
-      ['Sync status','Personal','Household','Household &amp; Private, separate'],
-      ['Export permission','You','Household role','Private data stays with its account owner'],
-      ['Partner removal','—','Remove access','Access removed · private space stays']
-    ])
-    +'<div class="help small" style="margin-top:10px">Switching modes keeps your history and creates a safety backup first. Nothing becomes shared without your confirmation.</div>';
-};
-
 /* ---------- 4. storage cards per mode (plan 2.4 / 3.5 / 4.6 / 6) ---------- */
 stgCards59=function(sel,act){
   var m=nowMode6(),rec=(m==='solo')?'device':'household';
@@ -10546,7 +10504,7 @@ V56.mgr.share6=function(){
   $('mgrBody').innerHTML='<div class="help small" style="margin-bottom:10px">Tick the accounts '+P+' may see, then tap Save. <b>Unticked accounts stay on this device</b> — '+P+' never sees them, their transactions or their balances. Nothing is shared until you tick it.</div>'
     +(l.length?'<div class="dayg">'+l.sort(function(x,y){return alphasort(x.name,y.name);}).map(function(a){return '<label class="mgr-row" style="padding:10px 12px;cursor:pointer"><span class="lb">'+esc(a.name)+'<small>'+esc(a.type||'')+(a.vis==='me'?' · private now':'')+'</small></span><input type="checkbox" class="tgl pv6ck" data-n="'+esc(a.name)+'"'+(V6.share[a.name]?' checked':'')+' onchange="share6Cnt6()"></label>';}).join('')+'</div>':'<div class="help">You don’t have any accounts yet. You can choose sharing later in Accounts → the account → Edit.</div>')
     +'<div class="help small" id="share6prev" style="margin:10px 2px 4px"></div>'
-    +(nowMode6()==='couple'?'<div class="help small" style="margin:2px 2px 8px">'+ico('shield')+' Want to keep some accounts private inside the household? <button type="button" class="aulink inl" data-act="modecmp">Compare with Advanced Couple</button>.</div>':'')
+    +(nowMode6()==='couple'?'<div class="help small" style="margin:2px 2px 8px">'+ico('shield')+' Want to keep some accounts private inside the household? <button type="button" class="aulink inl" data-act="m79cmp">Compare with Advanced Couple</button>.</div>':'')
     +'<div class="sheet-foot" style="padding-bottom:4px"><button class="btn" data-act="share6go">Save</button></div>';
   setTimeout(share6Cnt6,0);
 };
@@ -10736,10 +10694,6 @@ ACT.on('v159-b6-three-modes',{
 (window.usgSwitch6||usgSwitch6)(el.dataset.v); /* beta 28.1: later layers wrap the mode switch (unsynced-changes warning) — always call the current one */
 return;
 },
-'modecmp':function(el,next){
-openMgr('modecmp');
-return;
-},
 'auusage':function(el,next){
 DB.meta.usage=el.dataset.v;
 AU.avis=(el.dataset.v==='couple'?'shared':'me');
@@ -10772,7 +10726,6 @@ return;
 });
 
 /* ---------- 10. version + in-app release notes ---------- */
-window.B6={mode:nowMode6,scope:exportScope6,label:modeLabel6}; /* support/debug handle */
 V59.ver='1.59 beta 6';
 document.querySelectorAll('.sub').forEach(function(e){
   if(/v1\.59 beta 5/.test(e.textContent))e.textContent='v1.59 beta 6';
@@ -11482,9 +11435,10 @@ B3.oneInsight=function(L,Pv,r){
 function raRowB3(t){
   var isTrf=t.type==='Transfer',redn=!isTrf&&t.type==='Expense'&&t.amount<0;
   var ic=isTrf?'repeat':(t.type==='Income'?'trend':'tag');
-  var tone=isTrf?'mut':((t.type==='Income'||redn)?'pos':'');
-  var cls=isTrf?'':((t.type==='Income'||redn)?'pos':'neg');
-  var pre=isTrf?'':((t.type==='Income'||redn)?'+':'\u2212');
+  var eff=flowEffect(t.type,t.amount);
+  var tone=isTrf?'mut':(eff>0?'pos':'');
+  var cls=isTrf?'':(eff>0?'pos':'neg');
+  var pre=isTrf?'':(eff>0?'+':'\u2212');
   var catL=isTrf?'Transfer':esc(t.category||'')+(t.subcategory?' \u00b7 '+esc(t.subcategory):''); /* category-led, same hierarchy as Transactions */
   var who=(!isTrf&&DB.people.length>1)?whoStr(t):'';
   var sp=(!isTrf&&t.split&&t.split.length)?'Split':'';
@@ -12259,7 +12213,7 @@ if(olB4)olB4.insertAdjacentHTML('beforeend',
     h+=kvr9('Paid by',esc(ppl.join('+'))+' '+ico('users'));
     h+=kvr9('Split',legs.map(function(x){return esc(x.person||'?')+' '+fmt(Math.abs(+x.amount||0));}).join(' \u00b7 '));
     h+=kvr9('Description',t0.note?esc(t0.note):'');
-    h+=kvr9('Amount',(isTrf?'':((t0.type==='Income'||redn)?'+':'-'))+money(Math.abs(tot)));
+    h+=kvr9('Amount',(isTrf?'':(flowEffect(t0.type,tot)>0?'+':'−'))+money(Math.abs(tot)));
     return h+'<div class="detacts">'
       +'<button class="ibtn" data-act="txcopy" data-id="'+t0.id+'">'+ico('plus')+' Copy</button>'
       +'<button class="ibtn" data-act="txnedit" data-id="'+t0.id+'">'+ico('pencil')+' Edit</button>'
@@ -12277,7 +12231,7 @@ if(olB4)olB4.insertAdjacentHTML('beforeend',
       legs.forEach(function(x){tot+=+x.amount||0;if(x.person&&ppl.indexOf(x.person)<0)ppl.push(x.person);});
       tot=Math.round(tot*100)/100;
       var redn=!isTrf&&t0.type==='Expense'&&tot<0;
-      var cls=isTrf?'':((t0.type==='Income'||redn)?'pos':'neg'),pre=isTrf?'':((t0.type==='Income'||redn)?'+':'-');
+      var eff=flowEffect(t0.type,tot),cls=isTrf?'':(eff>0?'pos':'neg'),pre=isTrf?'':(eff>0?'+':'−');
       var mid=el.querySelector('.mid');
       if(mid)mid.innerHTML='<b>'+esc(t0.category||'Split')+(t0.subcategory?' \u00b7 '+esc(t0.subcategory):'')+'</b>'
         +'<small>'+esc(t0.account||'')+' \u00b7 '+esc(ppl.join('+'))+' '+ico('users')+' \u00b7 Split</small>';
@@ -12409,7 +12363,7 @@ function bill10(rows){
   h+=kvr10('Paid by',esc(ppl.join('+'))+' '+ico('users'));
   h+=kvr10('Split',rows.map(function(x){return esc(x.person||'?')+' '+fmt(Math.abs(+x.amount||0));}).join(' · '));
   h+=kvr10('Description',t0.note?esc(t0.note):'');
-  h+=kvr10('Amount',(isTrf?'':((t0.type==='Income'||redn)?'+':'-'))+money(Math.abs(tot)));
+  h+=kvr10('Amount',(isTrf?'':(flowEffect(t0.type,tot)>0?'+':'−'))+money(Math.abs(tot)));
   return h+'<div class="detacts">'
     +'<button class="ibtn" data-act="txcopy" data-id="'+t0.id+'">'+ico('plus')+' Copy</button>'
     +'<button class="ibtn" data-act="txnedit" data-id="'+t0.id+'">'+ico('pencil')+' Edit</button>'
@@ -12435,7 +12389,7 @@ B10.drillMerge=function(){
     rows.forEach(function(x){tot+=+x.amount||0;if(x.person&&ppl.indexOf(x.person)<0)ppl.push(x.person);});
     tot=Math.round(tot*100)/100;
     var redn=!isTrf&&t0.type==='Expense'&&tot<0;
-    var cls=isTrf?'':((t0.type==='Income'||redn)?'pos':'neg'),pre=isTrf?'':((t0.type==='Income'||redn)?'+':'-');
+    var eff=flowEffect(t0.type,tot),cls=isTrf?'':(eff>0?'pos':'neg'),pre=isTrf?'':(eff>0?'+':'−');
     var row=document.createElement('button');
     row.className='txn';
     row.dataset.act='txgrp'; row.dataset.g=g;
@@ -13289,7 +13243,7 @@ if(el&&el.dataset&&el.dataset.act==='share6go'){
           var n=0;try{n=myPrivAccs().length;}catch(e){DIAG.note(e,"33-v160-b14-personal-accounts:184");}
           if(!n)return;
           askChoice('You kept '+movedN+' account'+(movedN===1?'':'s')+' on this device only \u2014 '+esc(partnerName())+' can\u2019t see them. Couple mode is one shared workspace; to keep private accounts inside the household, use Advanced Couple mode.',[
-            {c:'btn',l:ico('shield')+' Compare with Advanced Couple',f:function(){openMgr('modecmp');}},
+            {c:'btn',l:ico('shield')+' Compare with Advanced Couple',f:function(){try{if(window.B79&&B79.push)B79.push('compare');}catch(e){}}},
             {c:'btn ghost',l:'Keep for now',f:function(){}}
           ]);
         }catch(e){DIAG.note(e,"33-v160-b14-personal-accounts:190");}
@@ -14602,7 +14556,7 @@ function assetCard16(a){
     var act=DB.txns.filter(function(t){return t.prop===a.name;}).sort(function(x,y){return x.date<y.date?1:-1;}).slice(0,5);
     if(act.length){
       h+='<div class="card"><h2>'+ico('receipt')+' Property-linked activity <span class="sub">rental &amp; operating</span></h2>'
-        +act.map(function(t){return '<button class="txn" data-act="txn" data-id="'+t.id+'"><span class="mid"><b>'+esc(t.category)+'</b><small>'+dLabelW(t.date)+' · '+esc(t.account)+'</small></span><span class="amt '+(t.type==='Income'?'pos':'neg')+'">'+(t.type==='Income'?'+':'-')+money(t.amount)+'</span></button>';}).join('')
+        +act.map(function(t){var eff=flowEffect(t.type,t.amount);return '<button class="txn" data-act="txn" data-id="'+t.id+'"><span class="mid"><b>'+esc(t.category)+'</b><small>'+dLabelW(t.date)+' · '+esc(t.account)+'</small></span><span class="amt '+(eff>0?'pos':'neg')+'">'+(eff>0?'+':'−')+money(Math.abs(t.amount))+'</span></button>';}).join('')
         +'<button class="btn ghost sm" data-act="v63proplist" data-n="'+esc(a.name)+'" style="width:100%;margin-top:8px">View all</button></div>';
     }
   }
@@ -15405,12 +15359,6 @@ function prefSync(){
   var v=X63.viewer(),lv=X63.levelOf(v);
   var sub=$('x63expSub');
   if(sub)sub.textContent=(lv==='simple'?'Simple':'Full')+' · for '+v+' — tap to view or change';
-  var wv=$('x63wvRow');
-  if(wv){
-    wv.hidden=lv!=='simple';
-    var ws=$('x63wvSub');
-    if(ws)ws.textContent={hidden:'Hidden — no Wealth tab or Net Worth summary',summary:'One Overall Position card in Money','full-tab':'Full Wealth tab, Simple wording'}[X63.wealthVis()]||'Hidden';
-  }
 }
 X63.prefCard=function(){
   var vs=$('view-settings');if(!vs||$('x63prefCard'))return;
@@ -15758,12 +15706,6 @@ function b19SyncRows(){
   var v=X63.viewer(),lv=X63.levelOf(v);
   var sub=$('x63expSub');
   if(sub)sub.textContent=(lv==='simple'?'Simple':'Full')+' · for you'+(v?' ('+v+')':'')+' — tap to view or change';
-  var wv=$('x63wvRow');
-  if(wv){
-    wv.hidden=lv!=='simple';
-    var ws=$('x63wvSub');
-    if(ws)ws.textContent={hidden:'Hidden — no Wealth tab or Net Worth summary',summary:'One Overall Position card in Money','full-tab':'Full Wealth tab, Simple wording'}[X63.wealthVis()]||'Hidden';
-  }
 }
 B19.syncRows=b19SyncRows;
 
@@ -16506,7 +16448,7 @@ V63.ver='1.60 beta 32';
 document.title='v1.60 beta 32 · Couple Money Manager';
 document.querySelectorAll('.sub').forEach(function(e){if(/1\.60 beta 19/.test(e.textContent))e.textContent='v1.60 beta 21';});
 try{
-  var ol20=document.querySelector('#relNotes ol,#relList ol,main ol');
+  var ol20=document.querySelector('main ol');
   if(ol20)ol20.insertAdjacentHTML('beforeend','<li><b>Advanced Couple v2.1 + Add &amp; Edit v1.1 (v1.60 beta 21):</b> your private space now truly stays on this phone \u2014 nothing is uploaded, and the app offers to delete any old cloud copy. The Couple tab shows shared information only, so both partners see identical figures. Every account can be Closed, Reopened and Archived (archived ones hide from lists and pickers until you tap Show archived), and delete is only for empty accounts \u2014 nothing ever moves transactions silently. All 11 account categories work, what you owe is entered as a positive number, the account owner always defaults to you, and renaming an account now follows it into recurring items, linked financing and goals. The household creator can remove a partner (they keep the copy already on their phone), you can preview exactly what your partner sees, and a new user who skips the experience questions starts in Simple.</li>');
 }catch(e){DIAG.note(e,"40-v160-b20-advanced-couple:935");}
 B20.normalizeAccounts();
@@ -16644,7 +16586,7 @@ function polish21(){
         if(m)c.nodeValue=c.nodeValue.replace(v,m);
       });
     });
-    qa('.fline span, .mixleg b, .seg b, .legend b, .ftx b').forEach(function(el){
+    qa('.fline span, .seg b, .ftx b').forEach(function(el){
       if(el.childNodes.length===1&&el.firstChild.nodeType===3&&el.firstChild.nodeValue==='Cards & credit lines')el.firstChild.nodeValue='Credit cards';
     });
     /* 6d · Your Profile: keep it about you — samples and Modes live elsewhere */
@@ -17075,7 +17017,7 @@ var SEEN55={};
 function unreviewed55(t){var k=t.slice(0,80);if(SEEN55[k])return;SEEN55[k]=1;try{DIAG.note(new Error('unreviewed help kept visible: '+k),'b55:help');}catch(e){}}
 function skip(el){
   if(el.id)return true;                            /* live hints / validation messages are addressed by id */
-  if(el.closest('.mgr-add,#sheet,#authScr,#x63ov,.toast,#toast,#toastWrap,details,.empty,#txList,#chmodal,#cmodal,[data-info23=keep]'))return true;
+  if(el.closest('.mgr-add,#sheet,#authScr,#x63ov,.toast,#toast,details,.empty,#txList,#chmodal,#cmodal,[data-info23=keep]'))return true;
   if(el.querySelector('button,input,select,a,textarea,.btn'))return true;
   var t=txt(el);
   if(!t||t.length<40)return true;                  /* short status lines are content, not explanation */
@@ -17096,7 +17038,7 @@ function infoize(){
     if(skip(el))return;
     if(!reviewed55(t)){unreviewed55(t);return;}       /* beta 55: only reviewed copy goes behind an (i); anything else stays visible */
     var card=el.closest('.card,.setsub,.page,.sheet');if(!card)return;
-    var h=card.querySelector('h2,.hdrrow b,#mgrTitle,.mgr-title,.sheet-h');
+    var h=card.querySelector('h2,.hdrrow b,#mgrTitle');
     el.dataset.info23='moved';el.hidden=true;
     var key=card.dataset.info23k;
     if(!key){key=String(INFO.length);INFO.push([]);card.dataset.info23k=key;}
@@ -18467,7 +18409,7 @@ SCREEN.afterDraw(function(){try{drillEdit();}catch(e){}});
       amtH=c.innerHTML.trim();cls=a.classList.contains('pos')?'pos':(a.classList.contains('neg')?'neg':'');
     }else{
       var redn=!trf&&t.type==='Expense'&&t.amount<0;
-      cls=trf?'':((t.type==='Income'||redn)?'pos':'neg');
+      cls=trf?'':(flowEffect(t.type,t.amount)>0?'pos':'neg');
       amtH=(trf?'':(cls==='pos'?'+':'\u2212'))+money(Math.abs(t.amount)).replace('\u2212','');
     }
     var bal=el.querySelector('.minibal,.tbal');
@@ -18522,7 +18464,7 @@ SCREEN.afterDraw(function(){try{drillEdit();}catch(e){}});
   function renderTx61(){
     var t=txById(V61.txId);if(!t){closeTx61();return;}
     var trf=t.type==='Transfer',redn=!trf&&t.type==='Expense'&&t.amount<0;
-    var cls=trf?'':((t.type==='Income'||redn)?'pos':'neg'),sg=trf?'':(cls==='pos'?'+':'\u2212');
+    var cls=trf?'':(flowEffect(t.type,t.amount)>0?'pos':'neg'),sg=trf?'':(cls==='pos'?'+':'\u2212');
     var c=cur();
     var pills=['<span class="dt-pill '+(trf?'trf':(t.type==='Income'?'inc':'exp'))+'">'+(redn?'Refund':esc(t.type))+'</span>'];
     var legs=t.group?DB.txns.filter(function(x){return x.group===t.group;}):[];
@@ -18604,7 +18546,7 @@ SCREEN.afterDraw(function(){try{drillEdit();}catch(e){}});
     qa('.calcbtn',amtRow).forEach(function(b){b.remove();});
     /* category + sub-category */
     var cb=mv($('fCatBox'),body),cl=cb.querySelector('label');
-    if(cl)cl.outerHTML='<div class="ad-lb61"><label>Category</label><button type="button" data-act="fcatmenu" id="fCatAll61">All \u203a</button></div>';
+    if(cl)cl.outerHTML='<div class="ad-lb61"><label>Category</label></div>';
     var sr=mv($('fSubRow'),body),sl=sr.querySelector('label');if(sl)sl.outerHTML='<div class="ad-lb61"><label>Sub-category</label></div>';
     $('fSubChips').classList.add('ad-subs61');
     /* details card: account · account owner · to · owed · date · note */
@@ -18662,7 +18604,6 @@ SCREEN.afterDraw(function(){try{drillEdit();}catch(e){}});
     $('fCatChips').innerHTML=q.map(function(c){var g=glyphOf(c,'',F.type);
       return '<button type="button" class="ad-cat61'+(c===F.cat?' on':'')+'" data-act="fcat" data-c="'+esc(c)+'"><span class="ic">'+(g?ico(g):'<b>'+esc(c.charAt(0).toUpperCase())+'</b>')+'</span><span class="nm">'+esc(c)+'</span></button>';}).join('')
       +'<button type="button" class="ad-cat61 more" data-act="fcatmenu"><span class="ic">'+ico('list')+'</span><span class="nm">More</span></button>';
-    var all=$('fCatAll61');if(all)all.textContent='All '+cats.length+' \u203a';
     $('fSub').value=F.sub||'';
     $('fSubRow').hidden=(F.type==='Transfer')||!F.cat;
     if(F.cat){
@@ -18717,14 +18658,14 @@ SCREEN.afterDraw(function(){try{drillEdit();}catch(e){}});
       /* split total */
       $('fSplitTot61').textContent=money(Math.abs(parseAmt($('fAmount').value)||0));
       /* buttons */
-      var amt=parseAmt($('fAmount').value),okA=F.type==='Expense'?!!amt:amt>0,okC=trf||!!F.cat,ok=okA&&okC;
+      var amt=parseAmt($('fAmount').value),okA=trf?amt>0:!!amt,okC=trf||!!F.cat,ok=okA&&okC;
       var sv=$('fSave61'),nw=$('fSaveNew61');
       var lbl=!okA?'Enter an amount':(!okC?'Choose a category':(V61.mode==='copy'?'Add as new transaction':(F.id?'Save changes':(trf?'Transfer ':'Add ')+money(Math.abs(amt)))));
       sv.textContent=lbl;sv.disabled=!ok;
       nw.hidden=!!F.id||V61.mode==='copy';nw.disabled=!ok;
       var ai=$('fAmount');if(ai){var L=(ai.value||ai.placeholder||'0.00').length;ai.style.width=Math.min(Math.max(L,4)+0.6,13)+'ch';}
       /* hero amount colour */
-      var hero=$('fAmount').closest('.ad-amt61');if(hero){hero.classList.toggle('t-exp',F.type==='Expense'&&!(amt<0));hero.classList.toggle('t-inc',F.type==='Income'||(F.type==='Expense'&&amt<0));hero.classList.toggle('t-trf',trf);}
+      var hero=$('fAmount').closest('.ad-amt61');if(hero){var eff=flowEffect(F.type,amt);hero.classList.toggle('t-exp',!trf&&eff<0);hero.classList.toggle('t-inc',!trf&&eff>0);hero.classList.toggle('t-trf',trf);}
     }catch(e){DIAG.note(e,'v61:sync');}
   }
   window.syncForm61=syncForm61;
@@ -19185,23 +19126,6 @@ if(window.B20)B20.sdv=function(){
   var card=host.closest('.card');if(card)card.insertAdjacentHTML('beforebegin','<div class="card" id="b20sdv"><div class="tipcard"><span class="ti">'+ico('phone')+'</span><div><b>Your private accounts are not on this phone</b><div class="help small">No private-space manifest exists for this user on this device. Restore your personal backup to create it here; restoring never uploads private data.</div><div class="btnrow" style="margin-top:8px"><button class="btn sm" data-act="bkrestorefile2">Restore from my backup</button></div></div></div></div>');
 };
 
-/* compact Household row + separate Household / Private indicators */
-B28.hhOpen=false;
-function householdLabel28(){var I=safe28(function(){return HH.info;},null),p=safe28(function(){return partnerName();},'your partner');if(I&&(I.members||[]).length>1)return 'Connected to '+p;if(I&&(I.invites||[]).length)return 'Invite pending';return FB&&FB.user?'Ready to invite your partner':'Sign in to connect';}
-/* writes only when the markup changed: this runs from the global after-draw observer, so a write that always replaces the nodes would re-trigger the observer forever (the app froze) */
-function setHTML28(el,html){if(el._h28!==html||!el.firstChild){el.innerHTML=html;el._h28=html;}}
-function paintHousehold28(){
-  var s=document.querySelector('#view-settings .setsub[data-sub="data"]'),status=$28('ds22Status');if(!s||!status)return;
-  var row=$28('b28HouseholdRow');if(!row){row=document.createElement('div');row.id='b28HouseholdRow';row.className='card b28-house';status.closest('.card').insertAdjacentElement('afterend',row);}
-  row.hidden=!isCouple();setHTML28(row,'<button class="b28-house-row" data-act="b28hhmanage"><span class="hi">'+ico('users')+'</span><span><b>Household</b><small>'+esc(householdLabel28())+'</small></span><span class="manage">'+(B28.hhOpen?'Done':'Manage')+'</span></button>');
-  var hh=$28('fbBody')&&$28('fbBody').closest('.card');if(hh){hh.hidden=!B28.hhOpen;if(B28.hhOpen)hh.dataset.b28show='1';}
-  var box=$28('b28SpaceStatus');if(!box){box=document.createElement('div');box.id='b28SpaceStatus';box.className='b28-space-status';status.appendChild(box);}
-  var hs=statusState59(),ps=privateStatus28();setHTML28(box,'<div class="b28-space '+(hs.cls||'')+'"><span>'+ico('users')+'</span><span><small>Household</small><b>'+esc(hs.text)+'</b></span></div>'+(adv20()?'<div class="b28-space '+(ps.cls||'')+'"><span>'+ico('lock')+'</span><span><small>Private</small><b>'+esc(ps.text)+'</b></span></div>':''));
-}
-ACT.on('b28-review-household',{b28hhmanage:function(){B28.hhOpen=!B28.hhOpen;paintHousehold28();var hh=$28('fbBody')&&$28('fbBody').closest('.card');if(B28.hhOpen&&hh)setTimeout(function(){hh.scrollIntoView({block:'start',behavior:'smooth'});},30);}});
-SCREEN.afterDraw(function(){safe28(paintHousehold28);});
-
-
 /* Joint accounts are blocked from Private before save, not repaired afterwards */
 function forceJointShared28(){
   var ow=$28('mgrNewOwner')||$28('mgrEOwner'),vis=$28('mgrNewVis')||$28('mgrEVis');if(!ow||!vis)return true;
@@ -19422,7 +19346,7 @@ bkFileGo=function(){var pw=(($('bkPw')||{}).value||''),pw2=(($('bkPw2')||{}).val
 /* Partner preview: authoritative shared view, genuine latest activity. */
 if(window.B20)B20.pvData=function(){var me=safe28(function(){return meName();},''),P=safe28(function(){return partnerName();},'your partner'),v=buildSharedView(DB,{purpose:'preview'}),m=v.__sharedView||{},accSet={};(v.accounts||[]).forEach(function(a){if(a&&!a.locked&&!a.recv&&!/^.+ owes .+$/.test(a.name||''))accSet[a.name]=1;});var asc=cmm291Latest(v.txns||[],200).reverse();return {me:me,P:P,accs:(v.accounts||[]).filter(function(a){return accSet[a.name];}),txns:asc,relabel:function(n){return (m.labels||{})[n]||n;},anyPn:m.privateNames||{},accSet:accSet};};
 
-function finish291(){if(!DB)return setTimeout(finish291,30);prefDefaults291();ensureIds291();DB.meta.schemaVersion=SCHEMA291;if(window.experienceConfig){experienceConfig.version=VERSION291;experienceConfig.schemaVersion=SCHEMA291;}if(window.advancedCoupleConfig){advancedCoupleConfig.version=VERSION291;advancedCoupleConfig.schemaVersion=SCHEMA291;}save();document.title='v'+VERSION291+' · Couple Money Manager';var mv=document.querySelector('meta[name="app-version"]');if(mv)mv.content='1.60-beta.31';document.querySelectorAll('.sub').forEach(function(el){el.textContent=el.textContent.replace(/v?1\.60 beta 28(\.\d+)?/g,'v'+VERSION291);});if(X63.isSimple()&&V63.itab==='wealth')V63.itab='cash';renderAll();}
+function finish291(){if(!DB)return setTimeout(finish291,30);prefDefaults291();ensureIds291();DB.meta.schemaVersion=SCHEMA291;if(window.experienceConfig){experienceConfig.version=VERSION291;experienceConfig.schemaVersion=SCHEMA291;}if(window.advancedCoupleConfig){advancedCoupleConfig.version=VERSION291;advancedCoupleConfig.schemaVersion=SCHEMA291;}save();document.title='v'+VERSION291+' · Couple Money Manager';var mv=document.querySelector('meta[name="app-version"]');if(mv)mv.content='1.60-beta.102';document.querySelectorAll('.sub').forEach(function(el){el.textContent=el.textContent.replace(/v?1\.60 beta 28(\.\d+)?/g,'v'+VERSION291);});if(X63.isSimple()&&V63.itab==='wealth')V63.itab='cash';renderAll();}
 setTimeout(finish291,0);
 window.CMM_VERSION=VERSION291;window.CMM_SCHEMA_VERSION=SCHEMA291;
 })();
@@ -19464,9 +19388,9 @@ window.CMM_VERSION=VERSION291;window.CMM_SCHEMA_VERSION=SCHEMA291;
     var t=txById(V61.txId);if(!t)return;
     var legs=legsOf(t.group);if(legs.length<2)return;
     var t0=legs[0],payer=payerLeg(legs);
-    var tot=0;legs.forEach(function(l){tot+=Math.abs(+l.amount||0);});tot=Math.round(tot*100)/100;
-    var redn=t0.type==='Expense'&&tot<0;
-    var cls=(t0.type==='Income'||redn)?'pos':'neg',sg=(t0.type==='Income'||redn)?'+':'\u2212';
+    var tot=0;legs.forEach(function(l){tot+=Math.abs(+l.amount||0);});tot=Math.round(tot*100)/100*(+t0.amount<0?-1:1);
+    var redn=t0.type==='Expense'&&tot<0,eff=flowEffect(t0.type,tot);
+    var cls=eff>0?'pos':'neg',sg=eff>0?'+':'\u2212';
     var c=cur(),people=H61.people();
     var pills=['<span class="dt-pill '+(t0.type==='Income'?'inc':'exp')+'">'+(redn?'Refund':esc(t0.type))+'</span>'
       ,'<span class="dt-pill">'+ico('users')+'Split \u00b7 '+legs.length+'</span>'];
@@ -19478,7 +19402,7 @@ window.CMM_VERSION=VERSION291;window.CMM_SCHEMA_VERSION=SCHEMA291;
       +(g?ico(g):'<b class="lt61">'+esc(String(t0.category||'S').charAt(0).toUpperCase())+'</b>')
       +'<i class="txr-who sp">'+ico('users')+'</i></span>'
       +'<div class="dt-cat">'+esc(t0.category||'')+(t0.subcategory?' \u00b7 '+esc(t0.subcategory):'')+'</div>'
-      +'<div class="dt-amt '+cls+'">'+sg+(c?'<small>'+esc(c)+'</small>':'')+fmt(tot)+'</div>'
+      +'<div class="dt-amt '+cls+'">'+sg+(c?'<small>'+esc(c)+'</small>':'')+fmt(Math.abs(tot))+'</div>'
       +'<div class="dt-date">'+esc(H61.longDate(t0.date))+'</div>'
       +'<div class="dt-pills">'+pills.join('')+'</div></div>';
     function drow(icn,k,v,sm){return v?'<div class="dt-row">'+ico(icn)+'<span class="dt-k">'+k+'</span><span class="dt-v">'+v+(sm?'<small>'+sm+'</small>':'')+'</span></div>':'';}
@@ -19638,11 +19562,12 @@ window.CMM_VERSION=VERSION291;window.CMM_SCHEMA_VERSION=SCHEMA291;
     /* Between Us preview */
     var hn=$('spHint62');
     if(hn){
-      var raw=parseAmt($('fAmount').value),refund=F.type==='Expense'&&raw<0,inc=F.type==='Income',lines=[];
+      var raw=parseAmt($('fAmount').value),refund=F.type==='Expense'&&raw<0,inc=F.type==='Income',incRed=inc&&raw<0,lines=[];
       if(left>=-0.004)SPLIT.rows.forEach(function(r){
         var p=(r.p||'').trim(),v=Math.abs(parseAmt(r.v)||0);
         if(!p||p===payer||!(v>0))return;
-        if(inc)lines.push(esc(payer)+' will owe '+esc(p)+' '+money(v)+' (their share)');
+        if(incRed)lines.push(esc(payer)+' will owe '+esc(p)+' '+money(v)+' less');
+        else if(inc)lines.push(esc(payer)+' will owe '+esc(p)+' '+money(v)+' (their share)');
         else if(refund)lines.push(esc(p)+' owes '+esc(payer)+' '+money(v)+' less');
         else lines.push(esc(p)+' owes '+esc(payer)+' '+money(v)+' after saving.');
       });
@@ -25521,21 +25446,6 @@ try{
 /* the × on the info pop-up */
 document.addEventListener('click',function(e){if(e.target.closest&&e.target.closest('[data-act=x63ovx]'))syncSoon();},true);
 
-/* ---------- 2 · Data & Sync: one Household entry point ---------- */
-function hhCard(){var fb=$('fbBody');return fb?fb.closest('.card'):null;}
-function placeHH(){
-  try{
-    var card=hhCard(),row=$('b28HouseholdRow');if(!card)return;
-    card.classList.add('hh50');
-    var open=!!(window.B28&&B28.hhOpen)&&row&&!row.hidden;
-    card.classList.toggle('hh50on',open);
-    var mg=row&&row.querySelector('.manage');if(mg){var t=(window.B28&&B28.hhOpen)?'Done':'Manage';if(mg.textContent!==t)mg.textContent=t;}
-    if(open&&row&&row.nextElementSibling!==card)row.insertAdjacentElement('afterend',card);
-  }catch(e){n50(e,'b50:hh');}
-}
-SCREEN.afterDraw(placeHH);
-ACT.on('b50-household',{b28hhmanage:function(el,next){next(el);placeHH();}});
-
 /* ---------- version + release note (beta 50) ---------- */
 try{if(window.pinVer36)window.pinVer36('1.60 beta 50');}catch(e){}
 try{
@@ -26858,9 +26768,6 @@ function paintCard(){
   if(!isAdv()){if(c)c.remove();return;}
   if(!c){c=document.createElement('div');c.className='card';c.id='pb62Card';var first=sec.querySelector('.card');if(first&&first.nextSibling)sec.insertBefore(c,first.nextSibling);else sec.appendChild(c);}
   c.innerHTML=cardHTML();
-  /* the "Private" tile in the status card follows the same status */
-  try{var t=qa('#view-settings .setsub[data-sub="data"] .b28-space').filter(function(x){return /Private/.test(x.textContent);})[0];
-    if(t){var b=t.querySelector('b');if(b)b.textContent=pstatus().t;t.classList.remove('ok','warn','bad');var cl=pstatus().c;if(cl==='ok'||cl==='warn'||cl==='bad')t.classList.add(cl);}}catch(e){n62(e,'b62:tile');}
   /* ① label on the shared card */
   try{var h2=sec.querySelector('.card h2');if(h2&&!/①/.test(h2.textContent)&&/status/i.test(h2.textContent))h2.textContent='① Shared household sync';}catch(e){}
 }
@@ -27420,13 +27327,14 @@ ACT.on('b71-txf',{
   txftgl:function(el){var k=el.dataset.v;TXF[k]=!TXF[k];apply();},
   txfspace:function(el){TXF.space=el.dataset.v;apply();},
   /* sheet Reset: every filter in the sheet back to its default (Type and Search are outside the sheet) */
-  txfreset:function(){TXF.period={k:'month'};['who','acc','cat','amt','flags','space'].forEach(TXF71.resetDim);TXF71.UI.catQ='';apply();},
+  txfreset:function(){TXF.period={k:'month'};['type','who','acc','cat','amt','flags','space'].forEach(TXF71.resetDim);TXF71.UI.catQ='';apply();},
   /* toolbar Reset (several chips) keeps the search; empty-state "Reset everything" clears it too */
   txfreset1:function(el){var q=TXF.q,F=txfDefaults();if(!(el&&el.dataset.all))F.q=q;else TXF71.resetDim('q');
     Object.keys(F).forEach(function(k){TXF[k]=F[k];});renderTxns();},
   txfrm:function(el){TXF71.resetDim(el.dataset.v);renderTxns();},
   txfrmchip:function(el){var d=el.dataset.d,v=el.dataset.v;
     if(d==='period')TXF.period={k:'month'};
+    else if(d==='type')TXF.type='all'; /* beta 101: Type moved into Filters (beta 100), so its chip needs a working ✕ */
     else if(d==='who'||d==='acc'||d==='cat')TXF[d]=TXF[d].filter(function(x){return x!==v;});
     else if(d==='amt')TXF.min=TXF.max=null;else if(d==='space')TXF.space='all';else if(d==='between')TXF.between=false;else if(d==='rec')TXF.rec=false;
     renderTxns();}
@@ -27550,9 +27458,8 @@ function openInvite(){
 }
 function openCloud(){
   try{
-    if(window.B28&&!B28.hhOpen){var b=document.querySelector('[data-act=b28hhmanage]');if(b)b.click();else{B28.hhOpen=true;paintHousehold28();}}
-    var fb=$('fbBody'),card=fb&&fb.closest('.card');
-    scrollTo($('b28HouseholdRow')||card);
+    if(window.B79&&B79.openData){B79.openData(['cloud']);return;}
+    gotoView('settings');B3.setGo('data');
   }catch(e){n76(e,'b76:cloud');}
 }
 ACT.on('beta-76-profile-invite',{
@@ -27864,7 +27771,7 @@ SHEETS.ask=function(p){
   return {title:'Propose switching to '+ML[p.to],icon:'send',
     body:'<div class="k-lead">Only <b>'+P+'</b>, the household owner, can change between Couple and Advanced Couple. <b>Nothing changes until '+P+' accepts.</b></div>'
       +(d?'<div class="k-opt k-on" style="cursor:default"><span class="k-oi">'+ic(MIC[p.to])+'</span><span style="flex:1"><b>'+ML[p.to]+'</b><small>'+MC[p.to].tag+'</small></span></div><div class="k-blk"><h4>If '+P+' accepts</h4>'+list(d.chg,'a','chevright')+'</div>':'')
-      +note('clock',(invMail()?P+' gets an email and sees it in the app. ':'')+P+' has 7 days to answer. No answer: nothing changes.'),
+      +note('clock',P+' has 7 days to answer. No answer: nothing changes.'),
     foot:'<button class="k-btn" data-act="m79sendreq" data-to="'+p.to+'">'+ic('send')+' Send proposal to '+P+'</button>'};
 };
 SHEETS.share=function(p){
@@ -28633,7 +28540,7 @@ SHEETS.syncPropose=function(){
     body:'<div class="k-lead">Only <b>'+P+'</b>, the household owner, can change how your household syncs. <b>Nothing changes until '+P+' accepts.</b></div>'
       +'<div class="k-opt k-on" style="cursor:default"><span class="k-oi">'+ic(to==='pdh'?'folder':'cloud')+'</span><span style="flex:1"><b>'+METH[to]+'</b><small>'+methodDesc(to)+'</small></span></div>'
       +'<div class="k-blk"><h4>If '+P+' accepts</h4>'+list(to==='pdh'?[P+' connects Google Drive or OneDrive and shares the sync folder','You connect, choose the shared files and enter the household code','Sync moves from Couple Money Cloud']:['Both phones sync through Couple Money Cloud','You sign in once and join','The Google Drive or OneDrive folder stays, unused'],'a','chevright')+'</div>'
-      +note('clock',(invMail()?P+' gets an email and sees it in the app. ':'')+P+' has 7 days to answer. No answer: nothing changes.'),
+      +note('clock',P+' has 7 days to answer. No answer: nothing changes.'),
     foot:'<button class="k-btn" data-act="d79sendsync" data-to="'+to+'">'+ic('send')+' Send proposal to '+P+'</button>'};
 };
 SHEETS.syncAnswer=function(){
@@ -28948,14 +28855,14 @@ function stepName(){
   return fh(1)+'<div class="k-scr k-fl" id="ap79scr">'+(AP.fromSwitch?'<div class="k-chipok">'+ic('check')+' '+ML[mode()]+' is on</div>':'')
     +'<h2 class="k-ft">Who are you sharing with?</h2><p class="k-fd">Their name shows on accounts and transactions. When they join, it updates once to the name they choose.</p>'
     +'<label class="k-fl3" for="ap79Name">Partner’s name</label><input class="k-inp" id="ap79Name" data-ap="name" value="'+E(AP.name)+'" placeholder="e.g. Kim" autocomplete="off" autocapitalize="words">'+errBox(AP.nameErr)
-    +'<div class="k-blk" style="margin-top:12px"><h4>What happens next</h4><ul><li>'+ic('check','g')+'<span>You invite '+n+' by email</span></li><li>'+ic('check','g')+'<span>They sign in and join — you don’t share anything yet</span></li><li>'+ic('check','g')+'<span>You choose which accounts they see</span></li></ul></div>'
+    +'<div class="k-blk" style="margin-top:12px"><h4>What happens next</h4><ul><li>'+ic('check','g')+'<span>You send '+n+' an invite link</span></li><li>'+ic('check','g')+'<span>They sign in and join — you don’t share anything yet</span></li><li>'+ic('check','g')+'<span>You choose which accounts they see</span></li></ul></div>'
     +(adv?note('lock','In Advanced Couple you each keep a private space. They only see what you mark Shared.'):'')+'</div>'
     +ff('<button class="k-btn" data-act="ap79name">Continue</button><button class="k-btn k-ghost" data-act="ap79later">I’ll add them later</button>');
 }
 function stepMethod(){
   var P=E(OTH());
   return fh(2)+'<div class="k-scr k-fl" id="ap79scr"><h2 class="k-ft">How will you and '+P+' sync?</h2><p class="k-fd">Both phones see the same household, so it always syncs. As household owner you can change the method later in Data &amp; Sync.</p>'
-    +'<button class="k-opt k-on" data-act="ap79method" data-v="cloud"><span class="k-oi">'+ic('cloud')+'</span><span style="flex:1"><b>Couple Money Cloud <span class="k-st k-ok">Suggested</span></b><small>Invite '+P+' by email. Nothing else to set up.</small></span></button>'
+    +'<button class="k-opt k-on" data-act="ap79method" data-v="cloud"><span class="k-oi">'+ic('cloud')+'</span><span style="flex:1"><b>Couple Money Cloud <span class="k-st k-ok">Suggested</span></b><small>Send '+P+' an invite link. Nothing else to set up.</small></span></button>'
     +'<button class="k-opt" data-act="ap79method" data-v="folder"><span class="k-oi">'+ic('folder')+'</span><span style="flex:1"><b>Google Drive or OneDrive</b><small>An encrypted folder in your own Google Drive or OneDrive. You share it with '+P+'.</small></span></button></div>';
 }
 function stepEmail(){
@@ -28968,27 +28875,27 @@ function stepEmail(){
     +'<div class="k-expl" style="margin:-4px 2px 10px">The email '+P+' will sign in with. They must use exactly this one.</div>'+errBox(AP.emailErr)
     +(off?warnbox('<b>You’re offline.</b> The invitation is saved and sent when you’re back online.'):'')
     +note('info','If '+P+' signs up with an email and password, they verify that email first.')+'</div>'
-    +ff('<button class="k-btn" data-act="ap79send"'+(sg?'':' disabled')+'>'+ic('mail')+' '+(off?'Save invitation':'Create invitation')+'</button><button class="k-btn k-ghost" data-act="ap79later">Invite later</button>');
+    +ff('<button class="k-btn" data-act="ap79send"'+(sg?'':' disabled')+'>'+ic('link')+' '+(off?'Save invitation':'Create invite link')+'</button><button class="k-btn k-ghost" data-act="ap79later">Invite later</button>');
 }
 function hhCodeTxt(){return HH.id||'';}
-/* beta 94: the invitation is emailed by the householdInviteEmail function once CMM_CONFIG.requestEmails is on */
-function invMail(){try{return !!(window.CMM_CONFIG&&window.CMM_CONFIG.requestEmails);}catch(e){return false;}}
+/* beta 102: no invitation email (D-44). The invite link is shown at once, to copy or share (WhatsApp etc.) */
+function inviteLink(){var em=invitedEmail()||AP.email;return location.origin+location.pathname+'?invite='+encodeURIComponent(em)+'&from='+encodeURIComponent(ME()||'');}
 function stepSent(){
-  var P=E(OTH()),em=E(invitedEmail()||AP.email),pend=!!DB.meta.pendingInvite&&!hhOn(),code=hhCodeTxt(),ml=invMail();
+  var P=E(OTH()),em=E(invitedEmail()||AP.email),pend=!!DB.meta.pendingInvite&&!hhOn(),code=hhCodeTxt(),solo=mode()==='solo';
   return fh(3)+'<div class="k-scr k-fl" id="ap79scr">'
-    +'<div class="k-hero k-'+(pend?'warn':'ok')+'" role="status"><span class="k-hi">'+ic(pend?'clock':'check')+'</span><span><b>'+(pend?'Invitation saved':'Invitation ready for '+P)+'</b><small>'+(ml?(pend?'We email '+P+' when you’re back online. ':'We emailed '+P+' the steps. ')+'They sign in with <span style="font-weight:800;color:var(--ink)">'+em+'</span>.':(pend?'It’s sent when you’re back online. ':'')+'The app doesn’t email it — tell '+P+' to open the app and sign in with <span style="font-weight:800;color:var(--ink)">'+em+'</span>.')+'</small></span></div>'
-    +'<div class="k-card" style="margin-top:14px"><div class="k-lbl">What '+P+' does</div>' /* beta 87: label inside the box */
-    +'<div class="k-stp"><span class="k-num">1</span><div class="k-sb2"><b>Open Couple Money Manager<span></span></b><p>Tap <b>I have an invite</b>.</p></div></div>'
+    +'<div class="k-hero k-'+(pend?'warn':'ok')+'" role="status"><span class="k-hi">'+ic(pend?'clock':'check')+'</span><span><b>'+(pend?'Invitation saved':'Invite link ready for '+P)+'</b><small>'+(pend?'The link works once you’re back online. ':'')+(solo?'':'Send '+P+' this link. ')+'They sign in with <span style="font-weight:800;color:var(--ink)">'+em+'</span>.</small></span></div>'
+    +(solo?'':'<div class="k-card k-pad" style="margin-top:14px"><div class="k-lbl">Invite link</div><div class="k-codebox k-link"><code id="ap79Link">'+E(inviteLink())+'</code><button class="k-mini" data-act="ap79copylink">'+ic('copy')+' Copy</button></div></div>')
+    +'<div class="k-card" style="margin-top:14px"><div class="k-lbl">What '+P+' does</div>'
+    +'<div class="k-stp"><span class="k-num">1</span><div class="k-sb2"><b>Open the invite link<span></span></b><p>Couple Money Manager opens on <b>I have an invite</b>.</p></div></div>'
     +'<div class="k-stp"><span class="k-num">2</span><div class="k-sb2"><b>Sign in with '+em+'<span></span></b><p>Google or email and password.</p></div></div>'
     +'<div class="k-stp"><span class="k-num">3</span><div class="k-sb2"><b>Tap Join household<span></span></b><p>You then choose what '+P+' sees.</p></div></div></div>'
     +note('clock','The invitation stays open until you cancel it.','margin-top:10px')
-    +'<details class="k-card k-det" style="margin-top:8px"><summary>If '+P+' can’t find it <span>'+ic('chevdown')+'</span></summary><div class="k-dd">'
-    +(ml?'<div>'+ic('mail')+'<span>Ask '+P+' to check Spam or Promotions for an email from Couple Money.</span></div>':'')
+    +'<details class="k-card k-det" style="margin-top:8px"><summary>If '+P+' can’t join <span>'+ic('chevdown')+'</span></summary><div class="k-dd">'
     +'<div>'+ic('mail')+'<span>The email must match exactly. Check for typos or a different address.</span></div>'
     +'<div>'+ic('key')+'<span>Email sign-ups verify their email first. After that, tap <b>Look again</b>.</span></div>'
     +(code?'<div>'+ic('link')+'<span>Fallback: Couple Money Cloud → Join with a code. Household code <b>'+E(code)+'</b>.</span></div>':'')+'</div></details>'
     +'<div style="display:flex;gap:14px;margin:12px 2px 4px"><button class="k-lk" data-act="ap79change">Change email</button><button class="k-lk" style="color:var(--exp)" data-act="ap79cancelask">Cancel invitation</button></div></div>'
-    +ff((mode()==='solo'?'':'<button class="k-btn" data-act="ap79msg">'+ic('send')+' Send '+P+' a message</button>')+'<button class="k-btn k-ghost" data-act="ap79share">Choose what '+P+' sees</button><button class="k-btn k-ghost" data-act="ap79done">Done</button>');
+    +ff((solo?'':'<button class="k-btn" data-act="ap79sharego">'+ic('send')+' Share link</button>')+'<button class="k-btn k-ghost" data-act="ap79share">Choose what '+P+' sees</button><button class="k-btn k-ghost" data-act="ap79done">Done</button>');
 }
 function stepFolder(){
   var P=E(OTH());
@@ -29016,8 +28923,8 @@ function apPaint(){
 }
 B79.apPaint=apPaint;
 document.addEventListener('input',function(e){var t=e.target;if(t&&t.dataset&&t.dataset.ap&&t.closest&&t.closest('#ap79'))AP[t.dataset.ap]=t.value;});
-function msgText(){var em=invitedEmail()||AP.email,link=location.origin+location.pathname+'?invite='+encodeURIComponent(em)+'&from='+encodeURIComponent(ME()||'');
-  return 'Hi '+OTH()+', I’ve set up Couple Money Manager for us.\n1. Open the app and tap “I have an invite”.\n2. Sign in with '+em+'.\n3. Tap “Join household”.\n'+link+'\n— '+(ME()||'');}
+function msgText(){var em=invitedEmail()||AP.email;
+  return 'Hi '+OTH()+', I’ve set up Couple Money Manager for us. Open this link, sign in with '+em+' and tap “Join household”.\n'+inviteLink()+'\n— '+(ME()||'');}
 function sendInvite(em){
   var old=invitedEmail();
   if(hhOn()&&isOwner()&&!offline()){
@@ -29029,9 +28936,6 @@ function sendInvite(em){
   if(signedIn()&&stKind()==='cloud'&&!hhOn())try{hhStart();}catch(e){}
   return Promise.resolve('saved');
 }
-SHEETS.ap_msg=function(){var P=E(OTH());
-  return {title:'Send '+P+' a message',icon:'send',body:'<div class="k-lead">'+(invMail()?'We emailed '+P+' already. You can also send these steps yourself.':'The app doesn’t email the invitation, so send '+P+' these steps.')+'</div><div class="k-bubble">'+E(msgText()).replace(/\n/g,'<br>')+'</div>'+note('info','The message includes the app link. It never includes the household code.'),
-    foot:'<button class="k-btn" data-act="ap79sharego">'+ic('send')+' Share</button><button class="k-btn k-ghost" data-act="ap79copymsg">'+ic('copy')+' Copy text</button>'};};
 SHEETS.ap_cancel=function(){var P=E(OTH());
   return {title:'Cancel the invitation?',icon:'x',body:'<div class="k-lead">'+P+' can’t join with <b>'+E(invitedEmail()||AP.email)+'</b> any more. You can invite again any time.</div>',
     foot:'<button class="k-btn k-red" data-act="ap79cancelgo">Cancel invitation</button><button class="k-btn k-ghost" data-act="sh79pop">Keep it</button>'};};
@@ -29083,7 +28987,7 @@ ACT.on('b79-partner',{
     if(!emailOK(v)){AP.emailErr='Enter your partner’s email address.';apPaint();return;}
     if(v===String(myEmail()).toLowerCase()){AP.emailErr='That is your own email address.';apPaint();return;}
     AP.emailErr='';busy(el,true);
-    sendInvite(v).then(function(r){AP.step='sent';apPaint();toast(r==='saved'?'Invitation saved. It’s sent when you’re back online.':(invMail()?'Invitation emailed to '+v+'.':'Invitation created for '+v+'.'));})
+    sendInvite(v).then(function(r){AP.step='sent';apPaint();toast(r==='saved'?'Invitation saved. The link works once you’re back online.':'Invite link ready. Copy it or share it with '+OTH()+'.');})
       .catch(function(e){busy(el,false);AP.emailErr=fsErr(e);apPaint();});
   },
   ap79change:function(){AP.email=invitedEmail()||AP.email;AP.step='email';apPaint();},
@@ -29099,9 +29003,8 @@ ACT.on('b79-partner',{
     if(DB.meta.pendingInvite){DB.meta.pendingInvite='';save();}
     if(em&&hhOn())try{hhUninvite(em);HH.info.invites=(HH.info.invites||[]).filter(function(x){return x!==em;});}catch(e){n79(e,'b79:unin');}
     AP.email='';AP.step='email';apPaint();toast('Invitation cancelled.');},
-  ap79msg:function(){push('ap_msg');},
-  ap79sharego:function(){var t=msgText();closeAll();if(navigator.share)navigator.share({text:t}).catch(function(){});else copyText(t,'Message copied.');},
-  ap79copymsg:function(){copyText(msgText(),'Message copied.');},
+  ap79sharego:function(){var t=msgText();if(navigator.share)navigator.share({text:t}).catch(function(){});else copyText(t,'Invite message copied. Paste it into a chat with '+OTH()+'.');},
+  ap79copylink:function(){copyText(inviteLink(),'Invite link copied.');},
   ap79share:function(){var then=function(){if(AP.open)apClose();};push('share',{to:mode(),then:then});},
   ap79done:function(){apClose();},
   ap79tofolder:function(){apClose(true);var p=pdhP();if(!p.ref){if(!p.provider)p.provider='drive';p.role='owner';save();}openData(['folder']);},
@@ -29562,3 +29465,216 @@ try{X63.wealthVis=function(){return 'hidden';};}catch(e){}
 try{if(window.pinVer36)window.pinVer36('1.60 beta 92'+(window.PAGE75&&PAGE75.stale?' · old page file ('+(PAGE75.page||'none')+')':''));}catch(e){}
 /* ===== beta 94 · version pin (invitation email) ===== */
 try{if(window.pinVer36)window.pinVer36('1.60 beta 94'+(window.PAGE75&&PAGE75.stale?' · old page file ('+(PAGE75.page||'none')+')':''));}catch(e){}
+
+
+/* ===== beta 93 · Transactions and signed amount tidy-up =====
+   Removes the Transactions Type/count bar, keeps Type in Filters, removes the duplicate category
+   All N link while keeping More, and removes the Refund button. Expense and Income both continue
+   to accept signed values: positive is normal; negative reduces the corresponding total. */
+(function(){'use strict';
+  try{if(window.pinVer36)window.pinVer36('1.60 beta 93'+(window.PAGE75&&PAGE75.stale?' · old page file ('+(PAGE75.page||'none')+')':''));}catch(e){}
+  try{if(!window.__B93RN){var ol=document.querySelector('#pageSet details.help ol')||document.querySelector('#view-settings details.help ol');
+    if(ol){ol.insertAdjacentHTML('beforeend','<li><b>Beta 93:</b> Transactions has a cleaner search area; Type remains in Filters. Add / Edit transaction keeps one category entry point (More), and signed Expense / Income amounts work without a Refund button: a negative amount reduces the total.</li>');window.__B93RN=1;}}}catch(e){}
+})();
+
+
+/* ===== beta 94 · update confirmation uses reliable wording =====
+   The post-update toast no longer includes a build number. Some installed copies could show a stale
+   cached number even after a successful update. The confirmation now says only that the app updated
+   and that the latest version is in use. */
+(function(){'use strict';
+  try{if(window.pinVer36)window.pinVer36('1.60 beta 94'+(window.PAGE75&&PAGE75.stale?' · old page file ('+(PAGE75.page||'none')+')':''));}catch(e){}
+  try{if(!window.__B94RN){var ol=document.querySelector('#pageSet details.help ol')||document.querySelector('#view-settings details.help ol');
+    if(ol){ol.insertAdjacentHTML('beforeend','<li><b>Beta 94:</b> After an app update, the confirmation now says “App updated” instead of showing a build number that may be stale.</li>');window.__B94RN=1;}}}catch(e){}
+})();
+
+;/* ===== v160b95 · Insights typography and sticky period/person control =====
+   Presentation-only review of every Insights tab. Wealth, Cash Flow / Money and Couple now share
+   one font family, role-based font sizes and role-based colours. The period/person control remains
+   pinned directly below the Wealth / Cash Flow / Couple tabs while the user scrolls. */
+(function(){'use strict';
+  try{if(window.pinVer36)window.pinVer36('1.60 beta 95'+(window.PAGE75&&PAGE75.stale?' · old page file ('+(PAGE75.page||'none')+')':''));}catch(e){}
+  try{if(!window.__B95RN){var ol=document.querySelector('#pageSet details.help ol')||document.querySelector('#view-settings details.help ol');
+    if(ol){ol.insertAdjacentHTML('beforeend','<li><b>Beta 95:</b> Insights now uses one consistent type hierarchy and colour treatment across Wealth, Cash Flow / Money and Couple. The period and person control stays directly below the Insights tabs while you scroll.</li>');window.__B95RN=1;}}}catch(e){}
+})();
+
+;/* ===== v160b96 · Insights detail typography and sticky scope controls =====
+   Extends beta 95's type roles to every report opened from Insights. Report period/person controls
+   stay below the fixed report header; Spending and Debts tabs stack below that control. The
+   Reminder centre uses the same type roles, and its Household / Mine scope stays visible on scroll. */
+(function(){'use strict';
+  function n96(e,w){try{DIAG.note(e,w||'b96');}catch(_){}}
+  function markReminder(){
+    try{
+      var s=document.getElementById('mgrSheet');
+      if(s)s.classList.toggle('ins96-detail',!!(window.MGR&&MGR.kind==='v63remctr'));
+    }catch(e){n96(e,'b96:reminder-class');}
+  }
+  try{SCREEN.after('renderMgr',990096001,{call:'none',ret:false},markReminder);SCREEN.on('renderMgr',990096001);}catch(e){n96(e,'b96:reminder-hook');}
+  try{if(window.pinVer36)window.pinVer36('1.60 beta 96'+(window.PAGE75&&PAGE75.stale?' · old page file ('+(PAGE75.page||'none')+')':''));}catch(e){n96(e,'b96:pin');}
+  try{if(!window.__B96RN){var ol=document.querySelector('#pageSet details.help ol')||document.querySelector('#view-settings details.help ol');
+    if(ol){ol.insertAdjacentHTML('beforeend','<li><b>Beta 96:</b> Every Insights detail report now follows the same typography as the Insights tabs. Its period and person control stays below the report header while you scroll; Spending and Debts tabs stack below it. The Reminder centre follows the same type roles, and Household / Mine stays visible while its list scrolls.</li>');window.__B96RN=1;}}}catch(e){n96(e,'b96:rn');}
+})();
+
+
+
+;/* ===== v160b97 · Insights secondary screens: hierarchy + sticky scope =====
+   Reviews every screen opened from an Insights report: fixed-period and category transaction lists,
+   account pages (including Activity), transaction details and action sheets. Secondary list scope is
+   explicit; period/person controls stay directly below the secondary header while content scrolls. */
+(function(){'use strict';
+  function n97(e,w){try{DIAG.note(e,w||'b97');}catch(_){}}
+  var S=window.INS97={pending:null};
+  function inSecondary(el){
+    try{return !!(el&&el.closest&&el.closest('#pageReport,#pageDrill.ins97-secondary,#pageAcc48.ins97-secondary,#mgrSheet.ins96-detail,#mgrSheet.ins97-secondary,#txSheet61.ins97-secondary,#sheet.ins97-secondary'));}
+    catch(e){return false;}
+  }
+  function listTitle(ctx){
+    if(!ctx)return '';
+    if(ctx.scope==='period')return ctx.category+' · '+perRange().label;
+    return ctx.title||'Transactions';
+  }
+  /* Give report-derived lists a live scope instead of freezing the person at the moment the row was tapped. */
+  try{
+    var oldOpenTxnList97=openTxnList;
+    openTxnList=function(title,fn){
+      DRILL.ins97=S.pending||null;S.pending=null;
+      return oldOpenTxnList97.call(this,title,fn);
+    };
+  }catch(e){n97(e,'b97:list-wrap');}
+  function openList(ctx,fn){
+    try{S.pending=ctx;openTxnList(listTitle(ctx),fn);}catch(e){S.pending=null;n97(e,'b97:list-open');}
+  }
+  function syncList(){
+    try{
+      var c=DRILL&&DRILL.ins97;
+      if(c&&DRILL.level==='list'&&DRILL.list&&c.scope==='period')DRILL.list.title=listTitle(c);
+    }catch(e){n97(e,'b97:list-sync');}
+  }
+  function fixedScopeHTML(c){
+    return '<div class="card perbar ins97-scopebar ins97-fixed"><button class="perchip" data-act="perfilter" data-np="1"><b>'+esc(c.period||c.title||'Selected period')+'</b><small>'+esc(whoLabel())+' · tap to change ▾</small></button></div>';
+  }
+  function decorateList(){
+    try{
+      var p=$('pageDrill'),b=$('drillBody'),c=DRILL&&DRILL.ins97;
+      if(!p||!b)return;
+      p.classList.toggle('ins97-secondary',!!(c&&DRILL.level==='list'));
+      var old=b.querySelector('.ins97-scopebar');if(old)old.remove();
+      if(!(c&&DRILL.level==='list'))return;
+      var h=c.scope==='period'?perCtrlHTML():(c.scope==='fixed'?fixedScopeHTML(c):'');
+      if(!h)return;
+      var box=document.createElement('div');box.innerHTML=h;
+      var bar=box.firstElementChild;if(!bar)return;
+      bar.classList.add('ins97-scopebar');b.insertBefore(bar,b.firstChild);
+    }catch(e){n97(e,'b97:list-decorate');}
+  }
+  try{
+    SCREEN.before('renderDrill',990097001,{call:'none',ret:false},syncList);SCREEN.on('renderDrill',990097001);
+    SCREEN.after('renderDrill',990097002,{call:'none',ret:false},decorateList);SCREEN.on('renderDrill',990097002);
+  }catch(e){n97(e,'b97:list-hooks');}
+
+  ACT.on('v160-b97-secondary-scope',{
+    v63catlist:function(el,next){
+      if(!(el&&el.closest&&el.closest('#pageReport')))return next(el);
+      var c=el.dataset.c||'Other';
+      openList({scope:'period',category:c,title:c},function(){var r=perRange();return perTx(r).filter(function(t){return t.type==='Expense'&&t.category===c;});});
+    },
+    tlist:function(el,next){
+      if(!(el&&el.closest&&el.closest('#pageReport')))return next(el);
+      var s=el.dataset.s,e=el.dataset.e,c=el.dataset.c||'',ty=el.dataset.t||'Expense',title=el.dataset.h||'Transactions';
+      openList({scope:'fixed',title:title,period:title,s:s,e:e,category:c,type:ty},function(){
+        var l=DB.txns.filter(function(t){return t.date>=s&&t.date<=e&&t.type!=='Transfer'&&(!c||t.category===c)&&(ty==='all'||t.type===ty);}),w=whoOK();
+        return w==='couple'?l:applyPerson(l,w);
+      });
+    },
+    v63proplist:function(el,next){
+      if(inSecondary(el))S.pending={scope:'plain',title:'Property activity · '+(el.dataset.n||'')};
+      return next(el);
+    },
+    perwho:function(el,next){var r=next(el);try{if(DRILL.open&&DRILL.level==='list'&&DRILL.ins97)renderDrill();}catch(e){n97(e,'b97:who');}return r;},
+    permode:function(el,next){var r=next(el);try{if(DRILL.open&&DRILL.level==='list'&&DRILL.ins97&&DRILL.ins97.scope==='period')renderDrill();}catch(e){n97(e,'b97:mode');}return r;},
+    peroff:function(el,next){var r=next(el);try{if(DRILL.open&&DRILL.level==='list'&&DRILL.ins97&&DRILL.ins97.scope==='period')renderDrill();}catch(e){n97(e,'b97:off');}return r;},
+    pvspace:function(el,next){var r=next(el);try{if(DRILL.open&&DRILL.level==='list'&&DRILL.ins97)renderDrill();}catch(e){n97(e,'b97:space');}return r;}
+  });
+
+  /* Mark nested destinations so the beta 97 type roles apply only along this Insights chain. */
+  try{
+    function rememberSecondary(e){var el=e.target&&e.target.closest?e.target.closest('[data-act]'):null;S.tapSecondary=inSecondary(el);}
+    document.addEventListener('pointerdown',rememberSecondary,true);
+    document.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' ')rememberSecondary(e);},true);
+    document.addEventListener('click',function(e){
+      var el=e.target&&e.target.closest?e.target.closest('[data-act]'):null;if(!el)return;
+      var secondary=!!S.tapSecondary||inSecondary(el);S.tapSecondary=false;
+      setTimeout(function(){
+        try{
+          [['pageAcc48','on'],['mgrSheet','on'],['txSheet61','on'],['sheet','on']].forEach(function(x){
+            var n=$(x[0]);if(n&&n.classList.contains(x[1]))n.classList.toggle('ins97-secondary',secondary);
+          });
+          var d=$('pageDrill');if(d&&d.classList.contains('on')&&DRILL.level==='list'&&secondary)d.classList.add('ins97-secondary');
+        }catch(err){n97(err,'b97:mark');}
+      },0);
+    },true);
+  }catch(e){n97(e,'b97:mark-hook');}
+
+  try{if(window.pinVer36)window.pinVer36('1.60 beta 97'+(window.PAGE75&&PAGE75.stale?' · old page file ('+(PAGE75.page||'none')+')':''));}catch(e){n97(e,'b97:pin');}
+  try{if(!window.__B97RN){var ol=document.querySelector('#pageSet details.help ol')||document.querySelector('#view-settings details.help ol');
+    if(ol){ol.insertAdjacentHTML('beforeend','<li><b>Beta 97:</b> Secondary screens opened from Insights reports now keep the same header hierarchy. Category and breakdown transaction lists show a sticky period/person scope; fixed-period lists keep their period and person visible; account Activity keeps its period control below the account header; nested account, transaction-detail and action screens use the same type roles.</li>');window.__B97RN=1;}}}catch(e){n97(e,'b97:rn');}
+})();
+
+
+;/* ===== v160b98 · Reports detailed typography and sticky scope review (re-applied) =====
+   Re-applied to the verified beta 97 OneDrive baseline because the beta 98 chat artifacts were not
+   retrievable. Reports home, report pages and report-opened secondary screens share the Insights
+   hierarchy; report period/person controls and report tabs keep their fixed stack while scrolling. */
+(function(){'use strict';
+  try{if(window.pinVer36)window.pinVer36('1.60 beta 98'+(window.PAGE75&&PAGE75.stale?' · old page file ('+(PAGE75.page||'none')+')':''));}catch(e){}
+  try{if(!window.__B98RN){var ol=document.querySelector('#pageSet details.help ol')||document.querySelector('#view-settings details.help ol');
+    if(ol){ol.insertAdjacentHTML('beforeend','<li><b>Beta 98:</b> Reports home, every report and report-opened secondary screen now use the same type hierarchy as Insights. Period and person controls stay at the same level while report content scrolls.</li>');window.__B98RN=1;}}}catch(e){}
+})();
+
+;/* ===== v160b99 · Accounts + Transactions detailed UI review; obsolete-selector cleanup =====
+   Reviews both navigation tabs and every secondary account / transaction flow. Typography is role-
+   based and inherited; account person scope and Activity period controls remain fixed while scrolling.
+   Removes dead beta 10/28/50 mode and household selectors superseded by beta 79, without changing the
+   current Modes, Data & Sync, Accounts or Transactions behaviour. */
+(function(){'use strict';
+  function n99(e,w){try{DIAG.note(e,w||'b99');}catch(_){}}
+  function markAccountSheet(){
+    try{
+      var s=document.getElementById('mgrSheet'),k=String(window.MGR&&MGR.kind||'');
+      if(s)s.classList.toggle('acc99-screen',/^(?:a48|a52cats|valupd|v63remset|loanint|stmt|stmmap|stmpre)/.test(k));
+    }catch(e){n99(e,'b99:account-sheet');}
+  }
+  try{SCREEN.after('renderMgr',990099001,{call:'none',ret:false},markAccountSheet);SCREEN.on('renderMgr',990099001);}catch(e){n99(e,'b99:mgr-hook');}
+  try{SCREEN.afterDraw(markAccountSheet);}catch(e){n99(e,'b99:draw-hook');}
+  try{if(window.pinVer36)window.pinVer36('1.60 beta 99'+(window.PAGE75&&PAGE75.stale?' · old page file ('+(PAGE75.page||'none')+')':''));}catch(e){n99(e,'b99:pin');}
+  try{if(!window.__B99RN){var ol=document.querySelector('#pageSet details.help ol')||document.querySelector('#view-settings details.help ol');
+    if(ol){ol.insertAdjacentHTML('beforeend','<li><b>Beta 99:</b> Accounts and Transactions, including account pages, Activity, statements, filters, transaction details, Add / Edit / Copy, split bills and related sheets, now use one consistent type hierarchy. Account person scope and Activity period controls stay visible while you scroll. Dead selectors from older Modes, Data &amp; Sync and Transactions layouts were removed; visible behaviour is unchanged.</li>');window.__B99RN=1;}}}catch(e){n99(e,'b99:rn');}
+})();
+
+
+;/* ===== v160b100 · remove unreferenced legacy selectors and debug hooks =====
+   Deletes no-op DOM lookups, CSS rules whose required classes or IDs no longer exist, and the unused
+   beta 6 support/debug export. Current screens, data, calculations and actions are unchanged. */
+(function(){'use strict';
+  function n100(e,w){try{DIAG.note(e,w||'b100');}catch(_){}}
+  try{var mv100=document.querySelector('meta[name="app-version"]');if(mv100)mv100.content='1.60-beta.100';}catch(e){n100(e,'b100:meta');}
+  try{if(window.pinVer36)window.pinVer36('1.60 beta 100'+(window.PAGE75&&PAGE75.stale?' · old page file ('+(PAGE75.page||'none')+')':''));}catch(e){n100(e,'b100:pin');}
+  try{if(!window.__B100RN){var ol=document.querySelector('#pageSet details.help ol')||document.querySelector('#view-settings details.help ol');
+    if(ol){ol.insertAdjacentHTML('beforeend','<li><b>Beta 100:</b> Removed unreferenced selectors, retired CSS and an unused debug hook left by older layouts. Visible behaviour is unchanged.</li>');window.__B100RN=1;}}}catch(e){n100(e,'b100:rn');}
+})();
+
+
+/* ===== beta 101 · merge of the other tool's beta 93–100 (Transactions tidy-up, update toast, type roles, cleanup) with Claude's beta 94 (invitation email) ===== */
+(function(){'use strict';
+  try{var mv=document.querySelector('meta[name="app-version"]');if(mv)mv.content='1.60-beta.102';}catch(e){}
+  try{if(window.pinVer36)window.pinVer36('1.60 beta 101'+(window.PAGE75&&PAGE75.stale?' · old page file ('+(PAGE75.page||'none')+')':''));}catch(e){}
+})();
+
+
+/* ===== beta 102 · invite link instead of invitation email (D-44) ===== */
+(function(){'use strict';
+  try{if(window.pinVer36)window.pinVer36('1.60 beta 102'+(window.PAGE75&&PAGE75.stale?' · old page file ('+(PAGE75.page||'none')+')':''));}catch(e){}
+  try{if(!window.__B102RN){var ol=document.querySelector('#pageSet details.help ol')||document.querySelector('#view-settings details.help ol');
+    if(ol){ol.insertAdjacentHTML('beforeend','<li><b>Beta 102:</b> Add partner shows the invite link straight away. Copy it or tap Share link to send it by WhatsApp or any chat app. Invitations are no longer emailed.</li>');window.__B102RN=1;}}}catch(e){}
+})();
