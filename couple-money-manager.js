@@ -9,7 +9,7 @@ var CMM_FN_REGION='asia-southeast1';
    place before anything is drawn, loads the matching stylesheet, and clears the offline copies so
    the next start fetches fresh files. Help & About then says "old page file". */
 var PAGE75=(function(){
-  var JSV='1.60-beta.102',out={js:JSV,page:'',stale:false,fixed:false};
+  var JSV='1.60-beta.107',out={js:JSV,page:'',stale:false,fixed:false};
   try{
     var m=document.querySelector('meta[name="app-version"]');out.page=m?m.content:'';
     out.stale=out.page!==JSV;
@@ -4537,27 +4537,12 @@ function hhStart(){
   }).catch(function(e){console.warn('hh-start',e);toast(fsErr(e));}).then(function(){HH.busy=false;renderCloudAccSafe();});
 }
 function hhFind(F,ud){
-  var em=(FB.user.email||'').toLowerCase();if(!em)return hhCreate(ud);
-  return F.getDocs(F.query(F.collection(FB.db,'households'),F.where('invites','array-contains',em))).then(function(qs){
-    var d=qs.docs[0];if(d){hhOfferJoin(d.id,d.data(),false,ud);return;}
+  var x=null;try{x=JSON.parse(localStorage.getItem('cmm102join')||'null');}catch(e){}
+  if(!(x&&x.token))return hhCreate(ud);
+  return backend291('inviteInfo',{token:x.token}).then(function(r){var d=r&&r.data||{};
+    if(d.found&&d.state==='ok'){hhOfferJoin(x.token,{owner:'o',memberProfiles:{o:{displayName:d.owner||x.from||''}}},false,ud);return;}
     return hhCreate(ud);
   },function(){return hhCreate(ud);});
-}
-function hhInvite(){
-  var em=(($('hhInvEmail')||{}).value||'').trim().toLowerCase();
-  if(!emailOK(em)){toast('Enter your partner’s email');return;}
-  if(em===(FB.user.email||'').toLowerCase()){toast('That is your own email');return;}
-  fsMods().then(function(F){return F.updateDoc(hhRef(F,HH.id),{invites:F.arrayUnion(em)});}).then(function(){toast('Invited '+em+' ✓');}).catch(function(e){toast(fsErr(e));});
-}
-function hhUninvite(em){fsMods().then(function(F){return F.updateDoc(hhRef(F,HH.id),{invites:F.arrayRemove(em)});}).catch(function(e){toast(fsErr(e));});}
-function hhJoinCode(){
-  var code=(($('hhCode')||{}).value||'').trim().toUpperCase();
-  if(!code){toast('Enter the household code');return;}
-  if(code===HH.id){toast('You are already in this household');return;}
-  var cu=FB.auth&&FB.auth.currentUser;
-  (cu?cu.reload().then(function(){return cu.getIdToken(true);}):Promise.resolve()).then(fsMods).then(function(F){return F.getDoc(hhRef(F,code));})
-    .then(function(s){if(!s.exists()){toast('No household with that code');return;}hhOfferJoin(code,s.data(),true);})
-    .catch(function(e){toast(e&&e.code==='permission-denied'?'No invitation for '+(FB.user.email||'this email')+' on that household. Ask your partner to invite this email, and verify it if you signed up with email.':fsErr(e));});
 }
 function hhLeave(){
   askConfirm('Leave this household? Your partner keeps the shared copy. The data on this phone stays, and you get your own cloud copy again.','Leave',function(){
@@ -4772,18 +4757,6 @@ return;
 },
 'hhemup':function(el,next){
 hhEmailAuth('up');
-return;
-},
-'hhinvite':function(el,next){
-hhInvite();
-return;
-},
-'hhuninv':function(el,next){
-hhUninvite(el.dataset.e);
-return;
-},
-'hhjoincode':function(el,next){
-hhJoinCode();
 return;
 },
 'hhleave':function(el,next){
@@ -5034,7 +5007,7 @@ document.addEventListener('contextmenu',function(e){if(PS.cfg.on&&e.target&&e.ta
 document.addEventListener('visibilitychange',function(){if(document.hidden&&PS.cfg.auto&&!PS.cfg.on){PS.cfg.on=1;psSave();psApply();}else if(!document.hidden&&PS.cfg.on)renderAll();});
 /* ---------- Settings → Privacy & security ---------- */
 /* ---------- 4. getting-started checklist: about 5 tasks, solo or couple ---------- */
-function jrInviteDone(){var I=HH.info;return !!(I&&(((I.invites||[]).length)||((I.members||[]).length>=2)))||!!jr().inv;}
+function jrInviteDone(){var I=HH.info;return !!(I&&(I.inviteHash||((I.members||[]).length>=2)))||!!jr().inv;}
 var JR_BASE=JR;
 function jrFind(k){return JR_BASE.filter(function(x){return x.k===k;})[0];}
 var JR56={
@@ -7922,20 +7895,17 @@ SCREEN.base('renderCloudAcc',352869,function __base_renderCloudAcc(){
     return;
   }
   var pv=fbProvName(),cu=FB.auth&&FB.auth.currentUser,unver=!!(cu&&pv==='Email'&&!cu.emailVerified);
-  var I=HH.info||{},mine=(u.email||'').toLowerCase(),owner=I.owner===u.uid,mem=(I.members||[]).map(function(x){return (I.memberEmails||{})[x]||'member';}),inv=I.invites||[];
+  var I=HH.info||{},mine=(u.email||'').toLowerCase(),owner=I.owner===u.uid,mem=(I.members||[]).map(function(x){return (I.memberEmails||{})[x]||'member';});
   var h='<label class="mgr-row" style="cursor:pointer;border:0;padding:4px 2px 8px"><span class="lb" style="white-space:normal">'+esc(u.email||u.uid)+(pv?' · '+pv:'')+'<small>'+(on?'Live sync on':'Sync paused')+fbSyncLabel()+'</small></span><input type="checkbox" class="tgl"'+(on?' checked':'')+' onchange="fbToggle()"></label>'
-    +(unver?'<div class="help small" style="color:var(--warn);margin-bottom:8px">'+ico('warn')+' Verify your email (check your inbox) so a partner can invite you. <button class="aulink inl" data-act="hhverify">Resend email</button></div>':'');
+    +(unver?'<div class="help small" style="color:var(--warn);margin-bottom:8px">'+ico('warn')+' Verify your email (check your inbox) so you can join a household. <button class="aulink inl" data-act="hhverify">Resend email</button></div>':'');
   if(on&&HH.id){
-    h+='<div class="dayg"><div class="day-h"><span>'+ico('users')+' Household</span><span>code '+esc(HH.id)+'</span></div>'
+    h+='<div class="dayg"><div class="day-h"><span>'+ico('users')+' Household</span></div>'
       +mem.map(function(e){return '<div class="mgr-row" style="padding:8px 12px"><span class="lb">'+esc(e)+'<small>'+(e===mine?'you':'member')+(I.ownerEmail===e?' · created the household':'')+'</small></span><span class="pos">'+ico('check')+'</span></div>';}).join('')
-      +inv.map(function(e){return '<div class="mgr-row" style="padding:8px 12px"><span class="lb">'+esc(e)+'<small>invited · waiting to join</small></span><button class="ibtn" data-act="hhuninv" data-e="'+esc(e)+'" aria-label="cancel invite">'+ico('x')+'</button></div>';}).join('')
-      +(mem.length<2?'<div style="display:flex;gap:7px;padding:8px 12px"><input class="fin" id="hhInvEmail" type="email" autocapitalize="off" placeholder="Partner’s email"><button class="ibtn" data-act="hhinvite" style="color:var(--accent);font-weight:800">Invite</button></div>':'')
       +'</div>'
-      +(mem.length<2?'<div class="help small" style="margin-bottom:8px">Your partner opens the app, signs in with that email and turns on cloud sync. The app asks them to join. They can also use code <b>'+esc(HH.id)+'</b> under More → Join with a code.</div>':'');
+      +(mem.length<2?'<div class="help small" style="margin-bottom:8px">Your partner opens the app from the invite link you send. Get the link from Your Profile › Add partner.</div>':'');
   }else if(on){h+='<div class="help small" style="margin-bottom:8px">Connecting to your household…</div>';}
   h+='<div class="btnrow"><button class="btn ghost" data-act="fbsync"'+(on?'':' disabled')+'>'+ico('refresh')+' Sync now</button></div>'
     +'<details class="help" style="margin-top:8px"><summary>More</summary><div style="display:grid;gap:8px;margin-top:8px">'
-    +(on?'<div style="display:flex;gap:7px"><input class="fin" id="hhCode" placeholder="Join with a code" autocapitalize="characters"><button class="ibtn" data-act="hhjoincode" style="color:var(--accent);font-weight:800">Join</button></div>':'')
     +(HH.id&&!owner?'<button class="btn ghost" data-act="hhleave">Leave household</button>':'')
     +'<button class="btn ghost" data-act="fbsignout">'+ico('logout')+' Sign out</button>'
     +(HH.id&&owner?'<button class="btn red" data-act="fbdelcloud">'+ico('trash')+' Delete household from the cloud</button>':'')
@@ -9820,11 +9790,7 @@ var _hhCreate59=hhCreate;hhCreate=function(ud){
 };
 var _rcs59=renderCloudAccSafe;renderCloudAccSafe=function(){
   _rcs59();
-  var em=DB.meta.pendingInvite;if(em&&FB.user&&HH.id&&HH.info&&HH.info.owner===FB.user.uid&&Object.keys(HH.info.memberEmails||{}).map(function(k){return String(HH.info.memberEmails[k]).toLowerCase();}).indexOf(em)>=0){DB.meta.pendingInvite='';save();em='';}
-  if(em&&FB.user&&HH.id&&HH.info&&HH.info.owner===FB.user.uid){
-    DB.meta.pendingInvite='';save();
-    fsMods().then(function(F){return F.updateDoc(hhRef(F,HH.id),{invites:F.arrayUnion(em)});}).then(function(){toast('Invited '+em+' ✓');}).catch(function(e){DB.meta.pendingInvite=em;toast(fsErr(e));});
-  }
+  try{if(window.INV102)INV102.watch();}catch(e){}
   paintStatus59();renderStore59();
 };
 
@@ -10010,10 +9976,6 @@ return;
 },
 'auinv':function(el,next){
 (function(){
-      if(el.dataset.v==='go'){var e=(($('auInv')||{}).value||'').trim().toLowerCase();
-        if(!emailOK(e)){AU.err='Enter your partner’s email address.';renderAuth();return;}
-        if(e===((sessGet()||{}).email||'')){AU.err='That is your own email address.';renderAuth();return;}
-        DB.meta.pendingInvite=e;toast('Invitation saved for '+e+(FB.user?'':'. It is sent once you are signed in to the cloud.'));}
       DB.meta.inviteAsked=1;save();auNext();
     })();
 return;
@@ -19290,6 +19252,7 @@ function txnDoc291(t,accByName){
 }
 function normalizedSnapshot291(){ensureIds291();var sh=buildSharedView(DB,{purpose:'normalized-cloud',now:Date.now()}),docsA=[],byName={};(sh.accounts||[]).forEach(function(a){var d=accountDoc291(a);docsA.push(d);byName[a.name]=d;});var docsT=(sh.txns||[]).filter(function(t){return t&&t.id;}).map(function(t){return txnDoc291(t,byName);}).filter(function(t){return t.accountId;});var state=cmm291Clone(sh);delete state.accounts;delete state.txns;return {state:state,accounts:docsA,transactions:docsT};}
 function backend291(name,data){return fbLoad().then(function(){return dynImport('https://www.gstatic.com/firebasejs/'+FBJS+'/firebase-functions.js');}).then(function(M){return M.httpsCallable(M.getFunctions(FB.app,CMM_FN_REGION),name)(data||{});});}
+window.backend291=backend291; /* beta 103: the invite-link code in other sections calls inviteInfo / joinHousehold */
 function resetNormalized291(){['unsubA','unsubT','unsubS'].forEach(function(k){if(N291[k])try{N291[k]();}catch(e){}N291[k]=null;});N291.remoteA={};N291.remoteT={};N291.state=null;N291.readyA=N291.readyT=N291.readyS=false;}
 var _hhDetach291=hhDetach;hhDetach=function(){resetNormalized291();return _hhDetach291.apply(this,arguments);};
 function applyNormalized291(){if(N291.applying||!N291.readyA||!N291.readyT||!N291.readyS||!N291.state)return;N291.applying=true;try{var R=cmm291Clone(N291.state.record||{});R.accounts=Object.keys(N291.remoteA).map(function(k){return cmm291Clone(N291.remoteA[k].record);});R.txns=Object.keys(N291.remoteT).map(function(k){return cmm291Clone(N291.remoteT[k].record);});R.meta=R.meta||{changedAt:N291.state.changedAt||0,del:{}};mergeShared(R);ensureIds291();stampInit();save();renderAll();}catch(e){console.warn('normalized-apply',e);}finally{N291.applying=false;}}
@@ -19299,7 +19262,7 @@ function attachNormalized291(F,id){
   var aq=F.query(F.collection(FB.db,'households',id,'accounts'),F.where('memberUids','array-contains',uid));N291.unsubA=F.onSnapshot(aq,function(q){var x={};q.docs.forEach(function(d){x[d.id]=d.data();});N291.remoteA=x;N291.readyA=true;applyNormalized291();},function(e){console.warn('accounts-sync',e);});
   var tq=F.query(F.collection(FB.db,'households',id,'transactions'),F.where('viewerUids','array-contains',uid));N291.unsubT=F.onSnapshot(tq,function(q){var x={};q.docs.forEach(function(d){x[d.id]=d.data();});N291.remoteT=x;N291.readyT=true;applyNormalized291();},function(e){console.warn('transactions-sync',e);});
 }
-hhAttach=function(id){return fsMods().then(function(F){hhDetach();HH.id=id;DB.meta.hh=id;save();HH.unsub=F.onSnapshot(hhRef(F,id),function(s){if(!s.exists()){hhGone('The shared household was deleted. Your data is still on this phone.');return;}var d=s.data();HH.info={owner:d.owner,ownerEmail:d.ownerEmail||'',members:d.members||[],memberEmails:d.memberEmails||{},memberProfiles:d.memberProfiles||{},invites:d.invites||[],storageVersion:+d.storageVersion||0,mode:d.mode||'',request:d.request||null,ended:d.ended||null,sync:d.sync||null,paused:!!d.paused};renderCloudAccSafe();},function(e){hhGone(fsErr(e));});attachNormalized291(F,id);backend291('registerMemberProfile',{householdId:id,displayName:safe28(function(){return meName();},'')}).catch(function(){});return true;});};
+hhAttach=function(id){return fsMods().then(function(F){hhDetach();HH.id=id;DB.meta.hh=id;save();HH.unsub=F.onSnapshot(hhRef(F,id),function(s){if(!s.exists()){hhGone('The shared household was deleted. Your data is still on this phone.');return;}var d=s.data();HH.info={owner:d.owner,ownerEmail:d.ownerEmail||'',members:d.members||[],memberEmails:d.memberEmails||{},memberProfiles:d.memberProfiles||{},inviteHash:(d.invite&&d.invite.hash)||'',storageVersion:+d.storageVersion||0,mode:d.mode||'',request:d.request||null,ended:d.ended||null,sync:d.sync||null,paused:!!d.paused};renderCloudAccSafe();},function(e){hhGone(fsErr(e));});attachNormalized291(F,id);backend291('registerMemberProfile',{householdId:id,displayName:safe28(function(){return meName();},'')}).catch(function(){});return true;});};
 function canWriteAccount291(d,exists){var p=d.permissions[stableUid291()]||'none';return exists?(p==='owner'||p==='admin'):p==='owner';}
 function canWriteTxn291(d,exists){var a=N291.remoteA[d.accountId]||{},p=a.permissions&&a.permissions[stableUid291()]||'none';return exists?(d.createdByUid===stableUid291()?p!=='view'&&p!=='none':['full','admin','owner'].indexOf(p)>=0):d.createdByUid===stableUid291()&&['add','full','admin','owner'].indexOf(p)>=0;}
 function commitOps291(F,ops){var p=Promise.resolve();for(var i=0;i<ops.length;i+=380)(function(ch){p=p.then(function(){var b=F.writeBatch(FB.db);ch.forEach(function(o){if(o.del)b.delete(o.ref);else b.set(o.ref,o.data);});return b.commit();});})(ops.slice(i,i+380));return p;}
@@ -19321,8 +19284,8 @@ hhPush=function(){
     .catch(function(e){console.warn('normalized-push',e);syncUI('warn','Sync failed — tap');if(e&&e.code==='permission-denied')toast('A server permission rejected this change.');return false;})
     .then(function(ok){N291.pushing=false;if(N291.again){N291.again=false;setTimeout(hhPush,300);}return ok;});
 };
-hhCreate=function(){return fsMods().then(function(F){var id=hhCode(),uid=stableUid291(),em=(FB.user.email||'').toLowerCase(),emails={},profiles={};emails[uid]=em;profiles[uid]={displayName:safe28(function(){return meName();},''),email:em};return F.setDoc(hhRef(F,id),{owner:uid,ownerEmail:em,members:[uid],memberEmails:emails,memberProfiles:profiles,invites:[],storageVersion:3,schema:3,mode:(DB.meta.usage==='adv'?'adv':'couple'),createdAt:F.serverTimestamp(),updatedAt:F.serverTimestamp()}).then(function(){return F.setDoc(F.doc(FB.db,'users',uid),{household:id,email:em},{merge:true});}).then(function(){return hhAttach(id);}).then(function(){return new Promise(function(resolve){setTimeout(resolve,400);});}).then(function(){return hhPush();});});};
-hhJoin=function(id){var em=(FB.user.email||'').toLowerCase();if(DB.meta.demo&&DB.meta.demo.on){DB.txns=DB.txns.filter(function(t){return !t.demo;});DB.meta.demo={on:0};}return backend291('joinHousehold',{householdId:id,email:em,displayName:safe28(function(){return meName();},'')}).then(function(){DB.meta.hhAt=0;DB.meta.cloudSyncOn=true;DB.meta.syncChoice='yes';save();return hhAttach(id);}).then(function(){toast('You joined the household ✓');}).catch(function(e){toast(e&&e.message?e.message:fsErr(e));});};
+hhCreate=function(){return fsMods().then(function(F){var id=hhCode(),uid=stableUid291(),em=(FB.user.email||'').toLowerCase(),emails={},profiles={};emails[uid]=em;profiles[uid]={displayName:safe28(function(){return meName();},''),email:em};return F.setDoc(hhRef(F,id),{owner:uid,ownerEmail:em,members:[uid],memberEmails:emails,memberProfiles:profiles,storageVersion:3,schema:3,mode:(DB.meta.usage==='adv'?'adv':'couple'),createdAt:F.serverTimestamp(),updatedAt:F.serverTimestamp()}).then(function(){return F.setDoc(F.doc(FB.db,'users',uid),{household:id,email:em},{merge:true});}).then(function(){return hhAttach(id);}).then(function(){return new Promise(function(resolve){setTimeout(resolve,400);});}).then(function(){return hhPush();});});};
+hhJoin=function(token){if(DB.meta.demo&&DB.meta.demo.on){DB.txns=DB.txns.filter(function(t){return !t.demo;});DB.meta.demo={on:0};}return backend291('joinHousehold',{token:String(token||''),displayName:safe28(function(){return meName();},'')}).then(function(r){var id=r&&r.data&&r.data.householdId;if(!id)throw new Error('This invite link is no longer valid. Ask your partner for a new one.');try{localStorage.removeItem('cmm102join');}catch(e){}DB.meta.hhAt=0;DB.meta.cloudSyncOn=true;DB.meta.syncChoice='yes';save();return hhAttach(id);}).then(function(){toast('You joined the household ✓');}).catch(function(e){toast(e&&e.message?e.message:fsErr(e));});};
 hhLeave=function(){askConfirm('Leave this household? Your partner keeps the shared copy. The data on this phone stays, and you get your own cloud copy again.','Leave',function(){backend291('leaveHousehold',{householdId:HH.id}).then(function(){hhDetach();DB.meta.hh='';DB.meta.cloudSyncOn=false;save();toast('You left the household');}).catch(function(e){toast(e&&e.message?e.message:fsErr(e));});});};
 window.CMM_SERVER_POLICY={version:2,storageVersion:3,normalizedCollections:['sharedState','accounts','transactions'],joinLeave:'trusted-cloud-functions',rulesFile:'firestore.rules'};
 
@@ -19346,7 +19309,7 @@ bkFileGo=function(){var pw=(($('bkPw')||{}).value||''),pw2=(($('bkPw2')||{}).val
 /* Partner preview: authoritative shared view, genuine latest activity. */
 if(window.B20)B20.pvData=function(){var me=safe28(function(){return meName();},''),P=safe28(function(){return partnerName();},'your partner'),v=buildSharedView(DB,{purpose:'preview'}),m=v.__sharedView||{},accSet={};(v.accounts||[]).forEach(function(a){if(a&&!a.locked&&!a.recv&&!/^.+ owes .+$/.test(a.name||''))accSet[a.name]=1;});var asc=cmm291Latest(v.txns||[],200).reverse();return {me:me,P:P,accs:(v.accounts||[]).filter(function(a){return accSet[a.name];}),txns:asc,relabel:function(n){return (m.labels||{})[n]||n;},anyPn:m.privateNames||{},accSet:accSet};};
 
-function finish291(){if(!DB)return setTimeout(finish291,30);prefDefaults291();ensureIds291();DB.meta.schemaVersion=SCHEMA291;if(window.experienceConfig){experienceConfig.version=VERSION291;experienceConfig.schemaVersion=SCHEMA291;}if(window.advancedCoupleConfig){advancedCoupleConfig.version=VERSION291;advancedCoupleConfig.schemaVersion=SCHEMA291;}save();document.title='v'+VERSION291+' · Couple Money Manager';var mv=document.querySelector('meta[name="app-version"]');if(mv)mv.content='1.60-beta.102';document.querySelectorAll('.sub').forEach(function(el){el.textContent=el.textContent.replace(/v?1\.60 beta 28(\.\d+)?/g,'v'+VERSION291);});if(X63.isSimple()&&V63.itab==='wealth')V63.itab='cash';renderAll();}
+function finish291(){if(!DB)return setTimeout(finish291,30);prefDefaults291();ensureIds291();DB.meta.schemaVersion=SCHEMA291;if(window.experienceConfig){experienceConfig.version=VERSION291;experienceConfig.schemaVersion=SCHEMA291;}if(window.advancedCoupleConfig){advancedCoupleConfig.version=VERSION291;advancedCoupleConfig.schemaVersion=SCHEMA291;}save();document.title='v'+VERSION291+' · Couple Money Manager';var mv=document.querySelector('meta[name="app-version"]');if(mv)mv.content='1.60-beta.107';document.querySelectorAll('.sub').forEach(function(el){el.textContent=el.textContent.replace(/v?1\.60 beta 28(\.\d+)?/g,'v'+VERSION291);});if(X63.isSimple()&&V63.itab==='wealth')V63.itab='cash';renderAll();}
 setTimeout(finish291,0);
 window.CMM_VERSION=VERSION291;window.CMM_SCHEMA_VERSION=SCHEMA291;
 })();
@@ -20245,7 +20208,7 @@ function profCollabB33(){
   var out={joined:false,pending:false,local:false,nick:'',real:false,email:'',key:''};
   var I=(typeof HH!=='undefined'&&HH&&HH.info)||null;
   if(I){
-    var mem=(I.members||[]),inv=(I.invites||[]);
+    var mem=(I.members||[]),inv=(I.inviteHash?['']:[]);
     if(mem.length>=2){ /* a second member = the invitation was accepted */
       out.joined=true;
       var cu='';
@@ -22532,7 +22495,7 @@ function profCollab41(){
   var out={joined:false,pending:false,nick:'',email:'',local:false};
   var I=(typeof HH!=='undefined'&&HH&&HH.info)||null;
   if(I){
-    var mem=(I.members||[]),inv=(I.invites||[]);
+    var mem=(I.members||[]),inv=(I.inviteHash?['']:[]);
     if(mem.length>=2){
       out.joined=true;
       var cu='';mem.forEach(function(u){if(u&&u!==I.owner)cu=u;});
@@ -24527,12 +24490,20 @@ var APER={mode:'month',off:0};
 function aRange(){return perRange(APER.off,APER.mode);}
 function inPer(d,r){return !!d&&d>=r.s&&d<=r.e;}
 function toolbar(filters,withSearch,a,extra){
-  var k=X.act.k;
-  var h='<div class="a48tb"><div class="a48seg" role="tablist">'+filters.map(function(x){return '<button type="button" role="tab" aria-selected="'+(k===x[0])+'" class="'+(k===x[0]?'on':'')+'" data-act="a48af" data-k="'+x[0]+'">'+x[1]+'</button>';}).join('')+'</div>'
-    +(withSearch?'<button type="button" class="a48ib'+(X.act.search?' on':'')+'" data-act="a48as" aria-label="Search">'+ico('search')+'</button>':'')+'</div>';
-  if(a){h+=perBarHTML({r:aRange(),mode:APER.mode,cur:APER.off>=0,sub:capW(APER.mode),off:'a89off',pick:'a89per',cls:'a89per'});
-    if(extra)h+='<div class="a48tb a48tb2 a89x"><span class="sp"></span>'+extra+'</div>';}
-  if(withSearch&&X.act.search)h+='<div class="a48srch"><input class="fin" id="a48q" placeholder="Search note, category…" value="'+esc(X.act.q)+'" autocomplete="off"></div>';
+  /* beta 107: one sticky bar (‹ period ›  +  type menu). Search and Import statement moved to the title row
+     (see pageHTML). The search box opens above the bar. `extra` is no longer shown here. */
+  var k=X.act.k,cur=filters.filter(function(x){return x[0]===k;})[0]||filters[0];
+  X.act.flt=filters;
+  var h='';
+  if(withSearch&&X.act.search)h+='<div class="a107s"><span class="a107si">'+ico('search')+'</span><input class="fin" id="a48q" placeholder="Search note, category…" value="'+esc(X.act.q)+'" autocomplete="off"><button type="button" class="a107sx" data-act="a48as" aria-label="Close search">'+ico('x')+'</button></div>';
+  var per;
+  if(a){var r=aRange(),c=APER.off>=0;
+    per='<div class="a107p"><button type="button" class="a107a" data-act="a89off" data-d="-1" aria-label="Previous period">'+ico('chevleft')+'</button>'
+      +'<button type="button" class="a107m" data-act="a89per" aria-label="Change period"><b>'+esc(r.label)+'</b><span> · '+esc(capW(APER.mode))+' ▾</span></button>'
+      +'<button type="button" class="a107a" data-act="a89off" data-d="1" aria-label="Next period"'+(c?' disabled':'')+'>'+ico('chevright')+'</button></div>';}
+  else per='<div class="a107p a107pn"><b>All time</b></div>';
+  h+='<div class="card a107bar" id="a107bar">'+per
+    +'<button type="button" class="a107f'+(k!=='all'?' on':'')+'" data-act="a107tf" aria-haspopup="menu" aria-label="Show: '+cur[1].replace(/&amp;/g,'&')+'">'+cur[1]+' ▾</button></div>';
   return h;
 }
 function qMatch(x){var q=X.act.q.trim().toLowerCase();if(!q)return true;var t=x.t;return ((t.note||'')+' '+(t.category||'')+' '+(t.account||'')+' '+(t.to||'')).toLowerCase().indexOf(q)>=0;}
@@ -24641,6 +24612,8 @@ function pageHTML(){
   var a=a59(X.acc);if(!a)return '<div class="a48empty"><b>This account is no longer available</b></div>';
   var f=fam(a);
   var head='<div class="a48ph"><button type="button" class="a48bk" data-act="a48back" aria-label="Back">'+ico('back48')+'</button><div class="a48tt"><small>Accounts</small><b>'+esc(a.name)+'</b></div>'
+    +(f!=='bu'&&X.tab==='ac'&&(f==='bank'||f==='card')?'<button type="button" class="a48mo a107h'+(X.act.search?' on':'')+'" data-act="a48as" aria-label="Search">'+ico('search')+'</button>':'')
+    +(f!=='bu'&&X.tab==='ac'&&(f==='bank'||f==='card')&&canAdd59(a.name)?'<button type="button" class="a48mo a107h" data-act="stmfor" data-n="'+esc(a.name)+'" aria-label="Import statement">'+ico('i107imp')+'</button>':'')
     +(f==='bu'?'<span style="width:42px"></span>':'<button type="button" class="a48mo" data-act="a48menu" data-n="'+esc(a.name)+'" aria-label="More actions">'+ico('dots')+'</button>')+'</div>';
   if(f==='bu')return head+'<div class="a48body">'+buView(a)+'</div>';
   return head+'<div class="a48body">'+heroHTML(a,X.tab==='ac')+tabsHTML()+(X.tab==='ov'?overviewHTML(a):activityHTML(a))+'</div>';
@@ -24649,8 +24622,27 @@ function renderPage(keep){
   var p=page(),y=keep?p.scrollTop:0;
   p.innerHTML=priv(pageHTML);
   p.scrollTop=y;
+  a107top(p);
 }
+/* beta 107: the one bar sticks right under the title row, whatever the title row's height (text size, notch) */
+function a107top(p){try{var ph=p.querySelector('.a48ph');if(ph)p.style.setProperty('--a107hh',ph.offsetHeight+'px');}catch(e){}}
+window.addEventListener('resize',function(){var p=$('pageAcc48');if(p&&p.classList.contains('on'))a107top(p);});
 X.renderPage=renderPage;
+/* beta 107: Back on Activity returns to this account's Overview (top of the page) */
+function toOverview(){a107menuClose();X.tab='ov';X.act={k:'all',per:null,q:'',search:false};renderPage(false);var p=page();p.scrollTop=0;try{navSync();}catch(e){}}
+X.toOverview=toOverview;
+/* beta 107: the type menu (All / In / Out / Transfers …) under the bar */
+function a107menuClose(){var m=$('a107menu');if(!m)return false;m.remove();return true;}
+function a107menu(btn){
+  if(a107menuClose())return;
+  var p=page(),L=X.act.flt||[],r=btn.getBoundingClientRect(),pr=p.getBoundingClientRect();
+  var m=document.createElement('div');m.id='a107menu';m.className='a107menu';m.setAttribute('role','menu');
+  m.innerHTML=L.map(function(x){return '<button type="button" role="menuitemradio" aria-checked="'+(x[0]===X.act.k)+'" class="'+(x[0]===X.act.k?'on':'')+'" data-act="a107tp" data-k="'+x[0]+'">'+x[1]+'</button>';}).join('');
+  m.style.top=(r.bottom+6)+'px';m.style.right=Math.max(12,(window.innerWidth-r.right))+'px';
+  document.body.appendChild(m);
+}
+document.addEventListener('pointerdown',function(e){var m=$('a107menu');if(m&&!m.contains(e.target)&&!(e.target.closest&&e.target.closest('[data-act=a107tf]')))a107menuClose();},true);
+document.addEventListener('scroll',function(e){if(e.target&&e.target.id==='pageAcc48')a107menuClose();},true);
 function openPage(n){
   X.acc=n;X.tab='ov';X.det=false;X.act={k:'all',per:null,q:'',search:false};
   renderPage(false);
@@ -24658,7 +24650,7 @@ function openPage(n){
   try{navSync();}catch(e){}
   setTimeout(function(){var b=p.querySelector('.a48bk');if(b)try{b.focus({preventScroll:true});}catch(e){}},260);
 }
-function closePage(){var p=$('pageAcc48');if(p)p.classList.remove('on');X.acc='';try{navSync();}catch(e){}}
+function closePage(){a107menuClose();var p=$('pageAcc48');if(p)p.classList.remove('on');X.acc='';try{navSync();}catch(e){}}
 X.openPage=openPage;X.closePage=closePage;
 X.openEdit=function(n,plan){openEdit(n,plan);};
 X.openAdd=function(){X.sheet={kind:'add',step:1,type:null,f:{name:'',owner:me(),amt:'',vis:adv()?'me':'shared',pa:'add',more:{},moreOpen:false}};openMgr('a48add');};
@@ -24675,7 +24667,7 @@ var _nc48=navClose;
 navClose=function(){
   var higher=onEl('cmodal')||onEl('chmodal')||onEl('clrmodal')||onEl('mgrOvl')||onEl('ovl')||onEl('txSheet61')||!!(window.CALC&&CALC.open);
   try{if(window.HDR&&HDR.isOpen&&HDR.isOpen())higher=true;}catch(e){}
-  if(!higher&&onEl('pageAcc48')){closePage();return;}
+  if(!higher&&onEl('pageAcc48')){if(a107menuClose())return;if(X.tab==='ac'){toOverview();return;}closePage();return;}
   return _nc48.apply(this,arguments);
 };
 SCREEN.before('gotoView',900000112,{call:'apply',ret:true},function(){if(onEl('pageAcc48')){var p=$('pageAcc48');p.classList.remove('on');X.acc='';}});
@@ -25055,8 +25047,10 @@ SCREEN.on('openMgr',900000114);
 function openFromPage(fn){if(onEl('pageAcc48')){fn();}else fn();}
 ACT.on('b48-accounts',{
   'a48open':function(el){openPage(el.dataset.n);},
-  'a48back':function(){closePage();},
-  'a48tab':function(el){X.tab=el.dataset.t==='ac'?'ac':'ov';X.act={k:'all',per:null,q:'',search:false};renderPage(false);var p=page();var t=p.querySelector('.a48tabs');if(t&&X.tab==='ac'&&t.scrollIntoView)t.scrollIntoView({block:'start'});},
+  'a48back':function(){if(X.tab==='ac'){toOverview();return;}closePage();},
+  'a107tf':function(el){a107menu(el);},
+  'a107tp':function(el){a107menuClose();X.act.k=el.dataset.k;renderPage(true);},
+  'a48tab':function(el){a107menuClose();X.tab=el.dataset.t==='ac'?'ac':'ov';X.act={k:'all',per:null,q:'',search:false};renderPage(false);var p=page();var t=p.querySelector('.a48tabs');if(t&&X.tab==='ac'&&t.scrollIntoView)t.scrollIntoView({block:'start'});},
   'a48det':function(){X.det=!X.det;renderPage(true);},
   'a48af':function(el){X.act.k=el.dataset.k;renderPage(true);},
   'a48as':function(){X.act.search=!X.act.search;if(!X.act.search)X.act.q='';renderPage(true);if(X.act.search)setTimeout(function(){var i=$('a48q');if(i)i.focus();},30);},
@@ -26839,11 +26833,10 @@ function O(){var m=DB.meta;if(!m.o62||typeof m.o62!=='object')m.o62={};return m.
 B62.o=O;
 var S=B62.s={};  /* choices on screen (not yet saved) */
 function inv(){return !!(AU.invite||O().inv);}
-/* beta 80: the invitation link (?invite=email&from=name), kept until joined */
-function invLink(){var x=null;try{x=window.B79&&B79.invite;if(x&&x.email){localStorage.setItem('cmm80inv',JSON.stringify(x));return x;}x=JSON.parse(localStorage.getItem('cmm80inv')||'null');}catch(e){}return x&&x.email?x:null;}
+/* beta 103 (D-45): the invite link (?join=token&from=name), kept on this phone until joined */
+function invLink(){var x=null;try{x=window.B79&&B79.invite;if(x&&x.token){localStorage.setItem('cmm102join',JSON.stringify(x));return x;}x=JSON.parse(localStorage.getItem('cmm102join')||'null');}catch(e){}return x&&x.token?x:null;}
 B62.invLink=invLink;
 function invFrom(){var x=invLink();return (S.join&&S.join.owner)||(x&&x.from)||'Your partner';}
-function invEm(){var x=invLink();return x?String(x.email).trim().toLowerCase():'';}
 function path(){if(inv())return 'invitee';var u=usage();return (u==='solo'||u==='couple'||u==='adv')&&O().mode?u:'';}
 function hhAdv(){return inv()&&usage()==='adv';}
 function flow(){
@@ -26937,24 +26930,45 @@ R.account=function(){var p=path(),a=p==='adv',c=p==='couple',t=S.atype||'Bank',m
   if(a)h+='<label class="aul">Who can see it?</label><div class="segmini"><button type="button" class="'+(sp==='private'?'on':'')+'" data-act="b62sp" data-v="private">'+ico('lock')+' Only me</button><button type="button" class="'+(sp==='shared'?'on':'')+'" data-act="b62sp" data-v="shared">'+ico('users')+' Shared</button></div>'
     +note(sp==='private'?'Private: '+esc(P)+' cannot see this account, its balance or its everyday transactions. If you transfer from it to a shared account, split a bill from it, or it ends up owing '+esc(P)+' money, that one entry becomes visible to them, with its note and category — the account name stays hidden.':'Shared: both of you see this account and its transactions.',sp==='private'?'k':'');
   return h+foot('account',{skip:'Skip, add an account later'});};
-R.invite=function(){var a=path()==='adv',P=esc(Pn());
-  return h3('Invite '+P,a?Cap(P)+' will see <b>Shared</b> accounts, plus anything from your private space that is split, transferred to them, or owed between you.':Cap(P)+' will see every household account and can add transactions.')
+R.invite=function(){var a=path()==='adv',P=esc(Pn()),st=O().store;
+  var sees=a?Cap(P)+' will see <b>Shared</b> accounts, plus anything from your private space that is split, transferred to them, or owed between you.':Cap(P)+' will see every household account and can add transactions.';
+  if(st==='folder')return h3('Invite '+P,sees) /* the shared folder is shared with the partner's Google or Microsoft email */
     +'<label class="aul">Partner’s email</label><input class="fin" id="ob62Inv" type="email" autocapitalize="off" placeholder="partner@example.com" value="'+esc(S.inv||DB.meta.pendingInvite||'')+'">'
-    +note('Skip it if you like. “Invite '+P+'” stays on your first-steps list until it is done.','w')
-    +(FB&&FB.user?'':note('The invitation is sent once you are signed in to the cloud (open the app from its website).'))
-    +foot('invite',{skip:'I’ll do this later'});};
-R.join=function(){var J=S.join,P=esc(invFrom()),me=esc((FB&&FB.user&&FB.user.email)||(sessGet()||{}).email||''),ie=invEm();
+    +note('You share the sync folder with this email in the next step.')
+    +foot('invite',{skip:'I’ll do this later'});
+  if(st!=='cloud')return h3('Invite '+P+' later',sees)
+    +note('To use the app on two phones, turn on Couple Money Cloud in Data &amp; Sync. Then Add partner gives you an invite link to send '+P+'.')
+    +foot('invite',{label:'Continue'});
+  var L=INV102.link(false); /* beta 105: made only when the household owner taps Create invite link */
+  if(!L)return h3('Invite '+P,sees)
+    +'<button class="btn ob105mk" data-act="b105mk"'+(FB&&FB.user?'':' disabled')+'>'+ico('link')+' Create invite link</button>'
+    +note('You get a unique link to copy or share with '+P+' (WhatsApp or any chat app). '+Cap(P)+' signs in with any email.')
+    +(FB&&FB.user?'':note('Sign in to the cloud first to create the link.'))
+    +foot('invite',{label:'Continue',skip:'I’ll do this later'});
+  return h3('Invite '+P,sees)
+    +'<label class="aul">Invite link</label><div class="ob102link"><code id="ob102Link">'+esc(L)+'</code></div>'
+    +'<div class="btnrow ob102btns"><button class="btn ghost" data-act="ap79copylink">'+ico('copy')+' Copy link</button><button class="btn ghost" data-act="ap79sharego">'+ico('send')+' Share link</button></div>'
+    +note('Anyone with this link can join your household, so send it only to '+P+'. It works once.')
+    +(FB&&FB.user?'':note('The link works once you are signed in to the cloud.'))
+    +foot('invite',{label:'Continue',skip:'I’ll do this later'});};
+R.join=function(){var J=S.join,P=esc(invFrom()),me=esc((FB&&FB.user&&FB.user.email)||(sessGet()||{}).email||'');
   if(!J||J.loading){if(!J)lookUp();return h3('Looking for your invitation…','')+'<div class="ob62spin"></div>';}
   if(!J.id){
     if(J.why)return h3('We can’t check your invitation',esc(J.why))+'<div class="ob62foot ob80col"><button class="btn" data-act="b62look">Look again</button></div><button class="aulink" data-act="b80solo">Set up on my own for now — I’ll join later</button>';
-    var diff=ie&&ie!==String(me).toLowerCase();
-    return h3('We can’t find an invitation','')
-      +note(ico('warn')+' There’s no invitation for <b>'+me+'</b>.','w')
-      +'<div class="ob80blk"><h4>Try this</h4><ul>'
-      +(diff?'<li>'+ico('mail')+'<span>'+P+' invited <b>'+esc(ie)+'</b>. Sign in with that email.</span></li>':'<li>'+ico('mail')+'<span>Sign in with the email your partner invited.</span></li>')
-      +'<li>'+ico('send')+'<span>Or ask '+(ie?P:'your partner')+' to invite <b>'+me+'</b> instead.</span></li></ul></div>'
+    var Q=esc(J.owner||invFrom());
+    if(J.verify)return h3('Verify your email first','')
+      +note(ico('mail')+' We sent a link to <b>'+me+'</b>. Open it, then come back and tap Look again.','w')
+      +'<div class="ob62foot ob80col"><button class="btn" data-act="b62look">Look again</button></div><button class="aulink" data-act="b80solo">Set up on my own for now — I’ll join later</button>';
+    var why=J.none?'Open the invite link your partner sent you. It opens this app with the invitation.'
+      :J.state==='full'?Q+'’s household already has two people.'
+      :J.state==='own'?'This is your own invite link. Send it to your partner instead.'
+      :J.state==='ended'?Q+'’s household has ended.'
+      :'This invite link no longer works. It may have been used already, or '+Q+' cancelled it.';
+    return h3(J.none?'Open your invite link':'We can’t use this invite link','')
+      +note(ico('warn')+' '+why,'w')
+      +(J.state==='own'?'':'<div class="ob80blk"><h4>Try this</h4><ul><li>'+ico('send')+'<span>Ask '+(J.none?'your partner':Q)+' to send you a new invite link, then open it on this phone.</span></li></ul></div>')
       +(AU.err?'<div class="auerr">'+esc(AU.err)+'</div>':'')
-      +'<div class="ob62foot ob80col">'+(diff?'<button class="btn" data-act="b80useinv">Use '+esc(ie)+'</button>':'')+'<button class="btn'+(diff?' ghost':'')+'" data-act="b62look">Look again</button></div>'
+      +'<div class="ob62foot ob80col"><button class="btn" data-act="b62look">Look again</button></div>'
       +'<button class="aulink" data-act="b80solo">Set up on my own for now — I’ll join later</button>';}
   var a=J.mode==='adv';P=esc(J.owner||invFrom());
   return h3('Join '+P+'’s household','The mode is read from the household. You aren’t asked again.')
@@ -27006,16 +27020,16 @@ R.ready=function(){var p=path(),full=pref().experienceLevel==='full',a=payload()
   h+='<div class="aul" style="margin-top:16px">Your first steps</div><p class="ob62d" style="margin:2px 0 6px;font-size:13px">They stay at the top of Insights until done.</p>'+L.map(function(x){return '<div class="ob62ck"><i></i><span><b>'+esc(x.t)+'</b><small>'+esc(x.d)+'</small></span></div>';}).join('');
   return h+foot('ready',{label:'Go to Insights'});};
 /* beta 80: step 1 for the invitee — email locked to the invited one (mockup) */
-function invSignup(){var ie=invEm(),P=esc(invFrom()),lock=!!ie&&!S.unlock,ev=S.em!=null?S.em:ie;
-  return bar('signup')+h3('Sign in to join',ie?'Use the email '+P+' invited: <b>'+esc(ie)+'</b>.':'Use the email address your partner invited.')
+function invSignup(){var P=esc(invFrom()),ev=S.em!=null?S.em:'';
+  return bar('signup')+h3('Sign in to join',(invLink()?P+' sent you an invite link. ':'')+'Create an account or sign in. Any email works.')
     +(fbOnSite()?'<button class="btn ghost oabtn" data-act="auoauth" data-k="google"'+(AU.busy?' disabled':'')+'>'+OAUTH_ICO.google+' Continue with Google</button><div class="audiv"><span>or use your email</span></div>':'')
-    +'<label class="aul" for="auEmail">Email</label><input class="fin" id="auEmail" type="email" inputmode="email" autocomplete="email" autocapitalize="off" value="'+esc(ev)+'"'+(lock?' readonly style="opacity:.85"':'')+'>'
-    +(ie?(lock?'<div class="ob80ex">Filled in from '+P+'’s invitation. <button class="aulink ob80in" data-act="b80unlock">Use a different email</button></div>':note(ico('warn')+' This is not the invited email. You can still try.','w')):'')
+    +'<label class="aul" for="auEmail">Email</label><input class="fin" id="auEmail" type="email" inputmode="email" autocomplete="email" autocapitalize="off" value="'+esc(ev)+'">'
     +'<label class="aul" for="auPw">Password</label><input class="fin" id="auPw" type="password" autocomplete="new-password" placeholder="At least 6 characters"><input type="hidden" id="auPw2">'
     +(AU.err?'<div class="auerr">'+esc(AU.err)+'</div>':'')
     +'<div class="ob62foot ob80col"><button class="btn" data-act="ausubmit"'+(AU.busy?' disabled':'')+'>'+(AU.busy?'Please wait…':'Create account and continue')+'</button><button class="btn ghost" data-act="aumode" data-m="login">I already have an account</button></div>';}
 function welcome(){var x=invLink();
-  if(x&&x.from)return '<div class="ob62wel">'+h3('Your money, on your own or together','Track spending, accounts and goals. Share only what you decide to share.')+'</div>'
+  if(x){x={token:x.token,from:x.from||'Your partner'};}
+  if(x)return '<div class="ob62wel">'+h3('Your money, on your own or together','Track spending, accounts and goals. Share only what you decide to share.')+'</div>'
     +'<div class="ob80chip">'+ico('mail')+' '+esc(x.from)+' invited you</div>'
     +card('auwel','inv','mail','I have an invite <span class="ob80ok">From '+esc(x.from)+'</span>','Join the household '+esc(x.from)+' created.',true)
     +card('auwel','go','user','Start new','Set up on your own, or with a different partner.',false)
@@ -27027,14 +27041,18 @@ function welcome(){var x=invLink();
 }
 function lookUp(){
   S.join={loading:true};
-  if(!(FB&&FB.user&&fbOnSite())){S.join={id:'',why:'Joining needs the cloud: open the app from its website and sign in with the email your partner invited.'};setTimeout(function(){try{if(AU.mode==='join')renderAuth();}catch(e){}},0);return;}
-  var em=(FB.user.email||'').toLowerCase();
-  fsMods().then(function(F){return F.getDocs(F.query(F.collection(FB.db,'households'),F.where('invites','array-contains',em)));}).then(function(qs){
-    var d=qs.docs[0];if(!d){S.join={id:''};return;}
-    var x=d.data(),own=(x.memberProfiles||{})[x.owner]||{};
-    S.join={id:d.id,mode:x.mode==='adv'?'adv':'couple',owner:own.displayName||String(x.ownerEmail||'').split('@')[0]||''};
-    DB.meta.usage=S.join.mode;save();
-  }).catch(function(e){n62(e,'b62:look');S.join={id:'',why:'Your invitation could not be checked right now.'};}).then(function(){try{if(AU.mode==='join')renderAuth();}catch(e){}});
+  var rr=function(){try{if(AU.mode==='join')renderAuth();}catch(e){}},x=invLink(),cu=FB&&FB.auth&&FB.auth.currentUser;
+  if(!(FB&&FB.user&&fbOnSite())){S.join={id:'',why:'Joining needs the cloud: open the invite link from your partner and sign in.'};setTimeout(rr,0);return;}
+  if(!(x&&x.token)){S.join={id:'',none:1};setTimeout(rr,0);return;}
+  (cu&&cu.reload?cu.reload().then(function(){return cu;},function(){return cu;}):Promise.resolve(cu)).then(function(u){
+    if(u&&u.emailVerified===false){S.join={id:'',verify:1};return;}
+    return Promise.resolve(u&&u.getIdToken?u.getIdToken(true):null).catch(function(){}).then(function(){return backend291('inviteInfo',{token:x.token});}) /* fresh token: joining checks the verified email */.then(function(r){var d=r&&r.data||{};
+      if(!d.found){S.join={id:'',gone:1};return;}
+      if(d.state!=='ok'&&d.state!=='member'){S.join={id:'',state:d.state,owner:d.owner||''};return;}
+      S.join={id:x.token,mode:d.mode==='adv'?'adv':'couple',owner:d.owner||x.from||''};
+      DB.meta.usage=S.join.mode;save();
+    });
+  }).catch(function(e){n62(e,'b62:look');S.join={id:'',why:'Your invitation could not be checked right now.'};}).then(rr);
 }
 /* the outermost renderAuth step: the whole flow after sign-in, plus the welcome copy and the step bar */
 SCREEN.around('renderAuth',990000062,function(prev){return function(){
@@ -27055,7 +27073,6 @@ SCREEN.around('renderAuth',990000062,function(prev){return function(){
   if(AU.mode==='signup'&&!sessGet()&&inv()){try{if(s)s.textContent='';b.innerHTML=invSignup();return;}catch(e){n62(e,'b80:signup');}}
   prev.apply(this,arguments);
   try{if((AU.mode==='signup'||AU.mode==='login')&&!sessGet()&&AU.mode==='signup'){b.insertAdjacentHTML('afterbegin',bar('signup'));}}catch(e){n62(e,'b62:bar');}
-  try{if(AU.mode==='login'&&inv()&&invEm()){var le=$('auEmail');if(le&&!le.value)le.value=invEm();}}catch(e){}
 };});
 SCREEN.on('renderAuth',990000062);
 /* keep what is typed when a screen re-renders */
@@ -27113,16 +27130,17 @@ var SAVE={
     if(p==='couple'){var ow=S.owner||'me',pt=(DB.meta.profile||{}).partner||'';if(ow==='partner'&&pt)acc.owner=pt;else if(ow==='joint'&&pt)acc.owner=me+' & '+pt;}
     else if(p==='solo'||(p==='adv'&&(S.space||'private')==='private')){acc.vis='me';acc.pvby=me;}
     DB.accounts.push(acc);o.account=1;o.acc=n;touch();go();},
-  invite:function(skip){keep();
-    if(!skip){var e=String(S.inv||'').trim().toLowerCase();
+  invite:function(skip){keep();var st=O().store;
+    if(st==='folder'&&!skip){var e=String(S.inv||'').trim().toLowerCase(); /* folder: the email the sync folder is shared with */
       if(!emailOK(e))return bad('Enter your partner’s email address.');
       if(e===((sessGet()||{}).email||''))return bad('That is your own email address.');
-      DB.meta.pendingInvite=e;toast('Invitation saved for '+e+(FB&&FB.user?'':'. It is sent once you are signed in to the cloud.'));}
+      DB.meta.pendingInvite=e;}
+    if(st==='cloud'){if(skip)INV102.cancel();else if(INV102.token(false))INV102.publish().catch(function(e){n62(e,'b62:inv');});}
     DB.meta.inviteAsked=1;O().invite=1;save62();go();},
   join:function(){var J=S.join||{},v=m59();
     DB.meta.usage=J.mode||usage()||'couple';v.storage='household';DB.meta.storageAsked=1;DB.meta.syncChoice='yes';DB.meta.cloudSyncOn=true;
     O().join=1;O().mode=1;O().storage=1;save62();
-    if(J.id&&FB&&FB.user){V56.joined=Date.now();try{hhJoin(J.id);try{localStorage.removeItem('cmm80inv');}catch(x){}}catch(e){n62(e,'b62:join');}}
+    if(J.id&&FB&&FB.user){V56.joined=Date.now();try{hhJoin(J.id);}catch(e){n62(e,'b62:join');}}
     go();},
   space:function(){O().space=1;save62();go();},
   in:function(){O().in=1;save62();go();},
@@ -27171,9 +27189,8 @@ ACT.on('b62-onboarding',{
   b62need:function(el){S.q1=S.q1||{};S.q1[el.dataset.v]=!S.q1[el.dataset.v];go();}, /* beta 86: multi-select on the needs step */
   b62q3:function(el){S.q3=el.dataset.v;go();}, /* beta 86: include property/vehicle/investment values in the overall position? */
   b62look:function(){S.join=null;go();},
+  b105mk:function(el){if(!(FB&&FB.user))return;el.disabled=true;INV102.link(true);INV102.publish().then(function(){go();},function(e){AU.err=(e&&e.message)||'The invite link could not be created. Try again.';INV102.cancel();go();});},
   ausubmit:function(el,next){var a=$('auPw2');if(a&&a.type==='hidden')a.value=($('auPw')||{}).value||'';return next(el);},
-  b80unlock:function(){S.unlock=1;S.em='';go();setTimeout(function(){var e=$('auEmail');if(e)e.focus();},0);},
-  b80useinv:function(){S.join=null;S.unlock=0;S.em=null;sessSet(null);try{if(FB.user)fbSignOut();}catch(e){}AU.mode='signup';AU.err='';renderAuth();},
   b80solo:function(){O().inv=0;AU.invite=0;S.join=null;O().join=0;DB.meta.usage='';save62();AU.err='';toast('No problem. Join later from Settings › Modes when the invitation is ready.');go();},
   b62next:function(){var k=AU.mode;if(SAVE[k])SAVE[k](false);},
   b62skip:function(){var k=AU.mode;if(SAVE[k])SAVE[k](true);},
@@ -27556,10 +27573,18 @@ function joined(){
   return false;
 }
 function withPartner(){return mode()!=='solo'&&joined();}
+/* the folder partner's email (Google Drive / OneDrive share); Couple Money Cloud invites by link (D-45) */
 function invitedEmail(){
-  if(hhOn()&&!joined())return (HH.info.invites||[])[0]||'';
+  if(hhOn()||joined())return '';
   var p=pdhP();if(p.ref&&p.sharedAt&&!p.acceptedAt)return p.email||'';
-  return (!joined()&&DB.meta.pendingInvite)||'';
+  return '';
+}
+/* an open invitation: the invite link (cloud) or the shared folder */
+function invOpen(){
+  if(joined())return false;
+  if(hhOn())return !!(HH.info.inviteHash||DB.meta.cloudInvite);
+  if(stKind()==='folder')return !!invitedEmail();
+  return !!DB.meta.cloudInvite;
 }
 function hoName(){return isCollab()?(PN()||'Your partner'):(ME()||'You');}
 function coName(){return isCollab()?(ME()||'You'):(PN()||'Your partner');}
@@ -27697,7 +27722,7 @@ function banner(){
 }
 function householdCard(){
   if(mode()==='solo')return '';
-  var youHO=!isCollab(),ho=hoName(),co=coName(),kn=known()||!youHO,j=joined(),inv=invitedEmail();
+  var youHO=!isCollab(),ho=hoName(),co=coName(),kn=known()||!youHO,j=joined(),inv=invOpen();
   function av(n){return '<span class="k-av">'+E(initial(n))+'</span>';}
   function row(n,r,you,extra){return '<div class="k-hhr">'+av(n)+'<span class="k-n">'+E(n)+(you?' (you)':'')+'<small>'+r+'</small></span>'+(extra||'')+'</div>';}
   var coRow;
@@ -28168,8 +28193,8 @@ function cloudHero(){
   if(!hhOn())return {cls:'warn',ic:'refresh',t:'Connecting…',s:'Connecting to Couple Money Cloud.'};
   var ago=DB.meta.cloudPushedAt?'Updated '+fmtAgo(DB.meta.cloudPushedAt)+'.':'Waiting for the first sync.';
   if(solo())return {cls:'ok',ic:'check',t:'Synced across your phones',s:ago,btn:{l:'Sync now',a:'d79syncnow',ghost:1}};
-  if(o&&!joined()){var inv=invitedEmail(),kn=known();
-    return {cls:'warn',ic:'clock',t:'Waiting for '+P+' to join',s:inv?'Invitation saved for '+E(inv)+'. '+P+' signs in with that email and joins.':kn?'Invite '+P+' so you share one household.':'Add your partner and invite them.',btn:{l:inv?'Manage invite':kn?'Invite '+P:'Add partner',a:'ap79open',v:inv?'manage':kn?'invite':'cloud'}};}
+  if(o&&!joined()){var inv=invOpen(),kn=known();
+    return {cls:'warn',ic:'clock',t:'Waiting for '+P+' to join',s:inv?'Invite link ready. '+P+' opens it, signs in and joins.':kn?'Invite '+P+' so you share one household.':'Add your partner and invite them.',btn:{l:inv?'Manage invite':kn?'Invite '+P:'Add partner',a:'ap79open',v:inv?'manage':kn?'invite':'cloud'}};}
   return {cls:'ok',ic:'check',t:'Synced with '+P,s:ago,btn:{l:'Sync now',a:'d79syncnow',ghost:1}};
 }
 
@@ -28314,11 +28339,11 @@ function cloudPage(){
     +(o?'<div class="k-rw"><span class="k-rt">Live sync<small>Keeps '+(sl?'your phones':'both phones')+' up to date</small></span><button class="k-tg'+(DB.meta.cloudSyncOn?' k-on':'')+'" data-act="d79cloudtg" role="switch" aria-checked="'+!!DB.meta.cloudSyncOn+'" aria-label="Live sync"></button></div>'
       :'<div class="k-rw k-kv"><span class="k-rt">Live sync<b>'+(pausedByOwner()?'Paused':'On')+'</b></span><span class="k-st k-off">'+managed()+'</span></div>')+'</div>';
   if(!sl){
-    var ho=hoName(),co=coName(),inv=invitedEmail(),kn=known();
+    var ho=hoName(),co=coName(),inv=invOpen(),ie=invitedEmail(),kn=known();
     function av(n,g){return '<span class="k-av'+(g?' k-ghost':'')+'">'+(g?'+':E(initial(n)))+'</span>';}
     var coRow;
     if(joined()||!o)coRow='<div class="k-rw">'+av(co)+'<span class="k-rt">'+E(co)+(o?'':' (you)')+'<small>Collaborator · joined</small></span>'+ic('check','g')+'</div>';
-    else if(inv)coRow='<div class="k-rw">'+av(co)+'<span class="k-rt">'+E(co)+' · '+E(inv)+'<small>Invited · waiting to join</small></span><button class="k-mini" data-act="ap79open" data-e="manage">Manage</button></div>';
+    else if(inv)coRow='<div class="k-rw">'+av(co)+'<span class="k-rt">'+E(co)+(ie?' · '+E(ie):'')+'<small>Invited · waiting to join</small></span><button class="k-mini" data-act="ap79open" data-e="manage">Manage</button></div>';
     else if(!kn)coRow='<div class="k-rw">'+av('',1)+'<span class="k-rt">Your partner<small>Not added yet</small></span><button class="k-mini k-fill" data-act="ap79open" data-e="cloud">Add partner</button></div>';
     else coRow='<div class="k-rw">'+av(co)+'<span class="k-rt">'+E(co)+'<small>Not invited yet</small></span><button class="k-mini k-fill" data-act="ap79open" data-e="invite">Invite</button></div>';
     b+='<div class="k-lbl">Household</div><div class="k-card"><div class="k-rw">'+av(ho)+'<span class="k-rt">'+E(ho)+(o?' (you)':'')+'<small>Household owner</small></span>'+ic('check','g')+'</div>'+coRow+'</div>';
@@ -28625,8 +28650,8 @@ function toCloud(){
   var v=m59(),from=v.storage||'device';
   try{backupSnap('pre-storage-switch');}catch(e){}
   (v.log=v.log||[]).unshift({at:Date.now(),from:from,to:'household'});v.log=v.log.slice(0,20);
-  if(from==='pdh'){var pe=pdhP().email;if(pe&&!solo()&&!joinedCloudBefore())DB.meta.pendingInvite=pe;
-    if(PX().setRec&&withPartner())PX().setRec({sync:{to:'household',at:Date.now(),byName:ME()}}).catch(function(e){n79(e,'b79:recsync');});}
+  if(from==='pdh'&&PX().setRec&&withPartner()){var jt=(!solo()&&!joinedCloudBefore())?INV102.token(true):''; /* D-45: the partner's phone joins with this link token */
+    PX().setRec({sync:{to:'household',at:Date.now(),byName:ME(),join:jt}}).catch(function(e){n79(e,'b79:recsync');});}
   v.storage='household';DB.meta.cloudSyncOn=true;DB.meta.syncChoice='yes';save();touch();
   try{hhStart();}catch(e){n79(e,'b79:hhstart2');}
   try{paintStatus59();renderSettings();}catch(e){}
@@ -28822,24 +28847,23 @@ ACT.on('b79-data',{
 /* =====================================================================
    3 · ADD PARTNER (full-screen steps for the household owner)
    ===================================================================== */
-var AP={open:false,entry:'household',step:'name',name:'',email:'',nameErr:'',emailErr:'',fromSwitch:false,joined:null};
+var AP={open:false,entry:'household',step:'name',name:'',nameErr:'',linkErr:'',making:false,fromSwitch:false,joined:null};
 B79.AP=AP;
 function apHost(){var h=$('ap79');if(!h){h=document.createElement('div');h.id='ap79';h.className='m79';h.setAttribute('role','dialog');h.setAttribute('aria-modal','true');document.body.appendChild(h);}return h;}
 function apAfterName(){if(mode()!=='solo'&&stKind()==='device')return 'method';if(stKind()==='folder')return 'folder';return 'email';}
 function apOpen(entry){
-  AP.entry=entry||'household';AP.fromSwitch=entry==='switch';AP.nameErr='';AP.emailErr='';AP.joined=null;
+  AP.entry=entry||'household';AP.fromSwitch=entry==='switch';AP.nameErr='';AP.linkErr='';AP.joined=null;
   if(entry==='manage')AP.step='sent';
   else AP.step=known()?apAfterName():'name';
-  if(AP.step==='email'&&invitedEmail()&&entry!=='invite')AP.step='sent';
-  AP.name=PN()||'';AP.email=invitedEmail()||DB.meta.pendingInvite||'';
+  if(AP.step==='email'&&invOpen()&&entry!=='invite')AP.step='sent';
+  AP.name=PN()||'';
   AP.open=true;closeAll();apPaint();
 }
 function apClose(quiet){AP.open=false;var h=$('ap79');if(h){h.classList.remove('on');h.innerHTML='';}try{navSync();}catch(e){}if(!quiet)repaint();}
 function apBack(){
   var s=AP.step;
   if(s==='method')AP.step='name';
-  else if(s==='email')AP.step=(mode()!=='solo'&&stKind()==='device'&&!signedIn())?'method':'name';
-  else if(s==='sent')AP.step='email';
+  else if(s==='email'||s==='sent')AP.step=(mode()!=='solo'&&stKind()==='device'&&!signedIn())?'method':'name';
   else if(s==='folder')AP.step='method';
   else{apClose();return;}
   if(AP.step==='name'&&known()&&AP.entry!=='household'&&AP.entry!=='switch'&&AP.entry!=='profile'){apClose();return;}
@@ -28865,37 +28889,35 @@ function stepMethod(){
     +'<button class="k-opt k-on" data-act="ap79method" data-v="cloud"><span class="k-oi">'+ic('cloud')+'</span><span style="flex:1"><b>Couple Money Cloud <span class="k-st k-ok">Suggested</span></b><small>Send '+P+' an invite link. Nothing else to set up.</small></span></button>'
     +'<button class="k-opt" data-act="ap79method" data-v="folder"><span class="k-oi">'+ic('folder')+'</span><span style="flex:1"><b>Google Drive or OneDrive</b><small>An encrypted folder in your own Google Drive or OneDrive. You share it with '+P+'.</small></span></button></div>';
 }
+/* step 3 before the link exists: sign in first (the link needs Couple Money Cloud); the link is made only when the household owner taps Create invite link (beta 105) */
 function stepEmail(){
-  var P=E(OTH()),off=offline(),sg=signedIn();
+  var P=E(OTH()),sg=signedIn();
   return fh(2)+'<div class="k-scr k-fl" id="ap79scr"><h2 class="k-ft">Invite '+P+'</h2><p class="k-fd">'+seesCopy()+'</p>'
-    +(!sg?'<div class="k-card k-pad" style="margin-bottom:12px"><div class="k-hero"><span class="k-hi">'+ic('cloud')+'</span><span><b>Sign in to send invitations</b><small>It also keeps your own phones in sync. Works when the app is opened from its website.</small></span></div>'
+    +(!sg?'<div class="k-card k-pad" style="margin-bottom:12px"><div class="k-hero"><span class="k-hi">'+ic('cloud')+'</span><span><b>Sign in to get the invite link</b><small>It also keeps your own phones in sync. Works when the app is opened from its website.</small></span></div>'
       +'<div class="k-btnrow"><button class="k-btn k-ghost" data-act="ap79google"><b style="color:#4285f4">G</b> Google</button><button class="k-btn k-ghost" data-act="ap79emailsign">'+ic('mail')+' Email</button></div></div>'
       :'<div class="k-signed">'+ic('check','g')+' Signed in as '+E(myEmail())+'</div>')
-    +'<label class="k-fl3" for="ap79Email">'+P+'’s email</label><input class="k-inp" id="ap79Email" data-ap="email" type="email" value="'+E(AP.email)+'" placeholder="partner@example.com" autocapitalize="off"'+(sg?'':' disabled')+'>'
-    +'<div class="k-expl" style="margin:-4px 2px 10px">The email '+P+' will sign in with. They must use exactly this one.</div>'+errBox(AP.emailErr)
-    +(off?warnbox('<b>You’re offline.</b> The invitation is saved and sent when you’re back online.'):'')
-    +note('info','If '+P+' signs up with an email and password, they verify that email first.')+'</div>'
-    +ff('<button class="k-btn" data-act="ap79send"'+(sg?'':' disabled')+'>'+ic('link')+' '+(off?'Save invitation':'Create invite link')+'</button><button class="k-btn k-ghost" data-act="ap79later">Invite later</button>');
+    +errBox(AP.linkErr)
+    +note('info','When you’re ready, tap Create invite link. You get a unique link to copy or share with '+P+' (WhatsApp or any chat app). '+P+' signs in with any email.')+'</div>'
+    +ff((sg?'<button class="k-btn" data-act="ap79send"'+(AP.making?' disabled':'')+'>'+ic('link')+' '+(AP.making?'Creating…':AP.linkErr?'Try again':'Create invite link')+'</button>':'')+'<button class="k-btn k-ghost" data-act="ap79later">Invite later</button>');
 }
-function hhCodeTxt(){return HH.id||'';}
-/* beta 102: no invitation email (D-44). The invite link is shown at once, to copy or share (WhatsApp etc.) */
-function inviteLink(){var em=invitedEmail()||AP.email;return location.origin+location.pathname+'?invite='+encodeURIComponent(em)+'&from='+encodeURIComponent(ME()||'');}
+/* beta 103 (D-45): the invite link is shown at once, to copy or share (WhatsApp etc.). No email, no household code. */
+function inviteLink(){try{return INV102.link(false);}catch(e){return '';}}
 function stepSent(){
-  var P=E(OTH()),em=E(invitedEmail()||AP.email),pend=!!DB.meta.pendingInvite&&!hhOn(),code=hhCodeTxt(),solo=mode()==='solo';
+  var P=E(OTH()),pend=!hhOn(),solo=mode()==='solo',L=inviteLink();
   return fh(3)+'<div class="k-scr k-fl" id="ap79scr">'
-    +'<div class="k-hero k-'+(pend?'warn':'ok')+'" role="status"><span class="k-hi">'+ic(pend?'clock':'check')+'</span><span><b>'+(pend?'Invitation saved':'Invite link ready for '+P)+'</b><small>'+(pend?'The link works once you’re back online. ':'')+(solo?'':'Send '+P+' this link. ')+'They sign in with <span style="font-weight:800;color:var(--ink)">'+em+'</span>.</small></span></div>'
-    +(solo?'':'<div class="k-card k-pad" style="margin-top:14px"><div class="k-lbl">Invite link</div><div class="k-codebox k-link"><code id="ap79Link">'+E(inviteLink())+'</code><button class="k-mini" data-act="ap79copylink">'+ic('copy')+' Copy</button></div></div>')
+    +'<div class="k-hero k-'+(pend?'warn':'ok')+'" role="status"><span class="k-hi">'+ic(pend?'clock':'check')+'</span><span><b>'+(pend?'Invitation saved':'Invite link ready for '+P)+'</b><small>'+(pend?'The link works once you’re back online. ':'')+(solo?'':'Copy it or share it with '+P+'. ')+'Anyone with this link can join your household, so send it only to '+P+'.</small></span></div>'
+    +(solo?'':(L?'<div class="k-card k-pad" style="margin-top:14px"><div class="k-lbl">Invite link</div><div class="k-codebox k-link"><code id="ap79Link">'+E(L)+'</code><button class="k-mini" data-act="ap79copylink">'+ic('copy')+' Copy</button></div></div>'
+      :'<div class="k-card k-pad" style="margin-top:14px"><div class="k-lbl">Invite link</div><p class="k-fd" style="margin:4px 0 8px">This link was made on your other phone. Make a new one here; the old link stops working.</p><button class="k-btn k-ghost" data-act="ap79newlink">'+ic('link')+' New link</button></div>'))
     +'<div class="k-card" style="margin-top:14px"><div class="k-lbl">What '+P+' does</div>'
     +'<div class="k-stp"><span class="k-num">1</span><div class="k-sb2"><b>Open the invite link<span></span></b><p>Couple Money Manager opens on <b>I have an invite</b>.</p></div></div>'
-    +'<div class="k-stp"><span class="k-num">2</span><div class="k-sb2"><b>Sign in with '+em+'<span></span></b><p>Google or email and password.</p></div></div>'
+    +'<div class="k-stp"><span class="k-num">2</span><div class="k-sb2"><b>Sign in or create an account<span></span></b><p>Google, or any email and password.</p></div></div>'
     +'<div class="k-stp"><span class="k-num">3</span><div class="k-sb2"><b>Tap Join household<span></span></b><p>You then choose what '+P+' sees.</p></div></div></div>'
-    +note('clock','The invitation stays open until you cancel it.','margin-top:10px')
+    +note('clock','The link works once. It stays open until '+P+' joins or you cancel it.','margin-top:10px')
     +'<details class="k-card k-det" style="margin-top:8px"><summary>If '+P+' can’t join <span>'+ic('chevdown')+'</span></summary><div class="k-dd">'
-    +'<div>'+ic('mail')+'<span>The email must match exactly. Check for typos or a different address.</span></div>'
     +'<div>'+ic('key')+'<span>Email sign-ups verify their email first. After that, tap <b>Look again</b>.</span></div>'
-    +(code?'<div>'+ic('link')+'<span>Fallback: Couple Money Cloud → Join with a code. Household code <b>'+E(code)+'</b>.</span></div>':'')+'</div></details>'
-    +'<div style="display:flex;gap:14px;margin:12px 2px 4px"><button class="k-lk" data-act="ap79change">Change email</button><button class="k-lk" style="color:var(--exp)" data-act="ap79cancelask">Cancel invitation</button></div></div>'
-    +ff((solo?'':'<button class="k-btn" data-act="ap79sharego">'+ic('send')+' Share link</button>')+'<button class="k-btn k-ghost" data-act="ap79share">Choose what '+P+' sees</button><button class="k-btn k-ghost" data-act="ap79done">Done</button>');
+    +'<div>'+ic('link')+'<span>Link not working? Cancel the invitation, then invite again for a new link.</span></div></div></details>'
+    +'<div style="display:flex;gap:14px;margin:12px 2px 4px"><button class="k-lk" style="color:var(--exp)" data-act="ap79cancelask">Cancel invitation</button></div></div>'
+    +ff((solo||!L?'':'<button class="k-btn" data-act="ap79sharego">'+ic('send')+' Share link</button>')+'<button class="k-btn k-ghost" data-act="ap79share">Choose what '+P+' sees</button><button class="k-btn k-ghost" data-act="ap79done">Done</button>');
 }
 function stepFolder(){
   var P=E(OTH());
@@ -28914,6 +28936,12 @@ function stepJoined(){
   return fh(3)+'<div class="k-scr k-fl" id="ap79scr"><div class="k-hero k-ok" role="status"><span class="k-hi">'+ic('users')+'</span><span><b>'+P+' joined your household</b><small>'+(mode()==='adv'?'They see Shared accounts only.':'They see every household account.')+' Nothing is shared until you choose.</small></span></div><div style="margin-top:12px">'+body+'</div></div>'
     +ff('<button class="k-btn" data-act="ap79share">'+ic('users')+' Choose what '+P+' sees</button><button class="k-btn k-ghost" data-act="ap79done">Later</button>');
 }
+function apMake(){
+  if(AP.making)return;AP.making=true;AP.linkErr='';apPaint();
+  INV102.publish().then(function(r){AP.making=false;if(AP.step!=='email')return;AP.step='sent';apPaint();
+    toast(r==='saved'?'Invitation saved. The link works once you’re back online.':'Invite link ready. Copy it or share it with '+OTH()+'.');})
+    .catch(function(e){AP.making=false;AP.linkErr=(e&&e.message)||fsErr(e);apPaint();});
+}
 function apPaint(){
   if(!AP.open)return;
   var h=apHost(),f={name:stepName,method:stepMethod,email:stepEmail,sent:stepSent,folder:stepFolder,joined:stepJoined}[AP.step]||stepName;
@@ -28923,27 +28951,16 @@ function apPaint(){
 }
 B79.apPaint=apPaint;
 document.addEventListener('input',function(e){var t=e.target;if(t&&t.dataset&&t.dataset.ap&&t.closest&&t.closest('#ap79'))AP[t.dataset.ap]=t.value;});
-function msgText(){var em=invitedEmail()||AP.email;
-  return 'Hi '+OTH()+', I’ve set up Couple Money Manager for us. Open this link, sign in with '+em+' and tap “Join household”.\n'+inviteLink()+'\n— '+(ME()||'');}
-function sendInvite(em){
-  var old=invitedEmail();
-  if(hhOn()&&isOwner()&&!offline()){
-    var id=HH.id;
-    return fsMods().then(function(F){var u={invites:F.arrayUnion(em)};return F.updateDoc(hhRef(F,id),u).then(function(){if(old&&old!==em)return F.updateDoc(hhRef(F,id),{invites:F.arrayRemove(old)});});})
-      .then(function(){HH.info.invites=[em];return 'sent';});
-  }
-  DB.meta.pendingInvite=em;save();
-  if(signedIn()&&stKind()==='cloud'&&!hhOn())try{hhStart();}catch(e){}
-  return Promise.resolve('saved');
-}
+function msgText(){
+  return 'Hi '+OTH()+', I’ve set up Couple Money Manager for us. Open this link, sign in and tap “Join household”.\n'+inviteLink()+'\n— '+(ME()||'');}
 SHEETS.ap_cancel=function(){var P=E(OTH());
-  return {title:'Cancel the invitation?',icon:'x',body:'<div class="k-lead">'+P+' can’t join with <b>'+E(invitedEmail()||AP.email)+'</b> any more. You can invite again any time.</div>',
+  return {title:'Cancel the invitation?',icon:'x',body:'<div class="k-lead">The invite link stops working, so '+P+' can’t join with it. You can invite again any time for a new link.</div>',
     foot:'<button class="k-btn k-red" data-act="ap79cancelgo">Cancel invitation</button><button class="k-btn k-ghost" data-act="sh79pop">Keep it</button>'};};
 SHEETS.ap_clash=function(p){
   return {title:'Same name already exists',icon:'users',body:'<div class="k-lead">Your partner joined as “<b>'+E(p.to)+'</b>”, but someone called “'+E(p.to)+'” is already in your records. Merge “'+E(p.from)+'” into “'+E(p.to)+'”, or keep them as two people?</div>',
     foot:'<button class="k-btn" data-act="ap79clash" data-v="merge">'+ic('users')+' Merge into “'+E(p.to)+'”</button><button class="k-btn k-ghost" data-act="ap79clash" data-v="keep">Keep separate</button>'};};
-SHEETS.ap_offer=function(p){var d=p.d||{},who=E(d.ownerEmail||'Your partner'),nm=E(((d.memberProfiles||{})[d.owner]||{}).displayName||String(d.ownerEmail||'Your partner').split('@')[0]);
-  return {title:nm+' invited you',icon:'mail',body:'<div class="k-lead"><b>'+who+'</b> invited you to share money tracking. You’ll see the accounts they share with you.</div>'
+SHEETS.ap_offer=function(p){var d=p.d||{},nm=E(((d.memberProfiles||{})[d.owner]||{}).displayName||'Your partner');
+  return {title:nm+' invited you',icon:'mail',body:'<div class="k-lead"><b>'+nm+'</b> invited you to share money tracking. You’ll see the accounts they share with you.</div>'
     +'<div class="k-blk"><h4>Your own data</h4><ul><li>'+ic('lock','g')+'<span>Your personal accounts stay private — '+nm+' can’t see them.</span></li><li>'+ic('check','g')+'<span>Nothing is deleted or moved.</span></li></ul></div>',
     foot:'<button class="k-btn" data-act="ap79join">'+ic('users')+' Join the household</button><button class="k-btn k-ghost" data-act="ap79notnow">'+(p.manual?'Not now':'Not now, keep my data separate')+'</button>'};};
 /* an existing user who was invited: one sheet instead of the old dialog */
@@ -28982,15 +28999,8 @@ ACT.on('b79-partner',{
     apPaint();},
   ap79google:function(){DS.wantCloud=stKind()!=='cloud';fbSignIn('google');},
   ap79emailsign:function(){apClose(true);DS.wantCloud=stKind()!=='cloud';DS.emailForm=true;openData(['cloud']);},
-  ap79send:function(el){
-    var v=String(AP.email||'').trim().toLowerCase();AP.email=v;
-    if(!emailOK(v)){AP.emailErr='Enter your partner’s email address.';apPaint();return;}
-    if(v===String(myEmail()).toLowerCase()){AP.emailErr='That is your own email address.';apPaint();return;}
-    AP.emailErr='';busy(el,true);
-    sendInvite(v).then(function(r){AP.step='sent';apPaint();toast(r==='saved'?'Invitation saved. The link works once you’re back online.':'Invite link ready. Copy it or share it with '+OTH()+'.');})
-      .catch(function(e){busy(el,false);AP.emailErr=fsErr(e);apPaint();});
-  },
-  ap79change:function(){AP.email=invitedEmail()||AP.email;AP.step='email';apPaint();},
+  ap79send:function(){if(!signedIn())return;AP.linkErr='';apMake();},
+  ap79newlink:function(){INV102.cancel();INV102.link(true);INV102.publish().then(function(){apPaint();toast('New invite link ready. The old link no longer works.');}).catch(function(e){toast((e&&e.message)||fsErr(e));});},
   ap79cancelask:function(){push('ap_cancel');},
   ap79rename:function(){push('ap_rename');},
   ap79renamego:function(){var i=$('ap79Ren'),v=String(i&&i.value||'').trim(),old=OTH(),me=ME(),pr=DB.meta.profile=DB.meta.profile||{};
@@ -28999,10 +29009,9 @@ ACT.on('b79-partner',{
     try{if(old&&DB.people.indexOf(old)>=0&&DB.people.indexOf(v)<0)B19.rename(old,v);else if(DB.people.indexOf(v)<0)DB.people.push(v);}catch(e){n79(e,'b79:ren2');}
     pr.partner=v;try{var V=m59();if(V.adv&&V.adv.spaces)V.adv.spaces=[me||'Me',v];}catch(e){}
     touch();try{renderAll();}catch(e){}repaint();toast('Renamed to '+v+' — every section follows');},
-  ap79cancelgo:function(){var em=invitedEmail();closeAll();
-    if(DB.meta.pendingInvite){DB.meta.pendingInvite='';save();}
-    if(em&&hhOn())try{hhUninvite(em);HH.info.invites=(HH.info.invites||[]).filter(function(x){return x!==em;});}catch(e){n79(e,'b79:unin');}
-    AP.email='';AP.step='email';apPaint();toast('Invitation cancelled.');},
+  ap79cancelgo:function(){closeAll();
+    try{INV102.cancel();}catch(e){n79(e,'b79:unin');}
+    apClose();toast('Invitation cancelled. The link no longer works.');},
   ap79sharego:function(){var t=msgText();if(navigator.share)navigator.share({text:t}).catch(function(){});else copyText(t,'Invite message copied. Paste it into a chat with '+OTH()+'.');},
   ap79copylink:function(){copyText(inviteLink(),'Invite link copied.');},
   ap79share:function(){var then=function(){if(AP.open)apClose();};push('share',{to:mode(),then:then});},
@@ -29040,13 +29049,15 @@ function profileRow(){
     +'<div class="k-note" style="margin:6px 0 0">'+ic('info')+'<span>'+P+' joins with the name they chose. Rename them here any time.</span></div>';}
   else if(isCollab())return '';
   else if(!known())r='<div class="k-rw" style="padding:4px 0"><span class="k-av k-ghost">+</span><span class="k-rt">No partner yet<small>Add their name and invite them</small></span><button class="k-mini k-fill" data-act="ap79open" data-e="profile">Add partner</button></div>';
-  else if(invitedEmail())r='<div class="k-rw" style="padding:4px 0"><span class="k-av">'+E(initial(OTH()))+'</span><span class="k-rt">'+P+'<small>Invited · waiting to join</small></span><button class="k-mini" data-act="ap79open" data-e="manage">Manage</button></div>';
+  else if(invOpen())r='<div class="k-rw" style="padding:4px 0"><span class="k-av">'+E(initial(OTH()))+'</span><span class="k-rt">'+P+'<small>Invited · waiting to join</small></span><button class="k-mini" data-act="ap79open" data-e="manage">Manage</button></div>';
   else r='<div class="k-rw" style="padding:4px 0"><span class="k-av">'+E(initial(OTH()))+'</span><span class="k-rt">'+P+'<small>Not invited yet</small></span><button class="k-mini k-fill" data-act="ap79open" data-e="invite">Invite</button></div>';
   return '<div class="k-card k-pad"><div class="k-lbl">Your partner</div>'+r+'</div>'; /* beta 87: label inside the box, like every other Settings sub-header */
 }
 
-/* the invitee: a link from the household owner (?invite=email&from=name) puts “I have an invite” first */
-var INV=(function(){try{var q=new URLSearchParams(location.search);return q.get('invite')?{email:q.get('invite'),from:q.get('from')||''}:null;}catch(e){return null;}})();
+/* the invitee: the household owner's invite link (?join=token&from=name) puts “I have an invite” first (D-45) */
+var INV=(function(){try{var q=new URLSearchParams(location.search),t=q.get('join');return t&&/^[A-Za-z0-9_-]{20,100}$/.test(t)?{token:t,from:String(q.get('from')||'').slice(0,60)}:null;}catch(e){return null;}})();
+/* an existing user who opens an invite link: keep it so the household offer can use it */
+try{if(INV)localStorage.setItem('cmm102join',JSON.stringify(INV));}catch(e){}
 B79.invite=INV;
 /* beta 80: the welcome and sign-in screens for the invitee are drawn by the onboarding (B62.invLink) */
 
@@ -29144,13 +29155,22 @@ function alFix(id,goOnly){
   if(x.btn.fix==='pdh45conn'){openData(['folder']);setTimeout(function(){ACT.dispatch(el);},120);return;}
   ACT.dispatch(el);setTimeout(alTick,1500);
 }
-/* the Insights banner */
+/* the Insights banner — beta 106: same card as "payments need attention" (rounded, one line of detail).
+   Red while sync has a problem, green when it works again; swipe left or right removes it (no undo).
+   A removed problem comes back only if it ends and starts again. */
+function sbKey(x){if(!x)return '';var o=null;try{o=alLog().open[x.id];}catch(e){}return String(x.id)+'|'+String(o&&o.at?o.at:(x.w||''));} /* id + when this problem started */
+function sbGone(){try{return JSON.parse(localStorage.getItem('cmm106sb')||'[]')||[];}catch(e){return [];}}
 function insightsBar(al){
-  var x=al[0],more=al.length-1;
-  if(AL79.ok&&!al.filter(function(a){return a.sev!=='info';}).length&&!x)return '<div class="k-albar k-ok" role="status"><span class="k-ai">'+ic('check')+'</span><div class="k-ab"><b>'+AL79.ok+'</b><small>Everything is up to date.</small></div></div>';
+  var gone=sbGone(),vis=al.filter(function(a){return gone.indexOf(sbKey(a))<0;});
+  var x=vis[0],more=vis.length-1;
+  if(AL79.ok&&!al.filter(function(a){return a.sev!=='info';}).length&&!x)
+    return '<div class="sbar106 k-ok" role="status" data-noswipe data-sbk="ok"><span class="bi">'+ic('check')+'</span><span class="sb106t"><b>'+AL79.ok+'</b><small>Everything is up to date.</small></span></div>';
   if(!x)return '';
-  return '<div class="k-albar k-'+x.sev+'" role="alert"><button class="k-abtxt" data-act="al79details" data-id="'+x.id+'" aria-label="Open details"><span class="k-ai">'+ic(x.ic)+'</span><span class="k-ab"><b>'+x.t+'</b><small>'+x.s+'</small><i>Since '+x.w+(more>0?' · <u>+'+more+' more problem'+(more>1?'s':'')+'</u>':'')+' · goes away when fixed</i></span></button>'+(x.btn?'<button class="k-btn k-sm k-abbtn" data-act="al79fix" data-id="'+x.id+'">'+x.btn.l+'</button>':'')+'</div>';
+  var tone=x.sev==='info'?'k-info':'k-bad';
+  return '<div class="sbar106 '+tone+'" role="alert" data-noswipe data-sbk="'+E(sbKey(x))+'"><button class="sb106t" data-act="al79details" data-id="'+x.id+'" aria-label="Open details"><span class="bi">'+ic(x.ic)+'</span><span class="sb106x"><b>'+x.t+'</b><small>'+x.s+' · since '+x.w+(more>0?' · +'+more+' more':'')+'</small></span></button>'
+    +(x.btn?'<button class="k-btn k-sm sb106btn" data-act="al79fix" data-id="'+x.id+'">'+x.btn.l+'</button>':'')+'</div>';
 }
+B79.sbKey=sbKey;B79.clearOk=function(){AL79.ok='';AL79.okT=0;};
 function alPaint(){
   try{
     var al=syncAlerts(),v=$('view-overview');
@@ -29230,14 +29250,14 @@ function followCloud(manual){
   if(!signedIn()||!(FB.user&&FB.user.email)){if(manual)openData(['cloud']);return;}
   if(!manual&&J80.miss&&Date.now()-J80.miss<10*60000)return;
   if(offline()){if(manual)toast('You’re offline — connect to join');return;}
-  var em=String(FB.user.email).toLowerCase(),P=OTH(),pn=fPN();J80.busy=true;repaint();
-  fsMods().then(function(F){return F.getDocs(F.query(F.collection(FB.db,'households'),F.where('invites','array-contains',em)));})
-    .then(function(qs){
-      var d=qs.docs[0];
-      if(!d){J80.miss=Date.now();if(manual)toast(P+'’s invitation for '+em+' isn’t there yet. Ask '+P+' to check the email, then try again.');return;}
+  var mv=movedToCloud(),tok=String(mv.join||''),P=OTH(),pn=fPN();J80.busy=true;repaint();
+  (tok?backend291('inviteInfo',{token:tok}):Promise.resolve(null))
+    .then(function(r){
+      var d=r&&r.data||{};
+      if(!d.found||(d.state!=='ok'&&d.state!=='member')){J80.miss=Date.now();if(manual)toast(P+'’s invitation isn’t there yet. Try again in a minute.');return;}
       J80.miss=0;try{backupSnap('pre-storage-switch');}catch(e){}
-      return Promise.resolve(hhJoin(d.id)).then(function(){
-        if(HH.id!==d.id)return;
+      return Promise.resolve(hhJoin(tok)).then(function(){
+        if(!HH.id)return;
         try{PX().drop();}catch(e){n79(e,'b80:drop');}
         var v=m59();(v.log=v.log||[]).unshift({at:Date.now(),from:'pdh',to:'household'});v.log=v.log.slice(0,20);
         v.storage='household';DB.meta.cloudSyncOn=true;DB.meta.syncChoice='yes';save();
@@ -29256,18 +29276,10 @@ cloudPage=function(){
   var mv=movedToCloud(),b=_cp80.apply(this,arguments);if(!mv)return b;
   var P=E(OTH()),s=signedIn();
   return '<div class="k-bn" role="status"><div class="k-t">'+ic('cloud')+'<span>'+P+' moved your household to Couple Money Cloud</span></div><p>'
-    +(s?'Join '+P+'’s household with <b>'+E(FB.user.email||'')+'</b>. Your data stays on this phone; sync moves from '+E(fPN())+'.':'Sign in with the email '+P+' invited. This phone then joins the household; your data stays on this phone.')+'</p>'
+    +(s?'Join '+P+'’s household. Your data stays on this phone; sync moves from '+E(fPN())+'.':'Sign in with Google or any email. This phone then joins the household; your data stays on this phone.')+'</p>'
     +(s?'<div class="k-btnrow"><button class="k-btn k-sm" data-act="d80join"'+(J80.busy?' disabled':'')+'>'+ic('users')+' '+(J80.busy?'Joining…':'Join '+P+'’s household')+'</button></div>':'')+'</div>'+(s&&!hhOn()?note('info','Until you join, this phone keeps syncing through '+E(fPN())+'.','margin:10px 2px 0'):b);
 };
 ACT.on('b80',{d80join:function(){followCloud(true);}});
-/* the owner's invite goes to the folder partner's email unless they are already a member */
-var _tc80=toCloud;
-toCloud=function(){
-  var pe=String(pdhP().email||'').toLowerCase(),wp=stKind()==='folder'&&withPartner();
-  var r=_tc80.apply(this,arguments);
-  if(wp&&pe&&!DB.meta.pendingInvite){DB.meta.pendingInvite=pe;save();}
-  return r;
-};
 /* checks: after each household refresh, folder record update and sign-in */
 var _rcs80=renderCloudAccSafe;
 renderCloudAccSafe=function(){var r=_rcs80.apply(this,arguments);try{resumeCheck();}catch(e){n79(e,'b80:resume');}return r;};
@@ -29667,7 +29679,7 @@ try{if(window.pinVer36)window.pinVer36('1.60 beta 94'+(window.PAGE75&&PAGE75.sta
 
 /* ===== beta 101 · merge of the other tool's beta 93–100 (Transactions tidy-up, update toast, type roles, cleanup) with Claude's beta 94 (invitation email) ===== */
 (function(){'use strict';
-  try{var mv=document.querySelector('meta[name="app-version"]');if(mv)mv.content='1.60-beta.102';}catch(e){}
+  try{var mv=document.querySelector('meta[name="app-version"]');if(mv)mv.content='1.60-beta.107';}catch(e){}
   try{if(window.pinVer36)window.pinVer36('1.60 beta 101'+(window.PAGE75&&PAGE75.stale?' · old page file ('+(PAGE75.page||'none')+')':''));}catch(e){}
 })();
 
@@ -29676,5 +29688,131 @@ try{if(window.pinVer36)window.pinVer36('1.60 beta 94'+(window.PAGE75&&PAGE75.sta
 (function(){'use strict';
   try{if(window.pinVer36)window.pinVer36('1.60 beta 102'+(window.PAGE75&&PAGE75.stale?' · old page file ('+(PAGE75.page||'none')+')':''));}catch(e){}
   try{if(!window.__B102RN){var ol=document.querySelector('#pageSet details.help ol')||document.querySelector('#view-settings details.help ol');
-    if(ol){ol.insertAdjacentHTML('beforeend','<li><b>Beta 102:</b> Add partner shows the invite link straight away. Copy it or tap Share link to send it by WhatsApp or any chat app. Invitations are no longer emailed.</li>');window.__B102RN=1;}}}catch(e){}
+    if(ol){ol.insertAdjacentHTML('beforeend','<li><b>Beta 102:</b> Add partner shows the invite link straight away. Copy it or tap Share link to send it by WhatsApp or any chat app. Invitations are no longer emailed.</li><li><b>Beta 103:</b> You no longer type your partner’s email. Add partner makes the invite link at once; your partner signs in with any email. The household code fallback is gone.</li>');window.__B102RN=1;}}}catch(e){}
+})();
+
+/* ===== beta 103 · invite link without the partner's email (D-45) =====
+   The household owner's phone makes a random token. The link is ?join=<token>&from=<name>.
+   Only the SHA-256 hash goes to the household document (invite.hash); the token stays in this
+   phone's own data (DB.meta.cloudInvite, never in the shared view). The inviteInfo and
+   joinHousehold Cloud Functions check the token. The link works once. */
+var INV102=window.INV102=(function(){
+  function b64(a){var s='';for(var i=0;i<a.length;i++)s+=String.fromCharCode(a[i]);return btoa(s).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');}
+  function newTok(){var a=new Uint8Array(24);crypto.getRandomValues(a);return b64(a);}
+  function hex(buf){return Array.prototype.map.call(new Uint8Array(buf),function(x){return ('0'+x.toString(16)).slice(-2);}).join('');}
+  function cur(){var c=DB.meta.cloudInvite;return c&&c.token?c:null;}
+  function token(make){var c=cur();if(!c&&make){c=DB.meta.cloudInvite={token:newTok(),hash:'',at:Date.now()};save();}return c?c.token:'';}
+  function name(){try{return String((DB.meta.profile||{}).name||meName()||'').trim();}catch(e){return '';}}
+  function link(make){var t=token(make);return t?location.origin+location.pathname+'?join='+t+'&from='+encodeURIComponent(name()):'';}
+  function hash(){var c=cur();if(!c)return Promise.reject(new Error('No invite link'));if(c.hash)return Promise.resolve(c.hash);
+    if(!(window.crypto&&crypto.subtle))return Promise.reject(new Error('This browser can’t make an invite link. Open the app from its website.'));
+    return crypto.subtle.digest('SHA-256',new TextEncoder().encode(c.token)).then(function(b){var h=hex(b);var c2=cur();if(c2&&c2.token===c.token){c2.hash=h;save();}return h;});}
+  function owner(){return !!(window.FB&&FB.user&&window.HH&&HH.id&&HH.info&&HH.info.owner===FB.user.uid);}
+  /* 'sent' when the household holds the hash, 'saved' when it waits for the cloud */
+  function publish(){token(true);
+    return hash().then(function(h){
+      if(!owner()||navigator.onLine===false){try{if(FB.user&&!HH.id&&DB.meta.cloudSyncOn)hhStart();}catch(e){}return 'saved';}
+      if((HH.info.members||[]).length>=2)return 'sent';
+      try{backend291('registerMemberProfile',{householdId:HH.id,displayName:name()}).catch(function(){});}catch(e){} /* the partner sees the name you use now */
+      if(HH.info.inviteHash===h)return 'sent';
+      return fsMods().then(function(F){return F.updateDoc(hhRef(F,HH.id),{invite:{hash:h,at:Date.now()},updatedAt:F.serverTimestamp()});}).then(function(){HH.info.inviteHash=h;return 'sent';});
+    });}
+  function cancel(){var had=!!(owner()&&HH.info.inviteHash);delete DB.meta.cloudInvite;save();
+    if(had){HH.info.inviteHash='';fsMods().then(function(F){return F.updateDoc(hhRef(F,HH.id),{invite:F.deleteField(),updatedAt:F.serverTimestamp()});}).catch(function(e){toast(fsErr(e));});}}
+  /* after each household refresh: forget the link once the partner joined, otherwise make sure the household has it */
+  var busy=false;
+  function watch(){if(!owner())return;var c=cur();
+    if((HH.info.members||[]).length>=2){if(c){delete DB.meta.cloudInvite;save();}return;}
+    if(c&&!busy&&HH.info.inviteHash!==c.hash&&navigator.onLine!==false){busy=true;publish().catch(function(e){console.warn('invite-link',e&&e.message);}).then(function(){busy=false;});}}
+  return {token:token,link:link,publish:publish,cancel:cancel,watch:watch,_hash:hash};
+})();
+/* an existing user who opens an invite link: offer to join once signed in (no code, no email) */
+(function(){var x=window.B79&&B79.invite,n=0;if(!x)return;
+  function t(){n++;try{if(!(DB.meta&&DB.meta.onb)||!$('authScr').hidden)return n<40&&setTimeout(t,1500);
+    if(!(window.FB&&FB.user)){if(n<20)return setTimeout(t,1500);toast('Sign in to Couple Money Cloud in Data & Sync, then open the invite link again.');return;}
+    if(HH.id&&HH.info&&(HH.info.members||[]).length>=2)return;
+    backend291('inviteInfo',{token:x.token}).then(function(r){var d=r&&r.data||{};
+      if(d.found&&d.state==='ok')hhOfferJoin(x.token,{owner:'o',memberProfiles:{o:{displayName:d.owner||x.from||''}}},true);
+      else if(d.state!=='member')toast(d.state==='own'?'This is your own invite link. Send it to your partner.':'This invite link no longer works. Ask your partner for a new one.');
+    }).catch(function(e){console.warn('invite-offer',e&&e.message);});
+  }catch(e){}}
+  setTimeout(t,2500);})();
+try{if(window.pinVer36)window.pinVer36('1.60 beta 103'+(window.PAGE75&&PAGE75.stale?' · old page file ('+(PAGE75.page||'none')+')':''));}catch(e){}
+
+
+/* ===== beta 104 · OneDrive household folder: Microsoft app (client) ID set in index.html (CMM_CONFIG.msClientId) ===== */
+(function(){'use strict';
+  try{if(window.pinVer36)window.pinVer36('1.60 beta 104'+(window.PAGE75&&PAGE75.stale?' · old page file ('+(PAGE75.page||'none')+')':''));}catch(e){}
+  try{if(!window.__B104RN){var ol=document.querySelector('#pageSet details.help ol')||document.querySelector('#view-settings details.help ol');
+    if(ol){ol.insertAdjacentHTML('beforeend','<li><b>Beta 104:</b> OneDrive can now be chosen for the household folder.</li>');window.__B104RN=1;}}}catch(e){}
+})();
+
+
+/* ===== beta 105 · the invite link is made only when the household owner taps Create invite link (D-45) ===== */
+(function(){'use strict';
+  try{if(window.pinVer36)window.pinVer36('1.60 beta 105'+(window.PAGE75&&PAGE75.stale?' · old page file ('+(PAGE75.page||'none')+')':''));}catch(e){}
+  try{if(!window.__B105RN){var ol=document.querySelector('#pageSet details.help ol')||document.querySelector('#view-settings details.help ol');
+    if(ol){ol.insertAdjacentHTML('beforeend','<li><b>Beta 105:</b> The invite link is made only when you tap Create invite link in Add partner.</li>');window.__B105RN=1;}}}catch(e){}
+})();
+
+;/* Sections v160b103/104/106/107 came from another tool's line (its betas 103-107, built on Beta 102).
+   Merged as Beta 106 (D-46). Their version pins and release notes are replaced by the Beta 106 section below. */
+;/* ===== v160b103 · Settings, onboarding and Data & Sync type pass =====
+   Presentation-only build: the CSS block "beta 103" aligns the onboarding steps, the Settings pages,
+   the Data & Sync / Modes sheets, the Budgets manager and the Experience Level sheet with the type
+   roles used on Insights, Reports, Accounts and Transactions. This section only pins the version
+   and adds the release note. */
+(function(){ 'use strict';
+})();
+
+;/* ===== v160b104 · setup steps follow-up =====
+   Presentation-only: the CSS block "beta 104" aligns the joining-by-invite and household-folder setup
+   steps. This section only pins the version and adds the release note. */
+(function(){ 'use strict';
+})();
+
+;/* ===== v160b106 · sync banner like the payments card, swipe to remove =====
+   insightsBar() (beta 79 section) renders .sbar106. Drag more than 70 px left or right removes the card,
+   no undo. The green "working again" card is cleared; a problem card is remembered (cmm106sb) until that
+   problem ends and starts again. A drag never opens details. */
+(function(){ 'use strict';
+var D=null,JUST=false;
+function gone(k){if(!k||k==='ok')return;
+  var L=[];try{L=JSON.parse(localStorage.getItem('cmm106sb')||'[]')||[];}catch(e){}
+  if(L.indexOf(k)<0)L.push(k);if(L.length>30)L=L.slice(-30);try{localStorage.setItem('cmm106sb',JSON.stringify(L));}catch(e){}}
+document.addEventListener('pointerdown',function(e){var b=e.target.closest&&e.target.closest('#al79bar .sbar106');if(!b)return;D={b:b,x:e.clientX,y:e.clientY,dx:0,moved:false};b.style.transition='none';},true);
+document.addEventListener('pointermove',function(e){if(!D)return;var dx=e.clientX-D.x,dy=e.clientY-D.y;
+  if(!D.moved&&Math.abs(dy)>Math.abs(dx)&&Math.abs(dy)>8){D.b.style.transform='';D=null;return;}
+  if(Math.abs(dx)>6)D.moved=true;D.dx=dx;D.b.style.transform='translateX('+dx+'px)';D.b.style.opacity=String(Math.max(.15,1-Math.abs(dx)/160));},true);
+function end(){if(!D)return;var d=D;D=null;d.b.style.transition='transform .2s ease, opacity .2s ease';
+  if(Math.abs(d.dx)>70){d.b.style.transform='translateX('+(d.dx>0?420:-420)+'px)';d.b.style.opacity='0';JUST=true;
+    var k=d.b.getAttribute('data-sbk');
+    setTimeout(function(){gone(k);var bx=document.getElementById('al79bar');if(k==='ok'&&bx){bx.hidden=true;bx.innerHTML='';bx.__h='';try{B79.clearOk();}catch(e){}}try{B79.alPaint();}catch(e){}},180);}
+  else{d.b.style.transform='';d.b.style.opacity='';if(d.moved)JUST=true;}}
+document.addEventListener('pointerup',end,true);document.addEventListener('pointercancel',end,true);
+window.addEventListener('click',function(e){if(JUST&&e.target.closest&&e.target.closest('#al79bar')){JUST=false;e.preventDefault();e.stopPropagation();}else JUST=false;},true);
+})();
+
+;/* ===== v160b107 · Account Activity — one bar, Back to Overview =====
+   Account page Activity tab (bank, e-wallet, cash, card, loan, hire purchase, property, vehicle):
+   type tabs + period card + Import line replaced by one sticky bar (‹ period › + type menu); search and
+   Import statement are icons in the title row (bank-type and card accounts). The bar sticks under the
+   title row at its measured height. Phone Back and the ← button on Activity go to that account's Overview.
+   Code: toolbar(), pageHTML(), renderPage()/a107top(), toOverview(), a107menu() in the beta 48 section. */
+(function(){ 'use strict';
+ICONS.i107imp='<path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/><path d="M12 11v6"/><path d="m9 14 3 3 3-3"/>';
+})();
+
+;/* ===== v160b106m · Beta 106 = Beta 105 + other tool's betas 103-107 (D-46) ===== */
+(function(){ 'use strict';
+try{if(window.pinVer36)window.pinVer36('1.60 beta 106'+(window.PAGE75&&PAGE75.stale?' · old page file ('+(PAGE75.page||'none')+')':''));}catch(e){}
+try{if(!window.__B106RN){var ol=document.querySelector('#pageSet details.help ol')||document.querySelector('#view-settings details.help ol');
+  if(ol){ol.insertAdjacentHTML('beforeend','<li><b>Beta 106:</b> Settings, setup steps and Data &amp; Sync use the same text sizes as the rest of the app, with clearer dark mode and contrast. The sync message on Insights looks like the payments card and can be swiped away. Account Activity has one bar for the period and type, search and Import statement are in the title row, and Back on Activity returns to Overview.</li>');window.__B106RN=1;}}}catch(e){}
+})();
+
+;/* ===== v160b107c · Beta 107 = Beta 106 + the sync card's detail line wraps (CSS only) ===== */
+(function(){ 'use strict';
+try{if(window.pinVer36)window.pinVer36('1.60 beta 107'+(window.PAGE75&&PAGE75.stale?' · old page file ('+(PAGE75.page||'none')+')':''));}catch(e){}
+try{if(!window.__B107cRN){var ol=document.querySelector('#pageSet details.help ol')||document.querySelector('#view-settings details.help ol');
+  if(ol){ol.insertAdjacentHTML('beforeend','<li><b>Beta 107:</b> the sync message on Insights shows its whole detail line, including since when, on small phones.</li>');window.__B107cRN=1;}}}catch(e){}
 })();
