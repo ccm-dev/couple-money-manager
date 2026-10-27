@@ -3934,3 +3934,6 @@ html[data-mode="dark"] .m79 :is(.k-pill,.k-mini.k-fill){color:var(--bg)}
 
 /* ===== beta 107 (Claude numbering) · sync card detail line wraps, so "since …" and "+N more" stay visible on small phones ===== */
 #al79bar .sbar106 small{white-space:normal;overflow:visible;text-overflow:clip}
+
+/* ===== beta 108 · account Activity bar: the period label sits in the middle between ‹ and › ===== */
+#pageAcc48 .a107m{text-align:center;display:block}
