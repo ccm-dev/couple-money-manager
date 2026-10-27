@@ -3824,3 +3824,113 @@ body :is(#pageSet .m79,#sh79) .k-rw.k-kv .k-rt{font-size:var(--fs-12);font-weigh
 /* beta 102: invite link box (Add partner, sent step) */
 .m79 .k-codebox.k-link code{font-size:13px;letter-spacing:0;font-weight:600;white-space:normal;word-break:break-all;line-height:1.4}
 .m79 .k-codebox.k-link .k-mini{flex:none;display:inline-flex;align-items:center;gap:5px}
+/* beta 102: invite link in onboarding (household owner) */
+.ob102link{background:var(--bg);border-radius:12px;padding:10px 12px;margin:4px 0 8px}
+.ob102link code{display:block;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:13px;font-weight:600;color:var(--ink);word-break:break-all;line-height:1.4}
+.ob102btns{display:flex;gap:8px;margin-bottom:8px}.ob102btns .btn{flex:1;display:inline-flex;align-items:center;justify-content:center;gap:6px}
+/* beta 105: Create invite link button on the onboarding Invite step */
+#authScr .ob105mk{width:100%;display:inline-flex;align-items:center;justify-content:center;gap:6px;margin:6px 0 10px}
+
+/* Blocks marked beta 103/104/105/106/107 below came from another tool's line (built on Beta 102); merged as Beta 106 (D-46). */
+/* ===== beta 103 · Settings, onboarding and Data & Sync type pass =====
+   Presentation only. Aligns the screens not covered by the beta 95–101 review with the same type roles:
+   section header 12/800 caps muted · row label 14/700 · row helper 12/600 muted · lead 13/400 muted ·
+   note 12/400 muted · text link 12/800 accent · segmented control 13/700 · badge 11/800.
+   Sizes use the --fs-* variables so the Text size setting keeps working; colours use theme variables. */
+
+/* 1 · Onboarding (#authScr): lead, option helpers, notes, links, segmented controls, checklist */
+#authScr .ob62d{font-size:var(--fs-13);font-weight:400;color:var(--muted)}
+#authScr .ob62c small,#authScr .usecard small{font-size:var(--fs-12);font-weight:600;color:var(--muted)}
+#authScr .ob62note{font-size:var(--fs-12);font-weight:400}
+#authScr .ob62note:not(.w){color:var(--muted)}
+#authScr .aulink{font-size:var(--fs-12);font-weight:800}
+#authScr .lg46auth a{font-size:var(--fs-12);font-weight:800}
+#authScr .segmini>button{font-size:var(--fs-13);font-weight:700}
+#authScr .ob62ck small{font-size:var(--fs-12);font-weight:600;color:var(--muted)}
+#authScr .aul .muted,#authScr label .muted{font-size:var(--fs-12);font-weight:600!important} /* the span carries an inline weight */
+
+/* 2 · Settings pages: segmented controls and summary labels */
+#pageSet .segmini>button,#pageSet .achips>button{font-size:var(--fs-13);font-weight:700}
+#pageSet .setsum .ssb>small{font-size:var(--fs-12);font-weight:800;letter-spacing:.5px;text-transform:uppercase;color:var(--muted)}
+
+/* 3 · Badges and pills (Current, Needed, table column heads): one size */
+:is(#pageSet,#sh79) :is(.k-pill,.k-st){font-size:11px;font-weight:800}
+#sh79 .k-cmpt th{font-size:11px;font-weight:800}
+
+/* 4 · Data & Sync / Modes sheets */
+#sh79 .k-cmpt td{font-size:var(--fs-13)}
+#sh79 .k-note>span,#sh79 .k-note>span>b{font-size:var(--fs-12)}
+#sh79 .k-fl3{font-size:var(--fs-12);font-weight:800;letter-spacing:.5px;text-transform:uppercase;color:var(--muted)}
+
+/* 5 · Budgets manager: header row and row labels */
+#mgrSheet .bgrow.bghd>span{font-size:var(--fs-12)!important;font-weight:800!important;letter-spacing:.5px;text-transform:uppercase!important;color:var(--muted)!important} /* the last-column rule from day headers made "Variable" mixed case */
+#mgrSheet .bgrow>.lb{font-size:var(--fs-14);font-weight:700;color:var(--ink);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+/* 6 · Experience Level sheet: option helper and Close button */
+#x63ov .xq18 small{font-size:var(--fs-12);font-weight:600;color:var(--muted)}
+#x63ov .btnrow .btn{font-size:var(--fs-15);font-weight:800}
+
+/* ===== beta 104 · setup steps follow-up: joining by invite, household folder, dark mode =====
+   Same type roles as beta 103. Presentation only. */
+#authScr .ausub{font-size:var(--fs-13);font-weight:400;color:var(--muted)}
+#authScr .ob80blk li>span{font-size:var(--fs-13);font-weight:400}
+#authScr .ob80hero small{font-size:var(--fs-12);font-weight:600;color:var(--muted)}
+#authScr .aucard>p{font-size:var(--fs-13);font-weight:400;color:var(--muted)}
+#authScr .pdh45au .ds-status small{font-size:var(--fs-12);font-weight:600}
+/* dark mode: the invite "Joined" hero and its chips used an undefined --good-soft token, so they stayed light green
+   with light text in dark mode (title unreadable). Use the theme's income tokens, which have dark values. */
+#authScr .ob80hero,#authScr .ob80chip,#authScr .ob80ok{background:var(--inc-soft)}
+#authScr .ob80hi{background:var(--inc)}
+#authScr .ob80chip,#authScr .ob80ok{color:var(--inc)}
+
+/* ===== beta 105 · contrast fixes (small text below 4.5:1) ===== */
+html[data-mode="dark"] .m79 :is(.k-pill,.k-mini.k-fill){color:var(--bg)}
+@media (prefers-color-scheme:dark){html:not([data-mode="light"]) .m79 :is(.k-pill,.k-mini.k-fill){color:var(--bg)}}
+.austep{color:color-mix(in srgb,var(--inc) 60%,var(--ink))}
+:is(.srow79,.m79) .k-st.k-warn{color:color-mix(in srgb,var(--warn) 55%,var(--ink))}
+
+/* ===== beta 106 · sync banner on Insights = same card as "payments need attention" ===== */
+#al79bar.k-albar79{position:static;margin:0 0 11px;z-index:auto}
+#al79bar .sbar106{display:flex;gap:9px;align-items:center;width:100%;text-align:left;border:1.5px solid;border-radius:14px;padding:9px 11px;
+  color:var(--ink);touch-action:pan-y;user-select:none;-webkit-user-select:none;font-size:var(--ins95-body,var(--fs-13));line-height:1.4}
+#al79bar .sbar106.k-bad{border-color:color-mix(in srgb,var(--exp) 45%,transparent);background:var(--exp-soft)}
+#al79bar .sbar106.k-ok{border-color:color-mix(in srgb,var(--inc) 45%,transparent);background:var(--inc-soft)}
+#al79bar .sbar106.k-info{border-color:color-mix(in srgb,var(--accent) 45%,transparent);background:var(--accent-soft)}
+#al79bar .sbar106 .bi{width:30px;height:30px;border-radius:10px;background:var(--card);display:grid;place-items:center;flex:none}
+#al79bar .sbar106.k-bad .bi{color:var(--exp)}#al79bar .sbar106.k-ok .bi{color:var(--inc)}#al79bar .sbar106.k-info .bi{color:var(--accent)}
+#al79bar .sbar106 .bi svg{width:16px;height:16px}
+#al79bar .sb106t{display:flex;gap:9px;align-items:center;flex:1;min-width:0;text-align:left;background:none;border:0;padding:0;color:inherit;font:inherit;cursor:pointer}
+#al79bar .sbar106.k-ok .sb106t{display:block;cursor:default}
+#al79bar .sb106x{flex:1;min-width:0}
+#al79bar .sbar106 b{display:block;font-size:inherit;font-weight:700}
+#al79bar .sbar106 small,#view-overview .banner51 small{display:block;font-size:var(--fs-12);color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#al79bar .sb106btn{flex:none;width:auto;padding:6px 11px;min-height:0;box-shadow:none;border-radius:99px;font-size:var(--fs-12)}
+
+/* ===== beta 107 · Account Activity: one sticky bar, search + import in the title row ===== */
+#pageAcc48 .a48ph .a48mo.a107h{width:40px}
+#pageAcc48 .a48ph .a48mo.a107h.on{background:var(--accent-soft);color:var(--accent)}
+#pageAcc48 .a48ph .a48mo.a107h svg{width:21px;height:21px;stroke-width:2.1}
+#pageAcc48 .a107bar{position:sticky;top:calc(var(--a107hh,58px) - 6px - env(safe-area-inset-top));z-index:8;
+  display:flex;align-items:center;gap:6px;padding:5px;margin:0 0 12px;border:1px solid var(--line);border-radius:14px;
+  background:color-mix(in srgb,var(--card) 94%,transparent);-webkit-backdrop-filter:saturate(1.35) blur(14px);backdrop-filter:saturate(1.35) blur(14px);box-shadow:var(--shadow)}
+#pageAcc48 .a107p{flex:1;min-width:0;display:flex;align-items:center;height:40px;border-radius:10px;background:var(--bg)}
+#pageAcc48 .a107p.a107pn{justify-content:center;font-size:var(--fs-13)}
+#pageAcc48 .a107a{width:34px;height:40px;flex:none;border:0;background:none;color:var(--muted);display:grid;place-items:center;cursor:pointer;border-radius:10px}
+#pageAcc48 .a107a svg{width:18px;height:18px}
+#pageAcc48 .a107a[disabled]{opacity:.35;cursor:default}
+#pageAcc48 .a107m{flex:1;min-width:0;border:0;background:none;font:inherit;cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--ink);font-size:var(--fs-13)}
+#pageAcc48 .a107m b{font-size:var(--fs-14);font-weight:800}
+#pageAcc48 .a107m span{font-size:var(--fs-12);font-weight:700;color:var(--accent)}
+#pageAcc48 .a107f{flex:none;height:40px;padding:0 12px;border:0;border-radius:10px;background:var(--bg);color:var(--ink);font:inherit;font-size:var(--fs-13);font-weight:700;cursor:pointer;white-space:nowrap;max-width:46%;overflow:hidden;text-overflow:ellipsis}
+#pageAcc48 .a107f.on{background:var(--accent-soft);color:var(--accent)}
+#pageAcc48 .a107s{display:flex;align-items:center;gap:8px;margin:0 0 10px;padding:0 6px 0 12px;height:46px;border-radius:14px;background:var(--card);border:2px solid var(--accent);box-shadow:var(--ring,none)}
+#pageAcc48 .a107s .a107si{color:var(--muted);display:flex}#pageAcc48 .a107s .a107si svg{width:18px;height:18px}
+#pageAcc48 .a107s input.fin{flex:1;min-width:0;border:0!important;background:transparent!important;box-shadow:none!important;padding:0;height:40px;font-size:var(--fs-14);outline:none}
+#pageAcc48 .a107sx{width:34px;height:34px;border:0;background:none;color:var(--muted);display:grid;place-items:center;cursor:pointer;border-radius:10px}
+#pageAcc48 .a107sx svg{width:18px;height:18px}
+.a107menu{position:fixed;z-index:60;min-width:170px;max-width:240px;background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:0 10px 30px rgba(0,0,0,.2);padding:6px}
+.a107menu button{display:block;width:100%;text-align:left;border:0;background:none;font:inherit;font-size:var(--fs-14);color:var(--ink);padding:11px 12px;border-radius:10px;cursor:pointer;min-height:44px}
+.a107menu button.on{background:var(--accent-soft);color:var(--accent);font-weight:700}
+
+/* ===== beta 107 (Claude numbering) · sync card detail line wraps, so "since …" and "+N more" stay visible on small phones ===== */
+#al79bar .sbar106 small{white-space:normal;overflow:visible;text-overflow:clip}
