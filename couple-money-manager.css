@@ -3937,3 +3937,16 @@ html[data-mode="dark"] .m79 :is(.k-pill,.k-mini.k-fill){color:var(--bg)}
 
 /* ===== beta 108 · account Activity bar: the period label sits in the middle between ‹ and › ===== */
 #pageAcc48 .a107m{text-align:center;display:block}
+
+/* ===== sample data · Insights card, row pill, empty states ===== */
+.smpl-ban{display:flex;align-items:center;gap:10px;margin:0 0 12px;padding:10px 12px;border-radius:16px;background:var(--accent-soft);border:1px solid color-mix(in srgb,var(--accent) 30%,transparent);color:var(--ink)}
+.smpl-ban .smpl-ic{flex:none;width:34px;height:34px;border-radius:10px;display:grid;place-items:center;background:var(--card);color:var(--accent)}
+.smpl-ban .smpl-tx{flex:1;min-width:0}
+.smpl-ban .smpl-tx b{display:block;font-size:14px;font-weight:800}
+.smpl-ban .smpl-tx small{display:block;font-size:12px;font-weight:400;color:var(--muted);line-height:1.35}
+.smpl-ban .smpl-btn{flex:none;min-height:44px;padding:0 14px;border-radius:12px;border:1px solid var(--line);background:var(--card);color:var(--accent);font:inherit;font-size:13px;font-weight:800;cursor:pointer}
+.smpl-pill{display:inline-block;margin-left:6px;padding:1px 7px;border-radius:99px;font-size:11px;font-weight:800;line-height:16px;vertical-align:1px;background:var(--accent-soft);color:var(--accent);border:1px solid color-mix(in srgb,var(--accent) 35%,transparent)}
+.smpl-empty b{display:block;font-size:15px;font-weight:800}
+.smpl-empty p{font-size:13px;margin:6px 0 14px}
+.smpl-empty .btn{width:100%;max-width:320px}
+.smpl-empty .smpl-alt{display:block;margin:12px auto 0;background:none;border:0;color:var(--accent);font:inherit;font-size:12px;font-weight:800;min-height:44px;cursor:pointer}
