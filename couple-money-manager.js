@@ -9,7 +9,7 @@ var CMM_FN_REGION='asia-southeast1';
    place before anything is drawn, loads the matching stylesheet, and clears the offline copies so
    the next start fetches fresh files. Help & About then says "old page file". */
 var PAGE75=(function(){
-  var JSV='1.60-beta.109',out={js:JSV,page:'',stale:false,fixed:false};
+  var JSV='1.60-beta.112',out={js:JSV,page:'',stale:false,fixed:false};
   try{
     var m=document.querySelector('meta[name="app-version"]');out.page=m?m.content:'';
     out.stale=out.page!==JSV;
@@ -371,7 +371,7 @@ function loadDB(){
 function save(){persist57();}
 var renderH=null;
 function scheduleRender(){clearTimeout(renderH);renderH=setTimeout(renderAll,30);}
-function touch(){DB.meta.changedAt=Date.now();var nAdded=materializeRecur();save();backupSoon();cloudPushSoon();fbPushSoon();scheduleRender();if(nAdded)toast(nAdded+' recurring transaction'+(nAdded>1?'s':'')+' added ✓');}
+function touch(){sampleTag();DB.meta.changedAt=Date.now();var nAdded=materializeRecur();save();backupSoon();cloudPushSoon();fbPushSoon();scheduleRender();if(nAdded)toast(nAdded+' recurring transaction'+(nAdded>1?'s':'')+' added ✓');}
 
 /* ================= IndexedDB (cloud file handle) ================= */
 function idbOpen(){return new Promise(function(res,rej){var r=indexedDB.open('mm-cloud',1);r.onupgradeneeded=function(){r.result.createObjectStore('kv');};r.onsuccess=function(){res(r.result);};r.onerror=function(){rej(r.error);};});}
@@ -521,8 +521,8 @@ function unwrapBackup(d){return (d&&d.db&&Array.isArray(d.db.txns))?d.db:d;}
 function bkSubSync(){var el=$('bkSub');if(el)el.textContent=BK.log.length?BK.log.length+' kept · latest '+bkWhen(BK.log[0].at):'auto · every change';}
 function backupDownload(i){
   var txt,at;
-  if(i>=0&&BK.log[i]){txt=BK.log[i].json;at=BK.log[i].at;}
-  else{try{txt=JSON.stringify(DB);}catch(e){return;}at=Date.now();}
+  if(i>=0&&BK.log[i]){try{txt=JSON.stringify(sampleStrip(JSON.parse(BK.log[i].json)));}catch(e){return;}at=BK.log[i].at;}
+  else{try{txt=JSON.stringify(sampleStrip(DB));}catch(e){return;}at=Date.now();}
   download(backupFname(at)+'.json','application/json',backupWrapText(txt));
   toast('Backup downloaded — move it to Google Drive / OneDrive');
 }
@@ -947,9 +947,9 @@ function importRows(rows,keep){
 function impType86(ty,fm){
   ty=String(ty==null?'':ty).trim();if(!ty)return '';
   if(DB.accTypes.indexOf(ty)>=0)return ty; /* already known — includes types the user created in Settings */
-  var k=ty.toLowerCase(),AL={'others':'Other Asset','other':'Other Asset','ewallet':'e-Wallet','e wallet':'e-Wallet','e-wallet':'e-Wallet','credit card':'Card','creditcard':'Card','housing loan':'Loan','personal loan':'Loan','education loan':'Loan','other loan':'Loan','car loan':'Hire Purchase','hire purchase':'Hire Purchase','car / hire purchase loan':'Hire Purchase'};
+  var k=ty.toLowerCase(),AL={'others':'Other Asset','other':'Other Asset','other asset (value)':'Other Asset','other asset (balance)':'Other Balance','other balance':'Other Balance','receivable':'Other Balance','receivables':'Other Balance','money lent':'Other Balance','ewallet':'e-Wallet','e wallet':'e-Wallet','e-wallet':'e-Wallet','credit card':'Card','creditcard':'Card','housing loan':'Loan','personal loan':'Loan','education loan':'Loan','other loan':'Loan','car loan':'Hire Purchase','hire purchase':'Hire Purchase','car / hire purchase loan':'Hire Purchase'};
   if(AL[k])return AL[k];
-  var caps=['Cash','Bank','Card','eWallet','e-Wallet','Credit Card','Loan','Hire Purchase','Property','Vehicle','Investment','Other Asset','Between Us'];
+  var caps=['Cash','Bank','Card','eWallet','e-Wallet','Credit Card','Loan','Hire Purchase','Property','Vehicle','Investment','Other Asset','Other Balance','Between Us'];
   for(var i=0;i<caps.length;i++)if(caps[i].toLowerCase()===k)return caps[i];
   if(fm&&(fm.kind==='asset'||fm.kind==='liability'))return ty; /* a type the file itself defines */
   return ''; /* not a type this app knows — do not import it as one */
@@ -1104,7 +1104,7 @@ function download(name,mime,text){
   document.body.appendChild(a);a.click();
   setTimeout(function(){URL.revokeObjectURL(u);a.remove();},400);
 }
-function exportJSON(){download('money-data.json','application/json',JSON.stringify(DB,null,1));toast('Snapshot saved — move it to Drive / OneDrive');}
+function exportJSON(){download('money-data.json','application/json',JSON.stringify(sampleStrip(DB),null,1));toast('Snapshot saved — move it to Drive / OneDrive');}
 function csvField(s){s=String(s==null?'':s);return /[",\n]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s;}
 /* ===== v1.15: Excel upload template for importing data ===== */
 /* v1.60 beta 62: the template is written with the household's own names (Your Profile), so the sample rows
@@ -1457,7 +1457,7 @@ var TXF71=(function(){
   }
   function emptyHTML(){
     var any=inView(function(){return allTxns().length;});
-    if(!any)return '<div class="empty txf71-empty"><b>No transactions yet</b><p>Tap ＋ to add your first one.</p></div>';
+    if(!any)return '<div class="empty txf71-empty smpl-empty"><b>No transactions yet</b><p>Add your first transaction or explore the app with sample data.</p><button class="btn" data-act="add">'+ico('plus')+' Add transaction</button><div style="height:8px"></div><button class="btn ghost" data-act="demoadd">'+ico('play')+' Try with sample data</button></div>';
     var sug=Object.keys(DIM).filter(active).map(function(d){return {d:d,n:rows(list(d))};}).filter(function(x){return x.n>0;}).sort(function(a,b){return b.n-a.n;}).slice(0,2);
     return '<div class="empty txf71-empty"><div class="big">'+ico('search')+'</div><b>No transactions match</b><p>Your filters are narrower than your data.'+(sug.length?' Try loosening one:':'')+'</p><div class="sg">'
       +sug.map(function(x){return '<button type="button" class="btn ghost sm" data-act="txfrm" data-v="'+x.d+'">Remove '+DIM[x.d]+' filter · show '+x.n+'</button>';}).join('')
@@ -1784,7 +1784,9 @@ function renameCategory(ty,oldN,newN){
 function delCategory(ty,n){
   var used=0;
   DB.txns.forEach(function(x){if(x.type===ty&&x.category===n)used++;});
-  if(used){toast(used+(used===1?' transaction uses':' transactions use')+' this category — move them first.',{type:'warn'});return;}
+  if(used){var L=(DB.categories[ty]||[]).filter(function(c){return c!==n;}),to=L.indexOf('Others')>=0?'Others':L[0]; /* beta 112 */
+    if(to){mergeCategory(ty,n,to);return;}
+    toast('Add another '+ty.toLowerCase()+' category first, so its transactions have somewhere to go.',{type:'warn'});return;}
   askConfirm('Delete category “'+n+'”?','Delete',function(){
     var snap=snapLists(['categories','subcats']);
     DB.categories[ty]=DB.categories[ty].filter(function(c){return c!==n;});
@@ -3991,6 +3993,20 @@ function cloudAuth(kind,email,pw){
   var t=new Promise(function(res){setTimeout(function(){res({ok:false,why:'timeout'});},12000);});
   return Promise.race([p,t]);
 }
+/* beta 111: plain words for a cloud sign-in that did not work (the invitee needs the cloud to join) */
+var CLOUDWHY111='';
+function cloudWhyMsg(c){c=String(c||'');
+  if(c==='offline')return 'You’re offline. Connect to the internet and try again.';
+  if(c==='timeout'||c==='auth/network-request-failed')return 'The cloud did not answer. Check your connection and try again.';
+  if(c==='auth/operation-not-allowed')return 'Email sign-in is not switched on for this app yet. Use Continue with Google, or ask your partner to switch on Email/Password in Firebase (Authentication › Sign-in method).';
+  if(c==='auth/weak-password')return 'Use a stronger password: at least 6 characters.';
+  if(c==='auth/wrong-password'||c==='auth/invalid-credential'||c==='auth/invalid-login-credentials')return 'This email already has a cloud account with a different password. Use that password, or tap “I already have an account”.';
+  if(c==='auth/too-many-requests')return 'Too many tries. Wait a few minutes, then try again.';
+  if(c==='auth/invalid-email')return 'Enter a valid email address.';
+  if(c==='auth/user-not-found')return 'No cloud account with this email. Tap “Create account and continue”.';
+  return 'Cloud sign-in did not work'+(c?' ('+c.replace(/^auth\//,'')+')':'')+'. Try again, or use Continue with Google.';
+}
+var _cloudAuth111=cloudAuth;cloudAuth=function(kind,email,pw){return _cloudAuth111(kind,email,pw).then(function(r){CLOUDWHY111=r&&!r.ok?(r.why||'error'):'';return r;});};
 function authShow(mode){AU.mode=mode||AU.mode;AU.err='';$('authScr').hidden=false;document.body.classList.add('authon');renderAuth();}
 function authHide(){$('authScr').hidden=true;document.body.classList.remove('authon');}
 function auSubmit(){
@@ -4009,6 +4025,7 @@ function auSubmit(){
     var salt=uid();
     pwHash(salt,pw).then(function(h){
       return cloudAuth('up',em,pw).then(function(r){
+        if(!r.ok&&fbOnSite()&&window.B62&&B62.inv&&B62.inv()){fail(cloudWhyMsg(r.why));return;} /* beta 111: joining needs the cloud account, so a phone-only account would leave the invitee stuck at step 2 */
         map[em]={salt:salt,hash:h,mode:r.ok?'cloud':'local',created:Date.now()};acctSaveMap(map);
         if(!r.ok&&r.why==='auth/weak-password'){toast('Cloud sign-in needs a stronger password. Saved on this device only.');}
         else if(!r.ok&&r.why!=='offline'&&r.why!=='timeout')toast('Account saved on this phone. Cloud sign-in is not available yet.');
@@ -4026,6 +4043,7 @@ function auSubmit(){
     return;
   }
   cloudAuth('in',em,pw).then(function(r){
+    if(!r.ok&&r.why!=='offline'&&window.B62&&B62.inv&&B62.inv()){fail(cloudWhyMsg(r.why));return;} /* beta 111 */
     if(!r.ok){fail(r.why==='offline'?'No account with this email on this phone. Create one, or open the app from its website to log in to the cloud.':'Wrong email or password.');return;}
     var salt=uid();pwHash(salt,pw).then(function(h){map[em]={salt:salt,hash:h,mode:'cloud',created:Date.now()};acctSaveMap(map);done('cloud');});
   });
@@ -4070,9 +4088,9 @@ var JR=[
   {k:'me',t:'Add yourself',d:'So the app knows who is who',done:function(){var p=(DB.meta.profile||{}).name;return !!p&&DB.people.indexOf(p)>=0;}},
   {k:'partner',t:'Add your partner',d:'Settings → Modes',done:function(){var dp=demoPeople();return DB.people.filter(function(p){return dp.indexOf(p)<0;}).length>=2;}},
   {k:'account',t:'Add your own account',d:'A bank, card or e-wallet with an account owner',done:function(){var j=jr(),base=j.baseAcc||[],dA=demoAccs();return DB.accounts.some(function(a){return !a.recv&&base.indexOf(a.name)<0&&dA.indexOf(a.name)<0;});}},
-  {k:'txn',t:'Record your first expense',d:'Tap + and save one',done:function(){return DB.txns.some(function(t){return !t.demo&&t.type!=='Transfer';});}},
-  {k:'split',t:'Split a bill',d:'Share a bill with your partner',done:function(){return DB.txns.some(function(t){return !t.demo&&t.group;});}},
-  {k:'budget',t:'Set a budget',d:'Couple or personal, per category',done:function(){var s=bgStore();return Object.keys(s).some(function(k){return Object.keys(s[k]||{}).length;});}},
+  {k:'txn',t:'Record your first expense',d:'Tap + and save one',done:function(){return DB.txns.some(function(t){return !t.isSample&&t.type!=='Transfer';});}},
+  {k:'split',t:'Split a bill',d:'Share a bill with your partner',done:function(){return DB.txns.some(function(t){return !t.isSample&&t.group;});}},
+  {k:'budget',t:'Set a budget',d:'Couple or personal, per category',done:function(){var s=bgStore();return Object.keys(s).some(function(k){return Object.keys(s[k]||{}).some(function(c){return s[k][c]&&!s[k][c].isSample;});});}},
   {k:'goal',t:'Create a saving goal',d:'Something to save for together',done:function(){return goalsList().length>0;}},
   {k:'report',t:'Open a report',d:'See where the money goes',done:function(){return !!jr().rep;}},
   {k:'ask',t:'Ask the money assistant',d:'Try a suggested question',done:function(){return !!jr().ask;}}
@@ -4107,7 +4125,7 @@ var TOURS={
     {sel:'#fCatChips',tx:'Pick a category.',ok:function(){return DB.txns.length>n0;},soft:function(){return !!F.cat;}},
     {sel:'#fAccount',tx:'Check the account it was paid from.',ok:function(){return DB.txns.length>n0;},next:1},
     {sel:'#sheet [data-act=savetxn]',tx:'Tap <b>Save transaction</b>.',ok:function(){return DB.txns.length>n0&&!sheetOpen();}}];},
-  split:function(){var has=function(){return DB.txns.some(function(t){return !t.demo&&t.group;});};return [
+  split:function(){var has=function(){return DB.txns.some(function(t){return !t.isSample&&t.group;});};return [
     {pre:function(){gotoView('overview');},sel:'.nadd button',tx:'Tap <b>+</b> to add the bill.',ok:function(){return sheetOpen()||has();}},
     {sel:'#fAmount',tx:'Type the <b>total</b> of the bill.',ok:has,soft:function(){return parseAmt($('fAmount').value)>0&&document.activeElement!==$('fAmount');}},
     {sel:'#fCatChips',tx:'Pick a category.',ok:has,soft:function(){return !!F.cat;}},
@@ -4157,45 +4175,149 @@ function tourEnd(ok){
   TOUR.k='';renderOverview();
 }
 
-/* ---------- 4. sample data (50 example transactions, dates shifted to end yesterday) ---------- */
-var DEMO_ROWS=[["2026-08-01", "Expense", "Groceries", "Supermarket", "eWallet", "Hubby", "Household groceries", 116.32, "", "", "", ""], ["2026-08-02", "Expense", "Groceries", "Wet Market", "Cash", "Wifey", "Fresh produce", 93.45, "", "", "", ""], ["2026-08-03", "Expense", "Food & Dining", "Restaurant", "Cash", "Hubby", "Meal - split bill 60/40", 81.42, "Hubby:48.85|Wifey:32.57", "", "", ""], ["2026-08-04", "Expense", "Food & Dining", "Coffee", "Cash", "Wifey", "Coffee and snack", 10.68, "", "", "", ""], ["2026-08-05", "Income", "Salary", "Monthly Salary", "Maybank", "Hubby", "Salary credited", 6038.14, "", "", "", ""], ["2026-08-06", "Expense", "Transport", "Fuel", "Credit Card", "Wifey", "Petrol", 73.43, "", "", "", ""], ["2026-08-07", "Expense", "Utilities", "Electricity", "Maybank", "Hubby", "Monthly electricity bill", 208.01, "", "", "", ""], ["2026-08-08", "Transfer", "", "", "Maybank", "Hubby", "Move funds to eWallet", 250, "", "eWallet", "", ""], ["2026-08-09", "Expense", "Shopping", "Household", "Credit Card", "Hubby", "Household item", 143.36, "", "", "", ""], ["2026-08-10", "Expense", "Entertainment", "Streaming", "Credit Card", "Wifey", "Streaming subscription", 59.8, "", "", "", ""], ["2026-08-11", "Expense", "Health", "Pharmacy", "Credit Card", "Hubby", "Pharmacy purchase - split bill 60/40", 36.74, "Hubby:22.04|Wifey:14.70", "", "", ""], ["2026-08-12", "Expense", "Personal Care", "Haircut", "Cash", "Wifey", "Haircut", 34.17, "", "", "", ""], ["2026-08-13", "Income", "Income", "Reimbursement", "Maybank", "Hubby", "Expense reimbursement", 334.7, "", "", "", ""], ["2026-08-14", "Expense", "Groceries", "Wet Market", "Cash", "Wifey", "Fresh produce", 79.82, "", "", "", ""], ["2026-08-15", "Expense", "Food & Dining", "Restaurant", "Cash", "Hubby", "Meal", 87.56, "", "", "", ""], ["2026-08-16", "Transfer", "", "", "Maybank", "Hubby", "Move savings to cash", 300, "", "Cash", "", ""], ["2026-08-17", "Expense", "Transport", "Grab", "Credit Card", "Hubby", "Ride fare", 14.95, "", "", "", ""], ["2026-08-18", "Expense", "Transport", "Fuel", "Maybank", "Wifey", "Petrol", 107.81, "", "", "", ""], ["2026-08-19", "Expense", "Utilities", "Electricity", "Maybank", "Hubby", "Monthly electricity bill - split bill 60/40", 216.06, "Hubby:129.64|Wifey:86.42", "", "", ""], ["2026-08-20", "Expense", "Utilities", "Mobile", "Credit Card", "Wifey", "Mobile plan", 68.14, "", "", "", ""], ["2026-08-21", "Income", "Income", "Freelance", "Maybank", "Wifey", "Freelance income", 679.2, "", "", "", ""], ["2026-08-22", "Expense", "Entertainment", "Streaming", "Credit Card", "Wifey", "Streaming subscription", 40.92, "", "", "", ""], ["2026-08-23", "Expense", "Health", "Pharmacy", "Credit Card", "Hubby", "Pharmacy purchase", 82.99, "", "", "", ""], ["2026-08-24", "Transfer", "", "", "Cash", "Hubby", "Loan to Wifey wallet", 120, "", "Wifey Wallet", "Wifey owes Hubby", 120], ["2026-08-25", "Expense", "Groceries", "Supermarket", "eWallet", "Hubby", "Household groceries", 171.51, "", "", "", ""], ["2026-08-26", "Expense", "Groceries", "Wet Market", "Cash", "Wifey", "Fresh produce", 41.88, "", "", "", ""], ["2026-08-27", "Expense", "Food & Dining", "Restaurant", "Credit Card", "Hubby", "Meal - split bill 60/40", 38.22, "Hubby:22.93|Wifey:15.29", "", "", ""], ["2026-08-28", "Expense", "Food & Dining", "Coffee", "Cash", "Wifey", "Coffee and snack", 11.63, "", "", "", ""], ["2026-08-29", "Income", "Income", "Interest", "Maybank", "Hubby", "Bank interest", 16.64, "", "", "", ""], ["2026-08-30", "Expense", "Transport", "Fuel", "Maybank", "Wifey", "Petrol", 73.83, "", "", "", ""], ["2026-08-31", "Expense", "Utilities", "Electricity", "Maybank", "Hubby", "Monthly electricity bill", 157.97, "", "", "", ""], ["2026-09-01", "Transfer", "", "", "Wifey Wallet", "Wifey", "Repayment to Hubby", 80, "", "Maybank", "Wifey owes Hubby", -80], ["2026-09-02", "Expense", "Shopping", "Household", "Credit Card", "Hubby", "Household item", 55.61, "", "", "", ""], ["2026-09-03", "Expense", "Entertainment", "Streaming", "Credit Card", "Wifey", "Streaming subscription", 50.81, "", "", "", ""], ["2026-09-04", "Expense", "Health", "Pharmacy", "Credit Card", "Hubby", "Pharmacy purchase - split bill 60/40", 72.17, "Hubby:43.30|Wifey:28.87", "", "", ""], ["2026-09-05", "Expense", "Personal Care", "Haircut", "Cash", "Wifey", "Haircut", 63.5, "", "", "", ""], ["2026-09-06", "Income", "Salary", "Monthly Salary", "Maybank", "Hubby", "Salary credited", 4559.24, "", "", "", ""], ["2026-09-07", "Expense", "Groceries", "Wet Market", "Cash", "Wifey", "Fresh produce", 85.76, "", "", "", ""], ["2026-09-08", "Expense", "Food & Dining", "Restaurant", "Credit Card", "Hubby", "Meal", 66.55, "", "", "", ""], ["2026-09-09", "Transfer", "", "", "Maybank", "Hubby", "Settle credit card", 650, "", "Credit Card", "", ""], ["2026-09-10", "Expense", "Transport", "Grab", "Credit Card", "Hubby", "Ride fare", 13.47, "", "", "", ""], ["2026-09-11", "Expense", "Transport", "Fuel", "Maybank", "Wifey", "Petrol", 100.66, "", "", "", ""], ["2026-09-12", "Expense", "Utilities", "Electricity", "Maybank", "Hubby", "Monthly electricity bill - split bill 60/40", 208.77, "Hubby:125.26|Wifey:83.51", "", "", ""], ["2026-09-13", "Expense", "Utilities", "Mobile", "Maybank", "Wifey", "Mobile plan", 67.62, "", "", "", ""], ["2026-09-14", "Income", "Income", "Reimbursement", "Maybank", "Hubby", "Expense reimbursement", 430.05, "", "", "", ""], ["2026-09-15", "Expense", "Entertainment", "Streaming", "Credit Card", "Wifey", "Streaming subscription", 51.23, "", "", "", ""], ["2026-09-16", "Transfer", "", "", "eWallet", "Hubby", "Top up cash wallet", 100, "", "Cash", "", ""], ["2026-09-17", "Income", "Income", "Reimbursement", "Maybank", "Hubby", "Expense reimbursement", 152.09, "", "", "", ""], ["2026-09-18", "Expense", "Groceries", "Supermarket", "eWallet", "Hubby", "Household groceries", 82.63, "", "", "", ""], ["2026-09-19", "Income", "Income", "Freelance", "Maybank", "Wifey", "Freelance income", 414.41, "", "", "", ""]];
-function demoPeople(){var d=DB.meta.demo;return (d&&d.on&&d.people)||[];}
-function demoAccs(){var d=DB.meta.demo;return (d&&d.on&&d.accounts)||[];}
-function demoLoad(quiet){
-  if(DB.meta.demo&&DB.meta.demo.on){toast('Sample transactions are already loaded');return;}
-  var last=DEMO_ROWS[DEMO_ROWS.length-1][0],shift=Math.round((Date.parse(addDaysISO(todayISO(),-1))-Date.parse(last))/864e5);
-  var addP=[],addA=[];
-  /* beta21: samples use the names in Your Profile (falls back to Hubby / Wifey) */
-  var pf=DB.meta.profile||{},nA=(pf.name&&pf.name!=='Me')?pf.name:'Hubby',nB=(pf.partner&&pf.partner!=='Me'&&pf.partner!==nA)?pf.partner:'Wifey';
-  if(nB===nA)nB='Wifey';
-  function M(v){return typeof v==='string'?v.replace(/Hubby/g,'\u0001').replace(/Wifey/g,nB).replace(/\u0001/g,nA):v;}
-  [nA,nB].forEach(function(p){if(DB.people.indexOf(p)<0){DB.people.push(p);addP.push(p);}});
-  if(DB.accTypes.indexOf('Credit Card')<0){DB.accTypes.push('Credit Card');DB.accTypeMeta['Credit Card']={kind:'liability',cycle:0};}
-  if(DB.accTypes.indexOf('e-Wallet')<0)DB.accTypes.push('e-Wallet');
-  if(DB.accTypes.indexOf('Bank')<0)DB.accTypes.push('Bank');
-  if(DB.accTypes.indexOf('Cash')<0)DB.accTypes.push('Cash');
-  [['Maybank','Bank','Hubby',3000,0],['eWallet','e-Wallet','Hubby',200,0],['Cash','Cash','Hubby',300,0],['Credit Card','Credit Card','Hubby',0,25],['Wifey Wallet','e-Wallet','Wifey',500,0]].map(function(a){return a.map(M);}).forEach(function(a){
-    if(!DB.accounts.some(function(x){return x.name===a[0];})){DB.accounts.push({name:a[0],type:a[1],owner:a[2],start:a[3],cycle:a[4],dueDays:20});addA.push(a[0]);}
+/* ---------- 4. sample data: "Try with sample data" ----------
+   One coherent example money life over the last 3 months (salary, rent, utilities, groceries, eating out,
+   petrol, shopping, a transfer to savings, a card payment; in Couple modes also the partner's salary,
+   shared rent and groceries and a rent-share transfer). Every generated record carries isSample:true:
+   transactions, accounts and budget entries. A person added only for the samples is listed in
+   DB.meta.sample.people. Sample data stays on this phone: the shared view (cloud, folder), private
+   sync, backups and exports leave it out (sampleStrip), and a merge from the cloud keeps it. */
+var SAMPLE_BUDGETS={'Groceries':{f:0,v:600},'Food & Dining':{f:0,v:350},'Transport':{f:0,v:300},'Shopping':{f:0,v:300},'Entertainment':{f:0,v:80},'Bills & Utilities':{f:300,v:0},'Rent & Housing':{f:1500,v:0}};
+function sampleOn(){var s=DB&&DB.meta&&DB.meta.sample;return !!(s&&s.on);}
+function demoPeople(){var s=DB&&DB.meta&&DB.meta.sample;return (s&&s.on&&s.people)||[];}
+function demoAccs(){return ((DB&&DB.accounts)||[]).filter(function(a){return a&&a.isSample;}).map(function(a){return a.name;});}
+function sampleCounts(){
+  var b=0,bs=(DB.budgets2&&DB.budgets2.couple)||{};Object.keys(bs).forEach(function(c){if(bs[c]&&bs[c].isSample)b++;});
+  return {tx:DB.txns.filter(function(t){return t.isSample;}).length,acc:demoAccs().length,bud:b};
+}
+/* the household's own type name for a kind of account (adds it only if the household has none) */
+function sampleType(cands,kind){
+  for(var i=0;i<cands.length;i++){for(var j=0;j<DB.accTypes.length;j++)if(DB.accTypes[j].toLowerCase()===cands[i].toLowerCase())return DB.accTypes[j];}
+  DB.accTypes.push(cands[0]);DB.accTypeMeta[cands[0]]={kind:kind,cycle:0};return cands[0];
+}
+function sampleName(n){var x=n,i=2;while(DB.accounts.some(function(a){return a.name===x;}))x=n+' '+(i++);return x;}
+/* keeps every sample marker true after edits: a transaction keeps isSample by its id, anything recorded
+   on a sample account is sample, and a split bill or owed entry is sample when any part of it is */
+function sampleTag(){
+  var s=DB&&DB.meta&&DB.meta.sample;if(!s||!s.on)return;
+  var ids={},acc={},grp={};(s.ids||[]).forEach(function(id){ids[id]=1;});
+  DB.accounts.forEach(function(a){if(a&&a.isSample)acc[a.name]=1;});
+  DB.txns.forEach(function(t){if(ids[t.id]||acc[t.account]||(t.to&&acc[t.to])){t.isSample=true;if(t.group)grp[t.group]=1;}});
+  DB.txns.forEach(function(t){if(t.group&&grp[t.group])t.isSample=true;if(t.isSample)ids[t.id]=1;});
+  s.ids=Object.keys(ids);s.accounts=demoAccs();
+}
+/* a copy of a data set without any sample record: what may leave this phone */
+function sampleStrip(d){
+  if(!d)return d;
+  var has=(d.txns||[]).some(function(t){return t&&t.isSample;})||(d.accounts||[]).some(function(a){return a&&a.isSample;})||(d.meta&&d.meta.sample&&d.meta.sample.on);
+  if(!has)return d;
+  var c=JSON.parse(JSON.stringify(d)),sp=(d.meta&&d.meta.sample&&d.meta.sample.people)||[];
+  c.txns=(c.txns||[]).filter(function(t){return t&&!t.isSample;});
+  c.accounts=(c.accounts||[]).filter(function(a){return a&&!a.isSample;});
+  if(Array.isArray(c.people))c.people=c.people.filter(function(p){return sp.indexOf(p)<0;});
+  Object.keys(c.budgets2||{}).forEach(function(k){var b=c.budgets2[k]||{};Object.keys(b).forEach(function(cat){if(b[cat]&&b[cat].isSample)delete b[cat];});});
+  if(c.meta){delete c.meta.sample;if(c.meta.del&&d.meta&&d.meta.sample){(d.meta.sample.ids||[]).forEach(function(id){delete c.meta.del[id];});}}
+  return c;
+}
+/* runs fn with the sample records out of sight (exports read DB directly) */
+function withoutSample(fn){
+  if(!sampleOn())return fn();
+  var orig=DB,c=sampleStrip(DB);c.meta=orig.meta;DB=c;
+  try{return fn();}finally{DB=orig;}
+}
+function sampleBuild(){
+  var me=meName()||DB.people[0]||'Me',mode=usageMode(),cp=mode==='couple'||mode==='adv',adv=mode==='adv';
+  var addP=[],pt='';
+  if(cp){pt=(DB.meta.profile||{}).partner||'';if(!pt||pt===me){var o=realPeople().filter(function(x){return x!==me;});pt=o[0]||'Partner';}}
+  [me].concat(cp?[pt]:[]).forEach(function(p){if(DB.people.indexOf(p)<0){DB.people.push(p);addP.push(p);}});
+  var tBank=sampleType(['Bank'],'asset'),tCard=sampleType(['Card','Credit Card'],'liability'),tEw=sampleType(['e-Wallet','eWallet'],'asset'),tCash=sampleType(['Cash'],'asset');
+  function acc(n,ty,owner,start,x){var a=Object.assign({name:sampleName(n),type:ty,owner:owner,start:start,isSample:true},x||{});DB.accounts.push(a);return a.name;}
+  var BANK=acc('Sample bank',tBank,me,2400),SAV=acc('Sample savings',tBank,me,8000,adv?{vis:'me',pvby:me}:null),
+      CARD=acc('Sample card',tCard,me,0,{cycle:25,dueDays:20}),EW=acc('Sample e-wallet',tEw,me,150),CASH=acc('Sample cash',tCash,me,300),
+      PBANK=cp?acc(pt+'’s sample bank',tBank,pt,3000):'';
+  var td=todayISO(),y=+td.slice(0,4),m=+td.slice(5,7),rows=[];
+  function R(k,day,o){var mm=m-k,yy=y;while(mm<1){mm+=12;yy--;}var last=new Date(Date.UTC(yy,mm,0)).getUTCDate(),
+      date=yy+'-'+pad2(mm)+'-'+pad2(Math.min(day,last));if(date>=td||!o.amount)return;o.date=date;o.person=o.person||me;rows.push(o);}
+  function split(a,b){return me+':'+a+'|'+pt+':'+b;}
+  var cardSpent=[0,0,0];
+  [2,1,0].forEach(function(k){
+    var i=2-k,v=function(a){return a[i];};
+    var cardRows=[[6,'Groceries','Supermarket',[192.35,176.80,185]],[9,'Food & Dining','Restaurant',[64.50,81.20,72]],[12,'Transport','Petrol',[90,90,90]],
+      [15,'Shopping','Clothes & household',[160,240,385]],[22,'Entertainment','Streaming',[55,55,55]],[26,'Transport','Petrol',[85,92.30,88]]];
+    R(k,1,{type:'Income',category:'Salary',sub:'Monthly salary',account:BANK,note:'Salary',amount:6500});
+    R(k,1,{type:'Expense',category:'Rent & Housing',sub:'Rent',account:BANK,note:'Rent',amount:1500,split:cp?split(750,750):''});
+    R(k,2,{type:'Transfer',account:BANK,to:SAV,note:'Transfer to savings',amount:500});
+    R(k,3,{type:'Transfer',account:BANK,to:EW,note:'Top up e-wallet',amount:100});
+    R(k,5,{type:'Expense',category:'Bills & Utilities',sub:'Electricity & water',account:BANK,note:'Electricity and water',amount:v([171.20,158.40,165])});
+    R(k,8,{type:'Expense',category:'Food & Dining',sub:'Coffee',account:EW,note:'Coffee',amount:12.90});
+    R(k,10,{type:'Transfer',account:BANK,to:CASH,note:'Cash withdrawal',amount:200});
+    R(k,14,{type:'Expense',category:'Bills & Utilities',sub:'Mobile & internet',account:BANK,note:'Mobile and internet',amount:128});
+    R(k,17,{type:'Expense',category:'Food & Dining',sub:'Hawker lunch',account:CASH,note:'Lunch',amount:18.50});
+    R(k,19,{type:'Expense',category:'Groceries',sub:'Wet market',account:CASH,note:'Fresh produce',amount:v([58.20,71.40,64.30])});
+    R(k,20,{type:'Transfer',account:BANK,to:CARD,note:'Credit card payment',amount:k===2?410:cardSpent[i-1]});
+    R(k,24,{type:'Expense',category:'Health',sub:'Pharmacy',account:EW,note:'Pharmacy',amount:v([38.60,0,24.90])});
+    R(k,27,{type:'Income',category:'Business',sub:'Freelance',account:BANK,note:'Freelance project',amount:v([0,600,0])});
+    R(k,28,{type:'Expense',category:'Personal Care',sub:'Haircut',account:CASH,note:'Haircut',amount:v([35,0,35])});
+    cardRows.forEach(function(c){var amt=c[3][i];cardSpent[i]+=amt;
+      R(k,c[0],{type:'Expense',category:c[1],sub:c[2],account:CARD,note:c[2],amount:amt,split:(cp&&c[1]==='Groceries')?split(+(amt/2).toFixed(2),+(amt-(+(amt/2).toFixed(2))).toFixed(2)):''});});
+    cardSpent[i]=Math.round(cardSpent[i]*100)/100;
+    if(cp){
+      R(k,1,{type:'Income',category:'Salary',sub:'Monthly salary',account:PBANK,person:pt,note:'Salary',amount:5200});
+      if(k>0)R(k,3,{type:'Transfer',account:PBANK,to:BANK,person:pt,note:'Rent share',amount:750,owedAcc:pt+' owes '+me,owedAmt:-750});
+      R(k,11,{type:'Expense',category:'Groceries',sub:'Supermarket',account:PBANK,person:pt,note:'Groceries',amount:v([132,118.60,140.20])});
+      R(k,21,{type:'Expense',category:'Food & Dining',sub:'Dinner out',account:PBANK,person:pt,note:'Dinner out',amount:96,split:pt+':48|'+me+':48'});
+    }
   });
-  if(!DB.accounts.some(function(x){return x.name===M('Wifey owes Hubby');}))addA.push(M('Wifey owes Hubby'));
-  var rows=DEMO_ROWS.map(function(r0){var r=r0.map(M);return mkTxn({date:addDaysISO(r[0],shift),type:r[1],category:r[2],sub:r[3],account:r[4],person:r[5],note:r[6],amount:r[7],split:parseSplitStr(r[8]),to:r[9],owedAcc:r[10],owedAmt:r[11]});});
-  var before={};DB.txns.forEach(function(t){before[t.id]=1;});
-  importRows(rows);
-  var n=0;DB.txns.forEach(function(t){if(!before[t.id]){t.demo=1;n++;}});
-  DB.meta.demo={on:1,people:addP,accounts:addA};
-  if(!quiet){touch();toast('Added '+n+' sample transactions ✓');}
+  return {rows:rows.map(function(o){return mkTxn(o);}),people:addP};
+}
+/* Add sample data. quiet = no toast, no screen change (tests and onboarding) */
+function demoLoad(quiet){
+  if(sampleOn()){if(!quiet)toast('Sample data is already on');return;}
+  var before={},accBefore={};DB.txns.forEach(function(t){before[t.id]=1;});DB.accounts.forEach(function(a){accBefore[a.name]=1;});
+  var b=sampleBuild();
+  importRows(b.rows,true);
+  DB.accounts.forEach(function(a){if(!accBefore[a.name]&&a.recv)a.isSample=true;});
+  var ids=[];DB.txns.forEach(function(t){if(!before[t.id]){t.isSample=true;ids.push(t.id);}});
+  var bs=bgStore();bs.couple=bs.couple||{};
+  Object.keys(SAMPLE_BUDGETS).forEach(function(c){if(!bs.couple[c])bs.couple[c]=Object.assign({isSample:true},SAMPLE_BUDGETS[c]);});
+  DB.meta.sample={on:1,at:Date.now(),people:b.people,ids:ids,accounts:demoAccs()};
+  if(!quiet){touch();toast('Sample data added — Only on this phone. Remove it in Settings › Data & Sync.');}
+}
+/* removes every sample record at once; returns what it removed (silent: no confirm, no toast) */
+function sampleWipe(){
+  var s=DB.meta.sample;if(!s)return null;
+  var sp=s.people||[];
+  DB.txns=DB.txns.filter(function(t){return !t.isSample;});
+  DB.accounts=DB.accounts.filter(function(a){return !a.isSample||DB.txns.some(function(t){return txnTouchesAcc(t,a.name);});});
+  DB.accounts.forEach(function(a){delete a.isSample;});
+  DB.people=DB.people.filter(function(p){return sp.indexOf(p)<0||DB.txns.some(function(t){return t.person===p;})||p===meName();});
+  Object.keys(DB.budgets2||{}).forEach(function(k){var b=DB.budgets2[k]||{};Object.keys(b).forEach(function(c){if(b[c]&&b[c].isSample)delete b[c];});});
+  delete DB.meta.sample;
+  return s;
 }
 function demoRemove(){
-  var d=DB.meta.demo;if(!d||!d.on){toast('No sample transactions to remove');return;}
-  var n=DB.txns.filter(function(t){return t.demo;}).length;
-  askConfirm('Remove the '+n+' sample transactions and the sample accounts and people they created? Your own data stays.','Remove samples',function(){
-    var snap=snapLists(['txns','accounts','people','accTypes','accTypeMeta']),m=JSON.parse(JSON.stringify(d));
-    DB.txns=DB.txns.filter(function(t){return !t.demo;});
-    DB.accounts=DB.accounts.filter(function(a){return (d.accounts||[]).indexOf(a.name)<0||DB.txns.some(function(t){return txnTouchesAcc(t,a.name);});});
-    DB.people=DB.people.filter(function(p){return (d.people||[]).indexOf(p)<0||DB.txns.some(function(t){return t.person===p;})||p===(DB.meta.profile||{}).name;});
-    DB.meta.demo={on:0};
-    touch();toastAct('Sample data removed — undo?',function(){DB.meta.demo=m;undoRestoreLists(snap);});
-  });
+  if(!sampleOn()){toast('There is no sample data to remove');return;}
+  var n=sampleCounts();
+  var go=function(){
+    var snap=snapLists(['txns','accounts','people','budgets2']),m=JSON.parse(JSON.stringify(DB.meta.sample));
+    sampleWipe();touch();
+    toastAct('Sample data removed — undo?',function(){DB.meta.sample=m;undoRestoreLists(snap);});
+  };
+  if(window.B79&&B79.push)B79.push('cf',{title:'Remove sample data?',ic:'trash',
+    lead:'This removes '+n.tx+' sample transactions, '+n.acc+' sample accounts and the sample budgets in one go. Your own accounts and transactions stay as they are.',
+    primary:{l:'Remove sample data',ic:'trash',cls:'red',go:function(){B79.closeAll();go();}},second:'Cancel'});
+  else askConfirm('Remove all sample data? Your own data stays.','Remove sample data',go);
+}
+/* the "Try with sample data" sheet: says what is added and where it stays, then adds it */
+function sampleTry(){
+  if(sampleOn()){toast('Sample data is already on');return;}
+  var cp=usageMode()!=='solo',P=cp?esc(partnerName()):'';
+  var lead='See how transactions, budgets, reports and insights work using example data. You can remove the sample data anytime.';
+  var chg=['Adds sample accounts named “Sample …” and about 3 months of example transactions','Adds sample budgets for categories that have none yet'];
+  var stay=['Your own accounts, transactions and budgets',cp?'Sample data stays on this phone: it is not synced to '+P+', and is left out of backups and exports':'Sample data stays on this phone: it is left out of sync, backups and exports'];
+  if(window.B79&&B79.push)B79.push('cf',{title:'Try with sample data',ic:'play',lead:lead,chg:chg,stay:stay,
+    primary:{l:'Add sample data',ic:'play',go:function(){B79.closeAll();demoLoad(false);}},second:'Not now'});
+  else askConfirm(lead,'Add sample data',function(){demoLoad(false);});
 }
 
 /* ---------- 5. iPhone notes in reminders ---------- */
@@ -4240,7 +4362,7 @@ tourNext();
 return;
 },
 'demoadd':function(el,next){
-demoLoad(false);
+sampleTry();
 return;
 },
 'demorm':function(el,next){
@@ -4303,7 +4425,7 @@ var _rSR52=renderSplitRows;renderSplitRows=function(){
   var b=bx.querySelector('[data-act=splitadd].btn');
   if(b&&!SPLIT.rows.length){b.className='btn splitgo';b.innerHTML=ico('users')+' Split between people';}
 };
-TOURS.split=function(){var has=function(){return DB.txns.some(function(t){return !t.demo&&t.group;});};return [
+TOURS.split=function(){var has=function(){return DB.txns.some(function(t){return !t.isSample&&t.group;});};return [
   {pre:function(){gotoView('overview');},sel:'.nadd button',tx:'Tap <b>+</b> to add the bill.',ok:function(){return sheetOpen()||has();}},
   {sel:'#fAmount',tx:'Type the <b>total</b> of the bill.',ok:has,soft:function(){return parseAmt($('fAmount').value)>0&&document.activeElement!==$('fAmount');}},
   {sel:'#fCatChips',tx:'Pick a category.',ok:has,soft:function(){return !!F.cat;}},
@@ -4472,7 +4594,7 @@ function materializeRecur(){
 /* what goes to the shared copy: my private transactions as date + amount only, no device settings */
 function sharedCopy(now){
   var me=meName(),c=JSON.parse(JSON.stringify(DB));
-  c.txns=c.txns.filter(function(t){return !t.demo;}).map(function(t){
+  c.txns=c.txns.filter(function(t){return !t.isSample;}).map(function(t){
     if(t.priv&&!t.masked&&(t.pby||me)===me){var m=maskTx(t);m.u=t.u||0;m.priv=1;m.pby=t.pby||me;return m;}
     return t;});
   delete c.collab;
@@ -4517,7 +4639,7 @@ var hhPush;
 function waitFree(fn){if($('authScr').hidden&&$('lockScr').hidden&&!TOUR.steps)fn();else setTimeout(function(){waitFree(fn);},700);}
 function hhJoin(id){
   var em=(FB.user.email||'').toLowerCase(),uid=FB.user.uid;
-  if(DB.meta.demo&&DB.meta.demo.on){DB.txns=DB.txns.filter(function(t){return !t.demo;});DB.meta.demo={on:0};}
+  sampleWipe();
   fsMods().then(function(F){
     var upd={members:F.arrayUnion(uid),invites:F.arrayRemove(em)};upd['memberEmails.'+uid]=em;
     return F.updateDoc(hhRef(F,id),upd).then(function(){return F.setDoc(F.doc(FB.db,'users',uid),{household:id,email:em},{merge:true});})
@@ -4717,7 +4839,6 @@ function setupSettings(){
 }
 setupSettings();
 
-(function(){var p=document.querySelector('#ovEmpty .empty p');if(p)p.textContent='Track money together: who spent what, shared bills and who owes whom. Works offline on your phone, with live cloud sync for the two of you when you sign in.';})();
 
 /* ---------- actions ---------- */
 ACT.on('core',{
@@ -4911,8 +5032,8 @@ var _sc56=sharedCopy;sharedCopy=function(now){
 function pushPrivate(){
   if(!HH.id||!FB.user)return;var me=meName(),pn={},sf={};
   DB.accounts.forEach(function(a){if(!pvMine(a))return;if(a.vis==='me')pn[a.name]=1;else if(a.shareFrom)sf[a.name]=a.shareFrom;});
-  var tx=DB.txns.filter(function(t){if(t.demo||t.masked||t.pvx)return false;if(t.priv&&(t.pby||me)===me)return true;return !!(pn[t.account]||pn[t.to]||(sf[t.account]&&t.date<sf[t.account])||(sf[t.to]&&t.date<sf[t.to]));});
-  var s=JSON.stringify(tx),sa=JSON.stringify(DB.accounts.filter(pvMine));
+  var tx=DB.txns.filter(function(t){if(t.isSample||t.masked||t.pvx)return false;if(t.priv&&(t.pby||me)===me)return true;return !!(pn[t.account]||pn[t.to]||(sf[t.account]&&t.date<sf[t.account])||(sf[t.to]&&t.date<sf[t.to]));});
+  var s=JSON.stringify(tx),sa=JSON.stringify(DB.accounts.filter(function(a){return pvMine(a)&&!a.isSample;}));
   if(s+'\u0001'+sa===HH.lastPriv)return;HH.lastPriv=s+'\u0001'+sa;
   fsMods().then(function(F){return F.setDoc(hhPrivRef(F,HH.id),{data:s,accs:sa,changedAt:Date.now()});}).catch(function(e){console.warn('hh-priv',e);});
 };
@@ -4934,7 +5055,7 @@ V56.mgr={};
 MGR_TITLE.sharepick=ico('users')+' Choose accounts to share';
 V56.mgr.sharepick=function(){
   var me=meName(),P=esc(partnerName());
-  var l=DB.accounts.filter(function(a){return !a.recv&&!a.locked&&!/^.+ owes .+$/.test(a.name)&&!LBL_RE.test(a.name)&&(!me||!a.owner||a.owner===me||String(a.owner).split(' & ').indexOf(me)>=0)&&!(DB.meta.demo&&DB.meta.demo.on&&(DB.meta.demo.accounts||[]).indexOf(a.name)>=0);});
+  var l=DB.accounts.filter(function(a){return !a.recv&&!a.locked&&!/^.+ owes .+$/.test(a.name)&&!LBL_RE.test(a.name)&&(!me||!a.owner||a.owner===me||String(a.owner).split(' & ').indexOf(me)>=0)&&!(DB.meta.sample&&DB.meta.sample.on&&(DB.meta.sample.accounts||[]).indexOf(a.name)>=0);});
   $('mgrBody').innerHTML='<div class="help small" style="margin-bottom:10px">Tick the accounts '+P+' may see. <b>Unticked accounts stay private</b>: '+P+' won’t see them, their transactions or their balances.</div>'
     +(l.length?'<div class="dayg">'+l.sort(function(x,y){return alphasort(x.name,y.name);}).map(function(a){return '<label class="mgr-row" style="padding:10px 12px;cursor:pointer"><span class="lb">'+esc(a.name)+'<small>'+esc(a.type||'')+'</small></span><input type="checkbox" class="tgl pvck" data-n="'+esc(a.name)+'"'+(a.vis==='me'?'':' checked')+'></label>';}).join('')+'</div>':'<div class="help">You don’t have any accounts yet.</div>')
     +'<div class="sheet-foot" style="padding-bottom:4px"><button class="btn" data-act="sharesave">Save</button></div>';
@@ -5357,12 +5478,12 @@ function expRange(){
   if(p==='year')return {s:y+'-01-01',e:y+'-12-31',label:String(y)};
   if(p==='12m'){var s=mr(y,m-11).s;return {s:s,e:mr(y,m).e,label:'Last 12 months'};}
   if(p==='custom'){var a=EXP2.from||t,b=EXP2.to||t;if(a>b){var x=a;a=b;b=x;}return {s:a,e:b,label:dLabelY(a)+' – '+dLabelY(b)};}
-  var ds=DB.txns.filter(function(t){return !t.demo&&t.date>'1971';}).map(function(t){return t.date;}).sort();
+  var ds=DB.txns.filter(function(t){return !t.isSample&&t.date>'1971';}).map(function(t){return t.date;}).sort();
   return {s:ds[0]||t,e:ds[ds.length-1]||t,label:'All time'};
 }
 function expData(){
   var me=meName(),r=expRange(),priv=EXP2.priv||EXP2.space==='personal'||!isCouple();
-  var tx=DB.txns.filter(function(t){return !t.demo&&!partnerFull(t,me);}).map(function(t){if(t.priv&&t.pby&&me&&t.pby!==me){var m=maskTx(t);m.priv=1;m.pby=t.pby;return m;}return t;});
+  var tx=DB.txns.filter(function(t){return !t.isSample&&!partnerFull(t,me);}).map(function(t){if(t.priv&&t.pby&&me&&t.pby!==me){var m=maskTx(t);m.priv=1;m.pby=t.pby;return m;}return t;});
   var accs=DB.accounts.filter(function(a){return !a.locked;}),hid={};
   DB.accounts.forEach(function(a){if(pvMine(a)&&a.vis==='me')hid[a.name]=1;});
   if(EXP2.space==='personal'){tx=tx.filter(function(t){return hid[t.account]||hid[t.to];});accs=accs.filter(function(a){return hid[a.name];});}
@@ -5444,7 +5565,9 @@ V56.mgr.bkfile=function(){
     +'<button class="btn" data-act="bkfilego">'+ico('download')+' Download backup</button>';
 };
 var _bkdl56=backupDownload;backupDownload=function(i){_bkdl56(i);DB.meta.lastBkDl=Date.now();save();};
-function bkRestorePick(){var i=$('fileRestore');if(i)i.click();}
+function bkRestorePick(){var i=$('fileRestore'); /* beta 111: make the input when the old Backup card is not on the page (Restore did nothing) */
+  if(!i){i=document.createElement('input');i.type='file';i.id='fileRestore';i.accept='.json,application/json';i.hidden=true;i.setAttribute('onchange','bkRestoreFile(this)');document.body.appendChild(i);}
+  i.click();}
 function bkRestoreFile(inp){var f=inp.files&&inp.files[0];inp.value='';if(!f)return;f.text().then(function(t){bkOpenText(t);}).catch(function(){toast('Could not read the file');});}
 function bkOpenText(t){
   var d;try{d=JSON.parse(t);}catch(e){toast('This is not a backup file');return;}
@@ -5494,15 +5617,6 @@ var _repf56=replaceFile;replaceFile=function(inp){var f=inp.files&&inp.files[0];
 
 /* ---------- 10. Overview: demo banner, tips, backup reminder, solo tiles ---------- */
 var TILES56=TILES.slice();
-function demoExit(){
-  var d=DB.meta.demo;if(!d||!d.on)return;
-  var snap=snapLists(['txns','accounts','people','accTypes','accTypeMeta']),m=JSON.parse(JSON.stringify(d));
-  DB.txns=DB.txns.filter(function(t){return !t.demo;});
-  DB.accounts=DB.accounts.filter(function(a){return (d.accounts||[]).indexOf(a.name)<0||DB.txns.some(function(t){return txnTouchesAcc(t,a.name);});});
-  DB.people=DB.people.filter(function(p){return (d.people||[]).indexOf(p)<0||DB.txns.some(function(t){return t.person===p;})||p===(DB.meta.profile||{}).name;});
-  DB.meta.demo={on:0};touch();toastAct('Sample data removed — undo?',function(){DB.meta.demo=m;undoRestoreLists(snap);});
-}
-var _dl56=demoLoad;demoLoad=function(q){_dl56(q);if(!q){gotoView('overview');}};
 /* help text */
 (function(){
   var ol=document.querySelector('#view-settings details.help ol');if(!ol)return;
@@ -5510,7 +5624,7 @@ var _dl56=demoLoad;demoLoad=function(q){_dl56(q);if(!q){gotoView('overview');}};
     if(/^Privacy:/.test(t))li.innerHTML='<b>Privacy Screen:</b> tap the eye at the top to hide every amount. Press and hold an amount to peek.';
     else if(/^Hide from your partner:/.test(t))li.innerHTML='<b>Private from your partner:</b> set an account to <b>Only me</b> in Accounts → the account → Edit, or choose <b>Hide details</b> / <b>Fully private</b> under Privacy when adding a transaction.';
     else if(/^Statements:/.test(t))li.innerHTML='<b>Statements:</b> Settings → Import → Import a statement, or open an account and tap Import a statement. Review every line before it is added; undo a whole import from Recent imports.';
-    else if(/^Sample data:/.test(t))li.innerHTML='<b>Sample data:</b> tap Explore with sample data on an empty Insights screen; Exit demo removes it.';
+    else if(/^Sample data:/.test(t))li.innerHTML='<b>Sample data:</b> tap Try with sample data on an empty Insights or Transactions screen, or go to Settings → Data &amp; Sync → Sample data. It stays on this phone and Remove sample data takes it all away.';
   });
   ol.insertAdjacentHTML('beforeend','<li><b>Export:</b> Settings → Export. Excel, a monthly PDF report, a settle-up statement or CSV, for any period.</li><li><b>Backup:</b> Settings → Backup &amp; restore. Download a password-protected backup file and restore it on any phone.</li>');
 })();
@@ -5711,10 +5825,6 @@ return;
 DB.meta.bkSnooze=Date.now()+7*864e5;
 save();
 renderOverview();
-return;
-},
-'demoexit':function(el,next){
-demoExit();
 return;
 },
 'mgr':function(el,next){
@@ -6167,7 +6277,7 @@ expXLSX=function(){
     var W=[['Ledger','Date','Description','Person','Change','Running balance','Between Us']];
     ls.forEach(function(l){
       var run=Math.round(accountBalAsOf(l.name,before)*100)/100;W.push([l.name,'','Opening balance','','',run,oweTxt(l.name,run).replace(/&amp;/g,'&')]);
-      DB.txns.filter(function(t){return !t.demo&&t.date>=D.s&&t.date<=D.e&&txnTouchesAcc(t,l.name);}).sort(function(a,b){return a.date<b.date?-1:1;}).forEach(function(t){
+      DB.txns.filter(function(t){return !t.isSample&&t.date>=D.s&&t.date<=D.e&&txnTouchesAcc(t,l.name);}).sort(function(a,b){return a.date<b.date?-1:1;}).forEach(function(t){
         var v=accEffect(t,l.name);run=Math.round((run+v)*100)/100;
         W.push([l.name,utcD(t.date),(t.type==='Transfer'?'Repayment / transfer':(t.category||''))+(t.note&&!(t.priv&&t.pby!==meName())?' · '+t.note:''),t.person||'',v,run,oweTxt(l.name,run).replace(/&amp;/g,'&')]);
       });W.push([]);
@@ -6196,7 +6306,7 @@ expSettle=function(){
   P.h1('Settle-up statement · '+D.label).sub(dLabelY(D.s)+' – '+dLabelY(D.e)+' · created '+bkWhen(Date.now()));
   ls.forEach(function(l){
     var op=Math.round(_abao54(l.name,before)*100)/100,cl=Math.round(_abao54(l.name,D.e)*100)/100,seen={},rows=[{full:'At the start ('+dLabelY(before)+'): '+oweTxt(l.name,op).replace(/&amp;/g,'&')}];
-    DB.txns.filter(function(t){return !t.demo&&t.date>=D.s&&t.date<=D.e&&txnTouchesAcc(t,l.name);}).sort(function(a,b){return a.date<b.date?-1:1;}).forEach(function(t){
+    DB.txns.filter(function(t){return !t.isSample&&t.date>=D.s&&t.date<=D.e&&txnTouchesAcc(t,l.name);}).sort(function(a,b){return a.date<b.date?-1:1;}).forEach(function(t){
       var hidden=t.priv&&t.pby&&me&&t.pby!==me,desc=hidden?'Private':((t.type==='Transfer'?'Repayment':t.category)+(t.note?' · '+t.note:''));
       if(t.group){if(seen[t.group])return;seen[t.group]=1;var legs=DB.txns.filter(function(x){return x.group===t.group;}),tot=0,sh={},eff=0;legs.forEach(function(x){tot+=x.amount;sh[x.person]=(sh[x.person]||0)+x.amount;eff+=accEffect(x,l.name);});
         rows.push([dLabelY(t.date),desc,realMoney(tot),ownerOf(t.account)||''].concat(ppl.map(function(p){return sh[p]?realMoney(sh[p]):'';})).concat([realMoney(eff)]));return;}
@@ -6988,7 +7098,8 @@ SCREEN.base('renderMgr',104433,function __base_renderMgr(){
         var k=c+'::'+s;
         var n=0;DB.txns.forEach(function(t){if(t.category===c&&t.subcategory===s)n++;});
         if(MGR.edit===k){ /* v1.23: change the parent category of a sub-category */
-          var mvTos=[];[].concat(DB.categories.Expense||[],DB.categories.Income||[]).forEach(function(x){if(x!==c&&mvTos.indexOf(x)<0)mvTos.push(x);});
+          var mvTos=[],inE=(DB.categories.Expense||[]).indexOf(c)>=0,inI=(DB.categories.Income||[]).indexOf(c)>=0; /* beta 112: only categories of the same kind, so an expense never lands in an income category */
+          [].concat(inE||!inI?DB.categories.Expense||[]:[],inI||!inE?DB.categories.Income||[]:[]).forEach(function(x){if(x!==c&&mvTos.indexOf(x)<0)mvTos.push(x);});
           mvTos=sortedAlpha(mvTos);
           return '<div style="border:1.5px solid var(--accent);border-radius:12px;padding:10px;margin:6px 0">'
             +'<div class="mgr-lb">Rename</div>'
@@ -7682,7 +7793,6 @@ SCREEN.base('renderAuth',293914,function __base_renderAuth(){
       +(real.length?'<label class="aul">Which person are you?</label><select class="fin" id="auMeSel" onchange="$(\'auMeWrap\').hidden=this.value!==\'__new\'"><option value="__new">Someone new…</option>'+sortedAlpha(real).map(function(p){return '<option'+(pr.name===p?' selected':'')+'>'+esc(p)+'</option>';}).join('')+'</select>':'')
       +'<div id="auMeWrap"'+(real.length&&pr.name&&real.indexOf(pr.name)>=0?' hidden':'')+'><label class="aul">Your name</label><input class="fin" id="auMe" autocomplete="given-name" placeholder="e.g. Huei" value="'+esc(real.length?'':(pr.name||''))+'"></div>'
       +'<label class="aul">Your partner’s name <span class="muted">(optional, you can add them later)</span></label><input class="fin" id="auPartner" placeholder="e.g. Kim">'
-      +'<label class="mgr-row" style="cursor:pointer;border:0;padding:12px 0 4px"><span class="lb" style="white-space:normal">'+ico('play')+' Add sample transactions<small>50 example transactions to explore reports. Remove them any time in Settings.</small></span><input type="checkbox" class="tgl" id="auDemo"'+(DB.txns.length?'':' checked')+'></label>'
       +err+'<button class="btn" style="margin-top:12px" data-act="auperson">Start using the app</button>'
       +(IOS&&!IOS_SA?'<div class="help small" style="margin-top:12px">'+ico('download')+' <b>On iPhone:</b> tap the Share button, then <b>Add to Home Screen</b>. The app opens full screen and can send reminders.</div>':'');
   }
@@ -7946,11 +8056,10 @@ try{
 /* — from core/21-v1-51-couple-money-manager-email.js:135 — */
 SCREEN.base('renderMe',301476,function __base_renderMe(){
   var b=$('meBody');if(!b)return;
-  var s=sessGet()||{},pr=DB.meta.profile||{},j=jr(),d=DB.meta.demo;
+  var s=sessGet()||{},pr=DB.meta.profile||{},j=jr();
   /* beta 58: the e-mail status line was removed here — the Sign-in card shows it once; Log out lives there too */
   b.innerHTML='<div style="display:grid;gap:8px">'
     +(j.hide||jrDoneCount()>=JR.length?'<button class="btn ghost" data-act="jrshow">'+ico('flag')+' Show getting-started checklist</button>':'')
-    +(d&&d.on?'<button class="btn ghost" data-act="demorm">'+ico('trash')+' Remove sample transactions</button>':'<button class="btn ghost" data-act="demoadd">'+ico('play')+' Add sample transactions</button>')
     +'</div>';
 });
 SCREEN.on('renderMe',301476);
@@ -8973,12 +9082,12 @@ SCREEN.after('B3.renderProfileSub',250009965,{call:'apply',ret:false},function()
 try{
     var pr=DB.meta.profile||{},cp=isCouple();
     var meEl=$('b19RoleMe');
-    if(meEl){meEl.hidden=false;meEl.innerHTML='<b>Household owner</b> — '+(pr.name?esc(pr.name):'you')+' owns this app, its data and every setting.';}
+    if(meEl){meEl.hidden=false;meEl.innerHTML='<b>Household owner</b>';} /* beta 111: role only; what the household owner manages (mode and sync) is explained once, in Modes */
     var paEl=$('b19RolePart');
     if(paEl){
       paEl.hidden=!cp;
       if(cp){var P=pr.partner||'';if(!P){try{P=partnerName();}catch(e){DIAG.note(e,"38-v160-b19-experience-personal:177");}}
-        paEl.innerHTML='<b>Collaborator</b> — '+esc(P||'your partner')+' joins the household with the access you allow in Settings → Modes.';}
+        paEl.innerHTML='<b>Collaborator</b>';}
     }
     var rs=$('b19Roles');
     if(rs){rs.innerHTML='';rs.hidden=true;} /* beta 58: the "Roles right now" box repeated the two captions above */
@@ -9442,7 +9551,7 @@ batchPriv=function(){askChoice('Private transactions live in Private accounts, a
 function privConflicts59(){
   var me=meName();
   return DB.txns.filter(function(t){
-    if(!t.priv||t.masked||t.pvx||t.demo)return false;
+    if(!t.priv||t.masked||t.pvx||t.isSample)return false;
     if(t.pby&&me&&t.pby!==me)return false;
     var a=a59(t.account),b=(t.to&&!isRecvAcc(t.to))?a59(t.to):null;
     return !!(a&&a.vis!=='me')||!!(b&&b.vis!=='me')||!!t.group||!!t.owedAcc;
@@ -9487,7 +9596,7 @@ function unsettled59(n){
   Object.keys(g).forEach(function(k){if(g[k]>0.004){cnt++;out+=g[k];}});
   return {n:cnt,amt:out};
 }
-function hiddenCount59(n){return DB.txns.filter(function(t){return !t.group&&!t.demo&&(t.account===n||(t.to===n&&t.type==='Transfer'));}).length;}
+function hiddenCount59(n){return DB.txns.filter(function(t){return !t.group&&!t.isSample&&(t.account===n||(t.to===n&&t.type==='Transfer'));}).length;}
 MGR_TITLE.pvmove=ico('lock')+' Move to a Private account';
 V56.mgr.pvmove=function(){
   var m=V59.mv||{},pa=myPrivAccs().filter(function(a){return a.name!==m.from;});
@@ -9754,7 +9863,7 @@ V56.mgr.bkfile=function(){
     +(pv?'<div class="help small" style="margin-top:10px">Then choose '+pn+' in the share sheet (or move the downloaded file into your '+pn+' folder).</div>':'');
 };
 bkDays=function(){var v=m59(),l=Math.max(+DB.meta.lastBkDl||0,+v.backupAt||0);return l?Math.floor((Date.now()-l)/864e5):null;};
-bkDue=function(){var d=bkDays(),v=m59();return !(FB.user&&DB.meta.cloudSyncOn)&&DB.txns.filter(function(t){return !t.demo;}).length>=10&&(d===null||d>=(v.remind||7));};
+bkDue=function(){var d=bkDays(),v=m59();return !(FB.user&&DB.meta.cloudSyncOn)&&DB.txns.filter(function(t){return !t.isSample;}).length>=10&&(d===null||d>=(v.remind||7));};
 bkPreview=function(t){
   var raw;try{raw=JSON.parse(t);}catch(e){toast('This is not a backup file');return;}
   if(raw&&raw.fv&&raw.fv>2){toast('This backup was made by a newer version of the app. Update the app first.');return;}
@@ -9780,7 +9889,7 @@ V56.mgr.bkprev=function(){
     +'<div class="help small">'+ico('lock')+' A safety copy of your current device data is created automatically before anything is replaced. You can undo a restore from Snapshot history.</div>';
 };
 var _hhCreate59=hhCreate;hhCreate=function(ud){
-  var ca=ud&&ud.data?(+ud.changedAt||Date.parse(ud.updatedAt)||0):0,localHas=DB.txns.some(function(t){return !t.demo;});
+  var ca=ud&&ud.data?(+ud.changedAt||Date.parse(ud.updatedAt)||0):0,localHas=DB.txns.some(function(t){return !t.isSample;});
   if(!(ca>(+DB.meta.changedAt||0)+1000&&localHas))return _hhCreate59(ud);
   return new Promise(function(res){
     waitFree(function(){askChoice('A cloud copy of your data from '+bkWhen(ca)+' already exists, and it is newer than the data on this phone. Which one should Couple Money Cloud start from? A safety backup of this phone is created first. Nothing is merged.',[
@@ -10460,7 +10569,7 @@ function migPrompt6(){
 MGR_TITLE.share6=ico('users')+' Choose accounts to share';
 V56.mgr.share6=function(){
   var me=meName(),P=esc(partnerName());
-  var l=DB.accounts.filter(function(a){return !a.recv&&!a.locked&&!/^.+ owes .+$/.test(a.name)&&!LBL_RE.test(a.name)&&(!me||!a.owner||a.owner===me||String(a.owner).split(' & ').indexOf(me)>=0)&&!(DB.meta.demo&&DB.meta.demo.on&&(DB.meta.demo.accounts||[]).indexOf(a.name)>=0);});
+  var l=DB.accounts.filter(function(a){return !a.recv&&!a.locked&&!/^.+ owes .+$/.test(a.name)&&!LBL_RE.test(a.name)&&(!me||!a.owner||a.owner===me||String(a.owner).split(' & ').indexOf(me)>=0)&&!(DB.meta.sample&&DB.meta.sample.on&&(DB.meta.sample.accounts||[]).indexOf(a.name)>=0);});
   V6.share={};
   l.forEach(function(a){if(a.vis!=='me')V6.share[a.name]=1;});
   $('mgrBody').innerHTML='<div class="help small" style="margin-bottom:10px">Tick the accounts '+P+' may see, then tap Save. <b>Unticked accounts stay on this device</b> — '+P+' never sees them, their transactions or their balances. Nothing is shared until you tick it.</div>'
@@ -10585,7 +10694,9 @@ function mode6MgrPost(){
 
 
 /* ---------- 7. export & backup scope (M-09 / acceptance: household exports exclude partner private data) ---------- */
-function exportScope6(){
+/* backup files: never sample data */
+function exportScope6(){return sampleStrip(exportScopeAll6());}
+function exportScopeAll6(){
   var m6=nowMode6();if(m6==='solo')return DB;
   var me=meName();
   var pp=DB.accounts.filter(function(a){return a.vis==='me'&&((a.pvby||a.owner||'')!==me);}).map(function(a){return a.name;});
@@ -11048,7 +11159,7 @@ var SET_HTML=''
   +'<section class="setsub" data-sub="profile" hidden><div class="card"><h2>Your Profile</h2>'
     +'<div class="f-row"><label>Your name</label><input class="fin" id="profNameB3" placeholder="e.g. Hubby"></div><div class="b19role" id="b19RoleMe" hidden></div>'
     +'<div class="f-row" id="profPartRowB3"><label>Your partner</label><input class="fin" id="profPartB3" placeholder="e.g. Wifey"></div><div class="b19role" id="b19RolePart" hidden></div>'
-    +'<div class="help small" style="margin-bottom:10px">Names appear on transactions, splits and the household. Your partner\u2019s name fills in when they accept your invite.</div>'+'<div class="b19roles" id="b19Roles"></div>'
+    +'<div class="b19roles" id="b19Roles"></div>'
     +'<button class="btn" data-act="profsaveB3">Save profile</button>'
     +'<div id="meBody" style="margin-top:14px"></div>'
     +'<div class="help small" id="profModeB3" style="margin-top:10px"></div>'
@@ -13342,7 +13453,7 @@ V63.CATS={
   'Loans':          {types:['Loan'],                   own:0,ic:'bank',  ex:'Housing, personal, education, renovation loan'},
   'Hire Purchase':  {types:['Hire Purchase'],          own:0,ic:'carplus',ex:'Vehicle or equipment hire purchase'},
   'Cards & credit lines':{types:['Card'],              own:0,ic:'card2', ex:'Credit card, overdraft, line of credit'},
-  'Other':          {types:['Other Asset'],            own:1,ic:'box',   ex:'Gold, collectibles, insurance value'}
+  'Other':          {types:['Other Asset','Other Balance'],            own:1,ic:'box',   ex:'Gold, collectibles, insurance value'}
 };
 V63.typeCat={};
 Object.keys(V63.CATS).forEach(function(c){(V63.CATS[c].types||[]).forEach(function(t){V63.typeCat[t]=c;});});
@@ -13637,6 +13748,7 @@ V63.fillDefaults=function(){
   if(!DB||!DB.accounts)return 0;
   var ch=0;
   if(B3.ASSETS.indexOf('Other Asset')<0){B3.ASSETS.push('Other Asset');ch=1;}
+  if(B3.ASSETS.indexOf('Other Balance')<0){B3.ASSETS.push('Other Balance');ch=1;} /* beta 112: Other asset (balance) */
   try{B3.ensureTypes();}catch(e){DIAG.note(e,"35-v160-b16-insights-reports:248");}
   DB.accounts.forEach(function(a){
     if(a.type==='Property'){
@@ -16259,7 +16371,7 @@ B20.pvData=function(){
   var accSet={};accs.forEach(function(a){accSet[a.name]=1;});
   function relabel(n){return anyPn[n]?((a59(n)||{}).owner||me)+'\u2019s personal account':n;}
   var txns=DB.txns.filter(function(t){
-    if(t.demo)return false;
+    if(t.isSample)return false;
     var inA=accSet[t.account],inB=t.type==='Transfer'&&t.to&&accSet[t.to];
     if(!inA&&!inB)return false;
     if(t.priv&&(t.pby||me)===me)return false;          /* my own private entries never reach the partner */
@@ -16553,20 +16665,9 @@ function polish21(){
     });
     /* 6d · Your Profile: keep it about you — samples and Modes live elsewhere */
     var prof=document.querySelector('.setsub[data-sub=profile]')||null;
-    qa('[data-act=demorm]').forEach(function(b){
-      var inProf=!!b.closest('.setsub[data-sub=profile]');if(inProf)b.style.display='none';
-    });
     qa('.setsub[data-sub=profile] [data-act=setopen][data-k=mode]').forEach(function(b){b.style.display='none';});
     qa('.setsub[data-sub=profile] input').forEach(function(i){if(i.value==='Me'&&/partner/i.test((i.closest('.f-row,div')||{}).textContent||''))i.value='';});
     var data=document.querySelector('.setsub[data-sub=data]');
-    var demoOn=false;try{demoOn=!!(DB&&DB.meta.demo&&DB.meta.demo.on);}catch(e){DIAG.note(e,"42-v160-b21-review-fixes:140");}
-    if(data){
-      var ex=$('demorm21');
-      if(demoOn&&!ex){
-        var anchor=data.querySelector('.card');
-        if(anchor)anchor.insertAdjacentHTML('afterbegin','<button class="btn ghost" id="demorm21" data-act="demorm" style="width:100%;margin-bottom:10px">'+ico('trash')+' Remove sample transactions</button>');
-      }else if(!demoOn&&ex)ex.remove();
-    }
     /* 6e · Danger zone: no cloud action when there is no cloud */
     var cloud=false;try{cloud=storageMode()!=='device'||!!(window.FB&&FB.user);}catch(e){DIAG.note(e,"42-v160-b21-review-fixes:149");}
     qa('[data-act=fbdelcloud]').forEach(function(b){b.style.display=cloud?'':'none';});
@@ -16958,8 +17059,6 @@ function isDrop(t){return DROP.some(function(r){return r.test(t);});}
    A .help / .pv-note text that matches none of these is left on screen as written and logged once in DIAG,
    so new copy is a deliberate choice, never auto-hidden. */
 var REVIEWED55=[
-  /^Names appear on transactions/,                 /* Settings › Your Profile */
-  /^Your sign-in and PIN are separate/,            /* Settings › Your Profile › Sign-in */
   /^Set a PIN to lock the app/,                    /* Settings › Privacy & Security */
   /^Data on this phone is encrypted with your PIN/,/* same card, PIN set */
   /^Enter your PIN once to switch on encryption/,  /* same card, PIN set, not yet encrypted */
@@ -17826,7 +17925,6 @@ SCREEN.after('B3.renderProfileSub',280002000,{call:'apply',ret:false},function()
   box.innerHTML='<h2>'+ico('key')+' Sign-in</h2>'
     +'<div class="fline"><span>'+esc(em||'\u2014')+'<small style="display:block;color:var(--muted)">'+(k==='google'?'Signs in with Google':k==='pw'?(isCloud()?'Email & password \u00b7 cloud account':'Email & password \u00b7 this phone only'):'Profile on this phone only')+'</small></span>'
     +(k==='pw'?'<button class="ibtn" data-act="prpwchg" style="color:var(--accent);font-weight:800">Change password</button>':'')+'</div>'
-    +'<div class="help small" style="margin-top:6px">Your sign-in and PIN are separate. '+(k==='google'?'Manage your password in your Google account.':'Changing your password does not change your PIN.')+'</div>'
     +'<button class="btn ghost" data-act="aulogout" style="margin-top:10px;width:100%">'+ico('logout')+' Log out</button>';
 });
 SCREEN.on('B3.renderProfileSub',280002000);
@@ -17852,9 +17950,9 @@ var NOUN={accs:'account',cats:'category',subs:'sub-category',goals:'saving goal'
 var ICO={accs:'card',cats:'tag',subs:'list',recur:'repeat',goals:'target'};
 var TTL={accs:'Accounts',cats:'Categories',subs:'Sub-categories',recur:'Recurring transactions',goals:'Saving goals'};
 var CANADD={accs:1,cats:1,subs:1,goals:1};
-var TYPE_GROUPS=[['Money I have',['Bank','Cash','e-Wallet']],['Things I own',['Property','Vehicle','Investment','Other Asset']],['Money I owe',['Card','Loan','Hire Purchase']]];
-var TYPE_LB={'Bank':'Bank','Cash':'Cash','e-Wallet':'e-Wallet','Property':'Property','Vehicle':'Vehicle','Investment':'Investment','Other Asset':'Other asset','Card':'Credit card','Loan':'Loan','Hire Purchase':'Hire purchase'};
-var TYPE_ORDER=['Bank','Cash','e-Wallet','Card','Loan','Hire Purchase','Property','Vehicle','Investment','Other Asset'];
+var TYPE_GROUPS=[['Money I have',['Bank','Cash','e-Wallet']],['Things I own',['Property','Vehicle','Investment','Other Asset','Other Balance']],['Money I owe',['Card','Loan','Hire Purchase']]];
+var TYPE_LB={'Bank':'Bank','Cash':'Cash','e-Wallet':'e-Wallet','Property':'Property','Vehicle':'Vehicle','Investment':'Investment','Other Asset':'Other asset (value)','Other Balance':'Other asset (balance)','Card':'Credit card','Loan':'Loan','Hire Purchase':'Hire purchase'};
+var TYPE_ORDER=['Bank','Cash','e-Wallet','Card','Loan','Hire Purchase','Property','Vehicle','Investment','Other Asset','Other Balance'];
 function tyLb(t){return TYPE_LB[t]||String(t||'').replace(/ · debt$/,'')||'Other';}
 function isCardT(t){try{return t==='Card'||typeHasCycle(t);}catch(e){return t==='Card';}}
 function isOweT(t){try{return accTypeKind(t)==='liability';}catch(e){return false;}}
@@ -18216,10 +18314,12 @@ ACT.on('v160b27-manage-lists',{
       toast(n?(a.name+' has '+n+' transaction'+(n===1?'':'s')+' \u2014 '+how):(a.name+' is linked to other records \u2014 '+how),'warn');return;}
     return next(el);
   }
+  /* beta 112 (user: allow changes even with transactions): deleting a used category moves its transactions to Others
+     (the same Move confirm as Edit › Move into); a used sub-category is deleted and its transactions keep the label (delSub). */
   if(k==='cats'){var i=key.indexOf(':'),ty=key.slice(0,i),nm=key.slice(i+1),u=0;DB.txns.forEach(function(x){if(x.type===ty&&x.category===nm)u++;});
-    if(u){MGR.edit=key;renderMgr();scrollEdit();toast('Used by '+u+' transaction'+(u===1?'':'s')+' \u2014 move them first','warn');return;}}
-  if(k==='subs'){var pp=key.split('::'),u2=0;DB.txns.forEach(function(x){if(x.category===pp[0]&&x.subcategory===pp[1])u2++;});
-    if(u2){MGR.edit=key;renderMgr();scrollEdit();toast('Used by '+u2+' transaction'+(u2===1?'':'s')+' \u2014 move them first','warn');return;}}
+    if(u){var L=(DB.categories[ty]||[]).filter(function(c){return c!==nm;}),to=L.indexOf('Others')>=0?'Others':L[0];
+      if(!to){toast('Add another '+ty.toLowerCase()+' category first, so its transactions have somewhere to go.','warn');return;}
+      mergeCategory(ty,nm,to);return;}}
   return next(el);
 },
 'accaddq':function(){openAt('accs','add',null,'tab');var s=$('mgrNewAType');if(s){s.value='Bank';try{V63.addCat='Money';}catch(e){}s.dispatchEvent(new Event('change',{bubbles:true}));addLabels();}},
@@ -18939,6 +19039,8 @@ var REF_KEYS28={account:1,to:1,owedAcc:1,prop:1,property:1,propertyId:1,linkedPr
 var REF_ARRAY_KEYS28={linkedLoans:1,linkedAccounts:1,financingAccounts:1,accountRefs:1};
 function buildSharedView(source,opts){
   source=source||DB;opts=opts||{};
+  /* sample data stays on this phone: only the Couple tab and the on-screen view keep it */
+  if(opts.purpose!=='couple'&&opts.purpose!=='render')source=sampleStrip(source);
   var src=clone28(source),privName={},privId={},labels={},me=safe28(function(){return meName();},'');
   (source.accounts||[]).forEach(function(a){
     if(!a||a.vis!=='me')return;
@@ -18962,7 +19064,7 @@ function buildSharedView(source,opts){
   }
   src.accounts=(src.accounts||[]).filter(function(a){return a&&a.vis!=='me';}).map(function(a){return scrubObject(a);});
   src.txns=(src.txns||[]).filter(function(t){
-    if(!t||t.demo)return false;
+    if(!t)return false;
     if(t.priv&&t.pl==='full')return false;
     var refs=[t.account,t.to,t.fromAccount,t.toAccount,t.payerAccount,t.fundingAccount].filter(Boolean);
     var touches=refs.some(isPrivateRef);
@@ -19105,7 +19207,7 @@ function simpleCoupleHTML28(){return withShared28(function(){
   var sharedMoney=card16(ico('wallet')+' Shared Money'+det26('v_money'),'<div class="kpis">'+kpi('Money Available',money(cash),cash<0?'neg':'pos')+'</div><div class="help small" data-info23="keep">'+liq.length+' shared bank, cash and e-Wallet account'+(liq.length===1?'':'s')+'.</div>');
   var up=safe28(function(){return V63.calc.upcoming(30).filter(function(x){return x.dl>=-30;});},[]);
   var upcoming=card16(ico('bell')+' Upcoming Shared Payments'+det26('upcoming'),up.length?up.slice(0,5).map(function(x){return V63.UPROW(x,true);}).join(''):'<div class="help">No shared payments due in the next 30 days.</div>');
-  var latest=(DB.txns||[]).filter(function(t){return !t.demo;}).sort(function(a,b){return a.date<b.date?1:a.date>b.date?-1:0;}).slice(0,5);
+  var latest=(DB.txns||[]).filter(function(t){return !t.isSample;}).sort(function(a,b){return a.date<b.date?1:a.date>b.date?-1:0;}).slice(0,5);
   var latestCard=card16(ico('list')+' Latest Shared Transactions',latest.length?latest.map(function(t){var neg=t.type==='Expense';return '<div class="xtxrow"><span class="dt">'+esc(dLabelW(t.date).replace(/,.*/,''))+'</span><span class="nm"><b>'+esc(t.note||t.category||t.type)+'</b><small>'+esc(t.category||t.type)+(t.account?' · '+esc(t.account):'')+'</small></span><span class="vv '+(neg?'neg':'pos')+'">'+(t.type==='Transfer'?'':neg?'−':'+')+money(Math.abs(t.amount||0))+'</span></div>';}).join(''):'<div class="help">No shared transactions yet.</div>');
   return perCtrlHTML()+sharedMoney+cShared16()+cBetween16()+upcoming+cGoals16()+latestCard+cInsight16();
 });}
@@ -19229,7 +19331,7 @@ simpleCoupleHTML28=function(){return withShared28(function(){
   var between=cBetween16();
   var up=safe28(function(){return V63.calc.upcoming(30).filter(function(x){return x.dl>=-30;});},[]),upcoming=card16(ico('bell')+' Upcoming Shared Payments'+det26('upcoming'),up.length?up.slice(0,5).map(function(x){return V63.UPROW(x,true);}).join(''):'<div class="help">No shared payments due in the next 30 days.</div>');
   var goals=cGoals16();if(!goals)goals=card16(ico('target')+' Shared Goals'+det26('goals'),'<div class="help">No shared goals yet.</div>');else goals=goals.replace(/Household goals/g,'Shared Goals');
-  var latest=cmm291Latest(DB.txns.filter(function(t){return !t.demo;}),5),latestCard=card16(ico('list')+' Latest Shared Transactions',latest.length?latest.map(function(t){var neg=t.type==='Expense';return '<div class="xtxrow"><span class="dt">'+esc(dLabelW(t.date).replace(/,.*/,''))+'</span><span class="nm"><b>'+esc(t.note||t.category||t.type)+'</b><small>'+esc(t.category||t.type)+(t.account?' · '+esc(t.account):'')+'</small></span><span class="vv '+(neg?'neg':'pos')+'">'+(t.type==='Transfer'?'':neg?'−':'+')+money(Math.abs(t.amount||0))+'</span></div>';}).join(''):'<div class="help">No shared transactions yet.</div>');
+  var latest=cmm291Latest(DB.txns.filter(function(t){return !t.isSample;}),5),latestCard=card16(ico('list')+' Latest Shared Transactions',latest.length?latest.map(function(t){var neg=t.type==='Expense';return '<div class="xtxrow"><span class="dt">'+esc(dLabelW(t.date).replace(/,.*/,''))+'</span><span class="nm"><b>'+esc(t.note||t.category||t.type)+'</b><small>'+esc(t.category||t.type)+(t.account?' · '+esc(t.account):'')+'</small></span><span class="vv '+(neg?'neg':'pos')+'">'+(t.type==='Transfer'?'':neg?'−':'+')+money(Math.abs(t.amount||0))+'</span></div>';}).join(''):'<div class="help">No shared transactions yet.</div>');
   var insight=cInsight16();if(!insight)insight=card16(ico('spark')+' Couple Insight','<div class="help">No shared-finance issue needs attention right now.</div>');else insight=insight.replace(/Couple insight/g,'Couple Insight');
   return perCtrlHTML()+sharedMoney+spend+between+upcoming+goals+latestCard+insight;
 });};
@@ -19285,7 +19387,7 @@ hhPush=function(){
     .then(function(ok){N291.pushing=false;if(N291.again){N291.again=false;setTimeout(hhPush,300);}return ok;});
 };
 hhCreate=function(){return fsMods().then(function(F){var id=hhCode(),uid=stableUid291(),em=(FB.user.email||'').toLowerCase(),emails={},profiles={};emails[uid]=em;profiles[uid]={displayName:safe28(function(){return meName();},''),email:em};return F.setDoc(hhRef(F,id),{owner:uid,ownerEmail:em,members:[uid],memberEmails:emails,memberProfiles:profiles,storageVersion:3,schema:3,mode:(DB.meta.usage==='adv'?'adv':'couple'),createdAt:F.serverTimestamp(),updatedAt:F.serverTimestamp()}).then(function(){return F.setDoc(F.doc(FB.db,'users',uid),{household:id,email:em},{merge:true});}).then(function(){return hhAttach(id);}).then(function(){return new Promise(function(resolve){setTimeout(resolve,400);});}).then(function(){return hhPush();});});};
-hhJoin=function(token){if(DB.meta.demo&&DB.meta.demo.on){DB.txns=DB.txns.filter(function(t){return !t.demo;});DB.meta.demo={on:0};}return backend291('joinHousehold',{token:String(token||''),displayName:safe28(function(){return meName();},'')}).then(function(r){var id=r&&r.data&&r.data.householdId;if(!id)throw new Error('This invite link is no longer valid. Ask your partner for a new one.');try{localStorage.removeItem('cmm102join');}catch(e){}DB.meta.hhAt=0;DB.meta.cloudSyncOn=true;DB.meta.syncChoice='yes';save();return hhAttach(id);}).then(function(){toast('You joined the household ✓');}).catch(function(e){toast(e&&e.message?e.message:fsErr(e));});};
+hhJoin=function(token){sampleWipe();return backend291('joinHousehold',{token:String(token||''),displayName:safe28(function(){return meName();},'')}).then(function(r){var id=r&&r.data&&r.data.householdId;if(!id)throw new Error('This invite link is no longer valid. Ask your partner for a new one.');try{localStorage.removeItem('cmm102join');}catch(e){}DB.meta.hhAt=0;DB.meta.cloudSyncOn=true;DB.meta.syncChoice='yes';save();return hhAttach(id);}).then(function(){toast('You joined the household ✓');}).catch(function(e){toast(e&&e.message?e.message:fsErr(e));});};
 hhLeave=function(){askConfirm('Leave this household? Your partner keeps the shared copy. The data on this phone stays, and you get your own cloud copy again.','Leave',function(){backend291('leaveHousehold',{householdId:HH.id}).then(function(){hhDetach();DB.meta.hh='';DB.meta.cloudSyncOn=false;save();toast('You left the household');}).catch(function(e){toast(e&&e.message?e.message:fsErr(e));});});};
 window.CMM_SERVER_POLICY={version:2,storageVersion:3,normalizedCollections:['sharedState','accounts','transactions'],joinLeave:'trusted-cloud-functions',rulesFile:'firestore.rules'};
 
@@ -19309,7 +19411,7 @@ bkFileGo=function(){var pw=(($('bkPw')||{}).value||''),pw2=(($('bkPw2')||{}).val
 /* Partner preview: authoritative shared view, genuine latest activity. */
 if(window.B20)B20.pvData=function(){var me=safe28(function(){return meName();},''),P=safe28(function(){return partnerName();},'your partner'),v=buildSharedView(DB,{purpose:'preview'}),m=v.__sharedView||{},accSet={};(v.accounts||[]).forEach(function(a){if(a&&!a.locked&&!a.recv&&!/^.+ owes .+$/.test(a.name||''))accSet[a.name]=1;});var asc=cmm291Latest(v.txns||[],200).reverse();return {me:me,P:P,accs:(v.accounts||[]).filter(function(a){return accSet[a.name];}),txns:asc,relabel:function(n){return (m.labels||{})[n]||n;},anyPn:m.privateNames||{},accSet:accSet};};
 
-function finish291(){if(!DB)return setTimeout(finish291,30);prefDefaults291();ensureIds291();DB.meta.schemaVersion=SCHEMA291;if(window.experienceConfig){experienceConfig.version=VERSION291;experienceConfig.schemaVersion=SCHEMA291;}if(window.advancedCoupleConfig){advancedCoupleConfig.version=VERSION291;advancedCoupleConfig.schemaVersion=SCHEMA291;}save();document.title='v'+VERSION291+' · Couple Money Manager';var mv=document.querySelector('meta[name="app-version"]');if(mv)mv.content='1.60-beta.109';document.querySelectorAll('.sub').forEach(function(el){el.textContent=el.textContent.replace(/v?1\.60 beta 28(\.\d+)?/g,'v'+VERSION291);});if(X63.isSimple()&&V63.itab==='wealth')V63.itab='cash';renderAll();}
+function finish291(){if(!DB)return setTimeout(finish291,30);prefDefaults291();ensureIds291();DB.meta.schemaVersion=SCHEMA291;if(window.experienceConfig){experienceConfig.version=VERSION291;experienceConfig.schemaVersion=SCHEMA291;}if(window.advancedCoupleConfig){advancedCoupleConfig.version=VERSION291;advancedCoupleConfig.schemaVersion=SCHEMA291;}save();document.title='v'+VERSION291+' · Couple Money Manager';var mv=document.querySelector('meta[name="app-version"]');if(mv)mv.content='1.60-beta.112';document.querySelectorAll('.sub').forEach(function(el){el.textContent=el.textContent.replace(/v?1\.60 beta 28(\.\d+)?/g,'v'+VERSION291);});if(X63.isSimple()&&V63.itab==='wealth')V63.itab='cash';renderAll();}
 setTimeout(finish291,0);
 window.CMM_VERSION=VERSION291;window.CMM_SCHEMA_VERSION=SCHEMA291;
 })();
@@ -21456,7 +21558,7 @@ function acct(n){return DB.accounts.find(function(x){return x.name===n;});}
 try{ICONS.info=ICONS.info||'<circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/>';}catch(e){}
 
 /* ---------- kind + icon + wording ---------- */
-var TY_ICO={Bank:'bank',Cash:'cash','e-Wallet':'wallet',eWallet:'wallet',Card:'card','Credit Card':'card',Loan:'bank','Hire Purchase':'carplus',Property:'home',Vehicle:'car',Investment:'trend','Other Asset':'box'};
+var TY_ICO={Bank:'bank',Cash:'cash','e-Wallet':'wallet',eWallet:'wallet',Card:'card','Credit Card':'card',Loan:'bank','Hire Purchase':'carplus',Property:'home',Vehicle:'car',Investment:'trend','Other Asset':'box','Other Balance':'box'};
 function tyIco(a){return TY_ICO[a.type]||(accTypeKind(a.type)==='liability'?'card':'wallet');}
 function kindOf(a){if(isVal(a))return 'val';if(isLoan(a))return 'loan';if(accTypeKind(a.type)==='liability')return 'debt';return 'asset';}
 function ordDay(n){return n+((n%10===1&&n!==11)?'st':(n%10===2&&n!==12)?'nd':(n%10===3&&n!==13)?'rd':'th');}
@@ -22315,7 +22417,10 @@ function checkBackup62(d,mode){
   var H=household41();
   if(!H.me||!d)return {lines:[]};              /* no profile yet (new phone) → nothing to compare with */
   var replace=mode==='replace',map=canonical41(H),names=[],lines=[];
-  (d.people||[]).forEach(function(p){if(String(p||'').trim()!=='Me')names.push([p,'a person in the list']);});
+  /* beta 111: a name that is already in this phone's own people list is not a stranger (Personal mode keeps a partner name typed in Add partner;
+     its own backup was refused). Names used on accounts, transactions, goals and budgets are still checked. */
+  var here={};(DB.people||[]).forEach(function(p){here[key62(p)]=1;});
+  (d.people||[]).forEach(function(p){if(String(p||'').trim()!=='Me'&&!here[key62(p)])names.push([p,'a person in the list']);});
   (d.accounts||[]).forEach(function(a){
     if(!a||!a.name)return;
     String(a.owner||'').split(' & ').forEach(function(x){names.push([x,'the account owner of “'+a.name+'”']);});
@@ -22385,7 +22490,7 @@ replaceFile=function(inp){
       var meta=DB.meta,collab=DB.collab,me=household41();
       DB=defaultDB();
       DB.meta=meta;if(collab)DB.collab=collab;
-      delete DB.meta.imports;delete DB.meta.demo;delete DB.meta.del;
+      delete DB.meta.imports;delete DB.meta.sample;delete DB.meta.del;
       DB.people=[me.me,me.pt].filter(Boolean);
       ensureEntities(rows);DB.txns=rows;explodeSplits();
       DB.accounts.forEach(function(a){var o=c.newOwner[key62(a.name)];if(!a.owner&&!a.recv&&o)a.owner=o.owner;});
@@ -24010,11 +24115,11 @@ function fam(a){
 function catOf(a){
   var f=fam(a);
   return {card:'Credit cards',loan:'Loans',hp:'Hire purchase',other:'Other assets',bu:'Between Us'}[f]
-    ||(f==='prop'?(a.type==='Vehicle'?'Vehicles':'Properties'):(a.type==='Investment'?'Investments':'Money'));
+    ||(f==='prop'?(a.type==='Vehicle'?'Vehicles':'Properties'):(a.type==='Investment'?'Investments':a.type==='Other Balance'?'Other assets':'Money'));
 }
 var HAVE_G=[['Money','cash'],['Investments','trend'],['Properties','home'],['Vehicles','car'],['Other assets','box']];
 var OWE_G=[['Credit cards','card'],['Loans','bank'],['Hire purchase','carplus']];
-var TIC={Bank:'bank',Cash:'cash','e-Wallet':'wallet',eWallet:'wallet',Investment:'trend',Property:'home',Vehicle:'car','Other Asset':'box',Card:'card','Credit Card':'card','Hire Purchase':'carplus','Car / Hire Purchase Loan':'carplus'};
+var TIC={Bank:'bank',Cash:'cash','e-Wallet':'wallet',eWallet:'wallet',Investment:'trend',Property:'home',Vehicle:'car','Other Asset':'box','Other Balance':'box',Card:'card','Credit Card':'card','Hire Purchase':'carplus','Car / Hire Purchase Loan':'carplus'};
 function icOf(a){var f=fam(a);return TIC[a.type]||({card:'card',loan:'bank',hp:'carplus',prop:'home',other:'box',bu:'scale'}[f])||'wallet';}
 function owe(a){var f=fam(a);return f==='card'||f==='loan'||f==='hp';}
 function stOf(a){try{return V63.statusOf(a)||'active';}catch(e){return a.status||'active';}}
@@ -24041,9 +24146,10 @@ function whoBubble(a){
   return '<span class="a48who'+(mine?'':' b')+'">'+initials(o||me())+'</span>';
 }
 function isPrivate(a){return a.vis==='me';}
+function otl112(t){return {'Other Balance':'Other asset (balance)','Other Asset':'Other asset (value)'}[t]||t||'';} /* beta 112: the two kinds of Other asset by name */
 function subOf(a){
   var f=fam(a),p=isPrivate(a)?'Private · ':'';
-  if(f==='bank'||f==='other')return p+(a.type||'')+(a.l4?' · ••'+esc(a.l4):'');
+  if(f==='bank'||f==='other')return p+otl112(a.type)+(a.l4?' · ••'+esc(a.l4):'');
   if(f==='card')return 'Credit card'+(a.l4?' · ••'+esc(a.l4):'');
   if(f==='loan')return (a.type||'Loan')+(+a.rate>0?' · '+esc(a.rate)+'% p.a.':'');
   if(f==='hp')return 'Hire purchase'+(+a.instalment>0?' · '+MA(a.instalment)+'/mo':'');
@@ -24363,7 +24469,7 @@ function recentCard(a,title,cta,list){
 function kv(l,v,cls){return '<div class="a48kv"><span>'+l+'</span><b class="'+(cls||'')+'">'+v+'</b></div>';}
 function detailsCard(a){
   var open=X.det,f=fam(a),rows=[];
-  rows.push(kv('Type',esc(a.type||'')));
+  rows.push(kv('Type',esc(otl112(a.type))));
   if(f==='prop'||f==='other'){var pp=0;try{pp=purchaseOf(a);}catch(e){}rows.push(kv('Purchase price',MA(pp)));if(a.purchaseDate)rows.push(kv('Purchase date',esc(dLabelY(a.purchaseDate))));
     if(a.propType)rows.push(kv('Property type',esc(a.propType)));if(a.vehicleType)rows.push(kv('Vehicle type',esc(a.vehicleType)));if(+a.ownPct>0&&+a.ownPct<100)rows.push(kv('Ownership share',esc(a.ownPct)+'%'));}
   else{if(a.l4)rows.push(kv(f==='card'?'Card number':'Account number','•••• '+esc(a.l4)));if(f==='bank'||f==='card')rows.push(kv('Opening balance',M(+a.start||0)));}
@@ -24687,12 +24793,13 @@ var TYPES={
   invest:{label:'Investment',ic:'trend',ex:'Shares, unit trust, EPF',amt:'Value today',ph:'e.g. ASB',t:'Investment',more:[]},
   property:{label:'Property',ic:'home',ex:'Home, apartment, land',amt:'Purchase price',ph:'e.g. Condo KL',t:'Property',more:['ptype','pdate']},
   vehicle:{label:'Vehicle',ic:'car',ex:'Car, motorcycle, van',amt:'Purchase price',ph:'e.g. Myvi',t:'Vehicle',more:['vtype','pdate']},
-  other:{label:'Other asset',ic:'box',ex:'Gold, collectibles',amt:'Value today',ph:'e.g. Gold bars',t:'Other Asset',more:[]},
+  other:{label:'Other asset (value)',ic:'box',ex:'Gold, collectibles, art · you update its value',amt:'Value today',ph:'e.g. Gold bars',t:'Other Asset',more:[]},
+  otherbal:{label:'Other asset (balance)',ic:'box',ex:'Money lent to family, deposits · moves with transfers',amt:'Balance today',ph:'e.g. Lent to Mum',t:'Other Balance',more:[]}, /* beta 112 */
   card:{label:'Credit card',ic:'card',ex:'Credit card, charge card',amt:'You owe today',ph:'e.g. CIMB Visa',owe:1,t:'Card',more:['l4','stmtDay','minPay']},
   loan:{label:'Loan',ic:'bank',ex:'Housing, personal, education',amt:'You owe today',ph:'e.g. Home Loan',owe:1,t:'Loan',more:['rate','inst','next','link']},
   hp:{label:'Hire purchase',ic:'carplus',ex:'Vehicle or equipment',amt:'You owe today',ph:'e.g. Myvi HP',owe:1,t:'Hire Purchase',more:['inst','next','link']}
 };
-function typeKeyOf(a){var f=fam(a);if(f==='card')return 'card';if(f==='loan')return 'loan';if(f==='hp')return 'hp';if(a.type==='Property')return 'property';if(a.type==='Vehicle')return 'vehicle';if(a.type==='Other Asset')return 'other';if(a.type==='Cash')return 'cash';if(/wallet/i.test(a.type||''))return 'ewallet';if(a.type==='Investment')return 'invest';return 'bank';}
+function typeKeyOf(a){var f=fam(a);if(f==='card')return 'card';if(f==='loan')return 'loan';if(f==='hp')return 'hp';if(a.type==='Property')return 'property';if(a.type==='Vehicle')return 'vehicle';if(a.type==='Other Asset')return 'other';if(a.type==='Other Balance')return 'otherbal';if(a.type==='Cash')return 'cash';if(/wallet/i.test(a.type||''))return 'ewallet';if(a.type==='Investment')return 'invest';return 'bank';}
 function ensureType(t,owe){
   if(DB.accTypes.indexOf(t)<0){DB.accTypes.push(t);}
   DB.accTypeMeta=DB.accTypeMeta||{};
@@ -24761,7 +24868,7 @@ V56.mgr.a48add=function(){
   var b=$('mgrBody');if(!b)return;
   if(S.step===1){
     var grp=function(title,keys,ow){return '<div class="a48ol">'+title+'</div><div class="a48opt">'+keys.map(function(k){var T=TYPES[k];return '<button type="button" class="a48oc'+(ow?' o':'')+'" data-act="a48type" data-t="'+k+'"><span class="a48ti">'+ico(T.ic)+'</span><span><b>'+T.label+'</b><small>'+T.ex+'</small></span></button>';}).join('')+'</div>';};
-    b.innerHTML='<div class="a48lead">What are you adding?</div>'+grp('What I have',['bank','cash','ewallet','invest','property','vehicle','other'],false)+grp('What I owe',['card','loan','hp'],true);
+    b.innerHTML='<div class="a48lead">What are you adding?</div>'+grp('What I have',['bank','cash','ewallet','invest','property','vehicle','other','otherbal'],false)+grp('What I owe',['card','loan','hp'],true);
     setTitle(MGR_TITLE.a48add);
     return;
   }
@@ -24825,11 +24932,82 @@ function openEdit(n,plan){
     more:{l4:a.l4||'',stmtDay:a.cycle||'',dueDays:a.dueDays||'',rate:a.rate||'',inst:a.instalment||'',next:a.remDue||'',link:a.linkedAsset||'',ptype:a.propType||'Home',vtype:a.vehicleType||'Car',pdate:a.purchaseDate||''}}};
   openMgr('a48edit');
 }
+/* beta 111: change an account's type after it is created.
+   Families: money (Bank, Cash, e-Wallet, Investment: balance = start + transactions),
+   valued (Property, Vehicle, Other asset: value = latest value update or purchase price),
+   debt (Credit card, Loan, Hire purchase: what I owe = start + transactions).
+   Inside one family the balance is worked out the same way, so the change is always safe
+   (a link to a loan, hire purchase or asset must be removed first, because each link expects its own type).
+   Across families the balance would be worked out differently or flip between What I have and What I owe,
+   so the change is only allowed while the account has no transactions, value updates, recurring items or goals. */
+var FAM111={bank:'money',cash:'money',ewallet:'money',invest:'money',otherbal:'money',property:'valued',vehicle:'valued',other:'valued',card:'debt',loan:'debt',hp:'debt'};
+var ORDER111=['bank','cash','ewallet','invest','otherbal','property','vehicle','other','card','loan','hp'];
+function hist111(a){
+  var n=a.name,tx=0;try{tx=DB.txns.filter(function(t){return txnTouchesAcc(t,n)||t.prop===n;}).length;}catch(e){}
+  var vals=Array.isArray(a.vals)?a.vals.length:0;
+  var rc=(DB.recur||[]).filter(function(x){return x&&x.tpl&&(x.tpl.account===n||x.tpl.to===n);}).length;
+  var gl=(DB.goals||[]).filter(function(g){return g.acc===n;}).length;
+  return {tx:tx,vals:vals,rc:rc,gl:gl};
+}
+function links111(a){
+  var out=[];if(a.linkedAsset&&a59(a.linkedAsset))out.push(a.linkedAsset);
+  DB.accounts.forEach(function(x){if(x&&x.name!==a.name&&x.linkedAsset===a.name&&out.indexOf(x.name)<0)out.push(x.name);});
+  (a.linkedLoans||[]).forEach(function(x){if(a59(x)&&out.indexOf(x)<0)out.push(x);});
+  return out;
+}
+function typeBlock111(a,k){
+  /* beta 112 (user: "allow the change of account types … even with transactions"): only a link to a loan,
+     hire purchase or asset blocks a type change, because each link expects its own type. History never blocks it:
+     the transactions stay as they are and the screen shows the balance before and after (typePreview112). */
+  var k0=typeKeyOf(a);if(!k||k===k0)return '';
+  var L=links111(a);
+  if(L.length)return 'It is linked to “'+L[0]+'”'+(L.length>1?' and '+(L.length-1)+' more':'')+'. Remove the link first.';
+  return '';
+}
+function amtFor112(F){var v=parseAmt(F.amt);if(String(F.amt||'').trim()===''||!isFinite(v))v=0;return Math.abs(v);}
+function balAs112(a,k,F){ /* the balance today if the account had type k and the amount in the form; nothing is saved */
+  var keep=JSON.parse(JSON.stringify(a)),T=TYPES[k],amt=amtFor112(F),b=0;
+  try{a.type=T.t;if(T.owe)a.start=-amt;else if(FAM111[k]==='valued'){a.purchasePrice=amt;a.start=amt;}else{a.start=amt;delete a.purchasePrice;}b=balOf(a);}catch(e){}
+  Object.keys(a).forEach(function(x){delete a[x];});Object.assign(a,keep);
+  return b;
+}
+function balTxt112(k,b){var T=TYPES[k];if(T.owe)return -b>=0?'you owe '+MA(-b):'in credit '+MA(b);return (FAM111[k]==='valued'?'value ':'balance ')+M(b);}
+function typePreview112(a,k,F){
+  var k0=typeKeyOf(a);if(!k||k===k0||FAM111[k]===FAM111[k0])return null;
+  var h=hist111(a);if(!h.tx&&!h.vals)return null;
+  var b0=balOf(a),b1=balAs112(a,k,F),n=[];
+  if(h.tx)n.push(h.tx+' transaction'+(h.tx===1?'':'s'));if(h.vals)n.push(h.vals+' value update'+(h.vals===1?'':'s'));
+  var why=FAM111[k]==='valued'?'A '+TYPES[k].label.toLowerCase()+'’s value comes from value updates (or the purchase price), not from transactions.'
+    :FAM111[k0]==='valued'?'Its balance will come from the amount above plus transactions, not from value updates.'
+    :TYPES[k].owe?'The amount above becomes what you owe; transactions count toward what you owe.'
+    :'The amount above becomes the opening balance; transactions count toward what you have.';
+  return {b0:b0,b1:b1,k0:k0,line:'Today: '+balTxt112(k0,b0)+'. After the change: '+balTxt112(k,b1)+'. '+why+' Its '+n.join(' and ')+' stay as they are.'};
+}
+function typeField111(F,a){
+  if(fam(a)==='bu'||permFor59(a.name)!=='owner')return '';
+  var k0=typeKeyOf(a),cur=F.tkey||k0,why={};
+  var opt=function(k){var b=typeBlock111(a,k);if(b)why[b]=1;return '<option value="'+k+'"'+(k===cur?' selected':'')+(b?' disabled':'')+'>'+esc(TYPES[k].label)+(b?' (not available)':'')+'</option>';};
+  var have=ORDER111.slice(0,8).map(opt).join(''),ow=ORDER111.slice(8).map(opt).join('');
+  var w=Object.keys(why),pv=typePreview112(a,cur,F);
+  return '<div class="a48fld"><label for="a48f_type">Type</label><select class="fin'+(F.err==='type'?' err':'')+'" id="a48f_type" data-f="tkey"><optgroup label="What I have">'+have+'</optgroup><optgroup label="What I owe">'+ow+'</optgroup></select>'
+    +(F.err==='type'?'<div class="a48errt">'+esc(F.errMsg||'')+'</div>':'')
+    +(cur!==k0&&(TYPES[cur].owe?'What I owe':catOf({type:TYPES[cur].t,name:''}))!==(TYPES[k0].owe?'What I owe':catOf(a))?'<div class="a48hp">Now counts toward <b>'+(TYPES[cur].owe?'What I owe':esc(catOf({type:TYPES[cur].t,name:''})))+'</b>.</div>':'')
+    +(pv?'<div class="a48hp" id="a48f_typeprev" style="color:var(--ink)">'+esc(pv.line)+'</div>':'')
+    +(w.length?'<div class="a48hp" id="a48f_typewhy">'+esc(w[0])+'</div>':'')+'</div>';
+}
+function applyType111(a,k){
+  var T=TYPES[k];ensureType(T.t,!!T.owe);a.type=T.t;
+  if(k!=='card'){a.cycle=0;delete a.minPay;}
+  if(k!=='loan')delete a.rate;
+  if(k!=='loan'&&k!=='hp'){delete a.instalment;delete a.remDue;delete a.linkedAsset;}
+  /* beta 112: value updates, purchase price and date are history and are kept, so changing back restores them */
+  if(FAM111[k]!=='valued'){delete a.linkedLoans;if(Array.isArray(a.vals)&&!a.vals.length)delete a.vals;}
+}
 V56.mgr.a48edit=function(){
   var S=X.sheet,b=$('mgrBody');if(!S||!b)return;
   var a=a59(S.acc);if(!a){b.innerHTML='<div class="a48empty"><b>This account is no longer available</b></div>';return;}
-  var T=TYPES[typeKeyOf(a)],cnt=txList(a).length,owner=permFor59(a.name)==='owner';
-  var ctx='<div class="a48ctx"><span class="a48ti'+(owe(a)?' o':'')+'">'+ico(icOf(a))+'</span><div><b>'+esc(S.plan?a.name:a.type)+'</b><small>'+cnt+' transaction'+(cnt===1?'':'s')+' · '+(owe(a)?'you owe '+MA(balOf(a)):(fam(a)==='prop'?'value '+MA(balOf(a)):'balance '+M(balOf(a))))+'</small></div></div>';
+  var T=TYPES[(!S.plan&&S.f.tkey)||typeKeyOf(a)],cnt=txList(a).length,owner=permFor59(a.name)==='owner';
+  var ctx='<div class="a48ctx"><span class="a48ti'+(owe(a)?' o':'')+'">'+ico(icOf(a))+'</span><div><b>'+esc(S.plan?a.name:otl112(a.type))+'</b><small>'+cnt+' transaction'+(cnt===1?'':'s')+' · '+(owe(a)?'you owe '+MA(balOf(a)):(fam(a)==='prop'?'value '+MA(balOf(a)):'balance '+M(balOf(a))))+'</small></div></div>';
   if(S.plan){
     var keys=T.more.filter(function(k){return ['l4','ptype','vtype','pdate'].indexOf(k)<0;});
     setTitle(ico('calendar')+' Payment plan');
@@ -24842,15 +25020,20 @@ V56.mgr.a48edit=function(){
   setTitle(MGR_TITLE.a48edit);
   var dang=owner?'<div class="a48ol">Other</div><div class="a48dng"><button type="button" data-act="a48close" data-n="'+esc(a.name)+'">'+ico('swap')+(fam(a)==='prop'?'Sell, close or archive':'Close or archive')+'<span class="cv">'+ico('chevright')+'</span></button>'
     +'<button type="button" class="d" data-act="a48del" data-n="'+esc(a.name)+'">'+ico('trash')+'Delete account<span class="cv">'+ico('chevright')+'</span></button></div>':'';
-  b.innerHTML=ctx+formBody(S.f,T,'edit',a)+dang+sheetFoot('<button type="button" class="btn" data-act="a48saveEdit" style="width:100%">'+'Save changes</button>');
+  var fb=formBody(S.f,T,'edit',a),tf=typeField111(S.f,a),cut=fb.indexOf('<div class="a48fld"',1); /* Type goes right after Name */
+  if(tf)fb=cut>0?fb.slice(0,cut)+tf+fb.slice(cut):fb+tf;
+  b.innerHTML=ctx+fb+dang+sheetFoot('<button type="button" class="btn" data-act="a48saveEdit" style="width:100%">'+'Save changes</button>');
 };
 function saveEdit(){
   readForm();
   var S=X.sheet,F=S.f,a=a59(S.acc);if(!a){closeMgr();return;}
-  var T=TYPES[typeKeyOf(a)];
+  var k0=typeKeyOf(a),k1=(!S.plan&&F.tkey&&TYPES[F.tkey])?F.tkey:k0,T=TYPES[k1];
   if(!S.plan){
     var n=String(F.name||'').trim(),ne=nameErr(n,a.name);
     if(ne){F.err='name';F.errMsg=ne;V56.mgr.a48edit();return;}
+    if(k1!==k0){var tb=permFor59(a.name)!=='owner'?'Only the account owner can change the type.':typeBlock111(a,k1);if(tb){F.err='type';F.errMsg=tb;V56.mgr.a48edit();return;}
+      var pv=typePreview112(a,k1,F);
+      if(pv&&!S.ok112){askConfirm('Change “'+a.name+'” to '+TYPES[k1].label.toLowerCase()+'? '+pv.line,'Change type',function(){if(X.sheet===S){S.ok112=1;saveEdit();}});return;}} /* beta 112 */
     var amt=parseAmt(F.amt);if(String(F.amt||'').trim()==='')amt=0;
     if(!isFinite(amt)){F.err='amt';V56.mgr.a48edit();return;}
     var old=a.name;
@@ -24864,6 +25047,7 @@ function saveEdit(){
       }
     }
     amt=Math.abs(amt);
+    if(k1!==k0)applyType111(a,k1);
     if(T.owe)a.start=-amt;
     else if(T===TYPES.property||T===TYPES.vehicle||T===TYPES.other){a.purchasePrice=amt;a.start=amt;}
     else a.start=amt;
@@ -25096,6 +25280,7 @@ ACT.on('b48-menu-close',{
 });
 document.addEventListener('change',function(e){
   var t=e.target;if(!t)return;
+  if(t.id==='a48f_type'&&X.sheet&&X.sheet.kind==='edit'){readForm();var F1=X.sheet.f;if(F1.err==='type')F1.err=null;F1.moreOpen=false;V56.mgr.a48edit();var ts=$('a48f_type');if(ts)try{ts.focus();}catch(x){}return;}
   if(t.id==='a48int'){PAY.loanInt=PAY.loanInt||{on:false,amt:''};PAY.loanInt.on=!!t.checked;var o=$('pay48x');if(o)o.__h='';payExtras();if(t.checked)setTimeout(function(){var i=$('a48intamt');if(i)i.focus();},40);}
 });
 document.addEventListener('input',function(e){
@@ -26580,10 +26765,10 @@ function cfgMsg(p){try{return PX.cfgMsg(p);}catch(e){return PNAME[p]+' is not se
 function J(r){return r.json();}
 /* the payload: your own private accounts and everything recorded on them, plus fully private entries */
 function payload(){
-  var mine={};(DB.accounts||[]).forEach(function(a){if(a&&a.vis==='me'&&myPriv(a.name))mine[a.name]=1;});
+  var mine={};(DB.accounts||[]).forEach(function(a){if(a&&a.vis==='me'&&!a.isSample&&myPriv(a.name))mine[a.name]=1;});
   return {
     accounts:(DB.accounts||[]).filter(function(a){return a&&mine[a.name];}),
-    txns:(DB.txns||[]).filter(function(t){return t&&!t.demo&&(mine[t.account]||mine[t.to]||(t.priv&&t.pl==='full'));}),
+    txns:(DB.txns||[]).filter(function(t){return t&&!t.isSample&&(mine[t.account]||mine[t.to]||(t.priv&&t.pl==='full'));}),
     recur:(DB.recur||[]).filter(function(r){return r&&r.tpl&&(mine[r.tpl.account]||mine[r.tpl.to]);})
   };
 }
@@ -26833,6 +27018,7 @@ function O(){var m=DB.meta;if(!m.o62||typeof m.o62!=='object')m.o62={};return m.
 B62.o=O;
 var S=B62.s={};  /* choices on screen (not yet saved) */
 function inv(){return !!(AU.invite||O().inv);}
+B62.inv=inv;
 /* beta 103 (D-45): the invite link (?join=token&from=name), kept on this phone until joined */
 function invLink(){var x=null;try{x=window.B79&&B79.invite;if(x&&x.token){localStorage.setItem('cmm102join',JSON.stringify(x));return x;}x=JSON.parse(localStorage.getItem('cmm102join')||'null');}catch(e){}return x&&x.token?x:null;}
 B62.invLink=invLink;
@@ -26954,6 +27140,15 @@ R.invite=function(){var a=path()==='adv',P=esc(Pn()),st=O().store;
 R.join=function(){var J=S.join,P=esc(invFrom()),me=esc((FB&&FB.user&&FB.user.email)||(sessGet()||{}).email||'');
   if(!J||J.loading){if(!J)lookUp();return h3('Looking for your invitation…','')+'<div class="ob62spin"></div>';}
   if(!J.id){
+    var solo80='<button class="aulink" data-act="b80solo">Set up on my own for now — I’ll join later</button>';
+    if(J.signin)return h3('Sign in to the cloud to join','')
+      +note(ico('warn')+' '+(J.local?'Your account was saved on this phone only, because the cloud sign-in did not work.':'This phone is not signed in to the cloud.')+' Joining '+P+'’s household needs your account in the cloud.','w')
+      +(J.cw?note(esc(cloudWhyMsg(J.cw))):'')
+      +'<div class="ob62foot ob80col"><button class="btn" data-act="b111resign">Sign in again</button><button class="btn ghost" data-act="b62look">Look again</button></div>'+solo80;
+    if(J.svc)return h3(J.svc==='missing'?'The invite service is not set up yet':'The invite service did not answer','')
+      +note(ico('warn')+' '+(J.svc==='missing'?'Your sign-in works, but the service that checks invite links is not on the cloud yet.':'Your sign-in works, but the service that checks invite links did not reply. This usually means it is not on the cloud yet.'),'w')
+      +'<div class="ob80blk"><h4>Try this</h4><ul><li>'+ico('send')+'<span>Ask '+P+' to finish the cloud setup (deploy <b>inviteInfo</b> and <b>joinHousehold</b> in Firebase).</span></li><li>'+ico('repeat')+'<span>Then tap Look again. Your invite link stays on this phone.</span></li></ul></div>'
+      +'<div class="ob62foot ob80col"><button class="btn" data-act="b62look">Look again</button></div>'+solo80;
     if(J.why)return h3('We can’t check your invitation',esc(J.why))+'<div class="ob62foot ob80col"><button class="btn" data-act="b62look">Look again</button></div><button class="aulink" data-act="b80solo">Set up on my own for now — I’ll join later</button>';
     var Q=esc(J.owner||invFrom());
     if(J.verify)return h3('Verify your email first','')
@@ -27022,7 +27217,9 @@ R.ready=function(){var p=path(),full=pref().experienceLevel==='full',a=payload()
 /* beta 80: step 1 for the invitee — email locked to the invited one (mockup) */
 function invSignup(){var P=esc(invFrom()),ev=S.em!=null?S.em:'';
   return bar('signup')+h3('Sign in to join',(invLink()?P+' sent you an invite link. ':'')+'Create an account or sign in. Any email works.')
-    +(fbOnSite()?'<button class="btn ghost oabtn" data-act="auoauth" data-k="google"'+(AU.busy?' disabled':'')+'>'+OAUTH_ICO.google+' Continue with Google</button><div class="audiv"><span>or use your email</span></div>':'')
+    +(fbOnSite()?'<button class="btn ghost oabtn" data-act="auoauth" data-k="google"'+(AU.busy?' disabled':'')+'>'+OAUTH_ICO.google+' Continue with Google</button>'
+      +(/; wv\)|FBAN|FBAV|Instagram|Line\/|WhatsApp|Messenger/i.test(navigator.userAgent||'')?note('Google sign-in doesn’t work inside another app’s built-in browser. Open the invite link in Chrome or Safari, or use your email.'):'') /* beta 111 */
+      +'<div class="audiv"><span>or use your email</span></div>':'')
     +'<label class="aul" for="auEmail">Email</label><input class="fin" id="auEmail" type="email" inputmode="email" autocomplete="email" autocapitalize="off" value="'+esc(ev)+'">'
     +'<label class="aul" for="auPw">Password</label><input class="fin" id="auPw" type="password" autocomplete="new-password" placeholder="At least 6 characters"><input type="hidden" id="auPw2">'
     +(AU.err?'<div class="auerr">'+esc(AU.err)+'</div>':'')
@@ -27040,19 +27237,35 @@ function welcome(){var x=invLink();
     +'<button class="aulink" data-act="aumode" data-m="login">I already have an account · Log in</button>';
 }
 function lookUp(){
+  /* beta 111: wait for the cloud sign-in to come back before deciding (it was read too early, so a signed-in partner saw
+     "Joining needs the cloud"), and say which part failed: this phone's sign-in, the connection, or the invite service. */
   S.join={loading:true};
-  var rr=function(){try{if(AU.mode==='join')renderAuth();}catch(e){}},x=invLink(),cu=FB&&FB.auth&&FB.auth.currentUser;
-  if(!(FB&&FB.user&&fbOnSite())){S.join={id:'',why:'Joining needs the cloud: open the invite link from your partner and sign in.'};setTimeout(rr,0);return;}
+  var rr=function(){try{if(AU.mode==='join')renderAuth();}catch(e){}},x=invLink(),tokOk=false;
+  if(!fbOnSite()){S.join={id:'',why:'Joining needs the app opened from its website. Open the invite link from your partner.'};setTimeout(rr,0);return;}
   if(!(x&&x.token)){S.join={id:'',none:1};setTimeout(rr,0);return;}
-  (cu&&cu.reload?cu.reload().then(function(){return cu;},function(){return cu;}):Promise.resolve(cu)).then(function(u){
-    if(u&&u.emailVerified===false){S.join={id:'',verify:1};return;}
-    return Promise.resolve(u&&u.getIdToken?u.getIdToken(true):null).catch(function(){}).then(function(){return backend291('inviteInfo',{token:x.token});}) /* fresh token: joining checks the verified email */.then(function(r){var d=r&&r.data||{};
-      if(!d.found){S.join={id:'',gone:1};return;}
-      if(d.state!=='ok'&&d.state!=='member'){S.join={id:'',state:d.state,owner:d.owner||''};return;}
-      S.join={id:x.token,mode:d.mode==='adv'?'adv':'couple',owner:d.owner||x.from||''};
-      DB.meta.usage=S.join.mode;save();
+  if(navigator.onLine===false){S.join={id:'',why:'You’re offline. Connect to the internet, then tap Look again.'};setTimeout(rr,0);return;}
+  var ready=fbLoad().then(function(){return FB.auth&&FB.auth.authStateReady?FB.auth.authStateReady():null;}).catch(function(){});
+  Promise.race([ready,new Promise(function(r){setTimeout(r,10000);})]).then(function(){
+    var cu=FB&&FB.auth&&FB.auth.currentUser;
+    if(cu&&!FB.user)try{fbSetUser({email:cu.email||'',uid:cu.uid});}catch(e){}
+    if(!cu){var se=sessGet()||{},rec=acctMap()[se.email]||{};S.join={id:'',signin:1,local:rec.mode==='local'||se.mode==='local',cw:CLOUDWHY111};return;}
+    return cu.reload().then(function(){return cu;},function(){return cu;}).then(function(u){
+      if(u&&u.emailVerified===false){S.join={id:'',verify:1};return;}
+      return Promise.resolve(u.getIdToken(true)).then(function(){tokOk=true;},function(){}) /* fresh token: joining checks the verified email */
+        .then(function(){return backend291('inviteInfo',{token:x.token});}).then(function(r){var d=r&&r.data||{};
+        if(!d.found){S.join={id:'',gone:1};return;}
+        if(d.state!=='ok'&&d.state!=='member'){S.join={id:'',state:d.state,owner:d.owner||''};return;}
+        S.join={id:x.token,mode:d.mode==='adv'?'adv':'couple',owner:d.owner||x.from||''};
+        DB.meta.usage=S.join.mode;save();
+      });
     });
-  }).catch(function(e){n62(e,'b62:look');S.join={id:'',why:'Your invitation could not be checked right now.'};}).then(rr);
+  }).catch(function(e){n62(e,'b62:look');var c=String((e&&e.code)||'');
+    if(c==='functions/not-found')S.join={id:'',svc:'missing'};                /* inviteInfo never answers not-found itself: the function is not deployed */
+    else if(c==='functions/unauthenticated')S.join={id:'',signin:1,cw:''};
+    else if(navigator.onLine===false)S.join={id:'',why:'You’re offline. Connect to the internet, then tap Look again.'};
+    else if(tokOk&&(c==='functions/internal'||c==='functions/unavailable'||c==='functions/permission-denied'))S.join={id:'',svc:'noanswer'};
+    else S.join={id:'',why:'Your invitation could not be checked right now'+(c?' ('+c.replace(/^functions\//,'')+')':'')+'. Check your connection, then tap Look again.'};
+  }).then(rr);
 }
 /* the outermost renderAuth step: the whole flow after sign-in, plus the welcome copy and the step bar */
 SCREEN.around('renderAuth',990000062,function(prev){return function(){
@@ -27189,6 +27402,9 @@ ACT.on('b62-onboarding',{
   b62need:function(el){S.q1=S.q1||{};S.q1[el.dataset.v]=!S.q1[el.dataset.v];go();}, /* beta 86: multi-select on the needs step */
   b62q3:function(el){S.q3=el.dataset.v;go();}, /* beta 86: include property/vehicle/investment values in the overall position? */
   b62look:function(){S.join=null;go();},
+  b111resign:function(){ /* beta 111: back to "Sign in to join"; a phone-only account for this email is dropped so the cloud is tried again */
+    var se=sessGet()||{},m=acctMap();if(se.email&&m[se.email]&&m[se.email].mode==='local'){delete m[se.email];acctSaveMap(m);}
+    S.em=se.email||'';try{if(FB.auth&&FB.auth.currentUser)FB.mod.signOut(FB.auth);}catch(e){}sessSet(null);S.join=null;O().join=0;AU.invite=1;AU.mode='signup';CLOUDWHY111='';save62();go();},
   b105mk:function(el){if(!(FB&&FB.user))return;el.disabled=true;INV102.link(true);INV102.publish().then(function(){go();},function(e){AU.err=(e&&e.message)||'The invite link could not be created. Try again.';INV102.cancel();go();});},
   ausubmit:function(el,next){var a=$('auPw2');if(a&&a.type==='hidden')a.value=($('auPw')||{}).value||'';return next(el);},
   b80solo:function(){O().inv=0;AU.invite=0;S.join=null;O().join=0;DB.meta.usage='';save62();AU.err='';toast('No problem. Join later from Settings › Modes when the invitation is ready.');go();},
@@ -27202,7 +27418,7 @@ ACT.on('b62-onboarding',{
    ====================================================================== */
 function jrFlag(k){return !!jr()[k];}
 /* first account added after skipping it in onboarding: any account except owed, sample and the default Cash with no balance */
-function accAdded(){var dm=(DB.meta.demo&&DB.meta.demo.accounts)||[];
+function accAdded(){var dm=(DB.meta.sample&&DB.meta.sample.accounts)||[];
   return DB.accounts.some(function(a){if(!a||a.recv||/^.+ owes .+$/.test(a.name)||dm.indexOf(a.name)>=0)return false;
     return !(a.name==='Cash'&&a.type==='Cash'&&!+a.start);});}
 function accSkipped(){var o=O();return !inv()&&!!o.account&&!o.acc;}
@@ -27211,13 +27427,13 @@ var J62={
   pbk:function(iv){return {k:'pbk62',t:'Back up your private space',d:iv?'Add a backup so it is not lost with this phone':'Not backed up yet. It exists only on this phone',done:pbDone};},
   privacc:function(){return {k:'privacc62',t:'Add your first private account',d:'Only you can see it',done:function(){return payload().accounts.length>0;}};},
   shared:function(){return {k:'shared62',t:'Check the shared accounts',d:'See what '+Pn()+' has set up',done:function(){return jrFlag('shv62');}};},
-  txn:function(){return {k:'txn',t:'Add your first transaction',d:'Tap + and save one',done:function(){return DB.txns.some(function(t){return !t.demo;});}};},
-  split:function(){return {k:'split',t:'Split your first bill',d:'Share a bill and track who owes whom',done:function(){return DB.txns.some(function(t){return !t.demo&&t.group;});}};},
+  txn:function(){return {k:'txn',t:'Add your first transaction',d:'Tap + and save one',done:function(){return DB.txns.some(function(t){return !t.isSample;});}};},
+  split:function(){return {k:'split',t:'Split your first bill',d:'Share a bill and track who owes whom',done:function(){return DB.txns.some(function(t){return !t.isSample&&t.group;});}};},
   preview:function(){return {k:'preview62',t:'Preview what '+Pn()+' sees',d:'Check nothing private is shared',done:function(){return jrFlag('pv62');}};},
   budget:function(){return {k:'budget',t:'Set a monthly budget',d:'Know what is left each month',done:function(){try{return JR56.budget.done();}catch(e){return false;}}};},
   wealth:function(){return {k:'wealth62',t:'Open Wealth',d:'See net worth once balances are in',done:function(){return jrFlag('wl62');}};},
   acc:function(){return {k:'acc62',t:'Add your first account',d:'Start with the one you use most',done:accAdded};},
-  asset:function(){return {k:'asset62',t:'Add a loan, card or asset',d:'So net worth is complete',done:function(){return DB.accounts.some(function(a){return ['Loan','Hire Purchase','Card','Property','Vehicle','Investment','Other Asset'].indexOf(a.type)>=0;});}};},
+  asset:function(){return {k:'asset62',t:'Add a loan, card or asset',d:'So net worth is complete',done:function(){return DB.accounts.some(function(a){return ['Loan','Hire Purchase','Card','Property','Vehicle','Investment','Other Asset','Other Balance'].indexOf(a.type)>=0;});}};},
   backup:function(){return {k:'backup62',t:'Confirm your backup',d:'Check the choice you just made',done:function(){return jrFlag('bk62');}};}
 };
 jrList=function(){
@@ -27305,8 +27521,8 @@ SCREEN.after('B3.renderProfileSub',268000000,{call:'apply',ret:false},function()
     if(r==='solo'){if(meEl){meEl.hidden=true;meEl.innerHTML='';}return;}
     if(r!=='collab')return; /* household owner: the existing captions are right */
     var P=pr.partner||'';if(!P){try{P=partnerName();}catch(e){n68(e,'b68:pn');}}
-    if(meEl){meEl.hidden=false;meEl.innerHTML='<b>Collaborator</b> — '+(pr.name?esc(pr.name):'you')+' joined '+(P?esc(P)+'’s':'your partner’s')+' household.';}
-    if(paEl){paEl.hidden=false;paEl.innerHTML='<b>Household owner</b> — '+esc(P||'your partner')+' set up the household and changes its mode and settings.';}
+    if(meEl){meEl.hidden=false;meEl.innerHTML='<b>Collaborator</b> in '+(P?esc(P)+'’s':'your partner’s')+' household';}
+    if(paEl){paEl.hidden=false;paEl.innerHTML='<b>Household owner</b>';}
     /* a collaborator never invites: show the partner name field, not the Invite collaborator button */
     var row=$('profPartRowB3'),pt=$('profPartB3'),wrap=$('b41InvWrap');
     if(row)row.classList.remove('b41inv');if(pt)pt.style.display='';if(wrap)wrap.remove();
@@ -27692,7 +27908,7 @@ var SW={
 };
 var EXP={};
 function realAcc(a){return !!(a&&!a.recv&&!a.locked&&!/^.+ owes .+$/.test(a.name)&&!LBL_RE.test(a.name));}
-function demoAcc(a){return !!(DB.meta.demo&&DB.meta.demo.on&&(DB.meta.demo.accounts||[]).indexOf(a.name)>=0);}
+function demoAcc(a){return !!(DB.meta.sample&&DB.meta.sample.on&&(DB.meta.sample.accounts||[]).indexOf(a.name)>=0);}
 function myAccs(){var me=ME();return DB.accounts.filter(function(a){return realAcc(a)&&!demoAcc(a)&&(!me||!a.owner||a.owner===me||String(a.owner).split(' & ').indexOf(me)>=0);}).sort(function(x,y){return alphasort(x.name,y.name);});}
 function privAccs(){var me=ME();return DB.accounts.filter(function(a){return a.vis==='me'&&realAcc(a)&&(!me||!a.owner||a.owner===me);});}
 function sharedAccs(){return DB.accounts.filter(function(a){return realAcc(a)&&a.vis!=='me'&&!demoAcc(a);});}
@@ -28323,6 +28539,9 @@ function dataMain(){
     +rw('stmpick','doc','Import a bank or card statement','Review every line before it is added')
     +rw('d79export','download','Export','Excel, CSV or a monthly report · readable, not a backup')+'</div>'
     +note('info','Want a copy you can restore? Use <b>Back up now</b> above. An export can’t bring the app back.','margin-top:8px');
+  var smOn=sampleOn(),smN=smOn?sampleCounts().tx:0;
+  b+='<div class="k-lbl">Sample data <span style="text-transform:none;letter-spacing:0;font-weight:600"> · only on this phone</span></div><div class="k-card">'
+    +(smOn?rw('demorm','trash','Remove sample data',smN+' sample transactions, accounts and budgets · removed in one go'):rw('demoadd','play','Add sample data','Example transactions, budgets and accounts to explore. Not synced, backed up or exported'))+'</div>';
   b+='<div class="k-card" style="margin-top:12px">'+rw('d79goadv','sliders','Advanced',sl?'Sync alerts history, sync details':'Partner activity, sync alerts history, sync details')+'</div>';
   return b;
 }
@@ -28476,7 +28695,7 @@ function snapPage(){
 }
 function partnerActivity(){
   var P=PN();if(!P)return [];
-  return DB.txns.filter(function(t){return t&&!t.demo&&(t.lastEditedBy===P||t.createdBy===P);})
+  return DB.txns.filter(function(t){return t&&!t.isSample&&(t.lastEditedBy===P||t.createdBy===P);})
     .sort(function(a,b){return (+b.u||0)-(+a.u||0)||(a.date<b.date?1:-1);}).slice(0,5);
 }
 function advPage(){
@@ -28838,7 +29057,7 @@ ACT.on('b79-data',{
   d79bknow:function(){push('backup',{});},
   d79bkdo:function(){var s=topS();if(s)doBackup(s.p);},
   d79restore:function(){push('restore',{stage:'pick'});},
-  d79restorepick:function(){try{ensureRestoreInput();}catch(e){}bkRestorePick();},
+  d79restorepick:function(){bkRestorePick();},
   d79restoretick:function(){var s=topS();if(!s)return;s.p.tick=!s.p.tick;paintSheets();},
   d79restorego:function(){var s=topS();if(!s||!s.p.tick)return;closeAll();try{bkPrevGo();}catch(e){n79(e,'b79:restore');toast('Restore failed');}},
   d79snaprestore:function(el){var i=+el.dataset.i,s=BK.log[i];if(!s)return;
@@ -29701,7 +29920,7 @@ try{if(window.pinVer36)window.pinVer36('1.60 beta 94'+(window.PAGE75&&PAGE75.sta
 
 /* ===== beta 101 · merge of the other tool's beta 93–100 (Transactions tidy-up, update toast, type roles, cleanup) with Claude's beta 94 (invitation email) ===== */
 (function(){'use strict';
-  try{var mv=document.querySelector('meta[name="app-version"]');if(mv)mv.content='1.60-beta.109';}catch(e){}
+  try{var mv=document.querySelector('meta[name="app-version"]');if(mv)mv.content='1.60-beta.112';}catch(e){}
   try{if(window.pinVer36)window.pinVer36('1.60 beta 101'+(window.PAGE75&&PAGE75.stale?' · old page file ('+(PAGE75.page||'none')+')':''));}catch(e){}
 })();
 
@@ -29854,12 +30073,17 @@ try{if(!window.__B107cRN){var ol=document.querySelector('#pageSet details.help o
 (function(){'use strict';
 function n108(e,w){try{DIAG.note(e,w);}catch(_){}}
 if(typeof history==='undefined'||!history.pushState)return;
-var H={backing:false,leaving:false,lastStep:0};
+var H={backing:false,leaving:false,fwd:false,pushed:false,booted:false,lastStep:0};
+/* beta 110: why Back sometimes closed the app (e.g. Modes › Household › Manage, then Back, Back).
+   Beta 108 popped its spare entry on each Back and pushed a new one straight away. Chrome on Android
+   skips history entries a page adds without a fresh tap, so a later Back jumped past the app's first
+   entry and closed the app. Now a Back never adds an entry: after stepping up one level the app moves
+   FORWARD onto the spare entry it already has (history.forward() adds nothing). New entries are added
+   only right after a tap, swipe or key press. */
 var ROOT={cmm108:'root',mmnav:1},SPARE={cmm108:'spare',mmnav:1}; /* mmnav keeps the beta 53 boot from adding its guard */
 function st(){try{return history.state||{};}catch(e){return {};}}
 function vis(id){var x=document.getElementById(id);if(!x||x.hidden)return false;try{return getComputedStyle(x).display!=='none';}catch(e){return true;}} /* fixed screens have no offsetParent */
 function obBack(){try{var b=document.querySelector('#authScr [data-act=b62back]');return b&&b.getClientRects().length?b:null;}catch(e){return null;}}
-/* where the app is: 'idle' = Insights with nothing on top (or the sign-in / lock screen with no step to go back to) */
 function idle(){
   try{
     if(vis('authScr'))return !obBack();
@@ -29868,7 +30092,6 @@ function idle(){
     return (VIEWNAV.cur||'overview')==='overview';
   }catch(e){n108(e,'b108:idle');return true;}
 }
-/* one step up the hierarchy */
 function up(){
   H.lastStep=Date.now();
   try{
@@ -29877,44 +30100,53 @@ function up(){
     if((VIEWNAV.cur||'overview')!=='overview'){gotoView('overview');return;}
   }catch(e){n108(e,'b108:up');}
 }
-/* keep exactly one spare entry while not idle; none on idle Insights */
-function sync(){
-  if(H.backing||H.leaving)return;
+function fwd(){H.fwd=true;clearTimeout(H.ft);H.ft=setTimeout(function(){H.fwd=false;},700);try{history.forward();}catch(e){H.fwd=false;}}
+/* user=true only right after a tap / swipe / key, when Chrome counts a new entry as made by the user */
+function sync(user){
+  if(H.backing||H.leaving||H.fwd)return;
   try{
     var s=st(),isSpare=s.cmm108==='spare';
     if(!s.cmm108){history.replaceState(ROOT,'');s=ROOT;isSpare=false;}
     if(idle()){if(isSpare){H.backing=true;history.back();}}
-    else if(!isSpare)history.pushState(SPARE,'');
+    else if(!isSpare){
+      if(H.pushed)fwd();                                 /* the spare entry is still there: step onto it */
+      else if(user||!H.booted){history.pushState(SPARE,'');H.pushed=true;}
+    }
   }catch(e){n108(e,'b108:sync');}
 }
-var qT=0;function later(){clearTimeout(qT);qT=setTimeout(sync,60);}
-window.NAV108={sync:sync,later:later,idle:idle,up:up};
-/* switch off the older history calls (core v1.34 / beta 50); their layer and screen logic stays */
+var qT=0;function later(user){clearTimeout(qT);qT=setTimeout(function(){sync(user);},60);}
+function byUser(){later(true);}
+window.NAV108={sync:sync,later:later,idle:idle,up:up,H:H};
 try{viewNav=function(v){VIEWNAV.booted=true;VIEWNAV.cur=v;VIEWNAV.restore=false;later();};}catch(e){n108(e,'b108:viewnav');}
 try{navArm=function(){};NAV.armed=false;}catch(e){n108(e,'b108:arm');}
 try{var _ns108=navSync;navSync=function(){var r=_ns108.apply(this,arguments);NAV.armed=false;later();return r;};}catch(e){n108(e,'b108:ns');}
-/* deep links clear the URL with replaceState(null): keep this entry's marker */
 try{var _rs108=history.replaceState.bind(history);history.replaceState=function(state,t,u){var s=st();if((state===null||state===undefined)&&s&&s.cmm108)state=s;return _rs108(state,t,u);};}catch(e){n108(e,'b108:rs');}
-/* the Back press */
 window.addEventListener('popstate',function(ev){
   var s=(ev&&ev.state)||{};
-  if(H.backing){H.backing=false;later();return;}   /* our own removal of the spare entry */
-  if(s.cmm108==='spare'){later();return;}           /* browser Forward: nothing to do */
-  if(!s.cmm108){later();return;}                     /* an older entry from before this version */
-  /* we are on the root entry: one press = one step up */
+  if(H.backing){H.backing=false;later();return;}                         /* our own step back to the root entry */
+  if(H.fwd&&s.cmm108==='spare'){H.fwd=false;clearTimeout(H.ft);return;}  /* our own step forward onto the spare entry */
+  if(s.cmm108==='spare'){later();return;}                                 /* browser Forward */
+  if(!s.cmm108){later();return;}                                           /* an entry from before this version */
   if(idle()){H.leaving=true;try{history.back();}catch(e){}setTimeout(function(){H.leaving=false;},1500);return;}
   up();
-  setTimeout(sync,80);
+  if(!idle()&&H.pushed)fwd();
+  else setTimeout(function(){sync(false);},120);
 },true);
-/* anything the user taps (in-app ←, tabs, Close) may change the level */
-document.addEventListener('click',function(){later();},true);
-document.addEventListener('keydown',function(e){if(e.key==='Escape')later();},true);
-setInterval(function(){if(!document.hidden)sync();},800);
-/* start: the page's entry becomes the root */
+document.addEventListener('click',byUser,true);
+document.addEventListener('touchend',byUser,{capture:true,passive:true});
+document.addEventListener('keydown',byUser,true);
+setInterval(function(){if(!document.hidden)sync(false);},800);
 try{var s0=st();if(!s0.cmm108)history.replaceState(ROOT,'');}catch(e){n108(e,'b108:boot');}
-setTimeout(sync,700);
+setTimeout(function(){sync(false);},700);
+setTimeout(function(){H.booted=true;},6000);
 })();
 
+;/* ===== v160b110 · Beta 110 = Beta 109 + Back no longer closes the app after a few presses ===== */
+(function(){ 'use strict';
+try{if(window.pinVer36)window.pinVer36('1.60 beta 110'+(window.PAGE75&&PAGE75.stale?' · old page file ('+(PAGE75.page||'none')+')':''));}catch(e){}
+try{if(!window.__B110RN){var ol=document.querySelector('#pageSet details.help ol')||document.querySelector('#view-settings details.help ol');
+  if(ol){ol.insertAdjacentHTML('beforeend','<li><b>Beta 110:</b> Back always goes to the previous level (for example Manage collaborator, Modes, Settings, Insights) and only leaves the app from Insights. Before, a second or third Back could close the app on Android.</li>');window.__B110RN=1;}}}catch(e){}
+})();
 ;/* ===== v160b108m · Beta 108 = Beta 107 + Modes, invite and Back fixes ===== */
 (function(){ 'use strict';
 try{if(window.pinVer36)window.pinVer36('1.60 beta 108'+(window.PAGE75&&PAGE75.stale?' · old page file ('+(PAGE75.page||'none')+')':''));}catch(e){}
@@ -29927,4 +30159,70 @@ try{if(!window.__B108RN){var ol=document.querySelector('#pageSet details.help ol
 try{if(window.pinVer36)window.pinVer36('1.60 beta 109'+(window.PAGE75&&PAGE75.stale?' · old page file ('+(PAGE75.page||'none')+')':''));}catch(e){}
 try{if(!window.__B109RN){var ol=document.querySelector('#pageSet details.help ol')||document.querySelector('#view-settings details.help ol');
   if(ol){ol.insertAdjacentHTML('beforeend','<li><b>Beta 109:</b> Moving from Google Drive or OneDrive to Couple Money Cloud no longer makes a join link by itself. The household owner taps Invite, creates the link and sends it; the collaborator opens it on their phone to join.</li>');window.__B109RN=1;}}}catch(e){}
+})();
+;/* ===== v160b111 · Beta 111 = Beta 110 + change account type, Restore picker, Your Profile (i) removed, invite join troubleshooting ===== */
+(function(){ 'use strict';
+try{if(window.pinVer36)window.pinVer36('1.60 beta 111'+(window.PAGE75&&PAGE75.stale?' · old page file ('+(PAGE75.page||'none')+')':''));}catch(e){}
+try{if(!window.__B111RN){var ol=document.querySelector('#pageSet details.help ol')||document.querySelector('#view-settings details.help ol');
+  if(ol){ol.insertAdjacentHTML('beforeend','<li><b>Beta 111:</b> Edit account now has a Type. Bank, Cash, e-Wallet and Investment can switch among themselves; so can Property, Vehicle and Other asset, and Credit card, Loan and Hire purchase. A change between these groups, or between What I have and What I owe, is allowed only while the account has no transactions or value updates. Restore from a backup › Choose a backup file opens the file picker again. Your Profile has no (i) on Your name and Sign-in. Joining with an invite link now says what is wrong when it can’t continue: the cloud sign-in, the connection, or the invite service. Try with sample data on an empty Insights or Transactions screen, or in Data &amp; Sync › Sample data: a 3-month example with its own Sample accounts, only on this phone, removed in one tap.</li>');window.__B111RN=1;}}}catch(e){}
+})();
+
+;/* ===== sample data UI · "Try with sample data" (isSample) =====
+   Insights card while sample data is on, a "Sample" pill on sample transaction rows, sample records kept
+   through a cloud merge, and exports read without them. The data rules live in section 4 (sample data). */
+(function(){ 'use strict';
+function nS(e,w){try{DIAG.note(e,w);}catch(x){}}
+/* a merge from the household cloud or folder never removes this phone's sample records (they are never sent) */
+var _msS=mergeShared;mergeShared=function(R){
+  if(!sampleOn())return _msS(R);
+  var cl=function(x){return JSON.parse(JSON.stringify(x));},s=cl(DB.meta.sample);
+  var acc=DB.accounts.filter(function(a){return a.isSample;}).map(cl),tx=DB.txns.filter(function(t){return t.isSample;}).map(cl);
+  var bud={},bs=(DB.budgets2&&DB.budgets2.couple)||{};Object.keys(bs).forEach(function(c){if(bs[c]&&bs[c].isSample)bud[c]=cl(bs[c]);});
+  var r=_msS(R);
+  DB.meta.sample=s;
+  acc.forEach(function(a){if(!DB.accounts.some(function(x){return x.name===a.name;}))DB.accounts.push(a);});
+  var have={};DB.txns.forEach(function(t){have[t.id]=1;});tx.forEach(function(t){if(!have[t.id])DB.txns.push(t);});
+  (s.people||[]).forEach(function(p){if(DB.people.indexOf(p)<0)DB.people.push(p);});
+  var b=bgStore();b.couple=b.couple||{};Object.keys(bud).forEach(function(c){if(!b.couple[c])b.couple[c]=bud[c];});
+  return r;
+};
+/* exports (CSV, Excel, PDF report, settle-up statement, per person) never contain sample data */
+['expXLSX','expPDF','expSettle','expCSV','exportPersonCSV','expData'].forEach(function(n){
+  var f=window[n];if(typeof f!=='function')return;
+  window[n]=function(){var a=arguments,self=this;return withoutSample(function(){return f.apply(self,a);});};
+});
+/* after Add / Remove: stay on Data & Sync when opened from there, otherwise show Insights */
+var _dl=demoLoad;demoLoad=function(q){var r=_dl(q);if(!q)after(true);return r;};
+var _sw=sampleWipe;sampleWipe=function(){var r=_sw();setTimeout(function(){after(false);},0);return r;};
+function after(added){
+  try{if(VIEWNAV.cur==='settings'&&window.B79&&B79.dsPaint){B79.dsPaint(false);return;}}catch(e){nS(e,'smpl:ds');}
+  if(added)try{gotoView('overview');}catch(e){nS(e,'smpl:nav');}
+}
+/* Insights card + row pills, redrawn after any screen paint */
+function banner(){
+  var m=$('ovMain'),ex=$('smplBan');
+  if(!sampleOn()||!m){if(ex)ex.remove();return;}
+  if(ex&&ex.parentNode===m&&m.firstElementChild===ex)return;
+  if(ex)ex.remove();
+  m.insertAdjacentHTML('afterbegin','<div id="smplBan" class="smpl-ban" role="status"><span class="smpl-ic">'+ico('play')+'</span><span class="smpl-tx"><b>You are exploring sample data</b><small>Example entries, only on this phone. Not synced, backed up or exported.</small></span><button type="button" class="smpl-btn" data-act="demorm">Remove</button></div>');
+}
+function pills(){
+  if(!sampleOn()){document.querySelectorAll('.smpl-pill').forEach(function(p){p.remove();});return;}
+  var ids={},grp={};DB.txns.forEach(function(t){if(t.isSample){ids[t.id]=1;if(t.group)grp[t.group]=1;}});
+  document.querySelectorAll('button[data-act="txn"][data-id],button[data-act="txgrp"][data-g]').forEach(function(b){
+    var on=b.dataset.g?!!grp[b.dataset.g]:!!ids[b.dataset.id],p=b.querySelector('.smpl-pill');
+    if(on&&!p){var h=b.querySelector('.txr-t')||b.querySelector('.mid b')||b.querySelector('.lb')||b.querySelector('b');if(h)h.insertAdjacentHTML('beforeend','<span class="smpl-pill">Sample</span>');}
+    else if(!on&&p)p.remove();
+  });
+}
+var tm=0;
+function paint(){tm=0;if(!window.DB)return;try{banner();pills();}catch(e){nS(e,'smpl:paint');}}
+try{new MutationObserver(function(){if(!tm)tm=setTimeout(paint,60);}).observe(document.body,{childList:true,subtree:true});}catch(e){nS(e,'smpl:mo');}
+setTimeout(paint,300);
+})();
+;/* ===== v160b112 · Beta 112 = Beta 111 + Other asset in two kinds (balance / value) + type, category and sub-category changes allowed with transactions ===== */
+(function(){ 'use strict';
+try{if(window.pinVer36)window.pinVer36('1.60 beta 112'+(window.PAGE75&&PAGE75.stale?' · old page file ('+(PAGE75.page||'none')+')':''));}catch(e){}
+try{if(!window.__B112RN){var ol=document.querySelector('#pageSet details.help ol')||document.querySelector('#view-settings details.help ol');
+  if(ol){ol.insertAdjacentHTML('beforeend','<li><b>Beta 112:</b> Other asset comes in two kinds. Other asset (balance) works like a bank account: for money lent to family or a deposit, lend with a transfer out and record repayments as transfers back, and the balance shows what is still owed. Other asset (value) works like a property: you update its value (gold, collectibles). You can also change an account’s type, a category or a sub-category when it already has transactions: before a type change the app shows the balance today and after; deleting a used category moves its transactions to Others; deleting a used sub-category keeps its label on past transactions.</li>');window.__B112RN=1;}}}catch(e){}
 })();
