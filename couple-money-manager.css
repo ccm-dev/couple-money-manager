@@ -3950,3 +3950,73 @@ html[data-mode="dark"] .m79 :is(.k-pill,.k-mini.k-fill){color:var(--bg)}
 .smpl-empty p{font-size:13px;margin:6px 0 14px}
 .smpl-empty .btn{width:100%;max-width:320px}
 .smpl-empty .smpl-alt{display:block;margin:12px auto 0;background:none;border:0;color:var(--accent);font:inherit;font-size:12px;font-weight:800;min-height:44px;cursor:pointer}
+
+/* ===== other tool's beta 113 (merged in Beta 116) · Category trends table + Asset Mix list ===== */
+.b113-trw{overflow-x:auto;margin:0 -4px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.b113-trw::-webkit-scrollbar{display:none}
+.rtab.b113-tr{width:auto;min-width:100%;font-variant-numeric:tabular-nums}
+.rtab.b113-tr td,.rtab.b113-tr th{white-space:nowrap}
+.rtab.b113-tr td.r{font-size:var(--fs-14,14px);color:var(--text,var(--ink));padding-left:10px}
+.rtab.b113-tr th.r{padding-left:10px}
+.rtab.b113-tr td.r.muted{color:var(--muted)}
+.rtab.b113-tr .b113-now{font-weight:800;color:var(--text,var(--ink))}
+.rtab.b113-tr .b113-c{position:sticky;left:0;z-index:1;background:var(--card);max-width:118px;overflow:hidden;text-overflow:ellipsis;padding-right:8px}
+.rtab.b113-tr td.b113-c b{font-weight:700}
+.mgr-lb.b113-grp{margin-top:12px}
+.card h2+.mgr-lb.b113-grp{margin-top:2px}
+
+/* ===== other tool's beta 114 (merged in Beta 116) · insight vs summary cards, Details at the bottom, Household card, Between Us, Shared vs Personal ===== */
+.hero51.sum114,#view-overview .hero51:not(.ins51){background:var(--card)}
+.ins114{background:color-mix(in srgb,var(--accent-soft) 70%,var(--card));border:1px solid color-mix(in srgb,var(--accent) 22%,transparent);border-left:4px solid var(--accent)}
+.ins114.t-warn{background:color-mix(in srgb,var(--warn) 9%,var(--card));border-color:color-mix(in srgb,var(--warn) 30%,transparent);border-left-color:var(--warn)}
+.ins114.t-bad{background:color-mix(in srgb,var(--exp) 8%,var(--card));border-color:color-mix(in srgb,var(--exp) 28%,transparent);border-left-color:var(--exp)}
+.ins114.t-good{background:color-mix(in srgb,var(--inc) 8%,var(--card));border-color:color-mix(in srgb,var(--inc) 28%,transparent);border-left-color:var(--inc)}
+.ins114>h2 .sub.ins114k{font-size:11px;font-weight:800;letter-spacing:.4px;text-transform:uppercase;color:var(--accent)}
+.ins114.t-warn>h2 .ins114k{color:var(--warn)}.ins114.t-bad>h2 .ins114k{color:var(--exp)}.ins114.t-good>h2 .ins114k{color:var(--inc)}
+.ins114>h2{margin-bottom:8px}
+.act.act114{display:flex;align-items:center;gap:14px;margin-top:10px;padding-top:8px;border-top:1px solid var(--line)}
+#view-overview .card .act .det26{font-size:var(--fs-12,12px)!important;font-weight:800;color:var(--accent);background:none;border:0;padding:4px 0;min-height:32px;font-family:inherit;cursor:pointer}
+.lab114{font-size:13px;font-weight:700;color:var(--muted);margin-top:2px}
+.cpl114 .big51{margin:2px 0 2px}
+.owe114{display:flex;align-items:center;gap:10px;margin-top:12px;padding:10px 12px;border-radius:12px;background:var(--bg);border:1px solid var(--line)}
+.owe114 .ot{display:flex;align-items:center;gap:9px;flex:1;min-width:0;color:var(--muted)}
+.owe114 .ot svg{width:18px;height:18px;flex:none}
+.owe114 .ot span{display:flex;flex-direction:column;min-width:0}
+.owe114 .ot small{font-size:12px;font-weight:600;color:var(--muted)}
+.owe114 .ot b{font-size:14px;font-weight:800;color:var(--ink,var(--text))}
+.owe114 .btn.sm{flex:none;min-height:36px;padding:0 14px;font-size:13px;width:auto}
+.bu114r{display:flex;align-items:center;gap:8px}
+.bu114r .btn.sm{min-height:32px;padding:0 12px;font-size:12px;width:auto}
+.rtab.sp114 tr.tot td{border-bottom:1.5px solid var(--line)}
+.rtab.sp114 tr.gap td{padding-top:12px}
+
+/* ===== other tool's beta 115 (merged in Beta 116) ===== */
+/* 5: back arrow and title share one centre line (the hidden ‹ text no longer adds a second grid row) */
+.backbtn{display:flex!important;align-items:center;justify-content:center}
+.hdrrow{align-items:center}
+/* 3: tappable (i) — smaller, at the top right of its label */
+body .info23,body .infob18,body .info51{width:16px!important;height:16px!important;min-width:16px!important;min-height:16px!important;border-width:1.2px!important;font:italic 700 10px/1 Georgia,serif!important;margin:0 0 0 3px!important;position:relative;top:-6px;vertical-align:baseline!important;align-self:flex-start}
+body .info23::after,body .infob18::after,body .info51::after{inset:-14px} /* Beta 116: 16 px icon + 14 px each side = 44 px tap area (UX_PATTERNS §4) */
+body .info23 svg,body .infob18 svg{width:9px;height:9px}
+body .info23.abs{top:10px!important;right:10px!important}
+/* 7: notes without an icon keep their text in place */
+.m79 .k-note>span:only-child,.m79 .k-hhnote>span:only-child{flex:1}
+/* 2: Kept in — a full-width row inside the card, same inset as the content above */
+#pageSet .m79 .k115keep,.m79 .k115keep{margin:12px -14px -12px;border-top:1px solid var(--line)}
+.m79 .k115keep .k-rw{padding:12px 14px!important;min-height:56px;border-radius:0}
+.m79 .k115keep .k-rw:last-child{border-radius:0 0 var(--r,16px) var(--r,16px)}
+.m79 .k115keep .k-rw.k-kv .k-rt b{margin-top:2px}
+/* 6: Account details — a compact row like the rest of the app */
+.acc48 .a48card.a48det{padding:0!important}
+.acc48 .a48det .a48gh{padding:12px 14px!important;min-height:48px}
+.acc48 .a48det .a48gh b{font-size:var(--fs-14);font-weight:700}
+.acc48 .a48det .a48gi{width:24px;height:24px;border-radius:7px}
+/* 1: permission pill stays on one line */
+.m27g .mgr-row .lb small{display:flex!important;align-items:center;gap:4px;white-space:nowrap;min-width:0;overflow:hidden}
+.m27g .mgr-row .lb small .c115{flex:none}
+.m27g .mgr-row .lb small .pvpill{flex:0 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-left:0!important;padding:1px 6px!important}
+.m27g .mgr-row.m27ro{gap:6px}
+.m27g .mgr-row.m27ro .m27lock{display:none!important} /* the pill already carries the lock */
+.m27g .mgr-row .lb small .pvpill{font-size:11px!important}
+.m27g .mgr-row .lb small .pvpill svg{width:10px;height:10px;vertical-align:-1px}
+.m27g .mgr-row .lb{min-width:0}
