@@ -4081,3 +4081,10 @@ body .card>h2 .i117{top:0!important;align-self:center!important;margin:0 auto 0 
 .nsug117 button{text-align:left;padding:10px 12px;min-height:44px;border:0;border-bottom:1px solid var(--line);background:none;color:var(--ink);font-weight:600}
 .nsug117 button:last-child{border-bottom:0}
 .dbrow117.nb117{cursor:default;border-bottom:1px solid var(--line)}
+
+/* ===== beta 118 · sync warning dot on the quick menu's Settings icon and on the menu button (the Data & Sync icon left the menu) ===== */
+#hdrSettings,#hdrMenuBtn{position:relative}
+.sdot118{position:absolute;width:10px;height:10px;border-radius:50%;border:2px solid var(--card,#fff);box-sizing:content-box;pointer-events:none;background:var(--warn)}
+.sdot118.bad{background:var(--exp)}
+#hdrSettings .sdot118{top:5px;right:5px}
+#hdrMenuBtn .sdot118{bottom:4px;right:4px}
