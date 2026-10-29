@@ -9,7 +9,7 @@ var CMM_FN_REGION='asia-southeast1';
    place before anything is drawn, loads the matching stylesheet, and clears the offline copies so
    the next start fetches fresh files. Help & About then says "old page file". */
 var PAGE75=(function(){
-  var JSV='1.60-beta.117',out={js:JSV,page:'',stale:false,fixed:false};
+  var JSV='1.60-beta.118',out={js:JSV,page:'',stale:false,fixed:false};
   try{
     var m=document.querySelector('meta[name="app-version"]');out.page=m?m.content:'';
     out.stale=out.page!==JSV;
@@ -11196,7 +11196,6 @@ function srow(k,ic,title,sumId,dz){
 var SET_HTML=''
   +'<div class="sethdr25"><button class="backbtn" data-act="sethome25back" aria-label="Back">‹</button><b>Settings</b></div>'
   +'<div class="card sethome">'
-    +srow('profile','user','Your Profile','sum_profileB3')
     +srow('accounts','card','Accounts','sum_accB3')
     +srow('mode','users','Modes','sum_modeB3')
     +srow('privacy','shield','Privacy &amp; Security','sum_privB3')
@@ -13929,7 +13928,7 @@ V63.UPROW=function(x){
     var b=document.getElementById('hdrProfile');if(!b)return;
     var n='';try{n=(DB.meta.profile&&DB.meta.profile.name)||meName()||'';}catch(e){DIAG.note(e,"35-v160-b16-insights-reports:332");}
     var t=n?'My profile \u00b7 '+n:'My profile';
-    b.setAttribute('aria-label',t);b.dataset.tip=t;
+    b.setAttribute('aria-label',t);b.dataset.tip='My profile'; /* beta 118: the label shows the icon's own name only */
   };
   V63.bellBadge=function(){
     var el=document.getElementById('bellN16');if(!el)return;
@@ -19364,7 +19363,7 @@ boot28();
    Runs inside the beta 28 module scope on purpose: it replaces beta 28 functions (existing28, fullWelcome28,
    simpleCoupleHTML28, privateManifest28 …) and calls its helpers (safe28, prefGet28 …), none of which are global. */
 var VERSION291='1.60 beta 32',SCHEMA291=SCHEMA_VERSION;
-var N291={unsubA:null,unsubT:null,unsubS:null,remoteA:{},remoteT:{},state:null,readyA:false,readyT:false,readyS:false,applying:false,pushing:false,again:false};
+var N291={unsubA:null,unsubT:null,unsubS:null,remoteA:{},remoteT:{},state:null,readyA:false,readyT:false,readyS:false,applying:false,pushing:false,again:false};window.N291=N291; /* beta 118: read by the duplicate clean-up retry */
 function members291(){return (HH.info&&HH.info.members||[]).slice();}
 function profiles291(){return (HH.info&&HH.info.memberProfiles)||{};}
 function stableUid291(){return safe28(function(){return FB.user.uid;},uid28());}
@@ -19488,7 +19487,11 @@ function afterInfo115(){
 hhAttach=function(id){M115.n=0;return fsMods().then(function(F){hhDetach();HH.id=id;DB.meta.hh=id;save();HH.unsub=F.onSnapshot(hhRef(F,id),function(s){if(!s.exists()){hhGone('The shared household was deleted. Your data is still on this phone.');return;}var d=s.data();HH.info={owner:d.owner,ownerEmail:d.ownerEmail||'',members:d.members||[],memberEmails:d.memberEmails||{},memberProfiles:d.memberProfiles||{},inviteHash:(d.invite&&d.invite.hash)||'',storageVersion:+d.storageVersion||0,mode:d.mode||'',request:d.request||null,ended:d.ended||null,sync:d.sync||null,paused:!!d.paused};afterInfo115();renderCloudAccSafe();},function(e){hhGone(fsErr(e));});attachNormalized291(F,id);backend291('registerMemberProfile',{householdId:id,displayName:safe28(function(){return meName();},'')}).catch(function(){});return true;});};
 function canWriteAccount291(d,exists){var p=d.permissions[stableUid291()]||'none';return exists?(p==='owner'||p==='admin'):p==='owner';}
 function canWriteTxn291(d,exists){var a=N291.remoteA[d.accountId]||{},p=a.permissions&&a.permissions[stableUid291()]||'none';return exists?(d.createdByUid===stableUid291()?p!=='view'&&p!=='none':['full','admin','owner'].indexOf(p)>=0):d.createdByUid===stableUid291()&&['add','full','admin','owner'].indexOf(p)>=0;}
-function commitOps291(F,ops){var p=Promise.resolve();for(var i=0;i<ops.length;i+=380)(function(ch){p=p.then(function(){var b=F.writeBatch(FB.db);ch.forEach(function(o){if(o.del)b.delete(o.ref);else b.set(o.ref,o.data);});return b.commit();});})(ops.slice(i,i+380));return p;}
+function commitOps291(F,ops){var p=Promise.resolve();for(var i=0;i<ops.length;i+=380)(function(ch){p=p.then(function(){var b=F.writeBatch(FB.db);ch.forEach(function(o){if(o.del)b.delete(o.ref);else b.set(o.ref,o.data);});return b.commit().catch(function(e){
+  /* beta 118: one document the server refuses no longer blocks the whole batch. The batch is written again one
+     document at a time; refused ones are counted (N291.rej118) and retried quietly on a later sync. */
+  if(!(e&&e.code==='permission-denied'))throw e;
+  var q=Promise.resolve();ch.forEach(function(o){q=q.then(function(){var b1=F.writeBatch(FB.db);if(o.del)b1.delete(o.ref);else b1.set(o.ref,o.data);return b1.commit().catch(function(e1){if(e1&&e1.code==='permission-denied'){N291.rej118=(N291.rej118||0)+1;try{DIAG.note(e1,'b118:refused '+(o.ref&&o.ref.path||''));}catch(_){}return;}throw e1;});});});return q;});});})(ops.slice(i,i+380));return p;}
 hhPush=function(){
   if(!(FB.user&&DB.meta.cloudSyncOn&&HH.id&&HH.info&&HH.info.storageVersion>=3))return Promise.resolve(false);
   myProfile115();
@@ -19496,7 +19499,8 @@ hhPush=function(){
   N291.pushing=true;var snap=normalizedSnapshot291(),id=HH.id,accountDeletes=[];
   return fsMods().then(function(F){
     var aops=[],tops=[],localA={},localT={};
-    snap.accounts.forEach(function(d){localA[d.id]=d;var old=N291.remoteA[d.id];if(cjson(old||{})!==cjson(d)&&canWriteAccount291(d,!!old))aops.push({ref:F.doc(FB.db,'households',id,'accounts',d.id),data:d});});
+    /* beta 118: an existing account document is written only when the CLOUD copy gives this person owner or admin (the server checks the stored document; this phone's own view of who owns it could differ, e.g. the other person's copy of a duplicate) */
+    snap.accounts.forEach(function(d){localA[d.id]=d;var old=N291.remoteA[d.id];if(cjson(old||{})!==cjson(d)&&canWriteAccount291(old||d,!!old))aops.push({ref:F.doc(FB.db,'households',id,'accounts',d.id),data:d});});
     Object.keys(N291.remoteA).forEach(function(k){var d=N291.remoteA[k];if(!localA[k]&&canWriteAccount291(d,true))accountDeletes.push(k);});
     return commitOps291(F,aops).then(function(){
       snap.transactions.forEach(function(d){localT[d.id]=d;var old=N291.remoteT[d.id];if(cjson(old||{})!==cjson(d)&&canWriteTxn291(d,!!old))tops.push({ref:F.doc(FB.db,'households',id,'transactions',d.id),data:d});});
@@ -19504,8 +19508,11 @@ hhPush=function(){
       tops.push({ref:F.doc(FB.db,'households',id,'sharedState','core'),data:{record:snap.state,changedAt:Date.now(),changedByUid:stableUid291(),schemaVersion:SCHEMA291}});
       return commitOps291(F,tops);
     }).then(function(){var q=Promise.resolve();accountDeletes.forEach(function(aid){q=q.then(function(){return backend291('deleteHouseholdAccount',{householdId:id,accountId:aid}).catch(function(e){console.warn('account-delete',aid,e&&e.message);});});});return q; /* beta 117: one refused delete (e.g. a partner's entries still point at it) no longer stops the push */});
-  }).then(function(){DB.meta.cloudPushedAt=Date.now();save();syncStatus();return true;})
-    .catch(function(e){console.warn('normalized-push',e);syncUI('warn','Sync failed — tap');if(e&&e.code==='permission-denied')toast('A server permission rejected this change.');return false;})
+  }).then(function(){DB.meta.cloudPushedAt=Date.now();save();syncStatus();
+      if(N291.rej118){var nr=N291.rej118;N291.rej118=0;try{if(window.pushRejected118)pushRejected118({code:'permission-denied',refused:nr});}catch(e){}}
+      else{try{if(window.pushOk118)pushOk118();}catch(e){}}
+      return true;})
+    .catch(function(e){console.warn('normalized-push',e);syncUI('warn','Sync failed — tap');if(e&&e.code==='permission-denied'){if(window.pushRejected118)pushRejected118(e);else toast('A server permission rejected this change.');}return false;})
     .then(function(ok){N291.pushing=false;if(N291.again){N291.again=false;setTimeout(hhPush,300);}return ok;});
 };
 hhCreate=function(){return fsMods().then(function(F){var id=hhCode(),uid=stableUid291(),em=(FB.user.email||'').toLowerCase(),emails={},profiles={};emails[uid]=em;profiles[uid]={displayName:safe28(function(){return meName();},''),email:em};return F.setDoc(hhRef(F,id),{owner:uid,ownerEmail:em,members:[uid],memberEmails:emails,memberProfiles:profiles,storageVersion:3,schema:3,mode:(DB.meta.usage==='adv'?'adv':'couple'),createdAt:F.serverTimestamp(),updatedAt:F.serverTimestamp()}).then(function(){return F.setDoc(F.doc(FB.db,'users',uid),{household:id,email:em},{merge:true});}).then(function(){return hhAttach(id);}).then(function(){return new Promise(function(resolve){setTimeout(resolve,400);});}).then(function(){return hhPush();});});};
@@ -19543,7 +19550,7 @@ bkFileGo=function(){var pw=(($('bkPw')||{}).value||''),pw2=(($('bkPw2')||{}).val
 /* Partner preview: authoritative shared view, genuine latest activity. */
 if(window.B20)B20.pvData=function(){var me=safe28(function(){return meName();},''),P=safe28(function(){return partnerName();},'your partner'),v=buildSharedView(DB,{purpose:'preview'}),m=v.__sharedView||{},accSet={};(v.accounts||[]).forEach(function(a){if(a&&!a.locked&&!a.recv&&!/^.+ owes .+$/.test(a.name||''))accSet[a.name]=1;});var asc=cmm291Latest(v.txns||[],200).reverse();return {me:me,P:P,accs:(v.accounts||[]).filter(function(a){return accSet[a.name];}),txns:asc,relabel:function(n){return (m.labels||{})[n]||n;},anyPn:m.privateNames||{},accSet:accSet};};
 
-function finish291(){if(!DB)return setTimeout(finish291,30);prefDefaults291();ensureIds291();DB.meta.schemaVersion=SCHEMA291;if(window.experienceConfig){experienceConfig.version=VERSION291;experienceConfig.schemaVersion=SCHEMA291;}if(window.advancedCoupleConfig){advancedCoupleConfig.version=VERSION291;advancedCoupleConfig.schemaVersion=SCHEMA291;}save();document.title='v'+VERSION291+' · Couple Money Manager';var mv=document.querySelector('meta[name="app-version"]');if(mv)mv.content='1.60-beta.117';document.querySelectorAll('.sub').forEach(function(el){el.textContent=el.textContent.replace(/v?1\.60 beta 28(\.\d+)?/g,'v'+VERSION291);});if(X63.isSimple()&&V63.itab==='wealth')V63.itab='cash';renderAll();}
+function finish291(){if(!DB)return setTimeout(finish291,30);prefDefaults291();ensureIds291();DB.meta.schemaVersion=SCHEMA291;if(window.experienceConfig){experienceConfig.version=VERSION291;experienceConfig.schemaVersion=SCHEMA291;}if(window.advancedCoupleConfig){advancedCoupleConfig.version=VERSION291;advancedCoupleConfig.schemaVersion=SCHEMA291;}save();document.title='v'+VERSION291+' · Couple Money Manager';var mv=document.querySelector('meta[name="app-version"]');if(mv)mv.content='1.60-beta.118';document.querySelectorAll('.sub').forEach(function(el){el.textContent=el.textContent.replace(/v?1\.60 beta 28(\.\d+)?/g,'v'+VERSION291);});if(X63.isSimple()&&V63.itab==='wealth')V63.itab='cash';renderAll();}
 setTimeout(finish291,0);
 window.CMM_VERSION=VERSION291;window.CMM_SCHEMA_VERSION=SCHEMA291;
 })();
@@ -25527,30 +25534,11 @@ function topHit(x,y){
   return null;
 }
 function place(){
+  /* beta 118 (user: "Display all the toasts at the same level"): every toast sits in one place, just under the app
+     header, whatever screen, sheet or dialog is open. It no longer moves down to keep clear of buttons. */
   try{
-    var vh=window.innerHeight||800,vw=window.innerWidth||400;
-    var sheet=document.body.classList.contains('sheeton');
-    var base=12,h=document.querySelector('header.hdr');
-    if(h&&!sheet){var r=h.getBoundingClientRect();if(r.height>0&&r.bottom>0)base=Math.round(r.bottom)+8;}
-    var card=$('tcard'),H=Math.max(56,(card&&card.offsetHeight)||64);
-    var cw=Math.min(400,vw-24),L=(vw-cw)/2,R=L+cw;
-    var top=base,els=document.querySelectorAll(TAP49),cap=Math.round(vh*0.5);
-    for(var pass=0;pass<4;pass++){
-      var lo=top,hi=top+H,maxB=0;
-      for(var i=0;i<els.length;i++){
-        var el=els[i];
-        if(T.contains(el)||el.closest('header.hdr'))continue;
-        var b=el.getBoundingClientRect();
-        if(b.width<4||b.height<4||b.bottom<=lo||b.top>=hi||b.right<=L||b.left>=R)continue;
-        var cx=Math.min(Math.max(b.left+b.width/2,1),vw-1),cy=Math.min(Math.max(b.top+b.height/2,1),vh-1);
-        var t=topHit(cx,cy);
-        if(!t||!(t===el||el.contains(t)||t.contains(el)))continue;   /* covered / hidden */
-        if(b.bottom>maxB)maxB=b.bottom;
-      }
-      if(!maxB)break;
-      top=Math.round(maxB)+8;
-      if(top>cap){top=base;break;}
-    }
+    var top=12,h=document.querySelector('header.hdr');
+    if(h){var r=h.getBoundingClientRect();if(r.height>0)top=Math.max(12,Math.round(r.bottom)+8);}
     T.style.setProperty('--t49top',top+'px');
   }catch(e){n49(e,'b49:place');}
 }
@@ -25584,14 +25572,10 @@ function show(type,msg,o){
   /* an open Undo keeps its window: calm news waits behind it */
   if(type!=='undo'&&(type==='success'||type==='info')&&S.type==='undo'&&isOpen()){S.q={type:type,msg:msg,o:o,at:Date.now()};return;}
   var now=Date.now(),key=type+'|'+p.msg+'|'+p.sub;
-  var same=key===S.last&&now-S.lastAt<2000&&isOpen()&&type!=='undo';
-  S.lastAt=now;
+  var same=key===S.last&&isOpen()&&type!=='undo';
+  if(!same)S.lastAt=now;
   var d=o.dur?Math.min(15000,+o.dur):dur(type,p.msg,p.sub);
-  if(same){
-    S.n++;var c=$('toastCnt');if(c){c.textContent='×'+S.n;c.classList.add('show');}
-    T.classList.remove('bump');void T.offsetWidth;T.classList.add('bump');
-    restartBar(d);arm(d);return;
-  }
+  if(same)return; /* beta 118: the same message again is ignored; no ×N count, and the first timer keeps running */
   if(type!=='undo'&&S.type==='undo'){try{UNDO=null;}catch(e){}}
   if(type==='undo')S.q=null;
   S.n=1;S.last=key;S.type=type;
@@ -29641,6 +29625,7 @@ function alPaint(){
       var badge=row.querySelector('.k-st79');
       if(warn){if(!badge){badge=document.createElement('span');badge.className='k-st79';sm.parentNode.insertBefore(badge,sm.nextSibling);}var bh='<span class="k-st k-'+(bad?'bad':'warn')+'">'+(bad?'Needs attention':'Check')+'</span><i class="k-dot2'+(bad?'':' k-warn')+'"></i>';if(badge.__h!==bh){badge.innerHTML=bh;badge.__h=bh;}}
       else if(badge)badge.remove();}
+    try{if(window.syncDot118)syncDot118(bad,warn);}catch(e){n79(e,'b118:dot');}
     var c=$('syncChip');
     if(c){c.classList.toggle('bad',bad);if(warn&&!bad)c.classList.add('warn');var d=c.querySelector('.dot');if(d)d.style.background=bad?'var(--exp)':(warn?'var(--warn)':'');}
   }catch(e){n79(e,'b79:alpaint');}
@@ -30152,7 +30137,7 @@ try{if(window.pinVer36)window.pinVer36('1.60 beta 94'+(window.PAGE75&&PAGE75.sta
 
 /* ===== beta 101 · merge of the other tool's beta 93–100 (Transactions tidy-up, update toast, type roles, cleanup) with Claude's beta 94 (invitation email) ===== */
 (function(){'use strict';
-  try{var mv=document.querySelector('meta[name="app-version"]');if(mv)mv.content='1.60-beta.117';}catch(e){}
+  try{var mv=document.querySelector('meta[name="app-version"]');if(mv)mv.content='1.60-beta.118';}catch(e){}
   try{if(window.pinVer36)window.pinVer36('1.60 beta 101'+(window.PAGE75&&PAGE75.stale?' · old page file ('+(PAGE75.page||'none')+')':''));}catch(e){}
 })();
 
@@ -30568,13 +30553,16 @@ function dedupe(){
     s.slice(1).forEach(function(o){Object.keys(o).forEach(function(k){if(keep[k]===undefined||keep[k]===''||keep[k]===null)keep[k]=o[k];});if(!(+keep.start)&&(+o.start))keep.start=o.start;drop.push(o);removed++;});
   });
   DB.accounts=DB.accounts.filter(function(a){return drop.indexOf(a)<0;});
+  /* beta 118: remember the extra copies by id, so the same cloud documents are not merged back in (and cleaned up
+     and announced again) on every sync while the cloud still holds them */
+  try{var mm=DB.meta.dup118=DB.meta.dup118||{};drop.forEach(function(o){if(o&&o.id)mm[o.id]=String(o.name||'');});}catch(e){}
   return removed;
 }
 B117.dupGroups=dupGroups;B117.dedupe=dedupe;
 var _ms117=mergeShared;mergeShared=function(R){
   var r=_ms117.apply(this,arguments);
   try{if(dupGroups().length){try{backupSnap('pre-duplicate-cleanup');}catch(e){}var n=dedupe();
-    if(n){B117.lastDedupe=n;try{toast('Removed '+n+' duplicate account'+(n===1?'':'s')+' (same name listed twice). A safety copy was saved first.');}catch(e){}
+    if(n){B117.lastDedupe=n;try{if(window.dupDone118)dupDone118(n);else toast('Removed '+n+' duplicate account'+(n===1?'':'s')+' (same name listed twice). A safety copy was saved first.');}catch(e){}
       setTimeout(function(){try{if(typeof hhPush==='function')hhPush();}catch(e){}},1200);}}}catch(e){n117(e,'b117:dedupe');}
   return r;
 };
@@ -30879,7 +30867,7 @@ window.addEventListener('click',function(e){
   try{
     var t=e.target;if(!t||!t.closest)return;
     if(t.closest('#tip117')){if(!t.closest('[data-act=tip117go]'))e.stopPropagation();return;}
-    var el=t.closest('[data-tip]');
+    var el=t.closest('.hit117[data-tip]'); /* beta 118: only chart hit areas; the quick-menu icons act on the first tap */
     if(!el||!el.getAttribute('data-tip')){if(TIP.el)tipHide();return;}
     e.stopPropagation();e.preventDefault();
     if(TIP.el===el){tipHide();return;}
@@ -30954,3 +30942,96 @@ document.addEventListener('click',function(e){try{var t=e.target&&e.target.close
 try{if(window.pinVer36)window.pinVer36('1.60 beta 117'+(window.PAGE75&&PAGE75.stale?' · old page file ('+(PAGE75.page||'none')+')':''));}catch(e){}
 try{if(!window.__B117RN){var ol=document.querySelector('#pageSet details.help ol')||document.querySelector('#view-settings details.help ol');
   if(ol){ol.insertAdjacentHTML('beforeend','<li><b>Beta 117:</b> The Insights tab is now called Home. Accounts no longer show twice: after every sync one account per name is kept, and any duplicates already on your phone can be cleaned up (with Undo). Joining a household moves sync to the household’s cloud. Accounts, categories and sub-categories can be deleted after a warning that says how many entries go with them (a category’s transactions move to Uncategorised). Tap any chart to see its values. Asset Mix and Net Worth open into their accounts; Debts shows Balances, Repayments and Schedule on one card each, and Repayments now splits principal from interest &amp; charges correctly. Notes suggest what you typed before (only your own notes, kept on this phone).</li>');window.__B117RN=1;}}}catch(e){}
+
+;/* ===== v160b118 · Beta 118 = Beta 117 + quick menu (Data & Sync only in Settings, Your Profile only in the menu, sync warning dot),
+   menu icons act on the first tap, one place for every toast, no repeating toasts, duplicate accounts no longer come back ===== */
+(function(){ 'use strict';
+function n118(e,w){try{DIAG.note(e,w);}catch(_){}}
+window.B118=window.B118||{};
+
+/* ---------- 1. sync warning dot on the menu's Settings icon and on the menu button ----------
+   The Data & Sync icon left the quick menu (it lives in Settings only). Its warning dot moved to the Settings icon
+   and the menu button, so a sync problem is still seen without opening Settings. Called by the beta 79 alert painter
+   with the same red / amber state that colours Settings › Data & Sync. */
+window.syncDot118=function(bad,warn){
+  var on=!!(bad||warn),sev=bad?'bad':'warn',say=bad?'sync needs attention':'check sync';
+  ['hdrSettings','hdrMenuBtn'].forEach(function(id){
+    var b=document.getElementById(id);if(!b)return;
+    var d=b.querySelector('.sdot118');
+    if(!on){if(d)d.remove();}
+    else{if(!d){d=document.createElement('i');d.className='sdot118';d.setAttribute('aria-hidden','true');b.appendChild(d);}d.className='sdot118 '+sev;}
+  });
+  var s=document.getElementById('hdrSettings');
+  if(s){s.setAttribute('aria-label',on?'Settings, '+say:'Settings');s.dataset.tip='Settings';}
+  B118.dot=on?sev:'';
+};
+
+/* ---------- 2. Your Profile is opened from the quick menu only: Back from it goes Home ---------- */
+try{var _sb118=B3.setBack;B3.setBack=function(){
+  var wasProfile=!!(B3.open&&B3.cur==='profile');
+  var r=_sb118.apply(this,arguments);
+  if(wasProfile){try{gotoView('overview');}catch(e){n118(e,'b118:profileback');}}
+  return r;
+};}catch(e){n118(e,'b118:setback');}
+
+/* ---------- 3. duplicate accounts (D-72) ----------
+   Why they came back: the clean-up removed the extra copies on the phone, but the cloud still held their documents
+   (removing them needs the account owner's phone, the server functions and no entries pointing at them). Every sync
+   merged them back, the clean-up ran again and showed its message again (×2, ×3 … ×41), and a refused cloud change
+   showed "A server permission rejected this change."
+   Now: the extra copies are remembered by id (DB.meta.dup118) and left out of every merge, so they are cleaned up
+   once; the message shows once per app run; the cloud removal is retried quietly until the documents are gone. */
+var _msD118=mergeShared;mergeShared=function(R){
+  try{
+    var mm=DB.meta&&DB.meta.dup118;
+    if(mm&&R&&Array.isArray(R.accounts)&&Object.keys(mm).length){
+      var ids={};R.accounts.forEach(function(a){if(a&&a.id)ids[a.id]=1;});
+      var stillThere=false;
+      Object.keys(mm).forEach(function(id){if(!ids[id])delete mm[id];else stillThere=true;}); /* gone from the cloud: forget it */
+      if(stillThere){
+        var keepName={};R.accounts.forEach(function(a){if(a&&a.id&&!mm[a.id])keepName[a.name]=1;});
+        R.accounts=R.accounts.filter(function(a){return !(a&&a.id&&mm[a.id]&&keepName[a.name]);});
+        retry('dup');
+      }
+    }
+  }catch(e){n118(e,'b118:mergefilter');}
+  return _msD118.apply(this,arguments);
+};
+window.dupDone118=function(n){
+  retry('dup');
+  if(B118.dupToast)return; /* once per app run */
+  B118.dupToast=1;
+  toast('Removed '+n+' duplicate account'+(n===1?'':'s')+' (same name listed twice). A safety copy was saved first.','success');
+};
+function cleanupPending(){try{var mm=DB.meta&&DB.meta.dup118;return !!(mm&&Object.keys(mm).length);}catch(e){return false;}}
+B118.cleanupPending=cleanupPending;
+
+/* ---------- 4. a change the cloud refuses: quiet retry ----------
+   During the duplicate clean-up a refusal is expected (the other person's copy, or the server not yet updated):
+   no message, the push is tried again after 20 s, 1, 5 and 15 minutes. Other refusals still show the message,
+   once per app run. Sync status (Settings › Data & Sync and the warning dot) shows the problem either way. */
+var RT={n:0,t:0},WAIT=[20000,60000,300000,900000];
+function retry(why){
+  if(RT.t||RT.n>=WAIT.length)return;
+  RT.t=setTimeout(function(){RT.t=0;RT.n++;try{if(typeof hhPush==='function')hhPush();}catch(e){n118(e,'b118:retry');}},WAIT[RT.n]);
+}
+window.pushRejected118=function(e){
+  n118(e,'b118:refused');
+  if(cleanupPending()){retry('refused');return;}
+  retry('refused');
+  if(B118.refusedToast)return;
+  B118.refusedToast=1;
+  toast('A server permission rejected this change.');
+};
+window.pushOk118=function(){
+  /* a clean push: the next problem starts its retries from the beginning, unless the cloud still holds extra copies */
+  if(cleanupPending()){try{var N=window.N291,mm=DB.meta.dup118,left=Object.keys(mm).filter(function(id){return N&&N.remoteA&&N.remoteA[id];});if(left.length){retry('dup');return;}}catch(e){}}
+  RT.n=0;
+};
+B118.retryState=function(){return {n:RT.n,pending:!!RT.t};};
+})();
+
+;/* ===== v160b118 pin · version + release note ===== */
+try{if(window.pinVer36)window.pinVer36('1.60 beta 118'+(window.PAGE75&&PAGE75.stale?' · old page file ('+(PAGE75.page||'none')+')':''));}catch(e){}
+try{if(!window.__B118RN){var ol=document.querySelector('#pageSet details.help ol')||document.querySelector('#view-settings details.help ol');
+  if(ol){ol.insertAdjacentHTML('beforeend','<li><b>Beta 118:</b> The menu at the top right has My profile, Settings, Reminder centre, Money assistant and Hide amounts. Data &amp; Sync is in Settings only; if sync needs attention, a dot shows on the menu button and on Settings. Your Profile opens from the menu only. Menu icons work on the first tap. Every message (toast) shows in the same place, just under the header, and closes on its own. Duplicate accounts are cleaned up once and no longer come back after each sync.</li>');window.__B118RN=1;}}}catch(e){}
