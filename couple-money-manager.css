@@ -4088,3 +4088,80 @@ body .card>h2 .i117{top:0!important;align-self:center!important;margin:0 auto 0 
 .sdot118.bad{background:var(--exp)}
 #hdrSettings .sdot118{top:5px;right:5px}
 #hdrMenuBtn .sdot118{bottom:4px;right:4px}
+
+/* ===== beta 119 ===== */
+/* Your Profile: name row like the partner row */
+.pn119 .k-lbl{margin:0 0 6px}
+.pn119 .k-rw{border-top:0}
+.pn119b{display:flex;gap:8px;margin:10px 0 4px}
+.pn119b .btn{flex:1}
+/* Home › Cash Flow: Cash movement card (Full) */
+.cm119 .cm119s{font-size:12.5px;color:var(--muted);font-weight:600;margin:-2px 0 4px}
+.cm119io{display:flex;gap:6px;flex-wrap:wrap;margin-top:9px}
+.cm119io span{font-size:11.5px;font-weight:700;padding:4px 9px;border-radius:999px;background:var(--bg);display:inline-flex;align-items:center;gap:4px;color:var(--ink)}
+/* chips and chart pop-ups: green / red with a sign */
+.whyrow51 b.pos,.cm119io b.pos,#tip117 b.pos{color:var(--inc)}
+.whyrow51 b.neg,.cm119io b.neg,#tip117 b.neg{color:var(--exp)}
+.cm119 .cm119a{font-size:.55em;vertical-align:.25em;margin-right:4px}
+
+/* beta 120: the add-transaction sheet is not a scroll box, so it can never slide sideways (its body scrolls instead) */
+.sheet.sx61{overflow:clip}
+
+/* beta 121 */
+/* note suggestions: a list under the whole Note row, smaller text */
+.nsug117{margin:2px 0 8px;width:100%;box-sizing:border-box}
+.nsug117 button{font-size:13px;min-height:36px;padding:7px 12px;font-weight:600;line-height:1.3}
+/* category tiles: text only, shorter, names up to 2 lines */
+.ad-cat61.t121{height:auto;min-height:46px;padding:6px 6px;gap:0;justify-content:center}
+.ad-cat61.t121 .nm{white-space:normal;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;line-height:1.2;overflow:hidden;word-break:break-word}
+/* Savings card (option A) */
+.sv121t{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin-top:2px}
+.sv121l{font-size:var(--fs-15);font-weight:800;color:var(--ink)}
+.sv121t b{font-size:var(--fs-22,22px);font-weight:800;white-space:nowrap}
+.sv121p{font-size:var(--fs-13);color:var(--muted);font-weight:600;margin:2px 0 8px}
+.sv121bar{position:relative;display:flex;height:14px;border-radius:7px;overflow:hidden;background:var(--line);margin:0 0 10px}
+.sv121bar i{display:block;height:100%}
+.sv121bar i.sv{background:var(--inc)}
+.sv121bar i.sp{background:var(--exp)}
+.sv121bar.over i.sp{background:repeating-linear-gradient(45deg,var(--exp) 0 6px,color-mix(in srgb,var(--exp) 62%,#fff) 6px 9px)}
+.sv121bar.over{overflow:visible;height:auto;min-height:14px;background:none;flex-direction:column}
+.sv121bar.over i.sp{height:14px;border-radius:7px}
+.sv121mk{align-self:flex-end;font-size:var(--fs-12);font-weight:800;color:var(--exp);margin-top:3px;white-space:nowrap}
+.sv121r{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:7px 0;border-top:1px solid var(--hair)}
+.sv121r>span{display:flex;align-items:center;gap:7px;min-width:0;font-weight:650;color:var(--ink)}
+.sv121r small{color:var(--muted);font-weight:700}
+.sv121r b{white-space:nowrap;font-weight:800}
+.sv121r .dot{width:10px;height:10px;border-radius:50%;flex:none}
+.sv121r .dot.in{background:var(--inc)}.sv121r .dot.out{background:var(--exp)}
+.lg117 i.ov121{background:repeating-linear-gradient(45deg,var(--exp) 0 3px,color-mix(in srgb,var(--exp) 55%,#fff) 3px 5px)}
+/* Net cash flow card */
+.nc121top{margin:2px 0 10px}
+.nc121top>b{display:block;font-size:var(--fs-22,22px);font-weight:800;white-space:nowrap}
+.nc121top .help{margin-top:2px}
+.nc121g{margin:10px 0 4px}
+.nc121h{display:flex;justify-content:space-between;align-items:baseline;gap:10px;font-size:var(--fs-12);font-weight:800;letter-spacing:.5px;color:var(--muted);padding-bottom:5px;border-bottom:1px solid var(--hair)}
+.nc121h b{font-size:var(--fs-15);letter-spacing:0;white-space:nowrap}
+.nc121r{padding:7px 0 4px}
+.nc121l{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.nc121l>span{min-width:0;font-weight:650;color:var(--ink);display:flex;align-items:center;gap:4px}
+.nc121l>b{white-space:nowrap;font-weight:800}
+.nc121b{height:6px;border-radius:3px;background:var(--hair);margin-top:5px;overflow:hidden}
+.nc121b i{display:block;height:100%;border-radius:3px}
+.nc121b i.pos{background:var(--inc)}.nc121b i.neg{background:var(--exp)}
+.nc121acc{margin-top:10px;border-top:1px solid var(--hair);padding-top:4px}
+.nc121acc summary{cursor:pointer;font-weight:800;padding:9px 0;min-height:24px;color:var(--ink)}
+.nc121acc .fline>span{display:flex;align-items:center;gap:7px;min-width:0}
+.nc121acc .fline b{white-space:nowrap}
+.nc121still{padding:6px 0 2px}
+/* What moved it: muted info rows */
+.mv121m{margin-top:6px;padding-top:4px;border-top:1px dashed var(--line)}
+.mv121m .fline{color:var(--muted);font-size:var(--fs-13)}
+.mv121m .fline>span:first-child{display:flex;align-items:center;gap:4px}
+.fline .info23,.nc121l .info23{flex:none}
+/* split shares: Equal = plain amount, Custom = slim one-line box */
+#fSubSplit61 .sp-row62 label.spin62,.sp-row62 label.spin62{display:flex!important;flex-direction:row!important;align-items:center!important;justify-content:flex-end;height:44px!important;min-height:44px!important;max-height:44px;padding:0 12px!important;margin:0!important;box-sizing:border-box;line-height:1}
+.sp-row62 label.spin62 small,.sp-row62 label.spin62 input{margin:0!important;line-height:1.2;height:auto;align-self:center}
+.sp-row62 label.spin62 input{padding:0!important;text-align:right;min-height:0!important;border:0!important;box-shadow:none!important}
+.sp-row62 label.spin62.ro{background:none!important;box-shadow:none!important;min-width:0!important;padding:0!important;opacity:1}
+.sp-row62 label.spin62.ro input{width:auto;min-width:64px;max-width:120px;font-size:var(--fs-15);font-weight:800}
+.nc121acc summary .sub{color:var(--muted);font-weight:600;font-size:var(--fs-13)}
