@@ -4020,3 +4020,64 @@ body .info23.abs{top:10px!important;right:10px!important}
 .m27g .mgr-row .lb small .pvpill{font-size:11px!important}
 .m27g .mgr-row .lb small .pvpill svg{width:10px;height:10px;vertical-align:-1px}
 .m27g .mgr-row .lb{min-width:0}
+
+/* ===== Beta 117 ===== */
+/* chart values on tap (D-69) */
+#tip117{position:fixed;z-index:9000;max-width:260px;background:var(--card);color:var(--ink);border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow-lg,0 8px 24px rgba(0,0,0,.18));padding:9px 12px;display:flex;flex-direction:column;gap:2px;font-size:13px;line-height:1.35;pointer-events:auto}
+#tip117[hidden]{display:none}
+#tip117 b{font-weight:800;font-size:13px}
+#tip117 span{font-weight:600;font-variant-numeric:tabular-nums}
+#tip117 .lnk{margin-top:4px;padding:6px 0 0;text-align:left;font-weight:800;color:var(--accent);background:none;border:0;min-height:32px}
+.hit117{cursor:pointer}
+rect.hit117.tipon117{fill:var(--accent);fill-opacity:.06}
+.bars51 .tipon117 i{outline:2px solid var(--accent);outline-offset:1px}
+.mixbar i.hit117{cursor:pointer}.mixbar i.tipon117{filter:brightness(1.12)}
+.bars51 div{color:var(--ink);opacity:.85}
+.bars51.top117{height:84px}
+.bars51 .bt117{font-style:normal;font-size:10px;font-weight:800;color:var(--ink);font-variant-numeric:tabular-nums}
+/* legend under a chart (green / red dots) */
+.lg117{display:flex;flex-wrap:wrap;align-items:center;gap:6px 14px;margin-top:6px;font-size:12.5px;font-weight:700;color:var(--ink)}
+.lg117 span{display:inline-flex;align-items:center;gap:6px}
+.lg117 i{width:10px;height:10px;border-radius:50%;display:inline-block}
+.lg117 .lgt{font-weight:600;opacity:.75;margin-left:auto}
+/* one-card debt, asset and net worth rows */
+.dbtot117{font-size:26px;font-weight:800;margin:2px 0 4px;font-variant-numeric:tabular-nums}
+.dbtot117 .neg{color:var(--exp)}
+.dblg117{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:12.5px;font-weight:700;color:var(--ink);margin:4px 0 6px}
+.dblg117 span{display:inline-flex;align-items:center;gap:5px}.dblg117 i{width:10px;height:10px;border-radius:3px;display:inline-block}
+.dbgrp117{display:flex;justify-content:space-between;align-items:baseline;margin:14px 0 2px;padding-top:6px;font-size:12px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;color:var(--ink)}
+.dbgrp117 b{font-size:13.5px;letter-spacing:0;text-transform:none;color:var(--exp)}
+.dbrow117{display:flex;flex-direction:column;gap:5px;width:100%;text-align:left;padding:10px 2px;border:0;border-bottom:1px solid var(--line);background:none;color:var(--ink);cursor:pointer}
+.dbrow117:last-child{border-bottom:0}
+.dbrow117 .l1{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+.dbrow117 .l1 .nm{font-weight:700;font-size:15px;min-width:0;overflow:hidden;text-overflow:ellipsis}
+.dbrow117 .l1 b{font-weight:800;font-variant-numeric:tabular-nums;white-space:nowrap}
+.dbrow117 .l1 b.neg{color:var(--exp)}
+.dbrow117 .l2{font-size:12.5px;font-weight:600;color:var(--ink);opacity:.8}
+.dbbar117{height:6px;border-radius:999px;background:var(--exp-soft);overflow:hidden}
+.dbbar117 i{display:block;height:100%;background:var(--inc);border-radius:999px}
+/* expandable groups (Asset Mix categories, Net Worth what I have / what I owe) */
+.am117g{border-bottom:1px solid var(--line)}
+.am117g:last-of-type{border-bottom:0}
+.am117g>summary{display:flex;align-items:center;gap:8px;padding:11px 2px;cursor:pointer;list-style:none;min-height:44px}
+.am117g>summary::-webkit-details-marker{display:none}
+.am117g>summary .nm{flex:1;min-width:0;font-weight:700;color:var(--ink)}
+.am117g>summary .nm small{display:block;font-size:12px;font-weight:600;color:var(--ink);opacity:.8;margin-top:2px}
+.am117g>summary .vv{text-align:right;font-weight:800;font-variant-numeric:tabular-nums}
+.am117g>summary .vv small{display:block;font-size:12px;font-weight:700;opacity:.75}
+.am117g>summary .vv.neg{color:var(--exp)}
+.am117g .chev117{font-weight:800;color:var(--muted);transition:transform .15s;display:inline-block;width:14px;text-align:center}
+.am117g[open] .chev117{transform:rotate(90deg)}
+.am117g .dbrow117{padding-left:18px}
+.pts117{margin:10px 0 0 0;padding-left:18px;font-size:13px;line-height:1.5;color:var(--ink)}
+.pts117 li{margin:2px 0}
+/* (i) right after the title: muted, small, 44 px tap area */
+body .card>h2 .i117{top:0!important;align-self:center!important;margin:0 auto 0 6px!important;vertical-align:middle!important;opacity:.85}
+/* Your Profile: Log out as a red box */
+.lo117 .lo117b{width:100%;background:color-mix(in srgb,var(--exp) 8%,transparent)!important;color:var(--exp)!important;border:1.5px solid var(--exp)!important;box-shadow:none!important;font-weight:800}
+/* note suggestions */
+.nsug117{display:flex;flex-direction:column;margin-top:4px;border:1px solid var(--line);border-radius:12px;overflow:hidden;background:var(--card)}
+.nsug117[hidden]{display:none}
+.nsug117 button{text-align:left;padding:10px 12px;min-height:44px;border:0;border-bottom:1px solid var(--line);background:none;color:var(--ink);font-weight:600}
+.nsug117 button:last-child{border-bottom:0}
+.dbrow117.nb117{cursor:default;border-bottom:1px solid var(--line)}
