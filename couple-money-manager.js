@@ -9,7 +9,7 @@ var CMM_FN_REGION='asia-southeast1';
    place before anything is drawn, loads the matching stylesheet, and clears the offline copies so
    the next start fetches fresh files. Help & About then says "old page file". */
 var PAGE75=(function(){
-  var JSV='1.60-beta.116',out={js:JSV,page:'',stale:false,fixed:false};
+  var JSV='1.60-beta.117',out={js:JSV,page:'',stale:false,fixed:false};
   try{
     var m=document.querySelector('meta[name="app-version"]');out.page=m?m.content:'';
     out.stale=out.page!==JSV;
@@ -2940,6 +2940,8 @@ function perTx(r){var l=DB.txns.filter(function(t){return t.date>=r.s&&t.date<=r
 function perWord(){return PER.mode;}
 function peopleWith(m){var p=sortedAlpha(DB.people);Object.keys(m||{}).forEach(function(k){if(p.indexOf(k)<0)p.push(k);});return whoOK()==='couple'?p:p.filter(function(x){return x===PER.who;});}
 function ownedByWho(owner){if(whoOK()==='couple')return true;return owner===PER.who||String(owner||'').split(' & ').indexOf(PER.who)>=0;}
+function tip117(lines){return ' data-tip="'+esc((lines||[]).filter(function(x){return x!==''&&x!=null;}).join('|'))+'"';} /* beta 117: every chart point/bar carries its values; a tap shows them (D-69) */
+function sgm117(v){return (v<0?'\u2212':v>0?'+':'')+money(Math.abs(v));}
 function tl(s,e,h,c,ty){return ' data-act="tlist" data-s="'+s+'" data-e="'+e+'" data-h="'+esc(h)+'"'+(c?' data-c="'+esc(c)+'"':'')+(ty?' data-t="'+ty+'"':'');}
 /* ---------- budgets: fixed + variable per category, couple and personal ---------- */
 function bgStore(){
@@ -3385,7 +3387,7 @@ document.addEventListener('keydown',function(e){if(e.key==='Enter'&&isCalcEl(e.t
 /* ---------- 4/5. split bill: edit / delete this share or the whole bill ---------- */
 var CH={opts:[]};
 function askChoice(msg,opts){CH.opts=opts;$('chMsg').textContent=msg;
-  $('chBtns').innerHTML=opts.map(function(o,i){return '<button class="'+o.c+'" data-act="chpick" data-i="'+i+'">'+o.l+'</button>';}).join('')+'<button class="btn ghost" data-act="chno">Cancel</button>';
+  $('chBtns').innerHTML=opts.map(function(o,i){return '<button class="'+o.c+'" data-act="chpick" data-i="'+i+'">'+o.l+'</button>';}).join('')+(opts.some(function(o){return /^cancel$/i.test(String(o.l||'').trim());})?'':'<button class="btn ghost" data-act="chno">Cancel</button>'); /* beta 117: one Cancel only */
   $('chmodal').classList.add('on');navSync();}
 function choiceClose(){$('chmodal').classList.remove('on');navSync();}
 function renderGroupNote(mode){
@@ -4426,7 +4428,7 @@ function svgPie(items,tot,r){
   function pt(rr,ang){return (cx+rr*Math.cos(ang)).toFixed(2)+' '+(cy+rr*Math.sin(ang)).toFixed(2);}
   if(!items.length||tot<=0)return '<svg viewBox="0 0 240 240"><circle cx="120" cy="120" r="86" fill="none" stroke="var(--line)" stroke-width="52"/><text x="120" y="125" text-anchor="middle" font-size="13" fill="var(--muted)">No spending</text></svg>';
   items.forEach(function(it,i){
-    var fr=it.value/tot,a1=a+fr*2*Math.PI,col=PALETTE[i%PALETTE.length],at=tl(r.s,r.e,it.label+' · '+r.label,it.label,'Expense')+' style="cursor:pointer"';
+    var fr=it.value/tot,a1=a+fr*2*Math.PI,col=PALETTE[i%PALETTE.length],at=tl(r.s,r.e,it.label+' · '+r.label,it.label,'Expense')+tip117([it.label,money(it.value),Math.round(fr*100)+'% of spending'])+' class="hit117" style="cursor:pointer"';
     if(fr>=0.9999)out+='<circle cx="120" cy="120" r="'+((R+r0)/2)+'" fill="none" stroke="'+col+'" stroke-width="'+(R-r0)+'"'+at+'/>';
     else{var lg=fr>0.5?1:0;out+='<path d="M'+pt(R,a)+' A'+R+' '+R+' 0 '+lg+' 1 '+pt(R,a1)+' L'+pt(r0,a1)+' A'+r0+' '+r0+' 0 '+lg+' 0 '+pt(r0,a)+' Z" fill="'+col+'" stroke="var(--card)" stroke-width="1.5"'+at+'/>';}
     if(fr>=0.04){var p=pt((R+r0)/2,(a+a1)/2).split(' ');out+='<text x="'+p[0]+'" y="'+p[1]+'" text-anchor="middle" dominant-baseline="central" font-size="12" font-weight="800" fill="#fff" pointer-events="none">'+Math.round(fr*100)+'%</text>';}
@@ -4676,7 +4678,7 @@ function hhJoin(id){
   fsMods().then(function(F){
     var upd={members:F.arrayUnion(uid),invites:F.arrayRemove(em)};upd['memberEmails.'+uid]=em;
     return F.updateDoc(hhRef(F,id),upd).then(function(){return F.setDoc(F.doc(FB.db,'users',uid),{household:id,email:em},{merge:true});})
-      .then(function(){DB.meta.hhAt=0;DB.meta.cloudSyncOn=true;DB.meta.syncChoice='yes';DB.meta.usage=window.B115mode==='adv'?'adv':'couple';save();return hhAttach(id);})
+      .then(function(){DB.meta.hhAt=0;DB.meta.cloudSyncOn=true;DB.meta.syncChoice='yes';DB.meta.usage=window.B115mode==='adv'?'adv':'couple';save();try{if(window.storageAfterJoin117)window.storageAfterJoin117();}catch(e){console.warn('b117 join storage',e);}return hhAttach(id);})
       .then(function(){toast('You joined the household ✓');});
   }).catch(function(e){toast(fsErr(e));});
 }
@@ -5199,7 +5201,7 @@ function authFinish(){
   authHide();afterLogin();
   var j=jr();if(!j.start){jrInit();save();}
   var nm=(DB.meta.profile||{}).name;
-  toast(nm?'Welcome, '+nm+'! Your first steps are at the top of Insights.':'Welcome!');
+  toast(nm?'Welcome, '+nm+'! Your first steps are at the top of Home.':'Welcome!');
   if(AU.invite&&FB.user&&DB.meta.cloudSyncOn)setTimeout(hhStart,500);
   if(V56.lockNext){V56.lockNext=0;setTimeout(function(){lockShow('set1');},350);}
 }
@@ -5668,7 +5670,7 @@ var TILES56=TILES.slice();
     if(/^Privacy:/.test(t))li.innerHTML='<b>Privacy Screen:</b> tap the eye at the top to hide every amount. Press and hold an amount to peek.';
     else if(/^Hide from your partner:/.test(t))li.innerHTML='<b>Private from your partner:</b> set an account to <b>Only me</b> in Accounts → the account → Edit, or choose <b>Hide details</b> / <b>Fully private</b> under Privacy when adding a transaction.';
     else if(/^Statements:/.test(t))li.innerHTML='<b>Statements:</b> Settings → Import → Import a statement, or open an account and tap Import a statement. Review every line before it is added; undo a whole import from Recent imports.';
-    else if(/^Sample data:/.test(t))li.innerHTML='<b>Sample data:</b> tap Try with sample data on an empty Insights or Transactions screen, or go to Settings → Data &amp; Sync → Sample data. It stays on this phone and Remove sample data takes it all away.';
+    else if(/^Sample data:/.test(t))li.innerHTML='<b>Sample data:</b> tap Try with sample data on an empty Home or Transactions screen, or go to Settings → Data &amp; Sync → Sample data. It stays on this phone and Remove sample data takes it all away.';
   });
   ol.insertAdjacentHTML('beforeend','<li><b>Export:</b> Settings → Export. Excel, a monthly PDF report, a settle-up statement or CSV, for any period.</li><li><b>Backup:</b> Settings → Backup &amp; restore. Download a password-protected backup file and restore it on any phone.</li>');
 })();
@@ -9392,6 +9394,7 @@ function svgLine59(pts){
   var every=pts.length>7?2:1;
   pts.forEach(function(p,k){
     o+='<circle cx="'+X(k).toFixed(1)+'" cy="'+Y(p.v).toFixed(1)+'" r="'+(3.5*sc).toFixed(1)+'" fill="var(--card)" stroke="var(--accent)" stroke-width="'+(2*sc).toFixed(1)+'"/>';
+    o+='<rect class="hit117" x="'+(X(k)-step/2).toFixed(1)+'" y="0" width="'+Math.max(step,20).toFixed(1)+'" height="'+H+'" fill="transparent"'+tip117([p.full||(p.d?dLabelYW(p.d):p.lb),money(p.v)])+' style="cursor:pointer"/>';
     if(k===0||k===lastK||k===mxK)o+='<text x="'+X(k).toFixed(1)+'" y="'+(Y(p.v)-7*sc).toFixed(1)+'" text-anchor="'+(k===0?'start':k===lastK?'end':'middle')+'" font-size="'+fs+'" font-weight="700" fill="var(--muted)">'+(p.v<0?'-':'')+cfmt(Math.abs(p.v))+'</text>';
     if((lastK-k)%every===0)o+='<text x="'+X(k).toFixed(1)+'" y="'+(H-4)+'" text-anchor="middle" font-size="'+fs+'" font-weight="600" fill="var(--muted)">'+esc(p.lb)+'</text>';
   });
@@ -9438,16 +9441,19 @@ var _tf59=tileFigs;tileFigs=function(){var f=_tf59();try{var r=perRange();f.netw
 SCREEN.on('renderReport',10015303);
 svgNet=function(tr){
   if(psCh())return psChart();
-  var W=Math.max(320,tr.length*54),H=210,top=30,bot=30,mxP=0,mxN=0,o='';
+  var W=Math.max(320,tr.length*54),H=210,top=30,bot=30,mxP=0,mxN=0,o='',sel117=-1;
   tr.forEach(function(x){if(x.net>0)mxP=Math.max(mxP,x.net);else mxN=Math.max(mxN,-x.net);});if(!mxP&&!mxN)mxP=1;
+  if(mxN>0){bot=44;H=224;} /* beta 117: room so a negative value's label never sits on the date */
+  try{var cr117=perRange();tr.forEach(function(x,k){if(x.s===cr117.s&&x.e===cr117.e)sel117=k;});}catch(e){}
   var span=mxP+mxN,ph=H-top-bot,zero=top+ph*(mxP/span),step=(W-16)/tr.length,bw=Math.min(28,step-20);
   o+='<line x1="4" x2="'+(W-4)+'" y1="'+zero+'" y2="'+zero+'" stroke="var(--muted)" stroke-width="1"/>';
   tr.forEach(function(x,k){
     var cx=6+(k+.5)*step,h=Math.max(1.5,Math.abs(x.net)/span*ph),y=x.net>=0?zero-h:zero,col=x.net<0?'var(--exp)':'var(--inc)';
+    if(k===sel117)o+='<rect x="'+(cx-step/2+3).toFixed(1)+'" y="2" width="'+(step-6).toFixed(1)+'" height="'+(H-4)+'" rx="8" fill="var(--accent)" opacity=".09"/>';
     o+='<rect x="'+(cx-bw/2).toFixed(1)+'" y="'+y.toFixed(1)+'" width="'+bw.toFixed(1)+'" height="'+h.toFixed(1)+'" rx="4" fill="'+col+'"/>';
-    o+='<text x="'+cx+'" y="'+(x.net>=0?y-6:y+h+12).toFixed(1)+'" text-anchor="middle" font-size="9.5" font-weight="700" fill="var(--muted)">'+(x.net<0?'-':'')+cfmt(Math.abs(x.net))+'</text>';
-    o+='<text x="'+cx+'" y="'+(H-6)+'" text-anchor="middle" font-size="9.5" font-weight="600" fill="var(--muted)">'+esc(x.lb)+'</text>';
-    o+='<rect x="'+(cx-step/2)+'" y="0" width="'+step+'" height="'+(H-14)+'" fill="transparent"'+tl(x.s,x.e,x.full,'','all')+' style="cursor:pointer"/>';
+    o+='<text x="'+cx+'" y="'+(x.net>=0?y-6:y+h+12).toFixed(1)+'" text-anchor="middle" font-size="9.5" font-weight="700" fill="var(--ink)">'+(x.net<0?'-':'')+cfmt(Math.abs(x.net))+'</text>';
+    o+='<text x="'+cx+'" y="'+(H-6)+'" text-anchor="middle" font-size="9.5" font-weight="'+(k===sel117?'800':'600')+'" fill="var(--ink)" opacity="'+(k===sel117?'1':'.78')+'">'+esc(x.lb)+'</text>';
+    o+='<rect class="hit117" x="'+(cx-step/2)+'" y="0" width="'+step+'" height="'+(H-14)+'" fill="transparent"'+(x.act117!=null?x.act117:tl(x.s,x.e,x.full,'','all'))+tip117(x.tip||[x.full||x.lb,sgm117(x.net)])+' style="cursor:pointer"/>';
   });
   return '<svg viewBox="0 0 '+W+' '+H+'" style="width:100%;height:auto;min-width:'+Math.min(W,320)+'px">'+o+'</svg>';
 };
@@ -9463,7 +9469,7 @@ svgTrend=function(tr){
     o+='<rect x="'+(cx-bw-2).toFixed(1)+'" y="'+(base-hi).toFixed(1)+'" width="'+bw+'" height="'+Math.max(1,hi).toFixed(1)+'" rx="3" fill="var(--inc)"/>';
     o+='<rect x="'+(cx+2).toFixed(1)+'" y="'+(base-he).toFixed(1)+'" width="'+bw+'" height="'+Math.max(1,he).toFixed(1)+'" rx="3" fill="var(--exp)"/>';
     o+='<text x="'+cx+'" y="'+(H-7)+'" text-anchor="middle" font-size="9.5" font-weight="600" fill="var(--muted)">'+esc(x.lb)+'</text>';
-    o+='<rect x="'+(cx-step/2)+'" y="0" width="'+step+'" height="'+H+'" fill="transparent"'+tl(x.s,x.e,x.full,'','all')+' style="cursor:pointer"/>';
+    o+='<rect class="hit117" x="'+(cx-step/2)+'" y="0" width="'+step+'" height="'+H+'" fill="transparent"'+tl(x.s,x.e,x.full,'','all')+tip117([x.full||x.lb,'Income '+money(x.i),'Spending '+money(x.ex),(x.i-x.ex<0?'Overspent ':'Saved ')+money(Math.abs(x.i-x.ex))])+' style="cursor:pointer"/>';
   });
   return '<svg viewBox="0 0 '+W+' '+H+'" style="width:100%;height:auto">'+o+'</svg>';
 };
@@ -12231,7 +12237,7 @@ if(olB4)olB4.insertAdjacentHTML('beforeend',
     var savH='<div class="card" id="cashSav116"><h2>'+ico('trend')+' Savings <span class="sub">'+esc(r.label)+'</span></h2>'
       +'<div class="kpis">'+kpi('Income',money(i),'pos')+kpi('Spending',money(e),'neg')+kpi('Savings',sgn(sav),sav<0?'neg':'pos')+'</div>'
       +'<div class="mgr-lb" style="margin-top:8px">Savings \u00b7 last 6 '+perWord()+'s</div><div class="chart-scroll">'+svgNet(tr)+'</div>'
-      +'<div class="help small" style="margin-top:4px">Above the line = saved, below = overspent. Tap a bar to see its transactions.</div></div>';
+      +'<div class="lg117"><span><i style="background:var(--inc)"></i>Saved</span><span><i style="background:var(--exp)"></i>Overspent</span><span class="lgt">Tap a bar for its values</span></div></div>';
     var netTop='<h2>'+ico('swap')+' Net cash flow <span class="sub">'+esc(r.label)+'</span></h2>'
       +'<div class="kpis">'+kpi('Net cash flow',sgn(cf.d),cf.d<0?'neg':'pos')+'</div>'
       +(rows?'<div class="mgr-lb" style="margin-top:2px">By account \u00b7 '+esc(whoLabel())+'</div>'+rows:'');
@@ -13787,6 +13793,7 @@ V63.trendSVG=function(S){
   o+='<path d="'+line+'L'+X(pts.length-1).toFixed(1)+' '+(H-bot)+' L'+X(0).toFixed(1)+' '+(H-bot)+' Z" fill="var(--accent)" opacity=".10"/>'
     +'<path d="'+line+'" fill="none" stroke="var(--accent)" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/>';
   var isToday=S.end===todayISO();
+  pts.forEach(function(p,k){o+='<rect class="hit117" x="'+(X(k)-step/2).toFixed(1)+'" y="0" width="'+step.toFixed(1)+'" height="'+H+'" fill="transparent"'+tip117([p.d?dLabelYW(p.d):p.lb,'Net worth '+money(p.v)])+' style="cursor:pointer"/>';});
   dots.forEach(function(k,j){
     var p=pts[k],lst=j===dots.length-1,anc=lst?'end':(X(k)<40?'start':'middle');
     o+='<circle cx="'+X(k).toFixed(1)+'" cy="'+Y(p.v).toFixed(1)+'" r="'+(lst?5.2:4.2)+'" fill="'+(lst?'var(--accent)':'var(--card)')+'" stroke="var(--accent)" stroke-width="2.2"/>'
@@ -13910,7 +13917,7 @@ V63.UPROW=function(x){
 (function(){
   var nav=document.querySelector('nav.nav');if(!nav)return;
   nav.innerHTML=
-    '<button class="nbtn on" data-v="overview" data-act="nav"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 3v18h18"/><path d="M7 15l4-6 4 3 5-8"/></svg>Insights</button>'
+    '<button class="nbtn on" data-v="overview" data-act="nav"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 3v18h18"/><path d="M7 15l4-6 4 3 5-8"/></svg>Home</button>'
     +'<button class="nbtn" data-v="txns" data-act="nav"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h10"/></svg>Transactions</button>'
     +'<div class="nadd"><button data-act="add" aria-label="Add transaction"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button></div>'
     +'<button class="nbtn" data-v="accounts" data-act="nav"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12V7a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-3"/><path d="M16 12h6"/><circle cx="16" cy="12" r="1" fill="currentColor"/></svg>Accounts</button>'
@@ -14324,7 +14331,7 @@ DYNF.v_joint=function(){
 };
 DYNF.v_fundhist=function(){
   var gl=[];goalGroups().forEach(function(x){gl=gl.concat(x.l);});
-  if(!gl.length)return '<div class="card"><h2>'+ico('clock')+' Funding history</h2><div class="help">No saving goals yet. Add one from Insights → Goals.</div></div>';
+  if(!gl.length)return '<div class="card"><h2>'+ico('clock')+' Funding history</h2><div class="help">No saving goals yet. Add one from Home → Goals.</div></div>';
   var h=gl.map(function(g){return '<div class="fline"><span>'+esc(g.name)+'</span><b>'+money(goalSaved(g))+' of '+money(g.target)+'</b></div>';}).join('')
     +'<div class="help small" style="margin-top:8px">Contributions are tracked as running totals per goal; individual dated funding entries are not recorded yet.</div>';
   return card16(ico('clock')+' Funding history',h);
@@ -18024,7 +18031,7 @@ function isCardT(t){try{return t==='Card'||typeHasCycle(t);}catch(e){return t===
 function isOweT(t){try{return accTypeKind(t)==='liability';}catch(e){return false;}}
 function valued(a){try{return isVal(a);}catch(e){return false;}}
 
-INFO25.m27accs=['Accounts','<p class="info23p">An account with transactions can\u2019t be deleted \u2014 close it instead. History stays; it stops counting from the date you pick. A lock means only its account owner can change it.</p>'];
+INFO25.m27accs=['Accounts','<p class="info23p">Deleting an account also deletes its transactions and every linked entry (the other side of transfers, split-bill shares, Between Us entries); you are told how many first. To keep the history, close or archive it instead: it stops counting from the date you pick. A lock means only its account owner can change it.</p>'];
 /* beta 54: Categories, Sub-categories, Recurring and Saving goals have no (i) — each rule shows where it applies (blocked delete, empty state, goal form) */
 
 /* ---------- restore the core “add account” step (the beta 25 rebuild left addAccountMgr calling itself,
@@ -19496,7 +19503,7 @@ hhPush=function(){
       Object.keys(N291.remoteT).forEach(function(k){var d=N291.remoteT[k];if(!localT[k]&&canWriteTxn291(d,true))tops.push({ref:F.doc(FB.db,'households',id,'transactions',k),del:true});});
       tops.push({ref:F.doc(FB.db,'households',id,'sharedState','core'),data:{record:snap.state,changedAt:Date.now(),changedByUid:stableUid291(),schemaVersion:SCHEMA291}});
       return commitOps291(F,tops);
-    }).then(function(){var q=Promise.resolve();accountDeletes.forEach(function(aid){q=q.then(function(){return backend291('deleteHouseholdAccount',{householdId:id,accountId:aid});});});return q;});
+    }).then(function(){var q=Promise.resolve();accountDeletes.forEach(function(aid){q=q.then(function(){return backend291('deleteHouseholdAccount',{householdId:id,accountId:aid}).catch(function(e){console.warn('account-delete',aid,e&&e.message);});});});return q; /* beta 117: one refused delete (e.g. a partner's entries still point at it) no longer stops the push */});
   }).then(function(){DB.meta.cloudPushedAt=Date.now();save();syncStatus();return true;})
     .catch(function(e){console.warn('normalized-push',e);syncUI('warn','Sync failed — tap');if(e&&e.code==='permission-denied')toast('A server permission rejected this change.');return false;})
     .then(function(ok){N291.pushing=false;if(N291.again){N291.again=false;setTimeout(hhPush,300);}return ok;});
@@ -19512,7 +19519,7 @@ function preJoinSnap115(){try{if(!ownData115().has)return -1;backupFlush();var j
   if(BK.log[0]&&BK.log[0].json===j&&BK.log[0].why!=='pre-join'){BK.log[0].why='pre-join';BK.log[0].at=Date.now();idbSet('backupLog',BK.log).catch(function(){});}
   return BK.log[0]&&BK.log[0].why==='pre-join'?0:-1;}catch(e){console.warn('pre-join',e);return -1;}}
 window.ownData115=ownData115;window.preJoinSnap115=preJoinSnap115; /* used by the invite sheet and the Join step in other sections */
-hhJoin=function(token){preJoinSnap115();sampleWipe();rekeyAccounts115();var me115=meName();if(window.B115mode==='adv'){(DB.accounts||[]).forEach(function(a){if(a&&!a.isSample&&!a.vis&&(!a.owner||a.owner===me115)){a.vis='me';a.pvby=me115||a.owner;}});save();}else if(window.B115mode){(DB.accounts||[]).forEach(function(a){if(a&&a.vis==='me'&&(!a.pvby||a.pvby===me115)){delete a.vis;delete a.pvby;}});save();} /* Couple has no private accounts: a Personal-mode account joins the household like the others */return backend291('joinHousehold',{token:String(token||''),displayName:safe28(function(){return meName();},'')}).then(function(r){var id=r&&r.data&&r.data.householdId;if(!id)throw new Error('This invite link is no longer valid. Ask your partner for a new one.');try{localStorage.removeItem('cmm102join');}catch(e){}DB.meta.hhAt=0;DB.meta.cloudSyncOn=true;DB.meta.syncChoice='yes';DB.meta.usage=window.B115mode==='adv'?'adv':'couple';save();return hhAttach(id);}).then(function(){toast('You joined the household ✓');}).catch(function(e){toast(e&&e.message?e.message:fsErr(e));});};
+hhJoin=function(token){preJoinSnap115();sampleWipe();rekeyAccounts115();var me115=meName();if(window.B115mode==='adv'){(DB.accounts||[]).forEach(function(a){if(a&&!a.isSample&&!a.vis&&(!a.owner||a.owner===me115)){a.vis='me';a.pvby=me115||a.owner;}});save();}else if(window.B115mode){(DB.accounts||[]).forEach(function(a){if(a&&a.vis==='me'&&(!a.pvby||a.pvby===me115)){delete a.vis;delete a.pvby;}});save();} /* Couple has no private accounts: a Personal-mode account joins the household like the others */return backend291('joinHousehold',{token:String(token||''),displayName:safe28(function(){return meName();},'')}).then(function(r){var id=r&&r.data&&r.data.householdId;if(!id)throw new Error('This invite link is no longer valid. Ask your partner for a new one.');try{localStorage.removeItem('cmm102join');}catch(e){}DB.meta.hhAt=0;DB.meta.cloudSyncOn=true;DB.meta.syncChoice='yes';DB.meta.usage=window.B115mode==='adv'?'adv':'couple';save();try{if(window.storageAfterJoin117)window.storageAfterJoin117();}catch(e){console.warn('b117 join storage',e);}return hhAttach(id);}).then(function(){toast('You joined the household ✓');}).catch(function(e){toast(e&&e.message?e.message:fsErr(e));});};
 hhLeave=function(){askConfirm('Leave this household? Your partner keeps the shared copy. The data on this phone stays, and you get your own cloud copy again.','Leave',function(){backend291('leaveHousehold',{householdId:HH.id}).then(function(){hhDetach();DB.meta.hh='';DB.meta.cloudSyncOn=false;save();toast('You left the household');}).catch(function(e){toast(e&&e.message?e.message:fsErr(e));});});};
 window.CMM_SERVER_POLICY={version:2,storageVersion:3,normalizedCollections:['sharedState','accounts','transactions'],joinLeave:'trusted-cloud-functions',rulesFile:'firestore.rules'};
 
@@ -19536,7 +19543,7 @@ bkFileGo=function(){var pw=(($('bkPw')||{}).value||''),pw2=(($('bkPw2')||{}).val
 /* Partner preview: authoritative shared view, genuine latest activity. */
 if(window.B20)B20.pvData=function(){var me=safe28(function(){return meName();},''),P=safe28(function(){return partnerName();},'your partner'),v=buildSharedView(DB,{purpose:'preview'}),m=v.__sharedView||{},accSet={};(v.accounts||[]).forEach(function(a){if(a&&!a.locked&&!a.recv&&!/^.+ owes .+$/.test(a.name||''))accSet[a.name]=1;});var asc=cmm291Latest(v.txns||[],200).reverse();return {me:me,P:P,accs:(v.accounts||[]).filter(function(a){return accSet[a.name];}),txns:asc,relabel:function(n){return (m.labels||{})[n]||n;},anyPn:m.privateNames||{},accSet:accSet};};
 
-function finish291(){if(!DB)return setTimeout(finish291,30);prefDefaults291();ensureIds291();DB.meta.schemaVersion=SCHEMA291;if(window.experienceConfig){experienceConfig.version=VERSION291;experienceConfig.schemaVersion=SCHEMA291;}if(window.advancedCoupleConfig){advancedCoupleConfig.version=VERSION291;advancedCoupleConfig.schemaVersion=SCHEMA291;}save();document.title='v'+VERSION291+' · Couple Money Manager';var mv=document.querySelector('meta[name="app-version"]');if(mv)mv.content='1.60-beta.116';document.querySelectorAll('.sub').forEach(function(el){el.textContent=el.textContent.replace(/v?1\.60 beta 28(\.\d+)?/g,'v'+VERSION291);});if(X63.isSimple()&&V63.itab==='wealth')V63.itab='cash';renderAll();}
+function finish291(){if(!DB)return setTimeout(finish291,30);prefDefaults291();ensureIds291();DB.meta.schemaVersion=SCHEMA291;if(window.experienceConfig){experienceConfig.version=VERSION291;experienceConfig.schemaVersion=SCHEMA291;}if(window.advancedCoupleConfig){advancedCoupleConfig.version=VERSION291;advancedCoupleConfig.schemaVersion=SCHEMA291;}save();document.title='v'+VERSION291+' · Couple Money Manager';var mv=document.querySelector('meta[name="app-version"]');if(mv)mv.content='1.60-beta.117';document.querySelectorAll('.sub').forEach(function(el){el.textContent=el.textContent.replace(/v?1\.60 beta 28(\.\d+)?/g,'v'+VERSION291);});if(X63.isSimple()&&V63.itab==='wealth')V63.itab='cash';renderAll();}
 setTimeout(finish291,0);
 window.CMM_VERSION=VERSION291;window.CMM_SCHEMA_VERSION=SCHEMA291;
 })();
@@ -24882,6 +24889,7 @@ function openPage(n){
   setTimeout(function(){var b=p.querySelector('.a48bk');if(b)try{b.focus({preventScroll:true});}catch(e){}},260);
 }
 function closePage(){a107menuClose();var p=$('pageAcc48');if(p)p.classList.remove('on');X.acc='';try{navSync();}catch(e){}}
+X.closePage=function(){closePage();};X.home=function(){renderHome();}; /* beta 117: used by the delete flow */
 X.openPage=openPage;X.closePage=closePage;
 X.openEdit=function(n,plan){openEdit(n,plan);};
 X.openAdd=function(){X.sheet={kind:'add',step:1,type:null,f:{name:'',owner:me(),amt:'',vis:adv()?'me':'shared',pa:'add',more:{},moreOpen:false}};openMgr('a48add');};
@@ -25909,20 +25917,20 @@ INS.repHero=function(o,when){
 };
 function asAtTxt(){return 'as at '+dLabelYW(nwAsAt(curR()));}
 function bar2(a,b,ca,cb){var t=Math.max(a,b)||1;return '<div class="hbrow"><span class="hl">What I have</span><span class="hb"><i style="width:'+(a/t*100).toFixed(1)+'%;background:'+(ca||'var(--accent)')+'"></i></span><span class="hv">'+money(a)+'</span></div><div class="hbrow"><span class="hl">What I owe</span><span class="hb"><i style="width:'+(b/t*100).toFixed(1)+'%;background:'+(cb||'var(--exp)')+'"></i></span><span class="hv">'+money(b)+'</span></div>';}
-function mixbar(segs){var t=segs.reduce(function(s,x){return s+x.v;},0)||1;return '<div class="mixbar">'+segs.map(function(x,i){return '<i style="width:'+(x.v/t*100).toFixed(1)+'%;background:'+(x.c||V63.mixColor(i))+'"></i>';}).join('')+'</div>';}
+function mixbar(segs){var t=segs.reduce(function(s,x){return s+x.v;},0)||1;return '<div class="mixbar">'+segs.map(function(x,i){return '<i class="hit117" style="width:'+(x.v/t*100).toFixed(1)+'%;background:'+(x.c||V63.mixColor(i))+'"'+tip117([x.k||'',money(x.v),Math.round(x.v/t*100)+'% of the total'])+'></i>';}).join('')+'</div>';}
 function paceb(f,mark){f=Math.max(0,Math.min(1,f||0));return '<div class="paceb51"><i style="width:'+(f*100).toFixed(1)+'%"></i></div>'+(mark!=null?'<div class="pacemark51"><b style="left:'+(Math.max(0,Math.min(1,mark))*100).toFixed(1)+'%"></b></div>':'');}
 function gl(a,b){return '<div class="gl51"><span>'+a+'</span><span>'+b+'</span></div>';}
 function bars6(list,curIdx){
   var mx=0;list.forEach(function(x){mx=Math.max(mx,Math.abs(x.v));});if(!mx)mx=1;
-  return '<div class="bars51">'+list.map(function(x,i){var neg=x.v<0;return '<div class="'+(i===curIdx?'on':'')+(neg?' neg':'')+'"><i style="height:'+Math.max(3,Math.round(Math.abs(x.v)/mx*46))+'px"></i>'+esc(x.lb)+'</div>';}).join('')+'</div>';
+  return '<div class="bars51'+(list.some(function(x){return x.top!=null;})?' top117':'')+'">'+list.map(function(x,i){var neg=x.v<0;return '<div class="hit117 '+(i===curIdx?'on':'')+(neg?' neg':'')+'"'+tip117(x.tip||[x.full||x.lb,String(x.v)])+'>'+(x.top!=null?'<em class="bt117">'+esc(x.top)+'</em>':'')+'<i style="height:'+Math.max(3,Math.round(Math.abs(x.v)/mx*46))+'px"></i>'+esc(x.lb)+'</div>';}).join('')+'</div>';
 }
-function spark(vals){
+function spark(vals,tips){
   if(!vals||vals.length<2)return '';
   if(typeof psActive==='function'&&psActive())return '';
   var w=340,h=78,mn=Math.min.apply(null,vals),mx=Math.max.apply(null,vals),sp=(mx-mn)||1,st=(w-10)/(vals.length-1),d='';
   vals.forEach(function(v,i){var x=5+i*st,y=6+(h-14)*(1-(v-mn)/sp);d+=(i?'L':'M')+x.toFixed(1)+' '+y.toFixed(1)+' ';});
   var lx=5+(vals.length-1)*st,ly=6+(h-14)*(1-(vals[vals.length-1]-mn)/sp);
-  return '<svg class="spark51" viewBox="0 0 '+w+' '+h+'" aria-hidden="true"><path d="'+d+'L'+lx.toFixed(1)+' '+(h-4)+' L5 '+(h-4)+' Z" fill="var(--accent)" opacity=".10"/><path d="'+d+'" fill="none" stroke="var(--accent)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/><circle cx="'+lx.toFixed(1)+'" cy="'+ly.toFixed(1)+'" r="4.5" fill="var(--accent)"/></svg>';
+  return '<svg class="spark51" viewBox="0 0 '+w+' '+h+'"'+(tips?'':' aria-hidden="true"')+'><path d="'+d+'L'+lx.toFixed(1)+' '+(h-4)+' L5 '+(h-4)+' Z" fill="var(--accent)" opacity=".10"/><path d="'+d+'" fill="none" stroke="var(--accent)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/><circle cx="'+lx.toFixed(1)+'" cy="'+ly.toFixed(1)+'" r="4.5" fill="var(--accent)"/>'+(tips?vals.map(function(v,i){return '<rect class="hit117" x="'+(5+i*st-st/2).toFixed(1)+'" y="0" width="'+st.toFixed(1)+'" height="'+h+'" fill="transparent"'+tip117(String(tips[i]||'').split('|'))+' style="cursor:pointer"/>';}).join(''):'')+'</svg>';
 }
 function infoBtn(k){return '<button class="info51" data-act="ins51info" data-k="'+k+'" aria-label="More information">i</button>';}
 
@@ -26016,7 +26024,7 @@ RULES.K4=function(){return goalPace(goalsList().filter(function(g){return g.owne
 RULES.C1=function(){
   var r=curR(),S=INS.saved(r),P=INS.saved(prevR()),ncf=0;try{ncf=B7.netCF(r).d;}catch(e){}
   var lbl=(S.saved<0?'Overspent ':'Saved ')+(PER.off===0?'this '+word():'in '+r.label);
-  var tr=[];try{tr=periodsBack(6).map(function(x){return {lb:x.lb,v:x.net};});}catch(e){}
+  var tr=[];try{tr=periodsBack(6).map(function(x){return {lb:x.lb,v:x.net,tip:[x.full,(x.net<0?'Overspent ':'Savings ')+money(Math.abs(x.net)),'Income '+money(x.i),'Spending '+money(x.ex)]};});}catch(e){}
   var find=S.saved<0?('You spent '+money(-S.saved)+' more than came in '+thisWord(r)+'.'):('You saved '+money(S.saved)+' '+thisWord(r)+(S.rate!=null?' — '+pc(S.rate)+' of income':'')+(P.rate!=null&&S.rate!=null?(pts(S.rate)===pts(P.rate)?', the same as '+lastWord():', '+(S.rate>P.rate?'up':'down')+' from '+pc(P.rate)+' '+lastWord()):'')+'.');
   return {id:'C1',tab:'cash',tag:'Cash Flow & Savings',tone:S.saved<0?'warn':'good',hero:1,fires:true,find:find,S:S,P:P,ncf:ncf,lbl:lbl,tr:tr,links:[['Cash Flow & Savings','cash']]};
 };
@@ -26173,18 +26181,18 @@ function list(tab){var L=INS.build(tab);return L.length?L.map(INS.card).join('')
 /* ---------- heroes ---------- */
 function wealthHero(){
   var o=RULES.W1(),vals=[];
-  try{var T=V63.calc.trend('6M');vals=[T.base.v].concat(T.line.map(function(p){return p.v;}));}catch(e){}
+  var tips117=null;try{var T=V63.calc.trend('6M');vals=[T.base.v].concat(T.line.map(function(p){return p.v;}));tips117=[T.base].concat(T.line).map(function(p){return (p.d?dLabelYW(p.d):p.lb)+'|Net worth '+money(p.v);});}catch(e){}
   return '<div data-info23="keep" class="card hero51"><h2>'+ic('nw')+' Net worth <span class="sub">as at '+esc(dLabelYW(o.eD))+infoBtn('disc')+'</span>'+det26('networth')+'</h2>'
     +'<button class="big51" data-act="v63rep" data-k="networth"><b class="'+(o.N.net<0?'neg':'')+'">'+money(o.N.net)+'</b></button>'
-    +'<div class="sentence51 '+(o.d<0?'neg':o.d>0?'pos':'')+'">'+(Math.abs(o.d)<0.5?'No change':(o.d>0?'▲ ':'▼ ')+money(Math.abs(o.d))+(o.f!=null?' ('+pc(o.f)+')':''))+' since '+esc(shortD(o.pD))+'</div>'
-    +spark(vals)
+    +'<div class="sentence51 '+(o.d<0?'neg':o.d>0?'pos':'')+'">'+(Math.abs(o.d)<0.5?'No change':(o.d>0?'▲ ':'▼ ')+money(Math.abs(o.d))+(o.f!=null?' ('+pc(o.f)+')':''))+' since '+esc(dLabelYW(o.pD))+'</div>' /* beta 117: one change-line format (D-68) */
+    +spark(vals,tips117)
     +(o.chips.length?'<div class="whyrow51">'+o.chips.map(function(c){return '<span>'+c.l+' <b class="'+(c.v<0?'neg':'pos')+'">'+sg(c.v)+'</b></span>';}).join('')+'</div>':'')+'</div>';
 }
 function cashHero(){
   var o=RULES.C1(),S=o.S,P=o.P,cur=o.tr.length-1;
-  return '<div data-info23="keep" class="card hero51"><h2>'+ic('swap')+' '+esc(o.lbl)+det26('cash')+'</h2>'
-    +'<div class="big51 '+(S.saved<0?'neg':'pos')+'"><b>'+money(Math.abs(S.saved))+'</b></div>'
-    +'<div class="sentence51">'+(S.rate!=null?pc(S.rate)+' of income':'No income recorded')+' · '+lastWord()+' '+money(P.saved)+(P.rate!=null?' ('+pc(P.rate)+')':'')+'</div>'
+  return '<div data-info23="keep" class="card hero51"><h2>'+ic('swap')+' Savings <span class="sub">'+esc(curR().label)+'</span>'+det26('cash')+'</h2>' /* beta 117: "Saved this month" -> Savings + period */
+    +'<div class="big51 '+(S.saved<0?'neg':'pos')+'"><b>'+(S.saved<0?'\u2212':'')+money(Math.abs(S.saved))+'</b></div>'
+    +'<div class="sentence51">'+(S.rate!=null?pc(S.rate)+' of income':'No income recorded')+' · '+(function(){var dd=Math.round((S.saved-P.saved)*100)/100,pl='';try{pl=perRange(PER.off-1).label;}catch(e){pl=lastWord();}return Math.abs(dd)<0.5?'No change vs '+esc(pl):'<span class="'+(dd<0?'neg':'pos')+'">'+(dd>0?'▲ ':'▼ ')+money(Math.abs(dd))+'</span> vs '+esc(pl);})()+'</div>'
     +(o.tr.length?bars6(o.tr,cur):'')
     +'<div class="whyrow51"><span>Income <b>'+money(S.inc)+'</b></span><span>Spent <b>'+money(S.exp)+'</b></span><span>Cash actually moved <b class="'+(o.ncf<0?'neg':'pos')+'">'+sg(o.ncf)+'</b>'+infoBtn('ncf')+'</span></div></div>';
 }
@@ -26203,8 +26211,8 @@ function coupleHero(){
   var simp=false;try{simp=!!(X63.isSimple&&X63.isSimple());}catch(e){}
   var B=betweenUs114(eD),isNow=eD===todayISO();
   var lab,big,line='';
-  if(simp){var ft=heroFoot56(N,P,f,eD),m=ft.match(/^Shared Money Available (.*?)( · .*)?$/);lab='Shared money available';big=m?m[1]:ft;line=m&&m[2]?m[2].replace(/^ · /,''):'';}
-  else{lab='Household net worth';big=money(N.net);var d=N.net-P.net;line=Math.abs(d)<0.5?'No change '+thisWord():'<span class="'+(d<0?'neg':'pos')+'">'+(d>0?'▲ ':'▼ ')+money(Math.abs(d))+(f!=null?' ('+pc(Math.abs(f))+')':'')+'</span> '+thisWord();}
+  if(simp){var ft=heroFoot56(N,P,f,eD),m=ft.match(/^Shared Money Available (.*?)( · .*)?$/);lab='Shared money available';big=m?m[1]:ft;line=m&&m[2]?m[2].replace(/^ · /,'').replace(/ (this|in) .*$/,' since '+esc(dLabelYW(addDaysISO(r.s,-1)))):'';}
+  else{lab='Household net worth';big=money(N.net);var d=N.net-P.net;var sd117=esc(dLabelYW(addDaysISO(r.s,-1)));line=Math.abs(d)<0.5?'No change since '+sd117:'<span class="'+(d<0?'neg':'pos')+'">'+(d>0?'▲ ':'▼ ')+money(Math.abs(d))+(f!=null?' ('+pc(Math.abs(f))+')':'')+'</span> since '+sd117;}
   var owe='<div class="owe114"><div class="ot">'+ic('scale')+'<span><small>Between us</small><b>'+(B.amt<0.005?'All settled up':esc(B.debtor)+' owes '+esc(B.creditor)+' '+money(B.amt))+'</b></span></div>'
     +(isNow&&B.amt>=0.005?(B.open.length===1?'<button class="btn ghost sm" data-act="settle" data-n="'+esc(B.open[0].name)+'">Settle up</button>':'<button class="btn ghost sm" data-act="v63rep" data-k="settle">Settle up</button>'):'')+'</div>';
   return '<div data-info23="keep" class="card hero51 sum114 cpl114"><h2>'+ic('users')+' Household <span class="sub">as at '+esc(dLabelYW(eD))+'</span>'+det26(simp?'settle':'networth')+'</h2>'
@@ -26351,7 +26359,7 @@ DYNF.v_health=function(){
     +'<div class="help small" style="margin-top:6px">3–6 months is a common guide — enough to cover a job loss or a large surprise bill without touching investments or property.</div></div>';
   var w2=INS.get('W2');
   var dr='<div class="card" data-info23="keep"><h2>'+ic('card')+' Debt ratio <span class="sub">'+(H.debtRatio==null?'—':pts(H.debtRatio)+'%')+'</span></h2>'+(w2?w2.evid+'<div class="help small" style="margin-top:6px">'+w2.find+' '+(w2.why||'')+'</div>':'<div class="help">No debts recorded.</div>')+'</div>';
-  var tr=[];try{tr=periodsBack(6).map(function(x){return {lb:x.lb,v:x.i>0.004?Math.round((x.i-x.ex)/x.i*100):0};});}catch(e){}
+  var tr=[];try{tr=periodsBack(6).map(function(x){var rt=x.i>0.004?Math.round((x.i-x.ex)/x.i*100):null;return {lb:x.lb,v:rt||0,top:rt==null?'\u2014':rt+'%',tip:[x.full,'Savings rate '+(rt==null?'\u2014 (no income)':rt+'%'),'Income '+money(x.i),'Spending '+money(x.ex)]};});}catch(e){}
   var srt='<div class="card" data-info23="keep"><h2>'+ic('trend')+' Savings rate <span class="sub">last 6 '+word()+'s</span></h2>'+bars6(tr,tr.length-1)
     +'<div class="help small" style="margin-top:6px">'+(H.savingsRate==null?'No income recorded this '+word()+'.':pc(H.savingsRate)+' of income saved '+thisWord()+' — the same figure as the Cash Flow &amp; Savings hero.')+'</div></div>';
   return hero+sn+dr+srt+calc('Safety net = liquid money (cash, bank, e-Wallet balances) ÷ average monthly spending over the 3 months before this period. Debt ratio = total debts ÷ total recorded assets. Savings rate = (income − spending) ÷ income, for the selected period.')
@@ -27426,13 +27434,13 @@ R.lock=function(){
 R.ready=function(){var p=path(),full=pref().experienceLevel==='full',a=payload().accounts,fa=O().acc||'',L=jrList().slice(0,5),st=storageMode();
   var mt=p==='invitee'?(usage()==='adv'?'Advanced Couple':'Couple'):({solo:'Personal',couple:'Couple',adv:'Advanced Couple'})[p];
   var h=h3('You are set up','Change either choice later in Settings. No data moves.')
-    +'<div class="usecard ob62c on"><span class="aucard-ic">'+ico('check')+'</span><span><b>'+mt+' · '+(full?'Full':'Simple')+'</b><small>'+(full?'You will land on Insights › Wealth.':'You will land on Insights › Money.')+'</small></span></div>'
+    +'<div class="usecard ob62c on"><span class="aucard-ic">'+ico('check')+'</span><span><b>'+mt+' · '+(full?'Full':'Simple')+'</b><small>'+(full?'You will land on Home › Wealth.':'You will land on Home › Money.')+'</small></span></div>'
     +'<div class="ob62kv"><span>First account</span><b>'+(fa?(isAdv()&&a.some(function(x){return x.name===fa;})?ico('lock')+' ':'')+esc(fa):'Not added yet')+'</b></div>';
   if(p==='couple'||p==='adv'||p==='invitee')h+='<div class="ob62kv"><span>Shared sync</span><b>'+({household:'Couple Money Cloud',pdh:'Household folder',device:'This phone only'})[st]+(O().store==='folder'&&st!=='pdh'?' · folder pending':'')+'</b></div>';
   if(p==='solo')h+='<div class="ob62kv"><span>Storage</span><b>'+({device:'This phone only',drive:'My Google Drive',onedrive:'My OneDrive',household:'Your devices (cloud)'})[st]+'</b></div>';
   if(isAdv())h+='<div class="ob62kv"><span>Private space backup</span><b>'+esc(pstatus().t)+'</b></div>';
-  h+='<div class="aul" style="margin-top:16px">Your first steps</div><p class="ob62d" style="margin:2px 0 6px;font-size:13px">They stay at the top of Insights until done.</p>'+L.map(function(x){return '<div class="ob62ck"><i></i><span><b>'+esc(x.t)+'</b><small>'+esc(x.d)+'</small></span></div>';}).join('');
-  return h+foot('ready',{label:'Go to Insights'});};
+  h+='<div class="aul" style="margin-top:16px">Your first steps</div><p class="ob62d" style="margin:2px 0 6px;font-size:13px">They stay at the top of Home until done.</p>'+L.map(function(x){return '<div class="ob62ck"><i></i><span><b>'+esc(x.t)+'</b><small>'+esc(x.d)+'</small></span></div>';}).join('');
+  return h+foot('ready',{label:'Go to Home'});};
 /* beta 80: step 1 for the invitee — email locked to the invited one (mockup) */
 function invSignup(){var P=esc(invFrom()),ev=S.em!=null?S.em:'';
   return bar('signup')+h3('Sign in to join',(invLink()?P+' sent you an invite link. ':'')+'Create an account or sign in. Any email works.')
@@ -27854,7 +27862,7 @@ try{if(!window.__B71RN){var ol=document.querySelector('#pageSet details.help ol'
    Title only: these tabs have no add action, so no round + button. Re-added after any redraw that rebuilds the view. */
 (function(){
 function n73(e,w){try{DIAG.note(e,w);}catch(_){}}
-var T={'view-overview':'Insights','view-reports':'Reports'};
+var T={'view-overview':'Home','view-reports':'Reports'};
 function ensure(){
   try{
     Object.keys(T).forEach(function(id){
@@ -29664,7 +29672,7 @@ SHEETS.alertSettings=function(){
   var A=alertCfg(),sup=typeof Notification!=='undefined',perm=sup?Notification.permission:'';
   return {title:'Sync alerts',icon:'bell',
     body:'<div class="k-lead">We tell you if sync <b>stops</b> or <b>fails</b>, so nothing quietly stays on one phone.</div><div class="k-lst">'
-      +'<div class="k-li" data-act="al79tgbanner" role="switch" aria-checked="'+!!A.banner+'" tabindex="0" style="cursor:pointer"><span class="k-n">In-app banner<small>'+(A.banner?'At the top of Insights and a dot on Settings':'Off · sync status stays on Data &amp; Sync')+'</small></span><span class="k-tg'+(A.banner?' k-on':'')+'"></span></div>' /* beta 85: was a static always-on look-alike with no tap target — now a real switch */
+      +'<div class="k-li" data-act="al79tgbanner" role="switch" aria-checked="'+!!A.banner+'" tabindex="0" style="cursor:pointer"><span class="k-n">In-app banner<small>'+(A.banner?'At the top of Home and a dot on Settings':'Off · sync status stays on Data &amp; Sync')+'</small></span><span class="k-tg'+(A.banner?' k-on':'')+'"></span></div>' /* beta 85: was a static always-on look-alike with no tap target — now a real switch */
       +'<div class="k-li" data-act="al79tgpush" role="switch" aria-checked="'+!!A.push+'" tabindex="0" style="cursor:pointer"><span class="k-n">Phone notification<small>'+(!sup?'Not supported in this browser':perm==='denied'?'Blocked in your browser settings':A.push?'On · once when it starts':'Off · you’ll only see the banner')+'</small></span><span class="k-tg'+(A.push?' k-on':'')+'"></span></div>'
       +'<div class="k-li" data-act="al79tgremind" role="switch" aria-checked="'+!!A.remind+'" tabindex="0" style="cursor:pointer"><span class="k-n">Remind me after 24 hours<small>If it’s still not fixed</small></span><span class="k-tg'+(A.remind?' k-on':'')+'"></span></div></div>'
       +'<div class="k-blk"><h4>When you’ll hear from us</h4><ul><li>'+ic('cloudoff','a')+'<span><b>Stopped</b> — signed out, paused, access lost: right away</span></li><li>'+ic('warn','a')+'<span><b>Failed</b> — after 15 minutes of failed retries</span></li><li>'+ic('clock','a')+'<span><b>Offline</b> — only after 15 minutes, and only if changes are waiting</span></li><li>'+ic('check','a')+'<span><b>Fixed</b> — one “Sync is working again” message</span></li></ul></div>'
@@ -30144,7 +30152,7 @@ try{if(window.pinVer36)window.pinVer36('1.60 beta 94'+(window.PAGE75&&PAGE75.sta
 
 /* ===== beta 101 · merge of the other tool's beta 93–100 (Transactions tidy-up, update toast, type roles, cleanup) with Claude's beta 94 (invitation email) ===== */
 (function(){'use strict';
-  try{var mv=document.querySelector('meta[name="app-version"]');if(mv)mv.content='1.60-beta.116';}catch(e){}
+  try{var mv=document.querySelector('meta[name="app-version"]');if(mv)mv.content='1.60-beta.117';}catch(e){}
   try{if(window.pinVer36)window.pinVer36('1.60 beta 101'+(window.PAGE75&&PAGE75.stale?' · old page file ('+(PAGE75.page||'none')+')':''));}catch(e){}
 })();
 
@@ -30540,3 +30548,409 @@ try{SCREEN.after('renderReport',990114002,{call:'none',ret:false},function(){
 try{if(!window.__B116OTRN){var ol=document.querySelector('#pageSet details.help ol')||document.querySelector('#view-settings details.help ol');
   if(ol){ol.insertAdjacentHTML('beforeend','<li><b>Beta 116 (look and feel):</b> Dates show the day (e.g. Wed, 28 Oct 2026). Insight cards have a tinted box and the same header as summary cards; Details › sits at the bottom of a card. The Couple tab leads with Household (net worth, or Shared money available in Simple) with Between us and a smaller Settle up underneath. Between Us shows one balance for both of you, how it moved this period, and what it is made of. Shared vs Personal is one table that matches the Couple insight. Category trends shows the period above each column, whole amounts and the latest period in bold. Asset Mix › By account lists your accounts under each group. The back arrow lines up with the screen title; the (i) button is smaller, at the top right of its label, and only where you can tap it. Data &amp; Sync › Kept in lines up with its card. Account details is a compact row.</li>');window.__B116OTRN=1;}}}catch(e){}
 })();
+
+;/* ===== v160b117 · Beta 117 = Beta 116 + duplicate accounts fixed at the source (D-65), join switches sync to the household cloud (D-66), delete with a warning (D-67, replaces D-54) … ===== */
+(function(){ 'use strict';
+function n117(e,w){try{DIAG.note(e,w);}catch(_){}}
+window.B117=window.B117||{};
+/* ---------- 1. duplicate accounts (D-65) ----------
+   Root cause: accounts are matched by NAME everywhere (balances, transactions), but the household cloud stores them by ID.
+   Two account documents with the same name (e.g. the collaborator's copy of the owner's accounts, re-keyed on join and
+   pushed again; or both phones creating the same Between Us ledger) came back as two rows with the same balance.
+   Fix: after every merge, one account per name is kept (the smallest id, so every phone keeps the same one); the extra
+   cloud documents are then removed by the next push. Transactions are never touched, so nothing is lost. */
+function dupGroups(){var by={},out=[];(DB.accounts||[]).forEach(function(a){if(!a||!a.name)return;(by[a.name]=by[a.name]||[]).push(a);});Object.keys(by).forEach(function(k){if(by[k].length>1)out.push(by[k]);});return out;}
+function dedupe(){
+  var g=dupGroups(),removed=0;if(!g.length)return 0;
+  var drop=[];
+  g.forEach(function(list){
+    var s=list.slice().sort(function(x,y){var a=String(x.id||'~'),b=String(y.id||'~');return a<b?-1:a>b?1:0;}),keep=s[0];
+    s.slice(1).forEach(function(o){Object.keys(o).forEach(function(k){if(keep[k]===undefined||keep[k]===''||keep[k]===null)keep[k]=o[k];});if(!(+keep.start)&&(+o.start))keep.start=o.start;drop.push(o);removed++;});
+  });
+  DB.accounts=DB.accounts.filter(function(a){return drop.indexOf(a)<0;});
+  return removed;
+}
+B117.dupGroups=dupGroups;B117.dedupe=dedupe;
+var _ms117=mergeShared;mergeShared=function(R){
+  var r=_ms117.apply(this,arguments);
+  try{if(dupGroups().length){try{backupSnap('pre-duplicate-cleanup');}catch(e){}var n=dedupe();
+    if(n){B117.lastDedupe=n;try{toast('Removed '+n+' duplicate account'+(n===1?'':'s')+' (same name listed twice). A safety copy was saved first.');}catch(e){}
+      setTimeout(function(){try{if(typeof hhPush==='function')hhPush();}catch(e){}},1200);}}}catch(e){n117(e,'b117:dedupe');}
+  return r;
+};
+/* duplicates already on this phone: offered once per start, with a safety copy and Undo */
+function offerCleanup(){
+  try{var g=dupGroups();if(!g.length)return;
+    var n=g.reduce(function(s,l){return s+l.length-1;},0),names=g.map(function(l){return l[0].name;});
+    askChoice('Some accounts are listed twice: '+names.slice(0,4).join(', ')+(names.length>4?' and '+(names.length-4)+' more':'')+'. Totals count them twice until they are cleaned up. Clean up now? Each account keeps all its transactions; only the extra copy of the account is removed. A safety copy is saved first.',[
+      {c:'btn',l:'Clean up '+n+' duplicate'+(n===1?'':'s'),f:function(){var snap=snapLists(['accounts']);try{backupSnap('pre-duplicate-cleanup');}catch(e){}var k=dedupe();touch();try{renderAll();}catch(e){}
+        toastAct('Removed '+k+' duplicate account'+(k===1?'':'s')+' — undo?',function(){undoRestoreLists(snap);touch();try{renderAll();}catch(e){}});}},
+      {c:'btn ghost',l:'Cancel',f:function(){}}]);
+  }catch(e){n117(e,'b117:offer');}
+}
+B117.offerCleanup=offerCleanup;
+setTimeout(function(){try{waitFree(offerCleanup);}catch(e){n117(e,'b117:offerwait');}},2500);
+
+/* ---------- 2. joining a household moves sync to the household cloud (D-66) ----------
+   A collaborator who synced through their own Google Drive / OneDrive folder kept that folder sync after joining, so
+   the old folder copy kept merging back and Data & Sync still said "My Google Drive". */
+window.storageAfterJoin117=function(){
+  var v=m59(),from=v.storage||'device';
+  if(from==='household')return;
+  try{backupSnap('pre-storage-switch');}catch(e){}
+  if(from==='pdh'){try{PX().drop();}catch(e){n117(e,'b117:drop');}}
+  v=m59();(v.log=v.log||[]).unshift({at:Date.now(),from:from,to:'household',why:'joined'});v.log=v.log.slice(0,20);
+  v.storage='household';DB.meta.cloudSyncOn=true;DB.meta.syncChoice='yes';save();
+};
+
+/* ---------- 5. delete accounts, categories and sub-categories with a warning (D-67, replaces D-54) ---------- */
+function linkedFor(n){
+  var direct=DB.txns.filter(function(t){return t.account===n||t.to===n;}),ids={},grp={};
+  direct.forEach(function(t){ids[t.id]=1;if(t.group)grp[t.group]=1;});
+  var shares=DB.txns.filter(function(t){return !ids[t.id]&&t.group&&grp[t.group];});
+  var xfer=direct.filter(function(t){return t.type==='Transfer'&&t.account&&t.to&&(t.account!==n||t.to!==n);}).length;
+  var owed=direct.concat(shares).filter(function(t){return t.owedAcc&&+t.owedAmt;}).length;
+  return {direct:direct,shares:shares,xfer:xfer,owed:owed,linked:xfer+shares.length+owed};
+}
+B117.linkedFor=linkedFor;
+function delAcc117(n){
+  var a=a59(n);if(!a)return;
+  if(isLedger20(a)){toast('Between Us ledgers are managed only by Between Us settlement — they can’t be deleted here.');return;}
+  if(permFor59(a.name)!=='owner'){toast('Only the account owner can delete an account.');return;}
+  var L=linkedFor(n),nt=L.direct.length;
+  var rc=(DB.recur||[]).filter(function(x){return x&&x.tpl&&(x.tpl.account===n||x.tpl.to===n);}).length;
+  var parts=[];if(L.xfer)parts.push(L.xfer+' transfer'+(L.xfer===1?'':'s')+' (the other account’s side)');if(L.shares.length)parts.push(L.shares.length+' split-bill share'+(L.shares.length===1?'':'s'));if(L.owed)parts.push(L.owed+' Between Us entr'+(L.owed===1?'y':'ies'));
+  var msg=nt?('Delete “'+n+'” and its '+nt+' transaction'+(nt===1?'':'s')+'? '+(L.linked?('All linked entries are deleted too: '+parts.join(', ')+' ('+L.linked+' in all). '):'')+(rc?(rc+' recurring item'+(rc===1?' is':'s are')+' removed. '):'')+'Balances and Between Us update. To keep the history, close or archive the account instead.')
+    :('Delete account “'+n+'”?'+(rc?(' '+rc+' recurring item'+(rc===1?' is':'s are')+' removed.'):''));
+  askConfirm(msg,'Delete',function(){
+    var snap=snapLists(['accounts','txns','recur','goals']);try{backupSnap('pre-account-delete');}catch(e){}
+    var kill={};L.direct.concat(L.shares).forEach(function(t){kill[t.id]=1;});
+    DB.txns=DB.txns.filter(function(t){return !kill[t.id];});
+    DB.recur=(DB.recur||[]).filter(function(x){return !(x&&x.tpl&&(x.tpl.account===n||x.tpl.to===n));});
+    (DB.goals||[]).forEach(function(g){if(g.acc===n)g.acc='';});
+    DB.accounts.forEach(function(x){if(x.linkedAsset===n)delete x.linkedAsset;if(Array.isArray(x.linkedLoans))x.linkedLoans=x.linkedLoans.filter(function(l){return l!==n;});});
+    DB.accounts=DB.accounts.filter(function(x){return x.name!==n;});
+    if(MGR.edit===n)MGR.edit=null;if(DRILL.acc===n)DRILL.acc='';
+    touch();try{renderMgr();}catch(e){}try{renderAll();}catch(e){}
+    toastAct('“'+n+'” deleted'+(nt?(' with '+(nt+L.shares.length)+' entr'+((nt+L.shares.length)===1?'y':'ies')):'')+' — undo?',function(){undoRestoreLists(snap);touch();try{renderMgr();}catch(e){}try{renderAll();}catch(e){}});
+  });
+}
+B117.delAcc=delAcc117;
+SCREEN.base('accDel',990117001,function(n){delAcc117(n);});SCREEN.on('accDel',990117001);
+function a48del117(n){var a=a59(n);if(!a)return;if(permFor59(a.name)!=='owner'){toast('Only the account owner can delete an account');return;}
+  delAcc117(n);var w=setInterval(function(){if(!a59(n)){clearInterval(w);try{var X=window.ACC48;if(X)X.sheet=null;closeMgr();}catch(e){}try{var X2=window.ACC48;if(X2&&X2.closePage)X2.closePage();if(X2&&X2.home)X2.home();}catch(e){}}},300);setTimeout(function(){clearInterval(w);},20000);}
+var UNC='Uncategorised';
+function delCat117(ty,n){
+  var used=DB.txns.filter(function(x){return x.type===ty&&x.category===n;}),u=used.length;
+  if(u&&n===UNC){toast('“'+UNC+'” holds the transactions of deleted categories, so it can’t be deleted while it is used.',{type:'warn'});return;}
+  var nSub=(DB.subcats&&DB.subcats[n]?DB.subcats[n].length:0);
+  askConfirm(u?('Delete category “'+n+'”? '+(u===1?'Its 1 transaction moves':'Its '+u+' transactions move')+' to “'+UNC+'”'+(nSub?(' and its '+nSub+' sub-categor'+(nSub===1?'y is':'ies are')+' deleted'):'')+'. No transaction is deleted.'):('Delete category “'+n+'”?'),'Delete',function(){
+    var snap=snapLists(['categories','subcats','txns','budgets']);
+    if(u){if((DB.categories[ty]||[]).indexOf(UNC)<0)DB.categories[ty].push(UNC);used.forEach(function(t){t.category=UNC;t.subcategory='';});}
+    DB.categories[ty]=DB.categories[ty].filter(function(c){return c!==n;});
+    if(DB.subcats&&DB.subcats[n])delete DB.subcats[n];
+    try{if(DB.budgets&&DB.budgets[n]!==undefined)delete DB.budgets[n];}catch(e){}
+    if(MGR.edit===ty+':'+n)MGR.edit=null;
+    touch();try{renderMgr();}catch(e){}try{renderAll();}catch(e){}
+    toastAct('Category deleted'+(u?(' · '+u+' moved to '+UNC):'')+' — undo?',function(){undoRestoreLists(snap);touch();try{renderMgr();}catch(e){}});
+  });
+}
+function delSub117(c,s){
+  var used=DB.txns.filter(function(t){return t.category===c&&t.subcategory===s;}),u=used.length;
+  askConfirm(u?('Delete sub-category “'+s+'” of '+c+'? '+(u===1?'Its 1 transaction stays':'Its '+u+' transactions stay')+' in '+c+' with no sub-category ('+UNC+'). No transaction is deleted.'):('Delete sub-category “'+s+'” of '+c+'?'),'Delete',function(){
+    var snap=snapLists(['subcats','txns']);
+    used.forEach(function(t){t.subcategory='';});
+    DB.subcats[c]=subList(c).filter(function(x){return x!==s;});if(!DB.subcats[c].length)delete DB.subcats[c];
+    if(MGR.edit===c+'::'+s)MGR.edit=null;
+    touch();try{renderMgr();}catch(e){}try{renderAll();}catch(e){}
+    toastAct('Sub-category deleted'+(u?(' · '+u+' kept in '+c):'')+' — undo?',function(){undoRestoreLists(snap);touch();try{renderMgr();}catch(e){}});
+  });
+}
+delCategory=delCat117;delSub=delSub117;
+ACT.on('b117',{
+  a48del:function(el){a48del117(el.dataset.n);},
+  mgrdel:function(el,next){var k=MGR.kind,key=el.dataset.k;
+    if(k==='accs'){var a=a59(key);if(!a)return;if(isLedger20(a))return next(el);return delAcc117(key);}
+    if(k==='cats'){var i=key.indexOf(':');return delCat117(key.slice(0,i),key.slice(i+1));}
+    if(k==='subs'){var p=key.split('::');return delSub117(p[0],p[1]);}
+    return next(el);}
+});
+})();
+
+;/* ===== v160b117 part 2 · Debts (D-70), chart values on tap (D-69), Asset Mix, Net Worth, Couple chip, (i) placement, Profile, note suggestions ===== */
+(function(){ 'use strict';
+function n117(e,w){try{DIAG.note(e,w);}catch(_){}}
+var B=window.B117=window.B117||{};
+var R51=INS.R;
+function mixbar(segs){var t=segs.reduce(function(s,x){return s+x.v;},0)||1;return '<div class="mixbar">'+segs.map(function(x,i){return '<i class="hit117" style="width:'+(x.v/t*100).toFixed(1)+'%;background:'+(x.c||V63.mixColor(i))+'"'+tip117([x.k||'',money(x.v),Math.round(x.v/t*100)+'% of the total'])+'></i>';}).join('')+'</div>';}
+function r2(x){return Math.round(x*100)/100;}
+function lnk117(label,k){return '<button class="relb" data-act="v63rep" data-k="'+k+'">'+label+' ›</button>';}
+function rel117(items){return '<div class="rel51">'+items.map(function(i){return lnk117(i[0],i[1]);}).join('')+'</div>';}
+function calc117(t){return '<details class="calc51" id="calc51"><summary>How this is calculated</summary><p>'+t+'</p></details>';}
+function hero117(id,when){try{return INS.repHero(INS.get(id),when);}catch(e){return '';}}
+function asAt117(){return 'as at '+dLabelYW(nwAsAt(perRange()));}
+function mon117(iso){return MONTHS[+iso.slice(5,7)-1]+' '+iso.slice(0,4);}
+
+/* ---------- 4. Debts data (D-70) ----------
+   Principal repaid = repayments into a loan / hire purchase minus that debt's interest & charges in the period.
+   Interest & charges = expenses on a debt account that are loan charges (Record a charge) or sit in an
+   interest / fee / charge category or sub-category. Note words are never used.
+   Card payments are shown on their own line, not as principal. All values are positive. */
+function isDebt(a){return !!a&&!a.recv&&!/^.+ owes .+$/.test(String(a.name))&&(isLoan(a)||accTypeKind(a.type)==='liability');}
+function isCard(a){return !!a&&!isLoan(a)&&accTypeKind(a.type)==='liability';}
+var INTRE=/interest|fee|charge/i;
+function isCharge(t){return t.type==='Expense'&&(!!t.lcharge||INTRE.test(String(t.category||''))||INTRE.test(String(t.subcategory||'')));}
+function debtFlow(r,who){
+  who=who||whoOK();var per={},acc={};
+  DB.accounts.forEach(function(a){if(isDebt(a)&&ownerHas(a.owner,who))acc[a.name]=a;});
+  function P(n){return per[n]||(per[n]={name:n,card:isCard(acc[n]),repay:0,charge:0,rt:[],ct:[]});}
+  DB.txns.forEach(function(t){
+    if(t.date<r.s||t.date>r.e)return;
+    if(t.type==='Transfer'&&t.to&&acc[t.to]&&t.account!==t.to){var p=P(t.to);p.repay+=+t.amount||0;p.rt.push(t);}
+    else if(t.type==='Expense'&&acc[t.account]&&isCharge(t)){var q=P(t.account);q.charge+=+t.amount||0;q.ct.push(t);}
+  });
+  var principal=0,interest=0,cardPay=0,items=[];
+  Object.keys(per).forEach(function(n){var p=per[n];p.repay=r2(p.repay);p.charge=r2(p.charge);
+    interest+=p.charge;
+    if(p.card){cardPay+=p.repay;p.principal=0;items=items.concat(p.ct);}
+    else{p.principal=r2(Math.max(0,p.repay-p.charge));principal+=p.principal;items=items.concat(p.repay>=p.charge?p.rt:p.ct);}
+  });
+  var rows=Object.keys(per).map(function(n){return per[n];}).sort(function(a,b){return (b.principal+b.charge+(b.card?b.repay:0))-(a.principal+a.charge+(a.card?a.repay:0));});
+  return {principal:r2(principal),interest:r2(interest),cardPay:r2(cardPay),total:r2(principal+interest),rows:rows,items:items};
+}
+B.debtFlow=debtFlow;
+/* every older caller (cash-flow notes, Insights) now gets the corrected figures */
+try{var dn117=V63.driversNote;V63.driversNote=function(D){var t=dn117.apply(this,arguments);try{var pr=debtFlow(perRange()).principal;t=t.replace(/debt principal RM ?[\d,.]+/,'debt principal '+money(pr));}catch(e){}return t;};}catch(e){n117(e,'b117:dn');}
+B.openDebtList=function(s,e,label){
+  var r={s:s,e:e},f=debtFlow(r),w=whoOK();
+  openTxnList('Debt repayments & charges · '+label,function(){return debtFlow({s:s,e:e},w).items;});
+};
+ACT.on('b117d',{
+  debt117list:function(el){B.openDebtList(el.dataset.s,el.dataset.e,el.dataset.h||'');}
+});
+var DCOL={'Loans':'#dc2626','Hire Purchase':'#f97316','Cards & credit lines':'#db2777','Other':'#9333ea'};
+var DLB={'Loans':'Loans','Hire Purchase':'Hire purchase','Cards & credit lines':'Credit cards','Other':'Other debts'};
+function nextDue(a){
+  try{if(isCard(a)){var c=cardStatus(a);if(c&&c.due&&c.stillDue>=0.005)return c.due;return '';}return a.remDue||'';}catch(e){return '';}
+}
+/* 16. Balances: one card — share bar by debt type, one row per debt (balance, repaid bar, next due), type totals */
+function balancesCard(){
+  var asd=nwAsAt(perRange()),D=V63.calc.debts(whoOK(),asd);
+  if(!D.total)return '<div class="card"><h2>'+ico('card')+' Debts</h2><div class="help">No debts recorded. That is a good place to be.</div></div>';
+  var seen={},h='<div class="card db117" data-info23="keep"><h2>'+ico('card')+' What I owe <span class="sub">as at '+esc(dLabelYW(asd))+'</span></h2>'
+    +'<div class="dbtot117"><b class="neg">'+money(D.total)+'</b></div>'
+    +mixbar(D.segs.map(function(s){return {k:DLB[s.k]||s.k,v:s.v,c:DCOL[s.k]};}))
+    +'<div class="dblg117">'+D.segs.map(function(s){return '<span><i style="background:'+DCOL[s.k]+'"></i>'+esc(DLB[s.k]||s.k)+' '+Math.round(s.v/D.total*100)+'%</span>';}).join('')+'</div>';
+  D.segs.forEach(function(s){
+    h+='<div class="dbgrp117"><span>'+esc(DLB[s.k]||s.k)+'</span><b>'+money(s.v)+'</b></div>';
+    s.rows.forEach(function(x){
+      if(seen[x.name])return;seen[x.name]=1; /* a name is shown once, whatever the data holds */
+      var a=a59(x.name)||{},owed=Math.abs(x.v),line2=[],bar='';
+      if(!isCard(a)){var orig=Math.abs(+a.start||0);if(orig<owed)orig=owed;var paid=Math.max(0,orig-owed),pc=orig?paid/orig*100:0;
+        bar='<div class="dbbar117" title="Repaid"><i style="width:'+pc.toFixed(1)+'%"></i></div>';line2.push(Math.round(pc)+'% repaid');}
+      else line2.push(a.type==='Card'?'Credit card':esc(a.type||''));
+      var nd=nextDue(a);if(nd)line2.push('next due '+esc(dLabelYW(nd)));
+      if(a.owner)line2.push(esc(a.owner));
+      h+='<button class="dbrow117" data-act="acc" data-n="'+esc(x.name)+'"><span class="l1"><span class="nm">'+esc(x.name)+'</span><b class="neg">'+money(owed)+'</b></span>'+bar+'<span class="l2">'+line2.join(' · ')+'</span></button>';
+    });
+  });
+  return h+'</div>';
+}
+/* 17. Repayments: one card — totals, one 6-period stacked chart, per-debt list for the period */
+function stackSVG(tr){
+  var W=Math.max(320,tr.length*54),H=200,top=24,bot=26,mx=0,o='',sel=-1,cr=perRange();
+  tr.forEach(function(x,k){mx=Math.max(mx,x.p+x.i);if(x.s===cr.s&&x.e===cr.e)sel=k;});if(!mx)mx=1;
+  var ph=H-top-bot,base=H-bot,step=(W-16)/tr.length,bw=Math.min(28,step-20);
+  o+='<line x1="4" x2="'+(W-4)+'" y1="'+base+'" y2="'+base+'" stroke="var(--muted)" stroke-width="1"/>';
+  tr.forEach(function(x,k){
+    var cx=6+(k+.5)*step,hp=x.p/mx*ph,hi=x.i/mx*ph;
+    if(k===sel)o+='<rect x="'+(cx-step/2+3).toFixed(1)+'" y="2" width="'+(step-6).toFixed(1)+'" height="'+(H-4)+'" rx="8" fill="var(--accent)" opacity=".09"/>';
+    if(hp>0)o+='<rect x="'+(cx-bw/2).toFixed(1)+'" y="'+(base-hp).toFixed(1)+'" width="'+bw+'" height="'+Math.max(1.5,hp).toFixed(1)+'" rx="3" fill="var(--inc)"/>';
+    if(hi>0)o+='<rect x="'+(cx-bw/2).toFixed(1)+'" y="'+(base-hp-hi).toFixed(1)+'" width="'+bw+'" height="'+Math.max(1.5,hi).toFixed(1)+'" rx="3" fill="var(--exp)"/>';
+    if(x.p+x.i>0.004)o+='<text x="'+cx+'" y="'+(base-hp-hi-6).toFixed(1)+'" text-anchor="middle" font-size="9.5" font-weight="700" fill="var(--ink)">'+cfmt(x.p+x.i)+'</text>';
+    o+='<text x="'+cx+'" y="'+(H-7)+'" text-anchor="middle" font-size="9.5" font-weight="'+(k===sel?'800':'600')+'" fill="var(--ink)" opacity="'+(k===sel?'1':'.78')+'">'+esc(x.lb)+'</text>';
+    o+='<rect class="hit117" x="'+(cx-step/2)+'" y="0" width="'+step+'" height="'+H+'" fill="transparent" data-act="debt117list" data-s="'+x.s+'" data-e="'+x.e+'" data-h="'+esc(x.full)+'"'+tip117([x.full,'Principal repaid '+money(x.p),'Interest & charges '+money(x.i),'Total '+money(x.p+x.i)])+' style="cursor:pointer"/>';
+  });
+  return '<svg viewBox="0 0 '+W+' '+H+'" style="width:100%;height:auto;min-width:'+Math.min(W,320)+'px">'+o+'</svg>';
+}
+function repaymentsCard(){
+  var r=perRange(),f=debtFlow(r),tr=[],k;
+  for(k=5;k>=0;k--){var rr=perRange(PER.off-k),ff=debtFlow(rr);tr.push({lb:rr.short,full:rr.label,s:rr.s,e:rr.e,p:ff.principal,i:ff.interest});}
+  var h='<div class="card rp117" data-info23="keep"><h2>'+ico('down')+' Repayments <span class="sub">'+esc(r.label)+'</span></h2>'
+    +'<div class="kpis">'+kpi('Principal repaid',money(f.principal),'pos')+kpi('Interest & charges',money(f.interest),'neg')+'</div>'
+    +(f.cardPay>0.004?'<div class="dbrow117 nb117"><span class="l1"><span class="nm">Card payments</span><b>'+money(f.cardPay)+'</b></span><span class="l2">Paying a card moves money between your accounts; it is not loan principal.</span></div>':'')
+    +'<div class="mgr-lb" style="margin-top:10px">Last 6 '+perWord()+'s</div><div class="chart-scroll">'+stackSVG(tr)+'</div>'
+    +'<div class="lg117"><span><i style="background:var(--inc)"></i>Principal repaid</span><span><i style="background:var(--exp)"></i>Interest &amp; charges</span><span class="lgt">Tap a bar for its values</span></div>'
+    +'<div class="mgr-lb" style="margin-top:12px">By debt · '+esc(r.label)+'</div>';
+  if(!f.rows.length)h+='<div class="help">No repayments or charges in this '+perWord()+'.</div>';
+  f.rows.forEach(function(p){
+    var parts=p.card?[(p.repay>0.004?'Card payments '+money(p.repay):''),(p.charge>0.004?'Interest & fees '+money(p.charge):'')]:[('Principal '+money(p.principal)),(p.charge>0.004?'Interest & charges '+money(p.charge):'')];
+    h+='<button class="dbrow117" data-act="acc" data-n="'+esc(p.name)+'"><span class="l1"><span class="nm">'+esc(p.name)+'</span><b>'+money(p.card?p.repay+p.charge:p.principal+p.charge)+'</b></span><span class="l2">'+parts.filter(Boolean).join(' · ')+'</span></button>';
+  });
+  return h+'</div>';
+}
+/* 18. Schedule: two lines per debt */
+function scheduleCard(){
+  var accs=DB.accounts.filter(function(a){return isLoan(a)&&+a.instalment>0&&ownerHas(a.owner,whoOK());});
+  if(!accs.length)return '<div class="card"><h2>'+ico('cal')+' Schedule</h2><div class="help">Set a fixed instalment on a loan or hire-purchase account to see how many payments are left.</div></div>';
+  var h='<div class="card sc117" data-info23="keep"><h2>'+ico('cal')+' Schedule</h2>';
+  accs.forEach(function(a){
+    var bal=Math.abs(accountBalAsOf(a.name,todayISO())||0),n=Math.ceil(bal/a.instalment-1e-9),f=a.freq||'m';
+    var unit=f==='w'?'week':f==='f'?'fortnight':f==='q'?'quarter':f==='y'?'year':'month';
+    var start=a.remDue&&a.remDue>=todayISO()?a.remDue:todayISO(),end='';
+    if(n>0&&n<600){var last;if(f==='w')last=addDaysISO(start,7*(n-1));else if(f==='f')last=addDaysISO(start,14*(n-1));else{var mm=(f==='q'?3:f==='y'?12:1)*(n-1),d0=new Date(+start.slice(0,4),+start.slice(5,7)-1+mm,1);last=d0.getFullYear()+'-'+String(d0.getMonth()+1).padStart(2,'0')+'-01';}end=mon117(last);}
+    h+='<button class="dbrow117" data-act="acc" data-n="'+esc(a.name)+'"><span class="l1"><span class="nm">'+esc(a.name)+'</span><b class="neg">'+money(bal)+' left</b></span>'
+      +'<span class="l2">'+money(+a.instalment)+' / '+unit+(n>0?' · '+n+' payment'+(n===1?'':'s')+' left':' · paid off')+(end?' · ends '+end:'')+'</span></button>';
+  });
+  return h+'<div class="help small" style="margin-top:6px">At a steady instalment; paying early shortens it.</div></div>';
+}
+B.balancesCard=balancesCard;B.repaymentsCard=repaymentsCard;B.scheduleCard=scheduleCard;
+DYNF.v_outstd=balancesCard;DYNF.v_liabred=balancesCard;DYNF.v_prinrep=repaymentsCard;DYNF.v_repaytrend=repaymentsCard;DYNF.v_instal=scheduleCard;
+DYNF.debts=function(){
+  var o=INS.get('W2'),t=R51.dt||'bal',body;
+  var hero=o?INS.repHero({tag:'Debts',tone:o.tone,find:o.find,why:'You owe '+money(nwAt(nwAsAt(perRange()),whoOK()).liabs)+'. '+(o.why||'')},asAt117()):INS.repHero({tag:'Debts',tone:'good',find:'You have no debts recorded.'},asAt117());
+  if(t==='rep')body=repaymentsCard()+calc117('Principal repaid = repayments into a loan or hire purchase minus that debt’s interest &amp; charges in the period. Interest &amp; charges = expenses on a debt account recorded as a charge, or in an interest, fee or charge category. Card payments are listed apart: paying a card moves money and is not loan principal.');
+  else if(t==='sch')body=scheduleCard()+rel117([['Card Statements','cc']]);
+  else body=balancesCard();
+  return hero+'<div class="stab stab51">'+[['bal','Balances'],['rep','Repayments'],['sch','Schedule']].map(function(x){return '<button class="'+(t===x[0]?'on':'')+'" data-act="r51dt" data-v="'+x[0]+'">'+x[1]+'</button>';}).join('')+'</div>'+body;
+};
+
+/* ---------- 15. Asset Mix: each category opens to its accounts, with the change since the last period ---------- */
+DYNF.v_alloc=function(){
+  var r=perRange(),who=whoOK(),asd=nwAsAt(r),M=V63.calc.mix(who,asd),pd=nwAsAt(perRange(PER.off-1)),PM=V63.calc.mix(who,pd),o=INS.get('W4');
+  var hero=o&&o.sh>=0.7?INS.repHero(o,asAt117()):(M.total?INS.repHero({tag:'Asset mix',tone:'neu',find:(function(){var t=M.segs.slice().sort(function(a,b){return b.v-a.v;})[0];return t?esc(t.k)+' is the largest share of what I have ('+Math.round(t.v/M.total*100)+'%).':'';})()},asAt117()):'');
+  if(!M.total)return hero+'<div class="card"><h2>'+ico('pie')+' Asset mix</h2><div class="help">No assets recorded yet.</div></div>';
+  var h='<div class="card am117" data-info23="keep"><h2>'+ico('pie')+' Asset mix <span class="sub">as at '+esc(dLabelYW(asd))+'</span></h2><div class="dbtot117"><b>'+money(M.total)+'</b></div>'
+    +mixbar(M.segs.map(function(s,i){return {k:s.k,v:s.v,c:V63.mixColor(i)};}));
+  M.segs.forEach(function(s,i){
+    var pv=(PM.all&&PM.all[s.k])||0,d=r2(s.v-pv),seen={};
+    var ch=Math.abs(d)<0.005?'No change since '+esc(dLabelYW(pd)):'<span class="'+(d<0?'neg':'pos')+'">'+(d>0?'▲ ':'▼ ')+money(Math.abs(d))+'</span> since '+esc(dLabelYW(pd));
+    h+='<details class="am117g"><summary><span class="lg-dot" style="background:'+V63.mixColor(i)+'"></span><span class="nm">'+esc(s.k)+'<small>'+ch+'</small></span><span class="vv">'+money(s.v)+'<small>'+Math.round(s.v/M.total*100)+'%</small></span><span class="chev117">›</span></summary>'
+      +s.rows.filter(function(x){if(seen[x.name])return false;seen[x.name]=1;return true;}).map(function(x){return '<button class="dbrow117" data-act="acc" data-n="'+esc(x.name)+'"><span class="l1"><span class="nm">'+esc(x.name)+'</span><b>'+money(x.v)+'</b></span><span class="l2">'+esc(x.type||'')+(x.owner?' · '+esc(x.owner):'')+' · '+(M.total?Math.round(x.v/M.total*1000)/10:0)+'% of total</span></button>';}).join('')
+      +'</details>';
+  });
+  return hero+h+'</div>'+calc117('Shares are of what I have as at the end of the period. The change compares each group with the end of the previous period. Values are the ones you entered, not market prices.')+rel117([['Net Worth','networth'],['Debts','debts']]);
+};
+
+/* ---------- 19. Net Worth: summary card opens to the accounts; short "What moved it" ---------- */
+DYNF.networth=function(){
+  var r=perRange(),who=whoOK(),asd=nwAsAt(r),pd=nwAsAt(perRange(PER.off-1)),N=nwAt(asd,who),P=nwAt(pd,who),ch=nwChg(N.net,P.net);
+  function rows(l,debt){var seen={};return l.filter(function(x){if(seen[x.name])return false;seen[x.name]=1;return true;}).map(function(x){var v=debt?-x.v:x.v;return '<button class="dbrow117" data-act="acc" data-n="'+esc(x.name)+'"><span class="l1"><span class="nm">'+esc(x.name)+'</span><b class="'+(debt?'neg':(v<-0.004?'neg':''))+'">'+money(v)+'</b></span><span class="l2">'+esc(x.type||'')+(x.owner?' · '+esc(x.owner):'')+'</span></button>';}).join('')||'<div class="help small">None.</div>';}
+  var sum='<div class="card nw117" data-info23="keep"><h2>'+ico('nw')+' Net worth <span class="sub">as at '+esc(dLabelYW(asd))+'</span></h2>'
+    +'<div class="dbtot117"><b class="'+(N.net<0?'neg':'')+'">'+money(N.net)+'</b></div>'
+    +'<div class="sentence51 '+ch.c+'">'+ch.t+' since '+esc(dLabelYW(pd))+'</div>'
+    +'<details class="am117g"><summary><span class="nm">What I have</span><span class="vv">'+money(N.assets)+'</span><span class="chev117">›</span></summary>'+rows(N.A,false)+'</details>'
+    +'<details class="am117g"><summary><span class="nm">What I owe</span><span class="vv neg">'+money(N.liabs)+'</span><span class="chev117">›</span></summary>'+rows(N.L,true)+'</details>'
+    +'<div class="mgr-lb" style="margin-top:12px">Net worth trend</div>'+V63.trendBlock()
+    +'<div class="help small" style="margin-top:8px">'+DISC59+'</div>'
+    +(N.hidden?'<div class="help small" style="margin-top:4px">'+ico('lock')+' '+N.hidden+' account'+(N.hidden>1?'s are':' is')+' hidden by your partner and not included.</div>':'')+'</div>';
+  var pairs=[];try{pairs=nwPairs(asd,who);}catch(e){}
+  var pr=pairs.length?'<div class="card"><h2>'+ico('scale')+' Linked assets &amp; loans</h2>'+pairs.map(function(p){return '<div class="mgr-sec" style="margin-top:2px">'+esc(p.asset.name)+' ↔ '+esc(p.loan.name)+'</div><div class="fline"><span>Recorded value</span><b>'+money(p.av)+'</b></div><div class="fline"><span>Less outstanding loan</span><b class="neg">− '+money(p.lv)+'</b></div><div class="fline eq"><span>Net asset position</span><b class="'+(p.net<0?'neg':'pos')+'">'+money(p.net)+'</b></div>';}).join('')+'</div>':'';
+  var mv='';try{var D=V63.calc.drivers(r),prin=debtFlow(r).principal,hasVal=D.rows.some(function(x){return x.kind==='val';});
+    var pts=['<li><b>Total movement</b> = the change in net worth for '+esc(r.label)+'.</li>'];
+    if(Math.abs(D.other)>=0.01)pts.push('<li><b>Other changes</b> = balance movements that aren’t income or spending.</li>');
+    if(prin>0.004)pts.push('<li>Debt principal repaid '+money(prin)+' (moves money, doesn’t change net worth).</li>');
+    pts.push('<li>Value updates are non-cash'+(hasVal?'':' (none this '+perWord()+')')+'.</li>');
+    mv='<div class="card mv117" data-info23="keep"><h2>'+ico('trend')+' What moved it <span class="sub">'+esc(r.label)+'</span></h2>'
+      +D.rows.map(function(x){return '<div class="fline"><span>'+esc(x.label)+'</span><b class="'+(x.v<0?'neg':'pos')+'">'+sgm117(x.v)+'</b></div>';}).join('')
+      +'<div class="fline eq"><span><b>Total movement</b></span><b class="'+(D.total<0?'neg':'pos')+'">'+sgm117(D.total)+'</b></div>'
+      +'<ul class="pts117">'+pts.join('')+'</ul></div>';}catch(e){n117(e,'b117:nwmv');}
+  return hero117('W1',asAt117())+sum+mv+pr
+    +calc117('What I have minus what I owe. Between Us balances don’t count. Uses the values you entered, not market prices.')
+    +rel117([['Asset Mix','v_alloc'],['Debts','debts'],['Financial Health','v_health']]);
+};
+try{DYNF.cash=(function(prev){return function(){return String(prev.apply(this,arguments)).replace("<span class=\"wl\">Loan principal</span>","<span class=\"wl\">Loan repayments</span>");};})(DYNF.cash);}catch(e){n117(e,'b117:cash');}
+
+/* ---------- 12. tap a chart for its values (D-69) ---------- */
+var TIP={el:null};
+function tipBox(){var b=document.getElementById('tip117');if(!b){b=document.createElement('div');b.id='tip117';b.setAttribute('role','status');b.hidden=true;document.body.appendChild(b);}return b;}
+function tipHide(){var b=document.getElementById('tip117');if(b)b.hidden=true;if(TIP.el)try{TIP.el.classList.remove('tipon117');}catch(e){}TIP.el=null;}
+function tipShow(el,x,y){
+  tipHide();var b=tipBox(),ls=String(el.getAttribute('data-tip')||'').split('|');
+  var act=el.getAttribute('data-act');
+  b.innerHTML='<b>'+esc(ls[0]||'')+'</b>'+ls.slice(1).map(function(l){return '<span>'+esc(l)+'</span>';}).join('')
+    +(act?'<button class="lnk" data-act="tip117go">'+(act==='debt117list'?'See the entries':'See transactions')+' ›</button>':'');
+  b.hidden=false;TIP.el=el;try{el.classList.add('tipon117');}catch(e){}
+  var vw=window.innerWidth,vh=window.innerHeight,w=b.offsetWidth,h=b.offsetHeight;
+  var left=Math.max(8,Math.min(vw-w-8,x-w/2)),top=y-h-14;if(top<64)top=y+18;if(top+h>vh-8)top=vh-h-8;
+  b.style.left=left+'px';b.style.top=top+'px';
+}
+window.addEventListener('click',function(e){
+  try{
+    var t=e.target;if(!t||!t.closest)return;
+    if(t.closest('#tip117')){if(!t.closest('[data-act=tip117go]'))e.stopPropagation();return;}
+    var el=t.closest('[data-tip]');
+    if(!el||!el.getAttribute('data-tip')){if(TIP.el)tipHide();return;}
+    e.stopPropagation();e.preventDefault();
+    if(TIP.el===el){tipHide();return;}
+    tipShow(el,e.clientX,e.clientY);
+  }catch(x){n117(x,'b117:tip');}
+},true);
+window.addEventListener('scroll',function(){if(TIP.el)tipHide();},true);
+ACT.on('b117tip',{tip117go:function(){var el=TIP.el;tipHide();if(el)ACT.dispatch(el);}});
+B.tipHide=tipHide;
+
+/* ---------- 8. Home › Couple: the person is always Couple ---------- */
+function coupleTab(){try{return !(window.REPORT&&REPORT.open)&&V63.itab==='couple'&&!!document.querySelector('#view-overview.on, #view-overview:not([hidden])');}catch(e){return false;}}
+try{SCREEN.around('perCtrlHTML',990117010,function(prev){return function(noPer){
+  if(noPer||!coupleTab())return prev(noPer);
+  try{var r=perRange();return perBarHTML({r:r,mode:PER.mode,cur:PER.off>=0,sub:capW(PER.mode)+' · Couple',off:'peroff',pick:'perfilter'}).replace(' ▾</small>',' ▾</small>');}catch(e){n117(e,'b117:per');return prev(noPer);}
+};});SCREEN.on('perCtrlHTML',990117010);}catch(e){n117(e,'b117:around');}
+try{var pf117=V56.mgr.perfilter;V56.mgr.perfilter=function(){pf117.apply(this,arguments);if(!coupleTab())return;
+  try{var b=$('mgrBody');qa('.mgr-lb',b).forEach(function(l){if(/Whose money|Accounts|Person|Who/.test(l.textContent)){var nx=l.nextElementSibling;if(nx)nx.remove();l.remove();}});
+    var f=b.querySelector('.sheet-foot');if(f&&!b.querySelector('.cpl117'))f.insertAdjacentHTML('beforebegin','<div class="help small cpl117" style="margin:10px 2px 0">The Couple tab always shows both of you.</div>');}catch(e){n117(e,'b117:pf');}};}catch(e){n117(e,'b117:pfw');}
+
+/* ---------- 9. (i) right after the card title ---------- */
+function placeInfo(){
+  try{document.querySelectorAll('.card > h2 .info23, .card > h2 .info51, .card > h2 .infob18').forEach(function(btn){
+    var h=btn.closest('h2');if(!h||btn.dataset.i117)return;btn.dataset.i117='1';
+    var ref=null;Array.prototype.some.call(h.children,function(c){if(c===btn)return false;if(c.classList.contains('sub')||c.classList.contains('det26')){ref=c;return true;}return false;});
+    btn.classList.add('i117');if(ref)h.insertBefore(btn,ref);
+  });}catch(e){n117(e,'b117:info');}
+}
+var tq=0;try{new MutationObserver(function(){if(!tq)tq=setTimeout(function(){tq=0;placeInfo();},25);}).observe(document.body,{childList:true,subtree:true});}catch(e){n117(e,'b117:mo');}
+
+/* ---------- 10. Your Profile: Rename, no Sign-in card or mode line, red Log out ---------- */
+try{SCREEN.after('B3.renderProfileSub',990117020,{call:'apply',ret:false},function(){
+  try{var bx=$('b28Acct');var k='',em='';
+    if(bx){k=/Email &(amp;)? password/.test(bx.textContent)?'pw':'';bx.remove();}
+    var pm=$('profModeB3');if(pm)pm.hidden=true;
+    var sv=document.querySelector('[data-act="profsaveB3"]');if(sv)sv.textContent='Rename';
+    var sec=document.querySelector('.setsub[data-sub="profile"]');
+    if(sec&&!$('lo117')){var c=document.createElement('div');c.id='lo117';c.className='card lo117';
+      c.innerHTML=(k==='pw'?'<button class="btn ghost" data-act="prpwchg" style="width:100%;margin-bottom:10px">'+ico('key')+' Change password</button>':'')
+        +'<button class="btn lo117b" data-act="aulogout">'+ico('logout')+' Log out</button>';
+      sec.appendChild(c);}
+  }catch(e){n117(e,'b117:prof');}
+});SCREEN.on('B3.renderProfileSub',990117020);}catch(e){n117(e,'b117:profw');}
+
+/* ---------- 11. note suggestions — your own notes only, kept on this phone (never synced or exported) ---------- */
+function noteKey(){var me='';try{me=meName()||'';}catch(e){}return 'cmm117notes:'+me;}
+function myNotes(){
+  var me='',cnt={},last={};try{me=meName()||'';}catch(e){}
+  function add(n,at){n=String(n||'').trim();if(!n||n.length>80)return;var k=n.toLowerCase();cnt[k]=(cnt[k]||0)+1;if(!last[k]||at>last[k].at)last[k]={n:n,at:at};}
+  try{DB.txns.forEach(function(t){if(!t||t.isSample||!t.note)return;var mine=t.createdBy?t.createdBy===me:(!isCouple()||t.person===me);if(!mine)return;try{if(window.partnerPriv116&&partnerPriv116(t))return;}catch(e){}add(t.note,+t.u||0);});}catch(e){}
+  try{(JSON.parse(localStorage.getItem(noteKey())||'[]')||[]).forEach(function(x){add(x.n,x.at||0);});}catch(e){}
+  return Object.keys(last).map(function(k){return {n:last[k].n,c:cnt[k],at:last[k].at};}).sort(function(a,b){return b.c-a.c||b.at-a.at;});
+}
+function remember(n){n=String(n||'').trim();if(!n)return;try{var l=JSON.parse(localStorage.getItem(noteKey())||'[]')||[];l=l.filter(function(x){return x.n.toLowerCase()!==n.toLowerCase();});l.unshift({n:n,at:Date.now()});localStorage.setItem(noteKey(),JSON.stringify(l.slice(0,200)));}catch(e){}}
+B.myNotes=myNotes;
+function sugBox(){var inp=$('fNote');if(!inp)return null;var b=$('noteSug117');if(!b){b=document.createElement('div');b.id='noteSug117';b.className='nsug117';b.hidden=true;inp.insertAdjacentElement('afterend',b);}return b;}
+function paintSug(){
+  var inp=$('fNote'),b=sugBox();if(!inp||!b)return;var q=inp.value.trim().toLowerCase();
+  if(!q){b.hidden=true;return;}
+  var L=myNotes().filter(function(x){var l=x.n.toLowerCase();return l!==q&&l.indexOf(q)>=0;}).slice(0,5);
+  if(!L.length){b.hidden=true;return;}
+  b.innerHTML=L.map(function(x){return '<button type="button" data-act="note117" data-v="'+esc(x.n)+'">'+esc(x.n)+'</button>';}).join('');b.hidden=false;
+}
+document.addEventListener('input',function(e){if(e.target&&e.target.id==='fNote')paintSug();});
+document.addEventListener('focusout',function(e){if(e.target&&e.target.id==='fNote')setTimeout(function(){var b=$('noteSug117');if(b&&!b.contains(document.activeElement))b.hidden=true;},180);});
+document.addEventListener('pointerdown',function(e){var t=e.target&&e.target.closest&&e.target.closest('[data-act=note117]');if(t)e.preventDefault();},true);
+ACT.on('b117n',{note117:function(el){var inp=$('fNote');if(inp){inp.value=el.dataset.v||'';inp.dispatchEvent(new Event('change',{bubbles:true}));}var b=$('noteSug117');if(b)b.hidden=true;}});
+document.addEventListener('click',function(e){try{var t=e.target&&e.target.closest&&e.target.closest('[data-act="savetxn"]');if(t){var v=($('fNote')||{}).value;if(v)remember(v);}}catch(x){}},true);
+})();
+
+;/* ===== v160b117 pin · version + release note ===== */
+try{if(window.pinVer36)window.pinVer36('1.60 beta 117'+(window.PAGE75&&PAGE75.stale?' · old page file ('+(PAGE75.page||'none')+')':''));}catch(e){}
+try{if(!window.__B117RN){var ol=document.querySelector('#pageSet details.help ol')||document.querySelector('#view-settings details.help ol');
+  if(ol){ol.insertAdjacentHTML('beforeend','<li><b>Beta 117:</b> The Insights tab is now called Home. Accounts no longer show twice: after every sync one account per name is kept, and any duplicates already on your phone can be cleaned up (with Undo). Joining a household moves sync to the household’s cloud. Accounts, categories and sub-categories can be deleted after a warning that says how many entries go with them (a category’s transactions move to Uncategorised). Tap any chart to see its values. Asset Mix and Net Worth open into their accounts; Debts shows Balances, Repayments and Schedule on one card each, and Repayments now splits principal from interest &amp; charges correctly. Notes suggest what you typed before (only your own notes, kept on this phone).</li>');window.__B117RN=1;}}}catch(e){}
