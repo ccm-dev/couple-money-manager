@@ -9,7 +9,7 @@ var CMM_FN_REGION='asia-southeast1';
    place before anything is drawn, loads the matching stylesheet, and clears the offline copies so
    the next start fetches fresh files. Help & About then says "old page file". */
 var PAGE75=(function(){
-  var JSV='1.60-beta.121',out={js:JSV,page:'',stale:false,fixed:false};
+  var JSV='1.60-beta.124',out={js:JSV,page:'',stale:false,fixed:false};
   try{
     var m=document.querySelector('meta[name="app-version"]');out.page=m?m.content:'';
     out.stale=out.page!==JSV;
@@ -359,7 +359,7 @@ function normalizeDB(){
   if(!Array.isArray(DB.fixedCats))DB.fixedCats=[];
   if(!DB.accTypeMeta||typeof DB.accTypeMeta!=='object'||Array.isArray(DB.accTypeMeta))DB.accTypeMeta={};
   /* v1.15: a billing cycle only makes sense on debt types — scrubbed everywhere else */
-  Object.keys(DB.accTypeMeta).forEach(function(k){var m=DB.accTypeMeta[k]||{};m.kind=(m.kind==='liability')?'liability':'asset';var d=parseInt(m.cycle,10);m.cycle=(m.kind==='liability'&&d>=1&&d<=31)?d:0;DB.accTypeMeta[k]=m;});
+  Object.keys(DB.accTypeMeta).forEach(function(k){var m=DB.accTypeMeta[k]||{};m.kind=(m.kind==='liability'||debtName124(k))?'liability':'asset';var d=parseInt(m.cycle,10);m.cycle=(m.kind==='liability'&&d>=1&&d<=31)?d:0;DB.accTypeMeta[k]=m;});
   if(!Array.isArray(DB.accTypes)||!DB.accTypes.length)DB.accTypes=['Cash','Bank','Card','eWallet'];
   DB.accTypes=DB.accTypes.map(function(t){return String(t||'').trim();}).filter(function(t,i,a){return t&&a.indexOf(t)===i;});
   if(!DB.accTypes.length)DB.accTypes=['Cash'];
@@ -645,15 +645,33 @@ function parseSplitStr(s){
 function hasSplit(t){return !!(t&&Array.isArray(t.split)&&t.split.length);}
 
 function splitMap(t){var m={};if(hasSplit(t))t.split.forEach(function(x){if(x&&x.p)m[x.p]=(m[x.p]||0)+Math.max(0,+x.v||0);});return m;}
+/* beta 122 (D-85): a joint person ("A & B") is two people. Names are matched to the people list
+   case-insensitively, so "hko&why" and "HKO & WHY" are the same pair. Returns [] when not joint. */
+function canonP122(x){x=String(x||'').trim();if(!x)return '';var L=(DB&&DB.people)||[],lx=x.toLowerCase();for(var i=0;i<L.length;i++){if(String(L[i]).trim().toLowerCase()===lx)return L[i];}return x;}
+function jointOf122(o){var s=String(o||'');if(s.indexOf('&')<0)return [];var m=s.split(/\s*&\s*/).map(canonP122).filter(Boolean);return (m.length===2&&m[0]!==m[1])?m:[];}
+/* half of a joint amount in cents: the first member gets the extra cent */
+function half122(v,first){var c=Math.round((+v||0)*100),h=Math.trunc(c/2);return (first?c-h:h)/100;}
+/* beta 123 (D-89): a joint account can be owned unevenly. a.own = the first owner's % (default 50). */
+function ownPct123(owner,acc){var jm=jointOf122(owner);if(!jm.length)return null;var a=acc?DB.accounts.find(function(x){return x.name===acc;}):null;
+  if(a&&a.own!=null&&a.own!==''&&isFinite(+a.own)){var am=jointOf122(a.owner);if(am.length){var q=Math.max(0,Math.min(100,+a.own));return am[0]===jm[0]?q:100-q;}}
+  return 50;}
+/* person p's part of v on a joint owner string; the first owner's part is rounded to the cent, the second gets the rest */
+function part123(v,owner,acc,p){var jm=jointOf122(owner);if(!jm.length)return null;var cp=canonP122(p),i=jm.indexOf(cp);if(i<0)return 0;
+  var c=Math.round((+v||0)*100),pc=ownPct123(owner,acc),a0=pc===50?(c-Math.trunc(c/2)):Math.round(c*pc/100);return (i===0?a0:c-a0)/100;}
+/* "half share" / "60% share" */
+function shareLbl123(owner,acc,p){var jm=jointOf122(owner);if(!jm.length)return '';var pc=ownPct123(owner,acc);if(canonP122(p)!==jm[0])pc=100-pc;return pc===50?'half share':pc+'% share';}
 function shareOf(t,p){
   if(!p||p==='all')return t.amount;
-  var m=splitMap(t),ps=Object.keys(m);
-  if(!ps.length)return t.person===p?t.amount:0;
+  var m=splitMap(t),ps=Object.keys(m),jm=jointOf122(t.person),cp=canonP122(p);
+  if(!ps.length){
+    if(jm.length)return part123(t.amount,t.person,t.account,cp);
+    return (t.person===p||(t.person&&canonP122(t.person)===cp))?t.amount:0;
+  }
   var v=m[p]||0,tot=0;
   ps.forEach(function(k){tot+=m[k];});
   var left=Math.round((t.amount-tot)*100)/100;
-  if(left>0&&t.person===p)v+=left;
-  return v;
+  if(left>0){if(jm.length){if(jm.indexOf(cp)>=0)v+=part123(left,t.person,t.account,cp);}else if(t.person===p)v+=left;}
+  return Math.round(v*100)/100;
 }
 function ensureEntities(txns){
   txns.forEach(function(t){
@@ -670,21 +688,21 @@ function ensureEntities(txns){
       if(!t.account)t.account=DB.accounts.length?DB.accounts[0].name:'Cash';
       else if(!DB.accounts.some(function(a){return a.name===t.account;}))DB.accounts.push({name:t.account,start:0,type:DB.accTypes[0]});
       if(t.to&&!DB.accounts.some(function(a){return a.name===t.to;}))DB.accounts.push({name:t.to,start:0,type:DB.accTypes[0]});
-      if(t.person&&DB.people.indexOf(t.person)<0)DB.people.push(t.person); /* v1.17: transfers carry their account owner */
+      if(t.person&&DB.people.indexOf(t.person)<0&&String(t.person).indexOf(' & ')<0)DB.people.push(t.person); /* v1.17: transfers carry their account owner; beta 122: never a joint owner */
       /* v1.17: owed transfers reference a joint debt ledger — auto-create it */
       if(t.owedAcc){
         var dO=Math.round(+t.owedAmt*100)/100;
         if(!isFinite(dO)||!dO){t.owedAcc='';t.owedAmt=0;}
-        else{t.owedAmt=dO;if(!DB.accounts.some(function(a){return a.name===t.owedAcc;}))ensureRecvAcc(t.owedAcc);}
+        else{t.owedAmt=dO;if(!DB.accounts.some(function(a){return a.name===t.owedAcc;})&&!ensureRecvAcc(t.owedAcc)){t.owedAcc='';t.owedAmt=0;}}
       }
       return;
     }
     if(!t.person)t.person=DB.people[0]||'Me';
-    else if(DB.people.indexOf(t.person)<0)DB.people.push(t.person);
+    else if(DB.people.indexOf(t.person)<0&&String(t.person).indexOf(' & ')<0)DB.people.push(t.person); /* beta 122: a joint owner is not a person */
     if(!t.account)t.account=DB.accounts.length?DB.accounts[0].name:'Cash';
     else if(!DB.accounts.some(function(a){return a.name===t.account;}))DB.accounts.push({name:t.account,start:0,type:DB.accTypes[0]});
     /* v1.12: a split share credited to a receivable auto-creates that receivable account */
-    if(t.type!=='Transfer'&&t.to&&!DB.accounts.some(function(a){return a.name===t.to;}))ensureRecvAcc(t.to);
+    if(t.type!=='Transfer'&&t.to&&!DB.accounts.some(function(a){return a.name===t.to;})&&!ensureRecvAcc(t.to))t.to='';
     if(!DB.categories[t.type])DB.categories[t.type]=DEF_CATS[t.type]?DEF_CATS[t.type].slice():['Others'];
     if(DB.categories[t.type].indexOf(t.category)<0)DB.categories[t.type].push(t.category);
     if(t.subcategory){
@@ -703,6 +721,8 @@ function explodeSplits(){
     var sm=splitMap(t),ps=Object.keys(sm),tot=0;
     ps.forEach(function(p){tot+=sm[p];});
     var left=Math.round((t.amount-tot)*100)/100;
+    var jm=jointOf122(t.person);
+    if(jm.length&&ps.every(function(p){return jm.indexOf(canonP122(p))>=0;}))return; /* beta 122: shares of a joint transaction stay on the one transaction */
     var rows=ps.map(function(p){return {p:p,v:sm[p]};});
     if(left>0.004)rows.push({p:t.person||DB.people[0]||'Me',v:left});
     if(!rows.length){t.split=null;return;}
@@ -731,7 +751,10 @@ function isRecvAcc(n){
   return !!(a&&(a.recv||/^.+ owes .+$/.test(String(a.name))));
 }
 /* v1.17: a debt ledger is jointly owned by both sides of the “X owes Y” name */
+/* beta 122: a Between Us ledger is always "<one person> owes <other person>" — never a joint owner ("A & B") */
+function okOwes122(name){var pp=String(name||'').split(' owes ');if(pp.length!==2)return false;var a=pp[0].trim(),b=pp[1].trim();return !!a&&!!b&&a!==b&&a.indexOf('&')<0&&b.indexOf('&')<0;}
 function ensureRecvAcc(name){
+  if(!okOwes122(name)){try{DIAG.note(new Error('refused ledger '+name),'b122:owes');}catch(e){}return '';}
   var a=DB.accounts.find(function(x){return x.name===name;});
   if(a){a.recv=1;return name;}
   var ty='Between Us';
@@ -741,7 +764,10 @@ function ensureRecvAcc(name){
   return name;
 }
 /* ===== asset vs debt account types + credit-card statement cycle (v1.7) ===== */
-function accTypeKind(ty){var m=DB.accTypeMeta&&DB.accTypeMeta[ty];return (m&&m.kind==='liability')?'liability':'asset';}
+/* beta 124 (D-91): a type whose name says card, credit card, loan, hire purchase, mortgage or credit line is always a debt,
+   whatever kind was saved with it (debit, prepaid and gift cards, and money lent, are things you own) */
+function debtName124(ty){ty=String(ty||'');if(/debit|prepaid|gift|lent|given|receivable/i.test(ty))return false;return /credit\s*card|credit\s*line|(^|[^a-z])cards?([^a-z]|$)|(^|[^a-z])cc([^a-z]|$)|loan|hire\s*purchase|mortgage/i.test(ty);}
+function accTypeKind(ty){if(debtName124(ty))return 'liability';var m=DB.accTypeMeta&&DB.accTypeMeta[ty];return (m&&m.kind==='liability')?'liability':'asset';}
 function typeHasCycle(ty){ty=String(ty||'');return /(^|[^a-z])cc([^a-z]|$)/i.test(ty)||/credit\s*card/i.test(ty);} /* v1.29: billing-cycle field only for credit-card types ("cc" or "credit card" in the name) */
 function accTypeCycle(ty){var m=DB.accTypeMeta&&DB.accTypeMeta[ty];var d=m?parseInt(m.cycle,10):0;return (d>=1&&d<=31)?d:0;}
 function pad2(n){return (n<10?'0':'')+n;}
@@ -1729,13 +1755,16 @@ function addAccType(n,kind){
   if(DB.accTypes.indexOf(n)>=0){toast('Already exists');return;}
   var kd=kind||'';
   if(kd!=='asset'&&kd!=='liability')kd=/card|credit/i.test(n)?'liability':'asset';
+  if(debtName124(n)&&kd!=='liability'){kd='liability';toast('Card, loan and hire purchase types are always debts');}
   DB.accTypes.push(n);
   DB.accTypeMeta[n]={kind:kd,cycle:0};
   touch();renderMgr();toast('Account type added ✓');
 }
+function newName0124(oldN){return ((($('mgrEName')||{}).value||oldN)+'').trim();}
 function saveAccType(oldN){
   var newName=(($('mgrEName')||{}).value||oldN).trim();
   var kind=$('mgrEKind')?$('mgrEKind').value:'asset';
+  if(debtName124(newName0124(oldN))&&kind!=='liability'){kind='liability';toast('Card, loan and hire purchase types are always debts');} /* beta 124 (D-91) */
   /* v1.27: the type editor no longer asks for a billing cycle (it lives on each account in
      Accounts → the account → Edit); the type keeps its own default */
   var cyc=accTypeCycle(oldN);
@@ -1972,19 +2001,26 @@ function ownerIco(o){return ico(String(o||'').indexOf(' & ')>=0?'users':'user');
    loan to "A & B". Paying a joint debt (or joint account) from your own account: the other joint owner
    owes you their share. Paying your own debt from a joint account: you owe the other joint owner their
    share. The share is equal (50:50), counted in cents. Anything else: the receiver owes the full amount. */
-function jointMembers116(o){return String(o||'').indexOf(' & ')>=0?String(o).split(' & ').map(function(x){return x.trim();}).filter(Boolean):[];}
-function owedSide116(fo,toO,amt){
-  var c=Math.round((+amt||0)*100),jt=jointMembers116(toO),jf=jointMembers116(fo);
-  if(jt.length===2&&!jf.length&&jt.indexOf(fo)>=0){var o=jt[0]===fo?jt[1]:jt[0];return {payer:fo,debtor:o,amt:Math.round(c/2)/100,split:1};}
-  if(jf.length===2&&!jt.length&&jf.indexOf(toO)>=0){var o2=jf[0]===toO?jf[1]:jf[0];return {payer:o2,debtor:toO,amt:Math.round(c/2)/100,split:1};}
-  return {payer:fo,debtor:toO,amt:c/100,split:0};
+/* beta 122 (D-84): names are matched case-insensitively; a joint owner is never a side of a ledger.
+   Returns null when nothing can be owed (same person, joint to joint, an owner outside the pair). */
+function owedSide116(fo,toO,amt,fromAcc,toAcc){ /* beta 123 (D-89): the share follows the joint account's ownership split */
+  var c=Math.round((+amt||0)*100),jt=jointOf122(toO),jf=jointOf122(fo),f=canonP122(fo),t=canonP122(toO);
+  if(!f||!t)return null;
+  if(jt.length&&jf.length)return null;
+  if(jt.length){if(jt.indexOf(f)<0)return null;var d=jt[0]===f?jt[1]:jt[0],pc=ownPct123(toO,toAcc);if(d!==jt[0])pc=100-pc;return {payer:f,debtor:d,amt:pc===50?Math.round(c/2)/100:part123(c/100,toO,toAcc,d),pct:pc,full:c/100,split:1};}
+  if(jf.length){if(jf.indexOf(t)<0)return null;var py=jf[0]===t?jf[1]:jf[0],pc2=ownPct123(fo,fromAcc);if(py!==jf[0])pc2=100-pc2;return {payer:py,debtor:t,amt:pc2===50?Math.round(c/2)/100:part123(c/100,fo,fromAcc,py),pct:pc2,full:c/100,split:1};}
+  if(f===t||f.indexOf('&')>=0||t.indexOf('&')>=0)return null;
+  return {payer:f,debtor:t,amt:c/100,full:c/100,split:0};
 }
-function owedPairFor(from,to,amt){
-  var sd=owedSide116(ownerOf(from),ownerOf(to),amt),fo=sd.payer,toO=sd.debtor,v=sd.amt;
+/* ov (beta 122): the amount owed chosen on the payment (half / full / custom); null = the default */
+function owedPairFor(from,to,amt,ov){
+  var sd=owedSide116(ownerOf(from),ownerOf(to),amt,from,to);if(!sd)return null;
+  var fo=sd.payer,toO=sd.debtor,v=(ov!=null&&isFinite(+ov))?Math.round(+ov*100)/100:sd.amt;
+  if(!(v>0))return null;
   var n1=toO+' owes '+fo,n2=fo+' owes '+toO;
   if(DB.accounts.some(function(a){return a.name===n1;}))return {name:n1,delta:v,split:sd.split};
   if(DB.accounts.some(function(a){return a.name===n2;}))return {name:n2,delta:-v,split:sd.split};
-  ensureRecvAcc(n1);
+  if(!ensureRecvAcc(n1))return null;
   return {name:n1,delta:v,split:sd.split};
 }
 /* live Account owner display + Amount-owed checkbox wiring inside the transaction sheet */
@@ -1999,11 +2035,11 @@ function updateOwnerUI(){
   var lb=$('fOwnerLbl');if(lb)lb.textContent=trf?'From account owner':'Account owner';
   var box2=$('fOwnerTo');
   if(box2)box2.innerHTML=trf?(toO?(ownerIco(toO)+' '+esc(toO)):'<span style="opacity:.55">— no account owner</span>'):'';
-  var show=!!(trf&&fo&&toO&&fo!==toO&&!isRecvAcc(from)&&!isRecvAcc(to));
+  var amt=parseAmt($('fAmount').value)||0;
+  var sd=(trf&&fo&&toO&&!isRecvAcc(from)&&!isRecvAcc(to))?owedSide116(fo,toO,amt,from,to):null;
+  var show=!!sd;
   $('fOwedRow').hidden=!show;
   if(!show){$('fOwedHint').innerHTML='';return;}
-  var amt=parseAmt($('fAmount').value)||0;
-  var sd=owedSide116(fo,toO,amt);
   var ex2=DB.accounts.some(function(a){return a.name===sd.payer+' owes '+sd.debtor;});
   var nm=ex2?(sd.payer+' owes '+sd.debtor):(sd.debtor+' owes '+sd.payer);
   var sg=ex2?'−':'+';
@@ -3225,11 +3261,30 @@ function repBreakdown(){
     +'<div class="help small" style="margin-top:8px">Tap a slice or a category to see its transactions.</div></div>';
 }
 var TOP={mode:'cat'};
+/* beta 122: a split bill is one purchase at its full amount (lists of single purchases) */
+function mergeLegs122(L){
+  var out=[],at={};
+  (L||[]).forEach(function(t){
+    if(!t||!t.group){out.push(t);return;}
+    var k=t.group+'|'+t.date+'|'+t.type;
+    if(at[k]==null){at[k]=out.length;out.push(t);return;}
+    var m=out[at[k]];
+    if(!m.__g122){var c=Object.assign({},m);c.__g122=[m];out[at[k]]=c;m=c;}
+    m.__g122.push(t);
+    m.amount=Math.round((+m.amount+(+t.amount||0))*100)/100;
+  });
+  return out.map(function(m){
+    if(!m||!m.__g122)return m;
+    var py=m.__g122.filter(function(t){return !t.to;})[0]||m.__g122[0];
+    var c=Object.assign({},py,{amount:m.amount,split:m.__g122.map(function(t){return {p:t.person,v:+t.amount||0};})});
+    c.person=py.person;return c;
+  });
+}
 function repTop(){
   var r=perRange(),L=perTx(r),h;
   if(TOP.mode==='cat'){var items=catBreakdown(L,'Expense').filter(function(x){return x.value>0;}).slice(0,10),tot=items.reduce(function(s,x){return s+x.value;},0);
     h=items.length?items.map(function(it,i){return '<button class="trow"'+tl(r.s,r.e,it.label+' · '+r.label,it.label,'Expense')+'><span class="rk">#'+(i+1)+'</span><span class="lb">'+esc(it.label)+'<small>'+Math.round(it.value/tot*100)+'% of top 10</small></span><span class="amt2 neg">'+money(it.value)+'</span></button>';}).join(''):'<div class="help" style="padding:8px 2px">No spending in this period.</div>';}
-  else{var tx=L.filter(function(t){return t.type==='Expense'&&t.amount>0;}).sort(function(a,b){return b.amount-a.amount;}).slice(0,10);
+  else{var tx=mergeLegs122(L).filter(function(t){return t.type==='Expense'&&t.amount>0;}).sort(function(a,b){return b.amount-a.amount;}).slice(0,10);
     h=tx.length?tx.map(function(t,i){return '<button class="trow" data-act="txn" data-id="'+t.id+'"><span class="rk">#'+(i+1)+'</span><span class="lb">'+esc(t.category)+(t.note?' · '+esc(t.note):'')+'<small>'+dLabelW(t.date)+' · '+whoStr(t)+' · '+esc(t.account)+'</small></span><span class="amt2 neg">'+money(t.amount)+'</span></button>';}).join(''):'<div class="help" style="padding:8px 2px">No purchases in this period.</div>';}
   return '<div class="card"><h2>'+ico('trophy')+' Top 10 spending <span class="sub">'+esc(r.label)+'</span></h2>'
     +'<div class="segmini"><button class="'+(TOP.mode==='cat'?'on':'')+'" data-act="topm" data-t="cat">Categories</button><button class="'+(TOP.mode==='txn'?'on':'')+'" data-act="topm" data-t="txn">Single purchases</button></div><div class="rows">'+h+'</div></div>';
@@ -3497,7 +3552,7 @@ function aiCat(q){
     if(q.indexOf(c)>=0||(f.length>=4&&new RegExp('\\b'+reEsc(f)).test(q)))return cs[i];}
   return '';
 }
-function aiTx(p,who,type){var l=DB.txns.filter(function(t){return t.date>=p.s&&t.date<=p.e&&t.type!=='Transfer'&&(!type||t.type===type);});return who==='couple'?l:applyPerson(l,who);}
+function aiTx(p,who,type){var l=DB.txns.filter(function(t){return t.date>=p.s&&t.date<=p.e&&t.type!=='Transfer'&&(!type||t.type===type);});return who==='couple'?mergeLegs122(l):applyPerson(l,who);} /* beta 122: a split bill is one item */
 function aiBul(a){return a.length?'<br>'+a.map(function(x){return '• '+x;}).join('<br>'):'';}
 function aiPctTxt(a,b){if(!b)return '';var p=Math.round((a-b)/Math.abs(b)*100);return p===0?'about the same':(Math.abs(p)+'% '+(p>0?'more':'less'));}
 function aiHelp(){return 'I can answer questions about your money from the data in this app. Try:'+aiBul(['How much did we spend this month?','How much did Wifey spend on groceries last week?','Top spending in August','Compare this month with last month','Who owes whom?','Budget left this month','Card payments due','How are our saving goals?','What are our account balances?','Income last month','Show transactions for transport this week'].map(esc))+'<br>Name a person to see their share; otherwise I answer for you both.';}
@@ -5449,14 +5504,14 @@ function stmAdd56(){
   if(bad){toast(bad+' ticked line'+(bad>1?'s need':' needs')+' a date, an amount or a transfer account');return;}
   askConfirm('Add '+c.n+' transaction'+(c.n>1?'s':'')+' to '+STM.acc+'? You can undo the whole import later in Settings → Import.','Add '+c.n,function(){
     backupSnap('pre-statement');
-    var acc=STM.acc,who0=ownerOf(acc)||DB.people[0]||'Me',who=who0.indexOf(' & ')>=0?(meName()||DB.people[0]||''):who0,bid='b'+uid(),add=[],P=partnerName(),me=meName();
+    var acc=STM.acc,who0=ownerOf(acc)||DB.people[0]||'Me',who=who0,jt122=jointOf122(who0).length>0,bid='b'+uid(),add=[],P=partnerName(),me=meName();
     STM.rows.forEach(function(r){
       if(!r.inc)return;var amt=Math.round(Math.abs(parseAmt(r.amount))*100)/100;
       if(r.kind==='trf'){var from=r.dir==='in'?r.other:acc,to=r.dir==='in'?acc:r.other;add.push(mkTxn({date:r.date,type:'Transfer',account:from,to:to,person:ownerOf(from)||who,note:r.desc,amount:amt}));return;}
       var ty=r.kind==='in'?'Income':'Expense',sg=r.kind==='refund'?-1:1;
-      if(r.split&&r.kind==='out'&&realPeople().length>=2){
+      if(r.split&&r.kind==='out'&&!jt122&&realPeople().length>=2){ /* beta 122: on a joint account it is already half each */
         var payer=who,debtor=payer===P?(me||realPeople().filter(function(x){return x!==payer;})[0]):P;
-        if(debtor&&debtor!==payer){var half=Math.round(amt/2*100)/100,gid=uid(),rn=ensureRecvAcc(debtor+' owes '+payer);
+        if(debtor&&debtor!==payer&&okOwes122(debtor+' owes '+payer)){var half=Math.round(amt/2*100)/100,gid=uid(),rn=ensureRecvAcc(debtor+' owes '+payer);
           add.push(Object.assign(mkTxn({date:r.date,type:ty,category:r.cat,account:acc,person:payer,note:r.desc,amount:Math.round((amt-half)*100)/100}),{group:gid}));
           add.push(Object.assign(mkTxn({date:r.date,type:ty,category:r.cat,account:acc,to:rn,person:debtor,note:r.desc,amount:half}),{group:gid}));return;}
       }
@@ -7211,7 +7266,8 @@ SCREEN.base('renderMgr',104433,function __base_renderMgr(){
           +'<div class="mgr-lb">Type name</div>'
           +'<input class="fin" id="mgrEName" value="'+esc(ty)+'" placeholder="Type name" style="margin-bottom:7px">'
           +'<div class="mgr-lb">Kind</div>'
-          +'<select class="fin" id="mgrEKind" style="margin-bottom:7px"><option value="asset"'+(kd==='asset'?' selected':'')+'>Asset (+ balance) — cash, wallet, savings</option><option value="liability"'+(kd==='liability'?' selected':'')+'>Debt (− balance) — credit card, loan</option></select>'
+          +'<select class="fin" id="mgrEKind" style="margin-bottom:7px"'+(debtName124(ty)?' disabled':'')+'><option value="asset"'+(kd==='asset'?' selected':'')+'>Asset (+ balance) — cash, wallet, savings</option><option value="liability"'+(kd==='liability'?' selected':'')+'>Debt (− balance) — credit card, loan</option></select>'
+          +(debtName124(ty)?'<div class="help small" style="margin-bottom:7px">Card, loan and hire purchase types are always debts.</div>':'')
           +'<div class="help small" style="margin-bottom:7px">Billing-cycle (statement day) settings live on each <b>account</b> — set them in <b>Accounts → the account → Edit</b> when the account\'s type is a <b>credit card</b>.</div>'
           +'<div style="display:flex;gap:7px"><button class="ibtn" data-act="mgrsave" data-k="'+esc(ty)+'" style="flex:1;color:var(--inc)">Save</button><button class="ibtn" data-act="mgrcancel" style="flex:1">Cancel</button></div></div>';
       }
@@ -8386,8 +8442,8 @@ SCREEN.base('saveTxn',152032,function __base_saveTxn(){
     if(fo&&fo.indexOf(' & ')<0&&DB.people.indexOf(fo)<0)DB.people.push(fo);
     var owedAcc='',owedAmt=0;
     if(!$('fOwedRow').hidden&&$('fOwed').checked){
-      var op=owedPairFor(from,to,amt);
-      owedAcc=op.name;owedAmt=op.delta;
+      var op=owedPairFor(from,to,amt,owe122Amt(amt));
+      if(op){owedAcc=op.name;owedAmt=op.delta;}
     }
     var rec={date:date,type:'Transfer',category:'',subcategory:'',account:from,to:to,person:fo,note:note,amount:amt,split:null,owedAcc:owedAcc,owedAmt:owedAmt};
     var t0=F.id?DB.txns.find(function(x){return x.id===F.id;}):null;
@@ -8412,11 +8468,21 @@ SCREEN.base('saveTxn',152032,function __base_saveTxn(){
     var ssum0=Math.round(srows.reduce(function(s,x){return s+x.v;},0)*100)/100;
     if(Math.round((absA-ssum0)*100)/100<-0.004){toast('Split shares exceed the amount by '+fmt(Math.round((ssum0-absA)*100)/100));return;}
   }
-  var multiLeg=srows.length>1||srows.some(function(r){return r.p&&r.p!==rec.person;});
+  /* beta 122 (D-85): on a joint account the split only says whose share it is — one transaction, nothing owed */
+  var jm122=jointOf122(rec.person),joint122=!!(jm122.length&&srows.length);
+  if(joint122&&srows.some(function(r){return jm122.indexOf(canonP122(r.p))<0;})){toast('On a joint account, split between its two owners only');return;}
+  var multiLeg=!joint122&&(srows.length>1||srows.some(function(r){return r.p&&r.p!==rec.person;}));
   if(multiLeg){
     if($('fRep').value){applyRepeat(rec,t1,true);toast('Repeat skipped — split transactions cannot recur');}
   }else applyRepeat(rec,t1,false);
   var nR=materializeRecur();
+  if(joint122){
+    var jsp={};srows.forEach(function(r){var k=canonP122(r.p);jsp[k]=Math.round(((jsp[k]||0)+r.v)*100)/100;});
+    var jks=Object.keys(jsp).filter(function(k){return jsp[k]>0.004;});
+    if(jks.length===1&&Math.abs(jsp[jks[0]]-absA)<0.005)rec.person=jks[0]; /* all one person's */
+    else rec.split=jks.map(function(k){return {p:k,v:jsp[k]};});
+    srows=[];
+  }
   if(srows.length){
     var ssum=Math.round(srows.reduce(function(s,x){return s+x.v;},0)*100)/100;
     var left=Math.round((absA-ssum)*100)/100;
@@ -8431,6 +8497,7 @@ SCREEN.base('saveTxn',152032,function __base_saveTxn(){
       var gidF=uid(),legsF=[];
       var pShare=Math.round(srows.filter(function(r){return r.p===payer;}).reduce(function(s,r){return s+r.v;},0)*100)/100;
       if(pShare>0.004)legsF.push({id:uid(),group:gidF,date:date,type:F.type,category:F.cat,subcategory:rec.subcategory,account:rec.account,person:payer,note:note,amount:sg*pShare,split:null});
+      if(debtors.some(function(d){return !okOwes122(d.p+' owes '+payer);})){toast('This split needs one person as the payer');return;}
       debtors.forEach(function(d){
         var rn=ensureRecvAcc(d.p+' owes '+payer);
         legsF.push({id:uid(),group:gidF,date:date,type:F.type,category:F.cat,subcategory:rec.subcategory,account:rec.account,to:rn,person:d.p,note:note,amount:sg*d.v,split:null});
@@ -9395,7 +9462,10 @@ function nwAt(d,who){
     if(!ownerHas(a.owner,who))return;
     var v=accountBalAsOf(a.name,d);
     if(!isFinite(v)){hid++;return;}
-    v=Math.round(v*100)/100;var row={name:a.name,type:a.type||'',owner:a.owner||'',v:v,a:a};
+    v=Math.round(v*100)/100;
+    /* beta 122 (D-85): one person's net worth takes half of each joint account */
+    var jm=(who&&who!=='couple')?jointOf122(a.owner):[];if(jm.length)v=part123(v,a.owner,a.name,who);
+    var row={name:a.name,type:a.type||'',owner:a.owner||'',v:v,a:a,half:jm.length?shareLbl123(a.owner,a.name,who):''};
     /* beta21: one rule everywhere — an account is a debt because of its KIND (loan, card,
        hire purchase, other debt), never because its balance is below zero. An overdrawn
        cash / e-Wallet account stays under assets and simply reduces them. */
@@ -9410,6 +9480,7 @@ function nwPairs(d,who){
     if(!isLoan(l)||!l.linkedAsset)return;var as=a59(l.linkedAsset);if(!as||!isVal(as))return;
     if(!ownerHas(l.owner,who)&&!ownerHas(as.owner,who))return;
     var lv=accountBalAsOf(l.name,d),av=accountBalAsOf(as.name,d);if(!isFinite(lv)||!isFinite(av))return;
+    if(who&&who!=='couple'){var ja=jointOf122(as.owner),jl=jointOf122(l.owner),cw=canonP122(who);if(ja.length)av=part123(av,as.owner,as.name,cw);if(jl.length)lv=part123(lv,l.owner,l.name,cw);}
     out.push({asset:as,loan:l,av:av,lv:-lv,net:av+lv});
   });
   return out;
@@ -9446,7 +9517,7 @@ function repNetWorth59(){
   var pairs=nwPairs(asd,who);
   /* beta 26 · G5 — assets keep their sign (an overdrawn wallet shows −RM and reduces assets);
      debts show the amount owed. Each list adds up to its total. */
-  function rows(l,debt){return l.length?l.map(function(x){var v=debt?-x.v:x.v,neg=debt?v>0.004:v<-0.004;return '<button class="trow" data-act="acc" data-n="'+esc(x.name)+'"><span class="lb">'+esc(x.name)+'<small>'+esc(x.type)+(x.owner?' · '+esc(x.owner):'')+'</small></span><span class="amt2 '+(neg?'neg':'')+'">'+money(v)+'</span></button>';}).join(''):'<div class="help small" style="padding:6px 2px">None.</div>';}
+  function rows(l,debt){return l.length?l.map(function(x){var v=debt?-x.v:x.v,neg=debt?v>0.004:v<-0.004,cr=debt&&x.v>=0.005;return '<button class="trow" data-act="acc" data-n="'+esc(x.name)+'"><span class="lb">'+esc(x.name)+'<small>'+esc(x.type)+(x.owner?' · '+esc(x.owner):'')+(x.half?' · '+x.half:'')+(cr?' · in credit':'')+'</small></span><span class="amt2 '+(neg?'neg':(cr?'pos':''))+'">'+(cr?'+'+money(x.v):money(v))+'</span></button>';}).join(''):'<div class="help small" style="padding:6px 2px">None.</div>';}
   return '<div class="card"><h2>'+ico('nw')+' Net worth <span class="sub">as at '+dLabelYW(asd)+'</span></h2>'
     +'<div class="kpis">'+kpi('Assets',money(N.assets),'pos')+kpi('Debts',money(N.liabs),'neg')+kpi('Net worth',money(N.net),N.net<0?'neg':'')+'</div>'
     +'<div class="fline"><span>Change since '+esc(dLabelY(pd))+'</span><b class="'+ch.c+'">'+ch.t+'</b></div>'
@@ -9614,7 +9685,7 @@ function canEditTxn59(t){
   return res;
 }
 accOptions=function(sel){
-  var names=sortedAlpha(DB.accounts.filter(function(a){return !a.locked&&(canAdd59(a.name)||a.name===sel);}).map(function(a){return a.name;}));
+  var names=sortedAlpha(DB.accounts.filter(function(a){return !a.locked&&(a.name===sel||(canAdd59(a.name)&&!isRecvAcc(a.name)));}).map(function(a){return a.name;})); /* beta 122: Between Us ledgers are kept by the app, not picked */
   var h=names.map(function(n){return '<option'+(sel===n?' selected':'')+'>'+esc(n)+'</option>';}).join('');
   if(sel&&names.indexOf(sel)<0)h='<option selected>'+esc(sel)+'</option>'+h;
   return h;
@@ -9817,7 +9888,7 @@ MGR_TITLE.loanpay=ico('bank')+' Record loan repayment';
 V56.mgr.loanpay=function(){
   var l=a59(V59.loan)||{},src=DB.accounts.filter(function(a){return !a.locked&&!isRecvAcc(a.name)&&accTypeKind(a.type)!=='liability'&&!isVal(a)&&canAdd59(a.name)&&!LBL_RE.test(a.name);});
   var pick=src.filter(function(a){return a.owner===l.owner;})[0]||src[0];
-  $('mgrBody').innerHTML='<div class="aucard" style="text-align:left"><b>'+esc(l.name||'')+'</b><p>Outstanding: <b>'+money(Math.abs(accountBalAsOf(l.name,todayISO())))+'</b></p></div>'
+  $('mgrBody').innerHTML='<div class="aucard" style="text-align:left"><b>'+esc(l.name||'')+'</b><p>'+(function(){var b=accountBalAsOf(l.name,todayISO());return b>=0.005?'In credit: <b class="pos">'+money(b)+'</b>':'Outstanding: <b>'+money(Math.max(0,-b))+'</b>';})()+'</p></div>'
     +'<div class="mgr-lb">Paid from</div><select class="fin" id="lpFrom" style="margin-bottom:7px" onchange="lpPrev59()">'+src.sort(function(x,y){return alphasort(x.name,y.name);}).map(function(a){return '<option'+(pick&&a.name===pick.name?' selected':'')+'>'+esc(a.name)+'</option>';}).join('')+'</select>'
     +'<div class="mgr-lb">Date</div><input type="date" class="fin" id="lpDate" value="'+todayISO()+'" style="margin-bottom:7px">'
     +'<div class="mgr-lb">Total instalment paid'+(cur()?' ('+esc(cur())+')':'')+'</div><input class="fin" id="lpTot" inputmode="decimal" placeholder="0.00" oninput="lpPrev59()" style="margin-bottom:7px">'
@@ -12258,7 +12329,7 @@ if(olB4)olB4.insertAdjacentHTML('beforeend',
   DYNF.top=function(){
     var r=perRange(),L=perTx(r),h;
     if(TOP.mode==='cat'){h=_repTop7();}
-    else{var tx=L.filter(function(t){return t.type==='Expense'&&t.amount>0&&!B7.excl(t);}).sort(function(a,b){return b.amount-a.amount;}).slice(0,10);
+    else{var tx=mergeLegs122(L).filter(function(t){return t.type==='Expense'&&t.amount>0&&!B7.excl(t);}).sort(function(a,b){return b.amount-a.amount;}).slice(0,10);
       h=tx.length?tx.map(function(t,i){return '<button class="trow" data-act="txn" data-id="'+t.id+'"><span class="rk">#'+(i+1)+'</span><span class="lb">'+esc(t.category)+(t.note?' \u00b7 '+esc(t.note):'')+'<small>'+dLabelW(t.date)+' \u00b7 '+whoStr(t)+' \u00b7 '+esc(t.account)+'</small></span><span class="amt2 neg">'+money(t.amount)+'</span></button>';}).join(''):'<div class="help" style="padding:8px 2px">No purchases in this period.</div>';}
     return h.replace('<div class="rows">','<div class="rows">').replace(/<\/div><\/div>$/,'</div></div>');
   };
@@ -13961,7 +14032,7 @@ ICONS.cal='<rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2
 /* ---------- tiny helpers ---------- */
 function sgn16(v){return (v<0?'\u2212':'+')+money(Math.abs(v));}
 function pct16(x){return isFinite(x)?Math.round(x*100)+'%':'—';}
-function mixColor16(i){var c=['#2563eb','#7c3aed','#16a34a','#f59e0b','#ef4444','#0ea5e9','#64748b','#ec4899'];return c[i%c.length];}
+function mixColor16(i){return PALETTE[i%PALETTE.length];} /* beta 123 (D-90): Asset Mix uses the chart palette (D-81) */
 V63.mixColor=mixColor16;
 /* beta 26 · G4/G11 — one link pattern: "Details ›" at the right of the card header */
 function det26(k,label){return '<button class="det26" data-act="v63rep" data-k="'+k+'">'+(label||'Details')+' ›</button>';}
@@ -14526,7 +14597,7 @@ DYNF.v_instal=function(){
   if(!accs.length)return '<div class="card"><h2>'+ico('cal')+' Remaining instalments</h2><div class="help">Set a fixed instalment amount on a loan or hire-purchase account to see the months remaining.</div></div>';
   var h='';
   accs.forEach(function(a){
-    var bal=Math.abs(accountBalAsOf(a.name,todayISO())||0),n=Math.ceil(bal/a.instalment);
+    var bal=Math.max(0,-(accountBalAsOf(a.name,todayISO())||0)),n=Math.ceil(bal/a.instalment);
     var finish=n<600?dLabelY(addDaysISO(todayISO(),n*30)):'—';
     h+='<div class="fline"><span>'+esc(a.name)+'<small>'+money(bal)+' left · '+money(a.instalment)+' / '+(a.freq==='w'?'week':a.freq==='f'?'fortnight':a.freq==='q'?'quarter':a.freq==='y'?'year':'month')+'</small></span><b>~'+n+' · '+finish+'</b></div>';
   });
@@ -19623,7 +19694,7 @@ bkFileGo=function(){var pw=(($('bkPw')||{}).value||''),pw2=(($('bkPw2')||{}).val
 /* Partner preview: authoritative shared view, genuine latest activity. */
 if(window.B20)B20.pvData=function(){var me=safe28(function(){return meName();},''),P=safe28(function(){return partnerName();},'your partner'),v=buildSharedView(DB,{purpose:'preview'}),m=v.__sharedView||{},accSet={};(v.accounts||[]).forEach(function(a){if(a&&!a.locked&&!a.recv&&!/^.+ owes .+$/.test(a.name||''))accSet[a.name]=1;});var asc=cmm291Latest(v.txns||[],200).reverse();return {me:me,P:P,accs:(v.accounts||[]).filter(function(a){return accSet[a.name];}),txns:asc,relabel:function(n){return (m.labels||{})[n]||n;},anyPn:m.privateNames||{},accSet:accSet};};
 
-function finish291(){if(!DB)return setTimeout(finish291,30);prefDefaults291();ensureIds291();DB.meta.schemaVersion=SCHEMA291;if(window.experienceConfig){experienceConfig.version=VERSION291;experienceConfig.schemaVersion=SCHEMA291;}if(window.advancedCoupleConfig){advancedCoupleConfig.version=VERSION291;advancedCoupleConfig.schemaVersion=SCHEMA291;}save();document.title='v'+VERSION291+' · Couple Money Manager';var mv=document.querySelector('meta[name="app-version"]');if(mv)mv.content='1.60-beta.121';document.querySelectorAll('.sub').forEach(function(el){el.textContent=el.textContent.replace(/v?1\.60 beta 28(\.\d+)?/g,'v'+VERSION291);});if(X63.isSimple()&&V63.itab==='wealth')V63.itab='cash';renderAll();}
+function finish291(){if(!DB)return setTimeout(finish291,30);prefDefaults291();ensureIds291();DB.meta.schemaVersion=SCHEMA291;if(window.experienceConfig){experienceConfig.version=VERSION291;experienceConfig.schemaVersion=SCHEMA291;}if(window.advancedCoupleConfig){advancedCoupleConfig.version=VERSION291;advancedCoupleConfig.schemaVersion=SCHEMA291;}save();document.title='v'+VERSION291+' · Couple Money Manager';var mv=document.querySelector('meta[name="app-version"]');if(mv)mv.content='1.60-beta.124';document.querySelectorAll('.sub').forEach(function(el){el.textContent=el.textContent.replace(/v?1\.60 beta 28(\.\d+)?/g,'v'+VERSION291);});if(X63.isSimple()&&V63.itab==='wealth')V63.itab='cash';renderAll();}
 setTimeout(finish291,0);
 window.CMM_VERSION=VERSION291;window.CMM_SCHEMA_VERSION=SCHEMA291;
 })();
@@ -20332,7 +20403,7 @@ window.CMM_VERSION=VERSION291;window.CMM_SCHEMA_VERSION=SCHEMA291;
   function daysTo(d){return Math.round((Date.parse(d+'T12:00:00Z')-Date.parse(todayISO()+'T12:00:00Z'))/864e5);}
   function cardItem(a,amt){
     var cs=cardStatus(a),hasCyc=!!accCycleFor(a),stmt=+cs.stillDue||0;
-    var full=Math.abs(amt-stmt)>=0.005;
+    var full=Math.abs(amt-stmt)>=0.005||stmt<0.005; /* beta 123: nothing due (statement paid, or the card is in credit) is never "overdue" */
     var due=hasCyc&&cs.due?cs.due:todayISO();
     var x={act:'v63cardpay',name:a.name,owner:a.owner,due:due,dl:daysTo(due),amt:amt,kind:'Credit card payment',autopay:!!a.autopay};
     enrich(x);
@@ -24320,7 +24391,7 @@ try{
 function fam(a){
   if(!a)return 'bank';
   try{if(isLedger20(a)||isRecvAcc(a.name))return 'bu';}catch(e){}
-  if(accTypeKind(a.type)==='liability'){if(isLoan(a))return /hire\s*purchase/i.test(a.type||'')?'hp':'loan';return 'card';}
+  if(accTypeKind(a.type)==='liability'){if(isLoan(a)||/loan|mortgage|hire\s*purchase/i.test(a.type||''))return /hire\s*purchase/i.test(a.type||'')?'hp':'loan';return 'card';} /* beta 124: a loan-named type is a loan, not a card */
   if(isVal(a))return a.type==='Other Asset'?'other':'prop';
   return 'bank';
 }
@@ -24348,7 +24419,11 @@ function ownerKind(a){
   if(!o||o===m)return 'me';
   return 'partner';
 }
-function inScope(a){var s=X.scope;if(!couple()||s==='all')return true;return ownerKind(a)===s;}
+function inScope(a){var s=X.scope;if(!couple()||s==='all')return true;var k=ownerKind(a);return k===s||(s!=='joint'&&k==='joint');} /* beta 123 (D-89): a person's view includes joint accounts at half */
+/* beta 123 (D-89): in a person's view a joint account counts half (as that person's net worth in Reports, D-85) */
+function half123(a){var s=X.scope;if(!couple()||(s!=='me'&&s!=='partner')||ownerKind(a)!=='joint')return 0;var jm=jointOf122(a.owner);if(!jm.length)return 0;var who=canonP122(s==='me'?me():pn());return jm[0]===who?1:2;}
+function own123(v){var n=parseInt(String(v==null?'':v).replace(/[^0-9]/g,''),10);return isFinite(n)?Math.max(0,Math.min(100,n)):50;}
+function bal123(a){var b=balOf(a),k=half123(a);return k?part123(b,a.owner,a.name,X.scope==='me'?me():pn()):b;}
 function initials(n){return esc(lead121(n)||'•');} /* beta 121: no "?" */
 function whoBubble(a){
   if(!couple())return '';
@@ -24371,7 +24446,7 @@ function subOf(a){
 function cardInfo(a){try{var cs=cardStatus(a)||{};return {cyc:accCycleFor(a),stmt:+cs.stillDue||0,stmtAmt:+cs.stmt||0,due:cs.due||'',dl:isFinite(+cs.dl)?+cs.dl:null,le:cs.le||'',status:cs.status||''};}catch(e){return {cyc:0,stmt:0,stmtAmt:0,due:'',dl:null,le:'',status:''};}}
 /* minimum payment: calculated, never typed — 5% of the statement (or of what is owed), at least RM 50, never above what is owed */
 function minPay(a){
-  var owed=Math.abs(balOf(a)),ci=cardInfo(a),base=ci.stmt>0.004?ci.stmt:owed;
+  var owed=Math.max(0,-balOf(a)),ci=cardInfo(a),base=ci.stmt>0.004?ci.stmt:owed;
   if(!(owed>0.004))return 0;
   return Math.round(Math.min(owed,Math.max(base*0.05,50))*100)/100;
 }
@@ -24396,16 +24471,18 @@ function visAccounts(){
   });
 }
 function rowHTML(a){
-  var o=owe(a),b=balOf(a),h=hid(a);
+  var o=owe(a),b=bal123(a),h=hid(a),cr=o&&b>=0.005,hf=!!half123(a);
   var amt=h?'••••':(o?MA(b):M(b));
+  if(cr){o=false;amt='<span class="cr123">'+amt+'</span>';} /* beta 123 (D-88) */
   return '<button type="button" class="a48row'+(X.flash===a.name?' flash':'')+'" data-act="a48open" data-n="'+esc(a.name)+'">'
     +'<span class="a48ti'+(o?' o':'')+'">'+ico(icOf(a))+(isPrivate(a)?'<span class="a48lock">'+ico('lock')+'</span>':'')+whoBubble(a)+'</span>'
-    +'<span class="a48mid"><b>'+esc(a.name)+'</b><small>'+subOf(a)+'</small></span>'
-    +'<span class="a48end"><b class="'+(o&&!h?'o':'')+'">'+amt+'</b>'+(dueHTML(a)?'<small>'+dueHTML(a)+'</small>':'')+'</span></button>';
+    +'<span class="a48mid"><b>'+esc(a.name)+'</b><small>'+subOf(a)+(hf?' · '+shareLbl123(a.owner,a.name,X.scope==='me'?me():pn()):'')+'</small></span>'
+    +'<span class="a48end"><b class="'+(o&&!h?'o':'')+'">'+amt+'</b>'+(cr&&!h?'<small class="cr123">In credit</small>':(dueHTML(a)?'<small>'+dueHTML(a)+'</small>':''))+'</span></button>';
 }
 function groupHTML(g,list,oweSide){
   var key=(oweSide?'o:':'h:')+g[0],open=!!X.open120[key]; /* beta 120: groups start collapsed; open only after a tap */
-  var tot=list.reduce(function(s,a){return s+(hid(a)?0:Math.abs(balOf(a)));},0);
+  var tot=list.reduce(function(s,a){return s+(hid(a)?0:(oweSide?-bal123(a):Math.abs(bal123(a))));},0); /* beta 123 (D-88): a debt in credit lowers the group total */
+  if(oweSide)tot=Math.max(0,tot);
   return '<div class="a48grp"><button type="button" class="a48gh'+(open?' open':'')+'" data-act="a48grp" data-k="'+esc(key)+'" aria-expanded="'+open+'">'
     +'<span class="a48gi">'+ico(g[1])+'</span><b>'+esc(g[0])+'<small>'+list.length+'</small></b><span class="a48gt'+(oweSide?' o':'')+'">'+MA(tot)+'</span><span class="a48cv">'+ico('chevright')+'</span></button>'
     +(open?list.map(rowHTML).join(''):'')+'</div>';
@@ -24417,7 +24494,8 @@ function buRows(){
 function homeHTML(){
   var vis=visAccounts().filter(inScope),have=vis.filter(function(a){return !owe(a);}),ow=vis.filter(owe);
   var anyHid=vis.some(hid);
-  var sa=have.reduce(function(s,a){return s+(hid(a)?0:balOf(a));},0),so=ow.reduce(function(s,a){return s+(hid(a)?0:Math.abs(balOf(a)));},0),net=sa-so;
+  var sa=have.reduce(function(s,a){return s+(hid(a)?0:bal123(a));},0),so=ow.reduce(function(s,a){return s+(hid(a)?0:-bal123(a));},0),net=sa-so; /* beta 123 (D-88): what is owed; a debt in credit lowers it (as Reports) */
+  so=Math.max(0,so);
   var pct=sa+so>0?Math.max(0,Math.min(100,sa/(sa+so)*100)):0;
   var cp=couple(),P=pn(),m=me();
   var scLab={all:'Everyone',me:m||'Me',partner:P||'Partner',joint:'Joint'};
@@ -24486,9 +24564,30 @@ function txList(a){
      latest transaction, so its Bal is the account balance on top of the screen, and every row's
      Bal = the Bal of the row below it + this row's amount. The old sort broke the chain when
      same-day transactions were entered out of order (createdAt tiebreak disagreed with the walk). */
-  return allTxns().filter(function(t){return txnTouchesAcc(t,n);}).reverse()
+  var L=allTxns().filter(function(t){return txnTouchesAcc(t,n);}).reverse()
     .map(function(t){return {t:t,d:deltaFor(t,n),b:rb[t.id]};});
+  return grp122(L);
 }
+/* beta 122: the shares of one split bill (same group, same day) are one row, as in Transactions.
+   d = the whole bill's effect on this account, b = the balance after the bill (the newest share's Bal,
+   so the Bal column still chains row by row), t = the payer's share (category, note, bubble). */
+function grp122(L){
+  var out=[],at={};
+  L.forEach(function(x){
+    var g=x.t&&x.t.group;
+    if(!g){out.push(x);return;}
+    var k=g+'|'+x.t.date;
+    if(at[k]==null){at[k]=out.length;out.push({t:x.t,d:x.d,b:x.b,legs:[x.t],g:g});return;}
+    var m=out[at[k]];m.legs.push(x.t);m.d=Math.round((m.d+x.d)*100)/100;
+  });
+  out.forEach(function(m){
+    if(!m.legs)return;
+    if(m.legs.length<2){delete m.legs;delete m.g;return;}
+    var py=m.legs.filter(function(t){return !t.to;})[0]||m.legs[m.legs.length-1];m.t=py;
+  });
+  return out;
+}
+X.grp122=grp122;
 var ICAT=[[/transfer/i,'swap'],[/interest|charge/i,'warn'],[/personal care|haircut|salon/i,'scissors121'],[/groc/i,'basket121'],[/food|din/i,'utensils'],[/salar|income|wage/i,'banknote121'],[/bill|util|internet/i,'bolt'],[/phone|mobile/i,'phone'],[/insur/i,'umbrella121'],[/rent|housing/i,'key121'],[/shop/i,'bag'],[/health|medic|pharm/i,'heart'],[/entertain|stream/i,'play'],[/travel/i,'flag'],[/transport|petrol|fuel|\bcar\b/i,'bus121']]; /* beta 121: same icons as the transaction list */
 function icFor(t){if(t.type==='Transfer')return 'swap';var c=String(t.category||'');for(var i=0;i<ICAT.length;i++)if(ICAT[i][0].test(c))return ICAT[i][1];return 'tag';}
 function txTitle(t,a){
@@ -24517,6 +24616,7 @@ function whoTxBubble(t){
   }catch(e){return '';}
 }
 function txRowHTML(x,a){
+  if(x.legs)return grpRowHTML122(x,a);
   var t=x.t,isT=t.type==='Transfer',pos=x.d>0;
   /* beta 80: the row information follows the Transactions tab — same title and subtitle rules
      (Transfer, or subcategory/category/type; route for transfers; category · note otherwise),
@@ -24535,6 +24635,18 @@ function txRowHTML(x,a){
   return '<button type="button" class="a48tx" data-act="txn" data-id="'+esc(t.id)+'"><span class="a48ti '+(isT?'n':(pos&&!owe(a)?'in':''))+'">'+ico(icFor(t))+whoTxBubble(t)+'</span>'
     +'<span class="a48mid"><b>'+title+(fl?' <span class="a48fl">'+fl+'</span>':'')+'</b><small>'+sub+'</small></span>'
     +'<span class="a48end"><b class="'+(pos?'p':'o')+'">'+(pos?'+':'−')+MA(x.d)+'</b>'+bal+'</span></button>';
+}
+/* beta 122: one row per split bill — title, "Split bill · N shares", the payer's bubble, the whole bill and Bal;
+   a tap opens the whole bill (Edit / Copy / Delete act on every share) */
+function grpRowHTML122(x,a){
+  var t=x.t,pos=x.d>0,ppl=[];x.legs.forEach(function(l){if(l.person&&ppl.indexOf(l.person)<0)ppl.push(l.person);});
+  var title=t.masked?'Private':esc(t.subcategory||t.category||t.type);
+  var sub=t.masked?'Details hidden':[t.subcategory?esc(t.category):'','Split bill',x.legs.length+' shares'].filter(Boolean).join(' \u00b7 ');
+  var fl=t.masked?'':ico('split121')+(t.recur?ico('repeat'):'');
+  var bal=(x.b!=null&&isFinite(x.b)&&!hid(a))?'<small>Bal '+M(x.b)+'</small>':'';
+  return '<button type="button" class="a48tx g122" data-act="txgrp" data-g="'+esc(x.g)+'"><span class="a48ti'+(pos&&!owe(a)?' in':'')+'">'+ico(icFor(t))+whoTxBubble(t)+'</span>'
+    +'<span class="a48mid"><b>'+title+(fl?' <span class="a48fl">'+fl+'</span>':'')+'</b><small>'+sub+'</small></span>'
+    +'<span class="a48end"><b class="'+(pos?'p':'o')+'">'+(pos?'+':'\u2212')+MA(x.d)+'</b>'+bal+'</span></button>';
 }
 /* beta 80: Transactions-style day headers inside the Activity list — "Tue, 13 Oct 2026" with the
    day's net for this account (the same signed deltas the rows and the month net use). Rows keep
@@ -24610,7 +24722,7 @@ function eqRows(a){
   var f=fam(a);
   return linkedOf(a).map(function(l){
     var asset=f==='prop'?a:l,debts=f==='prop'?[l]:[a];
-    var eq=balOf(asset)-debts.reduce(function(s,d){return s+Math.abs(balOf(d));},0);
+    var eq=balOf(asset)+debts.reduce(function(s,d){return s+balOf(d);},0); /* beta 123: a debt in credit adds to equity */
     return '<button type="button" class="a48eq" data-act="a48open" data-n="'+esc(l.name)+'">'+ico(icOf(l))+'<span>'+(f==='prop'?'Equity after '+esc(l.name):'Equity in '+esc(l.name))+'</span><b class="'+(eq<0?'o':'')+'">'+(hid(a)||hid(l)?'••••':M(eq))+'</b>'+ico('chevright')+'</button>';
   }).join('');
 }
@@ -24618,11 +24730,13 @@ function heroHTML(a,compact){
   var f=fam(a),o=owe(a),b=balOf(a),h=hid(a),st=stOf(a);
   var perm='owner';try{perm=permFor59(a.name);}catch(e){}
   var can=st==='active'&&!a.locked&&perm!=='view'&&perm!=='none'&&canAdd59(a.name);
-  var lab=o?'You owe':(f==='prop'||f==='other'?'Recorded value':(a.type==='Investment'?'Current value':'Balance'));
+  var cr=o&&b>=0.005,zero=o&&Math.abs(b)<0.005; /* beta 123 (D-88): a card, loan or HP paid beyond what was owed is in credit */
+  var lab=cr?'In credit':(zero?'Nothing owed':(o?'You owe':(f==='prop'||f==='other'?'Recorded value':(a.type==='Investment'?'Current value':'Balance'))));
   var fig=h?'••••':(o?MA(b):M(b));
-  if(compact)return '<div class="a48card blk a48hc"><span class="a48ti'+(o?' o':'')+'">'+ico(icOf(a))+'</span><div class="a48mid"><b>'+esc(a.name)+'</b><small>'+subOf(a)+'</small></div><div class="a48hb"><small>'+lab+'</small><b class="'+(o&&!h?'o':'')+'">'+fig+'</b></div></div>';
+  if(cr)o=false;
+  if(compact)return '<div class="a48card blk a48hc"><span class="a48ti'+(o?' o':'')+'">'+ico(icOf(a))+'</span><div class="a48mid"><b>'+esc(a.name)+'</b><small>'+subOf(a)+'</small></div><div class="a48hb"><small>'+lab+'</small><b class="'+(o&&!h?'o':'')+(cr&&!h?' cr123':'')+'">'+fig+'</b></div></div>';
   var hh='<div class="a48card blk a48hero"><div class="a48hr"><span class="a48ti'+(o?' o':'')+'">'+ico(icOf(a))+'</span><div class="a48nm"><b>'+esc(a.name)+'</b><small>'+subOf(a)+'</small></div></div>'
-    +'<div class="a48tags">'+tagWho(a)+visTag(a)+stateTags(a)+'</div><div class="a48lab">'+lab+'</div><div class="a48fig'+(o&&!h?' o':'')+'">'+fig+'</div>';
+    +'<div class="a48tags">'+tagWho(a)+visTag(a)+stateTags(a)+'</div><div class="a48lab">'+lab+'</div><div class="a48fig'+(o&&!h?' o':'')+(cr&&!h?' cr123':'')+'">'+fig+'</div>';
   var sub='',acts='';
   if(f==='bank'){
     var d=monthNet(a);sub=h?'':(Math.abs(d)>=0.005?'<b class="'+(d>=0?'p':'o')+'">'+(d>=0?'▲':'▼')+' '+MA(d)+'</b> this month':'No movement this month');
@@ -24686,7 +24800,7 @@ function detailsCard(a){
     if(a.propType)rows.push(kv('Property type',esc(a.propType)));if(a.vehicleType)rows.push(kv('Vehicle type',esc(a.vehicleType)));if(+a.ownPct>0&&+a.ownPct<100)rows.push(kv('Ownership share',esc(a.ownPct)+'%'));}
   else{if(a.l4)rows.push(kv(f==='card'?'Card number':'Account number','•••• '+esc(a.l4)));if(f==='bank'||f==='card')rows.push(kv('Opening balance',M(+a.start||0)));}
   if(couple()){
-    rows.push(kv('Account owner',/ & /.test(String(a.owner||''))?'Joint · '+esc(a.owner):esc(a.owner||me())));
+    rows.push(kv('Account owner',/ & /.test(String(a.owner||''))?'Joint · '+esc(a.owner)+(function(){var jm=jointOf122(a.owner),pc=ownPct123(a.owner,a.name);return jm.length&&pc!==50?' · '+pc+' / '+(100-pc):'';})():esc(a.owner||me()))); /* beta 123: ownership split */
     var perm='owner';try{perm=permFor59(a.name);}catch(e){}
     var PL={view:'View only',add:'Add transactions',full:'Full transaction access',admin:'Account administrator'};
     rows.push(isPrivate(a)?kv('Visible to','Only you'):(/ & /.test(String(a.owner||''))?kv('Access','Both of you'):(perm!=='owner'?kv('Your access',esc(PL[perm]||perm)):kv(esc(pn()||'Partner')+' can',esc(PL[a.partnerAccess||'add']||'Add transactions')))));
@@ -24701,7 +24815,7 @@ function remLeadTxt(a){
   try{var d=V63.leadOf(a),own=a.remLead!=null&&a.remLead!=='';return (d===0?'On the day':(d===7?'A week before':d+' day'+(d===1?'':'s')+' before'))+(own?'':' (default)');}catch(e){return '—';}
 }
 function stmtCard(a){
-  var ci=cardInfo(a),owed=Math.abs(balOf(a)),h=hid(a);
+  var ci=cardInfo(a),owed=Math.max(0,-balOf(a)),h=hid(a);
   if(!ci.cyc)return cardH('card','Statement &amp; payment',canEdit(a)?'<button type="button" class="a48r" data-act="a48plan" data-n="'+esc(a.name)+'">Set up</button>':'',
     '<div class="a48empty"><b>No statement day yet</b>Add the statement day and payment terms to see what is due and get a reminder.</div>'+kv('Minimum payment',h?'••••':MA(minPay(a))+' <small class="a48auto">auto</small>'));
   var newS=Math.max(0,owed-ci.stmt),sp=owed?Math.min(100,ci.stmt/owed*100):0;
@@ -24824,7 +24938,7 @@ function toolbar(filters,withSearch,a,extra){
     +'<button type="button" class="a107f'+(k!=='all'?' on':'')+'" data-act="a107tf" aria-haspopup="menu" aria-label="Show: '+cur[1].replace(/&amp;/g,'&')+'">'+cur[1]+' ▾</button></div>';
   return h;
 }
-function qMatch(x){var q=X.act.q.trim().toLowerCase();if(!q)return true;var t=x.t;return ((t.note||'')+' '+(t.category||'')+' '+(t.account||'')+' '+(t.to||'')).toLowerCase().indexOf(q)>=0;}
+function qMatch(x){var q=X.act.q.trim().toLowerCase();if(!q)return true;return (x.legs||[x.t]).some(function(t){return ((t.note||'')+' '+(t.category||'')+' '+(t.subcategory||'')+' '+(t.account||'')+' '+(t.to||'')+' '+(t.person||'')).toLowerCase().indexOf(q)>=0;});} /* beta 122: a split bill matches on any share */
 function emptyBox(m){return '<div class="a48card"><div class="a48empty"><b>'+m[0]+'</b>'+m[1]+'</div></div>';}
 function monthLab(k){var y=k.slice(0,4),m=+k.slice(5,7);return MONTHS[m-1]+' '+y;}
 function importLnk(a){return canAdd59(a.name)?'<button type="button" class="a48lnk" data-act="stmfor" data-n="'+esc(a.name)+'">'+ico('receipt')+' Import statement</button>':'';}
@@ -25050,7 +25164,10 @@ function formBody(F,T,mode,a){
   h+='<div class="a48fld"><label for="a48f_amt">'+amtLabel+'</label><div class="a48mi'+(F.err==='amt'?' err':'')+'"><span>'+esc(cur()||'RM')+'</span><input id="a48f_amt" data-f="amt" inputmode="decimal" placeholder="0.00" value="'+esc(F.amt||'')+'"></div>'+(T.owe?'<div class="a48hp">Enter it as a positive number.</div>':'')+(F.err==='amt'?'<div class="a48errt">Enter an amount, or 0</div>':'')+'</div>';
   if(cp){
     var joint=/ & /.test(F.owner||''),shared=F.vis!=='me',other=F.owner===P?me():P;
-    if(joint)h+='<div class="a48fld"><label>Who can see this</label><div class="a48cnt">'+ico('users')+'<span>Both of you — joint accounts are always shared.</span></div></div>';
+    if(joint){h+='<div class="a48fld"><label>Who can see this</label><div class="a48cnt">'+ico('users')+'<span>Both of you — joint accounts are always shared.</span></div></div>';
+      /* beta 123 (D-89): ownership split of a joint account */
+      var jm=jointOf122(F.owner),op=own123(F.own);
+      if(jm.length)h+='<div class="a48fld"><label for="a48f_own">Ownership</label><div class="a48own123"><span>'+esc(jm[0])+'</span><input class="fin" id="a48f_own" data-f="own" inputmode="numeric" maxlength="3" value="'+op+'"><span>%</span><span class="sep">·</span><span>'+esc(jm[1])+'</span><b id="a48f_own2">'+(100-op)+'</b><span>%</span></div><div class="a48hp">Each person\u2019s part of this account\u2019s balance, income and spending. 50 / 50 unless you change it.</div></div>';}
     else if(adv()&&F.owner===me()){
       h+='<div class="a48fld"><label>Who can see this</label>'+seg('vis',shared?'shared':'me',[['me',ico('lock')+' Only me'],['shared','Shared with '+esc(P||'partner')]]);
       h+=shared?'<div class="a48fld" style="margin:10px 0 0"><label for="a48f_pa">'+esc(P||'Partner')+' can</label><select class="fin" id="a48f_pa" data-f="pa">'+[['view','View only'],['add','Add transactions'],['full','Full transaction access'],['admin','Account administrator']].map(function(o){return '<option value="'+o[0]+'"'+((F.pa||'add')===o[0]?' selected':'')+'>'+o[1]+'</option>';}).join('')+'</select></div>':'<div class="a48hp">Private accounts stay on your phone. You can share it later.</div>';
@@ -25110,6 +25227,7 @@ function saveAdd(){
   var owner=couple()?(F.owner||me()):(me()||'');
   var a={id:'ac'+Math.random().toString(36).slice(2,8)+String(Date.now()).slice(-4),name:n,type:T.t,owner:owner,start:T.owe?-amt:amt,cycle:0,dueDays:20};
   if(T===TYPES.property||T===TYPES.vehicle||T===TYPES.other)a.purchasePrice=amt;
+  if(/ & /.test(owner)){var op0=own123(F.own);if(op0!==50)a.own=op0;} /* beta 123 (D-89) */
   if(couple()&&!/ & /.test(owner)&&owner===me()){
     if(adv()&&F.vis==='me'){a.vis='me';a.pvby=me();}
     else a.partnerAccess=F.pa||'add';
@@ -25145,7 +25263,7 @@ function openEdit(n,plan){
   if(!canEdit(a)){toast('Only the account owner can change this account');return;}
   var T=TYPES[typeKeyOf(a)];
   X.sheet={kind:'edit',acc:n,plan:!!plan,f:{name:a.name,owner:a.owner||me(),amt:String(T.owe?Math.abs(+a.start||0):((T===TYPES.property||T===TYPES.vehicle||T===TYPES.other)?(function(){try{return purchaseOf(a);}catch(e){return +a.start||0;}})():(+a.start||0))),
-    vis:a.vis==='me'?'me':'shared',pa:a.partnerAccess||'add',moreOpen:!!plan,
+    vis:a.vis==='me'?'me':'shared',pa:a.partnerAccess||'add',own:(a.own!=null&&a.own!=='')?String(a.own):'50',moreOpen:!!plan,
     more:{l4:a.l4||'',stmtDay:a.cycle||'',dueDays:a.dueDays||'',rate:a.rate||'',inst:a.instalment||'',next:a.remDue||'',link:a.linkedAsset||'',purpose:a.purpose||'',ptype:a.propType||'Home',vtype:a.vehicleType||'Car',pdate:a.purchaseDate||''}}};
   openMgr('a48edit');
 }
@@ -25257,7 +25375,8 @@ function saveEdit(){
     if(n!==old){a.name=n;try{B20.renameEverywhere(old,n);}catch(e){n48(e,'b48:rename');}}
     if(couple()&&permFor59(a.name)==='owner'){
       var ow=F.owner||a.owner;a.owner=ow;
-      if(/ & /.test(ow)){delete a.vis;delete a.pvby;}
+      if(!/ & /.test(ow))delete a.own;
+      if(/ & /.test(ow)){delete a.vis;delete a.pvby;var op1=own123(F.own);if(op1===50)delete a.own;else a.own=op1;} /* beta 123 (D-89) */
       else if(ow===me()){
         if(adv()&&F.vis==='me'){a.vis='me';a.pvby=me();delete a.partnerAccess;}
         else{delete a.vis;delete a.pvby;a.partnerAccess=F.pa||a.partnerAccess||'add';}
@@ -25384,11 +25503,12 @@ function payExtras(){
   var a=a59(c.x.name);if(!a){if(old)old.remove();return;}
   var f=fam(a),h='';
   if(f==='card'){
-    var ci=cardInfo(a),owed=Math.abs(balOf(a)),curA=Math.round((parseAmt(($('fAmount')||{}).value)||0)*100)/100,opts=[],hit=false;
+    var ci=cardInfo(a),owed=Math.max(0,-balOf(a)),cr123=balOf(a),curA=Math.round((parseAmt(($('fAmount')||{}).value)||0)*100)/100,opts=[],hit=false;
     if(ci.stmt>=0.005)opts.push(['stmt','Statement balance',ci.stmt]);
     opts.push(['min','Minimum payment',minPay(a)]);
     if(owed>=0.005)opts.push(['full','Full outstanding',owed]);
-    h='<div class="a48paych" role="radiogroup" aria-label="How much to pay">'+opts.map(function(o){var on=!hit&&Math.abs(curA-o[2])<0.005;if(on)hit=true;return '<button type="button" role="radio" aria-checked="'+on+'" class="'+(on?'on':'')+'" data-act="a48payamt" data-v="'+o[2]+'"><b>'+o[1]+'</b><small>'+MA(o[2])+'</small></button>';}).join('')+'</div>';
+    if(cr123>=0.005&&ci.stmt<0.005)h='<div class="a48credit123">'+ico('check')+' <span>'+esc(a.name)+' is in credit by <b>'+MA(cr123)+'</b>. Nothing to pay.</span></div>'; /* beta 123 (D-88): overpaid card */
+    else h='<div class="a48paych" role="radiogroup" aria-label="How much to pay">'+opts.map(function(o){var on=!hit&&Math.abs(curA-o[2])<0.005;if(on)hit=true;return '<button type="button" role="radio" aria-checked="'+on+'" class="'+(on?'on':'')+'" data-act="a48payamt" data-v="'+o[2]+'"><b>'+o[1]+'</b><small>'+MA(o[2])+'</small></button>';}).join('')+'</div>';
   }else if(f==='loan'){
     var L=PAY.loanInt||(PAY.loanInt={on:false,amt:''});
     h='<div class="a48introw"><label class="a48trow"><span><b>Part of this was interest</b><small>Records the interest as a charge so the balance drops correctly</small></span><input type="checkbox" class="tgl" id="a48int" '+(L.on?'checked':'')+'></label>'
@@ -25422,7 +25542,7 @@ SCREEN.around('saveTxn',999048001,function(prev){return function(){
 SCREEN.after('closeSheet',999048002,{call:'none',ret:false},function(){if(!(window.REM32&&REM32.ctx))PAY.loanInt=null;var o=$('pay48x');if(o&&!(window.REM32&&REM32.ctx))o.remove();});
 function payCard(n){
   var a=a59(n);if(!a)return;
-  var ci=cardInfo(a),amt=ci.stmt>=0.005?ci.stmt:Math.abs(balOf(a));
+  var ci=cardInfo(a),amt=ci.stmt>=0.005?ci.stmt:Math.max(0,-balOf(a));
   if(!(window.REM32&&REM32.payAccount&&REM32.payAccount(n,amt))){try{openCardPay(n,amt);}catch(e){n48(e,'b48:pay');}}
   startPayWatch();
 }
@@ -26094,9 +26214,12 @@ RULES.C2=function(){
   var fires=f!=null&&Math.abs(f)>=0.1&&Math.abs(d)>=50;
   var find=f==null?('You have spent '+money(sc)+' '+thisWord(r)+'.'):('Spending is '+(d>=0?'up ':'down ')+pc(Math.abs(f))+' '+cmpTxt+'.');
   var mx=mv.length?Math.abs(mv[0].d):1;
-  var evid=mv.map(function(m){var w=(Math.abs(m.d)/mx*50).toFixed(0);return '<div class="mover51"><span class="mn">'+esc(m.c)+'</span><span class="mb">'+(m.d>0?'<i style="left:50%;width:'+w+'%;background:var(--exp)"></i>':'<i style="right:50%;width:'+w+'%;background:var(--inc)"></i>')+'</span><span class="mv '+(m.d>0?'neg':'pos')+'">'+sg(m.d)+'</span></div>';}).join('');
-  var same=mv.filter(function(m){return (m.d>0)===(d>0);}).slice(0,2),why='';
-  if(f!=null&&same.length&&Math.abs(d)>=1){var part=same.reduce(function(s,m){return s+Math.abs(m.d);},0);why=same.map(function(m){return esc(m.c);}).join(' and ')+(same.length>1?' explain ':' explains ')+money(Math.min(part,Math.abs(d)))+' of the '+money(Math.abs(d))+' '+(d>0?'rise':'drop')+'.';}
+  /* beta 122 (D-86): name and "▼/▲ RM x" on one line, a full-width bar under it sized against the biggest change */
+  var evid=(f!=null?'<div class="sub122">'+money(sc)+' '+(isCurrent(r)?'so far':thisWord(r))+' · '+money(sp)+' '+(isCurrent(r)?'by this point ':'')+lastWord()+'</div>':'')
+    +(mv.length?'<div class="mvh122">Biggest changes</div>':'')
+    +mv.map(function(m){var w=Math.max(4,Math.round(Math.abs(m.d)/mx*100)),up=m.d>0;return '<div class="mover51 m122 '+(up?'up':'dn')+'"><div class="mt122"><span class="mn">'+esc(m.c)+'</span><span class="mv '+(up?'neg':'pos')+'">'+(up?'\u25b2 ':'\u25bc ')+money(Math.abs(m.d))+'</span></div><span class="mb"><i style="width:'+w+'%"></i></span></div>';}).join('');
+  var same=mv.filter(function(m){return (m.d>0)===(d>0);}),why='';
+  if(f!=null&&same.length&&Math.abs(d)>=1){var part=same.reduce(function(s,m){return s+Math.abs(m.d);},0),pp=Math.min(100,Math.round(part/Math.abs(d)*100));why=(same.length>1?'These '+same.length+' are ':'This one is ')+pp+'% of the '+(d>0?'rise':'drop')+'.';}
   return {id:'C2',tab:'cash',tag:'Spending',tone:d>0?'warn':'good',sev:d>0?2:6,amt:Math.abs(d),fires:fires,find:find,evid:evid,why:why,links:[['Spending','spending']]};
 };
 /* C3 · Budget pace (also K3 for the shared budget) */
@@ -30287,7 +30410,7 @@ try{if(window.pinVer36)window.pinVer36('1.60 beta 94'+(window.PAGE75&&PAGE75.sta
 
 /* ===== beta 101 · merge of the other tool's beta 93–100 (Transactions tidy-up, update toast, type roles, cleanup) with Claude's beta 94 (invitation email) ===== */
 (function(){'use strict';
-  try{var mv=document.querySelector('meta[name="app-version"]');if(mv)mv.content='1.60-beta.121';}catch(e){}
+  try{var mv=document.querySelector('meta[name="app-version"]');if(mv)mv.content='1.60-beta.124';}catch(e){}
   try{if(window.pinVer36)window.pinVer36('1.60 beta 101'+(window.PAGE75&&PAGE75.stale?' · old page file ('+(PAGE75.page||'none')+')':''));}catch(e){}
 })();
 
@@ -30948,7 +31071,7 @@ function scheduleCard(){
   if(!accs.length)return '<div class="card"><h2>'+ico('cal')+' Schedule</h2><div class="help">Set a fixed instalment on a loan or hire-purchase account to see how many payments are left.</div></div>';
   var h='<div class="card sc117" data-info23="keep"><h2>'+ico('cal')+' Schedule</h2>';
   accs.forEach(function(a){
-    var bal=Math.abs(accountBalAsOf(a.name,todayISO())||0),n=Math.ceil(bal/a.instalment-1e-9),f=a.freq||'m';
+    var bal=Math.max(0,-(accountBalAsOf(a.name,todayISO())||0)),n=Math.ceil(bal/a.instalment-1e-9),f=a.freq||'m';
     var unit=f==='w'?'week':f==='f'?'fortnight':f==='q'?'quarter':f==='y'?'year':'month';
     var start=a.remDue&&a.remDue>=todayISO()?a.remDue:todayISO(),end='';
     if(n>0&&n<600){var last;if(f==='w')last=addDaysISO(start,7*(n-1));else if(f==='f')last=addDaysISO(start,14*(n-1));else{var mm=(f==='q'?3:f==='y'?12:1)*(n-1),d0=new Date(+start.slice(0,4),+start.slice(5,7)-1+mm,1);last=d0.getFullYear()+'-'+String(d0.getMonth()+1).padStart(2,'0')+'-01';}end=mon117(last);}
@@ -31331,3 +31454,112 @@ try{INFO25.c121inc=['Income received','<p class="info23p">Only income paid into 
 try{if(window.pinVer36)window.pinVer36('1.60 beta 121'+(window.PAGE75&&PAGE75.stale?' · old page file ('+(PAGE75.page||'none')+')':''));}catch(e){}
 try{if(!window.__B121RN){var ol=document.querySelector('#pageSet details.help ol')||document.querySelector('#view-settings details.help ol');
   if(ol){ol.insertAdjacentHTML('beforeend','<li><b>Beta 121:</b> Add transaction: note suggestions sit under the note box in smaller text, the number pad opens only when you tap the amount, category tiles are text only in two rows plus More, and searching categories no longer moves the list. Every label has its own icon, and names that start with an emoji show that emoji. Charts use colours that are easy to tell apart (also for colour-blind users), and overspent bars are striped. Home says “Saved this month”, and Money available opens your accounts with Money open. The Savings and Net cash flow cards are redesigned, split shares are easier to read, the Ledger row shows the amount owed, and What moved it explains its extra rows with (i).</li>');window.__B121RN=1;}}}catch(e){}
+
+;/* ===== v160b122 · split bill one line · no joint ledgers · Spending card · bars · joint accounts ===== */
+/* D-85 payments: how much is owed on a transfer between different account owners.
+   F.owe122 = {m:'half'|'full'|'custom'|'none', v:custom amount}; null = the default (half for a joint account, else full). */
+function owe122Sd(){
+  var from=($('fAccount')||{}).value||'',to=($('fTo')||{}).value||'',amt=parseAmt(($('fAmount')||{}).value)||0;
+  if(F.type!=='Transfer'||!from||!to)return null;
+  var sd=owedSide116(ownerOf(from),ownerOf(to),amt,from,to);if(!sd)return null;
+  sd.from=from;sd.to=to;sd.amtAll=Math.round(amt*100)/100;return sd;
+}
+function owe122Mode(sd){var o=F.owe122;return (o&&o.m)||(sd&&sd.split?'half':'full');}
+function owe122Val(sd,m,amt){
+  var c=Math.round((+amt||0)*100);
+  if(m==='none')return 0;
+  if(m==='half')return sd&&sd.split?sd.amt:Math.round(c/2)/100; /* beta 123: a joint account's share follows its ownership split */
+  if(m==='custom'){var v=Math.round((+(F.owe122&&F.owe122.v)||0)*100)/100;return Math.max(0,Math.min(v,c/100));}
+  return c/100;
+}
+/* the amount owed for the save; null keeps the default */
+function owe122Amt(amt){if(!F.owe122)return null;var sd=owe122Sd();return owe122Val(sd,owe122Mode(sd),amt);}
+(function(){
+function n122(e,w){try{DIAG.note(e,w);}catch(x){}}
+function owedText(sd,v){
+  if(!(v>0))return {t:'Nothing owed',none:1};
+  var rev=DB.accounts.some(function(a){return a.name===sd.payer+' owes '+sd.debtor;})&&!DB.accounts.some(function(a){return a.name===sd.debtor+' owes '+sd.payer;});
+  return {t:esc(sd.debtor)+' owes '+esc(sd.payer)+' '+money(v)+(rev?' less':''),none:0};
+}
+function paint(){
+  var box=$('fOwe122');if(!box||box.hidden)return;
+  var sd=owe122Sd();if(!sd)return;
+  var m=owe122Mode(sd),v=owe122Val(sd,m,sd.amtAll),tx=owedText(sd,v);
+  var cb=$('fOwed');if(cb)cb.checked=v>0;
+  var r=box.querySelector('.ow-r');if(r){r.innerHTML=tx.t;r.classList.toggle('none',!!tx.none);}
+  box.querySelectorAll('[data-o122]').forEach(function(b){b.classList.toggle('on',b.dataset.o122===m);});
+  var c=box.querySelector('.ow-c');if(c)c.hidden=m!=='custom';
+}
+function owe122UI(){
+  var row=$('fOwedRow');if(!row)return;
+  var box=$('fOwe122'),sd=row.hidden?null:owe122Sd();
+  if(!sd){if(box)box.hidden=true;row.classList.remove('o122');return;}
+  row.classList.add('o122');
+  if(!box){box=document.createElement('div');box.id='fOwe122';box.className='owe122';}
+  if(box.previousElementSibling!==row)row.insertAdjacentElement('afterend',box);
+  box.hidden=false;
+  var key=(sd.split?'j':'s')+'|'+sd.payer+'|'+sd.debtor+'|'+(sd.pct||'');
+  if(box.__k!==key){
+    var simple=false;try{simple=!!(window.X63&&X63.isSimple());}catch(e){}
+    box.innerHTML='<div class="ow-l">'+(simple?'Who owes what':'Between Us')+'</div><div class="ow-r"></div>'
+      +'<div class="ow-ch">'+[['half',sd.split?(sd.pct&&sd.pct!==50?'Their share ('+sd.pct+'%)':'Half each'):'Half'],['full','Full amount'],['custom','Custom'],['none','Nothing owed']].map(function(o){return '<button type="button" data-o122="'+o[0]+'">'+o[1]+'</button>';}).join('')+'</div>'
+      +'<label class="ow-c" hidden><span>'+esc(sd.debtor)+' owes</span><input id="fOwe122v" inputmode="decimal" autocomplete="off" placeholder="0.00"></label>';
+    box.__k=key;
+  }
+  var inp=$('fOwe122v');if(inp&&document.activeElement!==inp&&F.owe122&&F.owe122.m==='custom')inp.value=F.owe122.v!=null?String(F.owe122.v):'';
+  paint();
+}
+window.owe122UI=owe122UI;
+var _uo122=updateOwnerUI;
+updateOwnerUI=function(){var r=_uo122.apply(this,arguments);try{owe122UI();}catch(e){n122(e,'b122:owe');}return r;};
+document.addEventListener('click',function(e){
+  var b=e.target&&e.target.closest&&e.target.closest('[data-o122]');if(!b)return;
+  e.preventDefault();e.stopPropagation();
+  var m=b.dataset.o122,sd=owe122Sd();
+  F.owe122={m:m,v:(m==='custom')?((F.owe122&&F.owe122.m==='custom')?F.owe122.v:(sd?owe122Val(sd,sd.split?'half':'full',sd.amtAll):0)):null};
+  var inp=$('fOwe122v');if(m==='custom'&&inp){inp.value=F.owe122.v?String(F.owe122.v):'';}
+  paint();
+  if(m==='custom'&&inp)setTimeout(function(){try{inp.focus();}catch(x){}},0);
+},true);
+document.addEventListener('input',function(e){
+  var t=e.target;if(!t)return;
+  if(t.id==='fOwe122v'){F.owe122={m:'custom',v:parseAmt(t.value)||0};paint();}
+  else if(t.id==='fAmount'&&$('fOwe122')&&!$('fOwe122').hidden)paint();
+},true);
+/* restore the choice when a payment is edited */
+try{SCREEN.after('openSheet',990122001,{call:'apply',ret:false},function(id){
+  try{
+    F.owe122=null;
+    var t=id?DB.txns.find(function(x){return x.id===id;}):null;
+    if(t&&t.type==='Transfer'){
+      var sd=owedSide116(ownerOf(t.account),ownerOf(t.to),t.amount,t.account,t.to);
+      if(sd){
+        var o=Math.round(Math.abs(+t.owedAmt||0)*100)/100,c=Math.round((+t.amount||0)*100);
+        if(!t.owedAcc||!o)F.owe122={m:'none'};
+        else if(Math.abs(o*100-Math.round((sd.split?sd.amt*100:c/2)))<1)F.owe122={m:'half'};
+        else if(Math.abs(o*100-c)<1)F.owe122={m:'full'};
+        else F.owe122={m:'custom',v:o};
+        var df=sd.split?'half':'full';if(F.owe122.m===df)F.owe122=null;
+      }
+    }
+    var b=$('fOwe122');if(b)b.__k='';
+    owe122UI();
+  }catch(e){n122(e,'b122:open');}
+});SCREEN.on('openSheet',990122001);}catch(e){n122(e,'b122:openhook');}
+})();
+;/* ===== v160b122 pin · version + release note ===== */
+try{if(window.pinVer36)window.pinVer36('1.60 beta 122'+(window.PAGE75&&PAGE75.stale?' · old page file ('+(PAGE75.page||'none')+')':''));}catch(e){}
+try{if(!window.__B122RN){var ol=document.querySelector('#pageSet details.help ol')||document.querySelector('#view-settings details.help ol');
+  if(ol){ol.insertAdjacentHTML('beforeend','<li><b>Beta 122:</b> A split bill is one line in every list. Purchases and income on a shared (joint) account count half for each of you, and each person’s net worth takes half of a shared account. A payment between your own and a shared account shows who owes what (half, full, custom or nothing). Bars follow your colour theme, and the Spending card on Home is easier to read.</li>');window.__B122RN=1;}}}catch(e){}
+
+;/* ===== v160b123 · ownership split field: the second owner's % follows ===== */
+document.addEventListener('input',function(e){var t=e.target;if(!t||t.id!=='a48f_own')return;var b=document.getElementById('a48f_own2');if(!b)return;var n=parseInt(String(t.value).replace(/[^0-9]/g,''),10);b.textContent=isFinite(n)?String(100-Math.max(0,Math.min(100,n))):'50';},true);
+;/* ===== v160b123 pin · version + release note ===== */
+try{if(window.pinVer36)window.pinVer36('1.60 beta 123'+(window.PAGE75&&PAGE75.stale?' · old page file ('+(PAGE75.page||'none')+')':''));}catch(e){}
+try{if(!window.__B123RN){var ol=document.querySelector('#pageSet details.help ol')||document.querySelector('#view-settings details.help ol');
+  if(ol){ol.insertAdjacentHTML('beforeend','<li><b>Beta 123:</b> A card, loan or hire purchase paid beyond what was owed shows “In credit” in green, and What I owe and net worth count it correctly. Pay card says there is nothing to pay. A joint account can have an ownership split (for example 60 / 40) in Edit account. Each person’s share of its balance, income and spending follows it (50 / 50 by default), also in a person’s view on Accounts. Home text sizes are more even, and Asset Mix uses the chart colours.</li>');window.__B123RN=1;}}}catch(e){}
+
+;/* ===== v160b124 pin · version + release note ===== */
+try{if(window.pinVer36)window.pinVer36('1.60 beta 124'+(window.PAGE75&&PAGE75.stale?' · old page file ('+(PAGE75.page||'none')+')':''));}catch(e){}
+try{if(!window.__B124RN){var ol=document.querySelector('#pageSet details.help ol')||document.querySelector('#view-settings details.help ol');
+  if(ol){ol.insertAdjacentHTML('beforeend','<li><b>Beta 124:</b> Card, credit card, loan and hire purchase account types are always debts: they show under What I owe on Accounts and in Reports, and the type editor keeps them as debts.</li>');window.__B124RN=1;}}}catch(e){}
