@@ -4165,3 +4165,99 @@ body .card>h2 .i117{top:0!important;align-self:center!important;margin:0 auto 0 
 .sp-row62 label.spin62.ro{background:none!important;box-shadow:none!important;min-width:0!important;padding:0!important;opacity:1}
 .sp-row62 label.spin62.ro input{width:auto;min-width:64px;max-width:120px;font-size:var(--fs-15);font-weight:800}
 .nc121acc summary .sub{color:var(--muted);font-weight:600;font-size:var(--fs-13)}
+
+/* ===== Beta 122 ===== */
+/* D-87 bars: theme bars = deeper shade -> theme colour on a pale theme track; person 2 = light tint of the theme;
+   money bars keep green / red with the same deeper -> normal gradient; the Accounts Net worth bar (.a48bar) is unchanged */
+:root{
+  --b122-deep:color-mix(in srgb,var(--accent) 62%,#000);
+  --b122-tint:color-mix(in srgb,var(--accent) 15%,var(--card));
+  --b122-p2:color-mix(in srgb,var(--accent) 40%,var(--card));
+  --b122-p2ink:var(--b122-deep);
+  --b122-g:linear-gradient(90deg,var(--b122-deep),var(--accent));
+  --b122-gv:linear-gradient(0deg,var(--b122-deep),var(--accent));
+  --b122-track:color-mix(in srgb,var(--ink) 9%,var(--card));
+  --b122-inc:linear-gradient(90deg,color-mix(in srgb,var(--inc) 70%,#000),var(--inc));
+  --b122-exp:linear-gradient(90deg,color-mix(in srgb,var(--exp) 72%,#000),var(--exp));
+}
+html[data-mode="dark"]{--b122-deep:color-mix(in srgb,var(--accent) 70%,var(--card));--b122-tint:color-mix(in srgb,var(--accent) 20%,var(--card));--b122-p2:color-mix(in srgb,var(--accent) 45%,var(--card));--b122-p2ink:#fff;--b122-track:color-mix(in srgb,var(--ink) 12%,var(--card));--b122-inc:linear-gradient(90deg,color-mix(in srgb,var(--inc) 62%,var(--card)),var(--inc));--b122-exp:linear-gradient(90deg,color-mix(in srgb,var(--exp) 62%,var(--card)),var(--exp))}
+@media (prefers-color-scheme:dark){html:not([data-mode="light"]){--b122-deep:color-mix(in srgb,var(--accent) 70%,var(--card));--b122-tint:color-mix(in srgb,var(--accent) 20%,var(--card));--b122-p2:color-mix(in srgb,var(--accent) 45%,var(--card));--b122-p2ink:#fff;--b122-track:color-mix(in srgb,var(--ink) 12%,var(--card));--b122-inc:linear-gradient(90deg,color-mix(in srgb,var(--inc) 62%,var(--card)),var(--inc));--b122-exp:linear-gradient(90deg,color-mix(in srgb,var(--exp) 62%,var(--card)),var(--exp))}}
+/* theme bars: pale theme track, no shine */
+:is(.gbar,.jrbar,.paceb51,.a48prog,.ob62prog){background:var(--b122-tint)!important;box-shadow:none!important}
+:is(.gbar,.jrbar,.paceb51,.a48prog,.ob62prog) i{background:var(--b122-g)!important;box-shadow:none!important}
+/* bars that hold either colour: neutral track */
+:is(.bbar,.bvbar,.hbrow .hb,.dins .dbar,.dbud .dbar,.nc121b,.mover51.m122 .mb){background:var(--b122-track)!important;box-shadow:none!important}
+:is(.bbar,.bvbar,.hbrow .hb) i{box-shadow:none!important}
+:is(.bbar,.bvbar,.hbrow .hb) i[style*="--accent)"],.dins .dbar i:not(.neg):not(.pos):not(.alt),.dbud .dbar i:not(.neg):not(.pos){background:var(--b122-g)!important}
+:is(.bbar,.bvbar,.hbrow .hb) i[style*="--inc)"],.dins .dbar i.pos,.dbud .dbar i.pos,.nc121b i.pos,.sv121bar i.sv{background:var(--b122-inc)!important}
+:is(.bbar,.bvbar,.hbrow .hb) i[style*="--exp)"],.dins .dbar i.neg,.dbud .dbar i.neg,.nc121b i.neg,.sv121bar:not(.over) i.sp{background:var(--b122-exp)!important}
+.dins .dbar i.alt{background:var(--b122-p2)!important}
+.sv121bar{background:var(--b122-track)}
+/* Home Cash Flow mini chart: other periods in a theme tint, the selected one in the theme gradient */
+.bars51 i{background:var(--b122-tint);border-color:color-mix(in srgb,var(--accent) 30%,var(--card))}
+.bars51 .on i{background:var(--b122-gv);border-color:var(--b122-deep)}
+/* two people: person 1 = theme colour, person 2 = light tint, with a gap */
+.duo51 .db,.duorow .db{gap:3px}
+.duo51 .db .a,.duorow .db i.a{background:var(--b122-g)!important}
+.duo51 .db .b,.duorow .db i.b{background:var(--b122-p2)!important}
+:is(.av62,.a48who,.txr-who,.dt-who .av,#txfSheet .av).b{background:var(--b122-p2)!important;color:var(--b122-p2ink)!important}
+:is(.a48who,.txr-who).j b.b,.a48tg i.b{background:var(--b122-p2)!important;color:var(--b122-p2ink)!important}
+/* D-86 Home Cash Flow Spending card */
+.sub122{color:var(--muted);font-weight:600;font-size:var(--fs-13);margin:-2px 0 8px}
+.mvh122{font-size:var(--fs-11);font-weight:800;letter-spacing:.6px;text-transform:uppercase;color:var(--muted);margin:6px 0 2px}
+.mover51.m122{display:block;padding:6px 0 4px}
+.mover51.m122 .mt122{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+.mover51.m122 .mn{flex:1 1 auto;min-width:0;font-weight:650}
+.mover51.m122 .mv{flex:0 0 auto;white-space:nowrap;text-align:right;font-weight:800}
+.mover51.m122 .mb{display:block;height:6px;border-radius:999px;margin-top:5px;overflow:hidden;position:relative}
+.mover51.m122 .mb i{position:static;display:block;height:100%;border-radius:999px}
+.mover51.m122.dn .mb i{background:var(--b122-inc)}
+.mover51.m122.up .mb i{background:var(--b122-exp)}
+/* D-85 payment: who owes what */
+.owe122{margin:2px 0 6px;padding:10px 12px;border-radius:14px;background:var(--bg);border:1px solid var(--line)}
+.owe122 .ow-l{font-size:var(--fs-12);font-weight:800;color:var(--muted);letter-spacing:.4px;text-transform:uppercase}
+.owe122 .ow-r{font-weight:800;margin:3px 0 8px;font-size:var(--fs-15)}
+.owe122 .ow-r.none{color:var(--muted)}
+.owe122 .ow-ch{display:flex;flex-wrap:wrap;gap:6px}
+.owe122 .ow-ch button{padding:7px 12px;border-radius:999px;border:1px solid var(--line);background:var(--card);color:var(--ink);font-weight:700;font-size:var(--fs-13)}
+.owe122 .ow-ch button.on{background:var(--accent);border-color:var(--accent);color:#fff}
+.owe122 .ow-c{display:flex;align-items:center;gap:8px;margin-top:8px}
+.owe122 .ow-c input{flex:0 0 130px;padding:8px 10px;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--ink);font-weight:700;font-size:var(--fs-15)}
+#sheet #fOwedRow.o122{display:none!important}
+
+/* ===== Beta 123 ===== */
+/* D-88 a card, loan or hire purchase in credit */
+.cr123{color:var(--inc)!important}
+.a48end small.cr123{font-weight:700}
+.a48credit123{display:flex;align-items:center;gap:8px;padding:10px 12px;border-radius:14px;background:var(--inc-soft);color:var(--ink);font-size:var(--fs-14);margin:6px 0}
+.a48credit123 .icn{color:var(--inc);flex:none}
+/* D-90 Home consistency (other tool's patch, agreed parts; the Cash movement card stays, D-77) */
+/* (i): the app font, not Georgia italic */
+body .info23,body .infob18,body .info51,body [data-act="info23"],body [data-act="info25"]{font-family:inherit!important;font-style:normal!important;font-size:var(--fs-11)!important;font-weight:800!important}
+/* one hero size (28) and one card-total size (20) */
+#view-overview .big51,#view-overview .big51 b{font-size:var(--fs-28)!important;line-height:1.15;letter-spacing:-.5px;font-variant-numeric:tabular-nums}
+#view-overview .dbtot117{font-size:var(--fs-20)!important}
+/* one card-header style */
+#view-overview .card h2{font-size:var(--fs-12);font-weight:800;letter-spacing:.5px;color:var(--muted)}
+/* off-scale sizes snapped to 11 / 12 / 13 / 14 */
+#view-overview .lg117,#view-overview .dblg117,#view-overview .dbrow117 .l2,
+#view-overview .duo51 .dl,#view-overview .mover51,#view-overview .whyrow51{font-size:var(--fs-12)}
+#view-overview .banner51,#view-overview .undo51,#view-overview .dbgrp117 b{font-size:var(--fs-13)}
+#view-overview .gl51,#view-overview .bars51 div,#view-overview .bars51 .bt117{font-size:var(--fs-11)}
+#view-overview .dbrow117 .l1 .nm{font-size:var(--fs-14)}
+#view-overview .smpl-ban .smpl-tx b{font-size:var(--fs-14)}
+#view-overview .smpl-ban .smpl-tx small{font-size:var(--fs-12)}
+#view-overview .smpl-ban .smpl-btn{font-size:var(--fs-13)}
+/* secondary text in the muted colour, no opacity */
+#view-overview .dbrow117 .l2,#view-overview .am117g>summary .nm small,
+#view-overview .lg117 .lgt,#view-overview .bars51 div{color:var(--muted);opacity:1}
+#view-overview .dbgrp117{color:var(--muted);letter-spacing:.5px}
+#view-overview .bars51 .bt117{color:var(--ink)}
+/* spacing and corners */
+#view-overview .swipe51,#view-overview .undo51,#view-overview .smpl-ban{margin-bottom:12px}
+#view-overview .banner51,#view-overview .undo51{border-radius:16px;padding:10px 12px}
+/* D-89 ownership split of a joint account */
+.a48own123{display:flex;align-items:center;gap:6px;font-weight:700;color:var(--ink)}
+.a48own123 input.fin{width:64px;flex:0 0 64px;text-align:right;font-weight:800}
+.a48own123 .sep{color:var(--muted);margin:0 4px}
+.a48own123 b{min-width:28px;text-align:right}
