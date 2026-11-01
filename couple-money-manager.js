@@ -9,7 +9,7 @@ var CMM_FN_REGION='asia-southeast1';
    place before anything is drawn, loads the matching stylesheet, and clears the offline copies so
    the next start fetches fresh files. Help & About then says "old page file". */
 var PAGE75=(function(){
-  var JSV='1.60-beta.124',out={js:JSV,page:'',stale:false,fixed:false};
+  var JSV='1.60-beta.125',out={js:JSV,page:'',stale:false,fixed:false};
   try{
     var m=document.querySelector('meta[name="app-version"]');out.page=m?m.content:'';
     out.stale=out.page!==JSV;
@@ -9458,7 +9458,10 @@ function isDebtAcc21(a){
 function nwAt(d,who){
   var A=[],L=[],hid=0,as=0,li=0;
   DB.accounts.forEach(function(a){
-    if(a.locked||a.recv||/^.+ owes .+$/.test(a.name)||LBL_RE.test(a.name))return;
+    if(a.locked||LBL_RE.test(a.name))return;
+    if(a.recv||/^.+ owes .+$/.test(a.name)){ /* beta 125 (D-92): one person's net worth counts Between Us; the household figure does not (the two sides cancel) */
+      var br=owesRow125(a,d,who);if(br){if(br.v<0){L.push(br);li+=-br.v;}else{A.push(br);as+=br.v;}}return;
+    }
     if(!ownerHas(a.owner,who))return;
     var v=accountBalAsOf(a.name,d);
     if(!isFinite(v)){hid++;return;}
@@ -9473,6 +9476,15 @@ function nwAt(d,who){
   });
   A.sort(function(x,y){return y.v-x.v;});L.sort(function(x,y){return x.v-y.v;});
   return {A:A,L:L,assets:as,liabs:li,net:as-li,hidden:hid};
+}
+/* beta 125 (D-92): a Between Us ledger "X owes Y" from one person's side: + for Y (money owed to them), − for X (a debt) */
+function owesRow125(a,d,who){
+  if(!who||who==='couple')return null;
+  var pp=String(a.name||'').split(' owes ');if(pp.length!==2)return null;
+  var db=canonP122(pp[0]),cr=canonP122(pp[1]),cw=canonP122(who);if(cw!==db&&cw!==cr)return null;
+  var b=accountBalAsOf(a.name,d);if(!isFinite(b))return null;b=Math.round(b*100)/100;if(Math.abs(b)<0.005)return null;
+  var v=cw===cr?b:-b,oth=cw===cr?db:cr;
+  return {name:a.name,type:'Between Us · '+(v>=0?oth+' owes '+cw:cw+' owes '+oth),owner:'',v:v,a:a,half:'',owes125:1,txt:v>=0?oth+' owes '+cw:cw+' owes '+oth};
 }
 function nwPairs(d,who){
   var out=[];
@@ -13725,7 +13737,7 @@ V63.calc.mix=function(who,d){
   var N=this.nw(who,d),order=['Money','Investments','Properties','Vehicles','Businesses','Money owed to me','Other'],seg={},rows={};
   order.forEach(function(k){seg[k]=0;rows[k]=[];});
   N.A.forEach(function(x){
-    var a=a59(x.name)||{},k=V63.catOf(a.type,a);
+    var a=a59(x.name)||{},k=x.owes125?'Money owed to me':V63.catOf(a.type,a); /* beta 125 */
     if(!seg.hasOwnProperty(k))k='Other';
     seg[k]+=x.v;rows[k].push(x);
   });
@@ -13735,7 +13747,7 @@ V63.calc.mix=function(who,d){
 V63.calc.debts=function(who,d){
   var N=this.nw(who,d),g={'Loans':0,'Hire Purchase':0,'Cards & credit lines':0,'Other':0},rows={'Loans':[],'Hire Purchase':[],'Cards & credit lines':[],'Other':[]};
   N.L.forEach(function(x){
-    var a=a59(x.name)||{},k=V63.catOf(a.type,a);if(!g.hasOwnProperty(k))k='Other';
+    var a=a59(x.name)||{},k=x.owes125?'Other':V63.catOf(a.type,a);if(!g.hasOwnProperty(k))k='Other'; /* beta 125 */
     g[k]+=-x.v;rows[k].push(x);
   });
   var segs=Object.keys(g).filter(function(k){return g[k]>0.004;}).map(function(k){return {k:k,label:k,v:Math.round(g[k]*100)/100,rows:rows[k]};});
@@ -19694,7 +19706,7 @@ bkFileGo=function(){var pw=(($('bkPw')||{}).value||''),pw2=(($('bkPw2')||{}).val
 /* Partner preview: authoritative shared view, genuine latest activity. */
 if(window.B20)B20.pvData=function(){var me=safe28(function(){return meName();},''),P=safe28(function(){return partnerName();},'your partner'),v=buildSharedView(DB,{purpose:'preview'}),m=v.__sharedView||{},accSet={};(v.accounts||[]).forEach(function(a){if(a&&!a.locked&&!a.recv&&!/^.+ owes .+$/.test(a.name||''))accSet[a.name]=1;});var asc=cmm291Latest(v.txns||[],200).reverse();return {me:me,P:P,accs:(v.accounts||[]).filter(function(a){return accSet[a.name];}),txns:asc,relabel:function(n){return (m.labels||{})[n]||n;},anyPn:m.privateNames||{},accSet:accSet};};
 
-function finish291(){if(!DB)return setTimeout(finish291,30);prefDefaults291();ensureIds291();DB.meta.schemaVersion=SCHEMA291;if(window.experienceConfig){experienceConfig.version=VERSION291;experienceConfig.schemaVersion=SCHEMA291;}if(window.advancedCoupleConfig){advancedCoupleConfig.version=VERSION291;advancedCoupleConfig.schemaVersion=SCHEMA291;}save();document.title='v'+VERSION291+' · Couple Money Manager';var mv=document.querySelector('meta[name="app-version"]');if(mv)mv.content='1.60-beta.124';document.querySelectorAll('.sub').forEach(function(el){el.textContent=el.textContent.replace(/v?1\.60 beta 28(\.\d+)?/g,'v'+VERSION291);});if(X63.isSimple()&&V63.itab==='wealth')V63.itab='cash';renderAll();}
+function finish291(){if(!DB)return setTimeout(finish291,30);prefDefaults291();ensureIds291();DB.meta.schemaVersion=SCHEMA291;if(window.experienceConfig){experienceConfig.version=VERSION291;experienceConfig.schemaVersion=SCHEMA291;}if(window.advancedCoupleConfig){advancedCoupleConfig.version=VERSION291;advancedCoupleConfig.schemaVersion=SCHEMA291;}save();document.title='v'+VERSION291+' · Couple Money Manager';var mv=document.querySelector('meta[name="app-version"]');if(mv)mv.content='1.60-beta.125';document.querySelectorAll('.sub').forEach(function(el){el.textContent=el.textContent.replace(/v?1\.60 beta 28(\.\d+)?/g,'v'+VERSION291);});if(X63.isSimple()&&V63.itab==='wealth')V63.itab='cash';renderAll();}
 setTimeout(finish291,0);
 window.CMM_VERSION=VERSION291;window.CMM_SCHEMA_VERSION=SCHEMA291;
 })();
@@ -24491,11 +24503,19 @@ function buRows(){
   var ls=[];try{ls=ledgers()||[];}catch(e){}
   return ls.filter(function(l){return l&&Math.abs(+l.amt||+l.bal||0)>=0.005;});
 }
+/* beta 125 (D-92): Between Us from one person's side, for the me / partner chips */
+function bu125(){
+  var o={have:0,owe:0,rows:[]};if(!couple()||(X.scope!=='me'&&X.scope!=='partner'))return o;
+  var who=canonP122(X.scope==='me'?me():pn());
+  buRows().forEach(function(l){var amt=Math.abs(+l.amt||+l.bal||0);if(canonP122(l.creditor)===who){o.have+=amt;o.rows.push(l);}else if(canonP122(l.debtor)===who){o.owe+=amt;o.rows.push(l);}});
+  o.have=Math.round(o.have*100)/100;o.owe=Math.round(o.owe*100)/100;return o;
+}
 function homeHTML(){
   var vis=visAccounts().filter(inScope),have=vis.filter(function(a){return !owe(a);}),ow=vis.filter(owe);
   var anyHid=vis.some(hid);
   var sa=have.reduce(function(s,a){return s+(hid(a)?0:bal123(a));},0),so=ow.reduce(function(s,a){return s+(hid(a)?0:-bal123(a));},0),net=sa-so; /* beta 123 (D-88): what is owed; a debt in credit lowers it (as Reports) */
   so=Math.max(0,so);
+  var bp=bu125();sa+=bp.have;so+=bp.owe;net=sa-so; /* beta 125 (D-92): a person's view counts what is owed between you */
   var pct=sa+so>0?Math.max(0,Math.min(100,sa/(sa+so)*100)):0;
   var cp=couple(),P=pn(),m=me();
   var scLab={all:'Everyone',me:m||'Me',partner:P||'Partner',joint:'Joint'};
@@ -24517,9 +24537,10 @@ function homeHTML(){
   var anyO=false;
   OWE_G.forEach(function(g){var l=ow.filter(function(a){return catOf(a)===g[0];});if(l.length){anyO=true;h+=groupHTML(g,l,true);}});
   if(!anyO)h+='<div class="a48grp"><div class="a48empty"><b>No debts</b>Cards, loans and hire purchase appear here.</div></div>';
-  if(cp&&(X.scope==='all'||X.scope==='joint')){
-    var bus=buRows();
-    h+='<div class="a48sec"><b>Between Us</b></div><div class="a48grp">';
+  if(cp&&X.scope!=='joint'){ /* beta 125: a person's view shows that person's Between Us too */
+    var bus=X.scope==='all'?buRows():bp.rows;
+    var bn=Math.round((bp.have-bp.owe)*100)/100; /* beta 125: a person's view shows what is owed to (or by) them in the totals above */
+    h+='<div class="a48sec"><b>Between Us</b>'+(X.scope!=='all'&&Math.abs(bn)>=0.005?'<span'+(bn<0?' class="o"':'')+'>'+MA(bn)+'</span>':'')+'</div><div class="a48grp">';
     if(!bus.length)h+='<div class="a48bu"><span class="a48ti n">'+ico('scale')+'</span><span class="a48mid"><b>All settled up</b><small>Nothing to settle</small></span></div>';
     else h+=bus.map(function(l){
       var amt=Math.abs(+l.amt||+l.bal||0),cr=l.creditor,db=l.debtor;
@@ -30410,7 +30431,7 @@ try{if(window.pinVer36)window.pinVer36('1.60 beta 94'+(window.PAGE75&&PAGE75.sta
 
 /* ===== beta 101 · merge of the other tool's beta 93–100 (Transactions tidy-up, update toast, type roles, cleanup) with Claude's beta 94 (invitation email) ===== */
 (function(){'use strict';
-  try{var mv=document.querySelector('meta[name="app-version"]');if(mv)mv.content='1.60-beta.124';}catch(e){}
+  try{var mv=document.querySelector('meta[name="app-version"]');if(mv)mv.content='1.60-beta.125';}catch(e){}
   try{if(window.pinVer36)window.pinVer36('1.60 beta 101'+(window.PAGE75&&PAGE75.stale?' · old page file ('+(PAGE75.page||'none')+')':''));}catch(e){}
 })();
 
@@ -31563,3 +31584,7 @@ try{if(!window.__B123RN){var ol=document.querySelector('#pageSet details.help ol
 try{if(window.pinVer36)window.pinVer36('1.60 beta 124'+(window.PAGE75&&PAGE75.stale?' · old page file ('+(PAGE75.page||'none')+')':''));}catch(e){}
 try{if(!window.__B124RN){var ol=document.querySelector('#pageSet details.help ol')||document.querySelector('#view-settings details.help ol');
   if(ol){ol.insertAdjacentHTML('beforeend','<li><b>Beta 124:</b> Card, credit card, loan and hire purchase account types are always debts: they show under What I owe on Accounts and in Reports, and the type editor keeps them as debts.</li>');window.__B124RN=1;}}}catch(e){}
+;/* ===== v160b125 pin · version + release note ===== */
+try{if(window.pinVer36)window.pinVer36('1.60 beta 125'+(window.PAGE75&&PAGE75.stale?' · old page file ('+(PAGE75.page||'none')+')':''));}catch(e){}
+try{if(!window.__B125RN){var ol=document.querySelector('#pageSet details.help ol')||document.querySelector('#view-settings details.help ol');
+  if(ol){ol.insertAdjacentHTML('beforeend','<li><b>Beta 125:</b> Between Us now counts in each person’s net worth: money your partner owes you is part of what you have, and money you owe your partner is part of what you owe. The household figure does not change.</li>');window.__B125RN=1;}}}catch(e){}
