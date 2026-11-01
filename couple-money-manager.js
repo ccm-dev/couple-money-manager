@@ -9,7 +9,7 @@ var CMM_FN_REGION='asia-southeast1';
    place before anything is drawn, loads the matching stylesheet, and clears the offline copies so
    the next start fetches fresh files. Help & About then says "old page file". */
 var PAGE75=(function(){
-  var JSV='1.60-beta.125',out={js:JSV,page:'',stale:false,fixed:false};
+  var JSV='1.60-beta.127',out={js:JSV,page:'',stale:false,fixed:false};
   try{
     var m=document.querySelector('meta[name="app-version"]');out.page=m?m.content:'';
     out.stale=out.page!==JSV;
@@ -50,7 +50,7 @@ var PAGE75=(function(){
    SCREEN.list(name) shows the steps; SCREEN.upTo(name, order) is the screen as it was at that point. */
 /* (i) buttons with fixed text (beta 25). info25(key) renders the button; the popup reuses the X63 overlay. */
 var INFO25={
-  spend:['Where the money went','<p class="info23p">Everyday spending in the period, by category.</p><p class="info23p">It <b>includes card spending</b> \u2014 a purchase counts on the day you make it, not when you pay the card bill.</p><p class="info23p">Transfers, card bill payments and loan principal are not spending, so they are not listed.</p><p class="info23p">Tap a category to see its transactions, or <b>Spending analysis</b> for the full report.</p>'],
+  spend:['Where the money went','<p class="info23p">Everyday spending in the period, by category.</p><p class="info23p">It <b>includes card spending</b> \u2014 a purchase counts on the day you make it, not when you pay the card bill.</p><p class="info23p">Transfers, card bill payments and loan repayments are not spending, so they are not listed.</p><p class="info23p">Tap a category to see its transactions, or <b>Spending analysis</b> for the full report.</p>'],
   rem:['Reminder centre','<p class="info23p">Card statements, loans and hire-purchase instalments due in the next 90 days.</p><p class="info23p">Tap a payment to open its account, record the payment or change its reminder.</p><p class="info23p">The badge, phone notifications and how many days before you are reminded are set in Settings \u2192 App Preferences \u2192 Payment reminders.</p>']
 };
 function info25(k){return '<button class="info23" data-act="info25" data-k="'+k+'" aria-label="More information">i</button>';}
@@ -173,7 +173,7 @@ var esc=function(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){r
 var uid=function(){return Date.now().toString(36)+Math.random().toString(36).slice(2,7);};
 var MONTHS=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 var PALETTE=['#0072b2','#e69f00','#009e73','#cc79a7','#56b4e9','#d55e00','#4b5563','#b8860b']; /* beta 121: Okabe-Ito order, colour-blind safe; charts group past 8 into Other */
-var ACCENTS=[['blue','#2563eb'],['green','#16a34a'],['purple','#7c3aed'],['pink','#db2777'],['orange','#ea580c'],['teal','#0d9488'],['red','#dc2626'],['slate','#475569']];
+var ACCENTS=[['blue','#2563eb'],['green','#166534'],['purple','#7c3aed'],['pink','#db2777'],['orange','#ea580c'],['teal','#0d9488'],['slate','#475569']]; /* beta 127: no Red theme; Green is a forest green so it never reads as money in */
 /* ===== v1.16: consistent stroke-icon set (replaces every pictorial emoji) ===== */
 var ICONS={
   user:'<circle cx="12" cy="8" r="4"/><path d="M5 21c0-3.9 3.1-7 7-7s7 3.1 7 7"/>',
@@ -269,7 +269,7 @@ function applyTheme(){
   if(m==='light'||m==='dark')root.setAttribute('data-mode',m);else root.removeAttribute('data-mode');
   var hex='';ACCENTS.forEach(function(x){if(x[0]===a)hex=x[1];});
   var mc=document.querySelector('meta[name="theme-color"]');
-  if(mc)mc.setAttribute('content',(m==='dark')?'#0d1220':(hex||'#2563eb'));
+  if(mc)mc.setAttribute('content',(m==='dark')?'#0b101e':(hex||'#2563eb'));
 }
 function todayStr(){var d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
 function parseAmt(v){
@@ -348,7 +348,7 @@ var DEF_CATS={Expense:['Food & Dining','Groceries','Transport','Bills & Utilitie
 var LS_KEY='mm_mobile_v2';
 var DB=null;
 function defaultDB(){
-  return {version:4,people:['Me'],accTypes:['Cash','Bank','Card','eWallet'],accTypeMeta:{},accounts:[{name:'Cash',start:0,owner:'',type:'Cash'},{name:'Bank',start:0,owner:'',type:'Bank'}],
+  return {version:4,people:['Me'],accTypes:['Cash','Bank','Card','E-wallet'],accTypeMeta:{},accounts:[{name:'Cash',start:0,owner:'',type:'Cash'},{name:'Bank',start:0,owner:'',type:'Bank'}],
     categories:JSON.parse(JSON.stringify(DEF_CATS)),subcats:{},txns:[],recur:[],
     budgets:{},fixedCats:[],
     meta:{changedAt:0,pushedAt:0,currency:'RM',accent:'',mode:''}};
@@ -1011,9 +1011,9 @@ function importRows(rows,keep){
 function impType86(ty,fm){
   ty=String(ty==null?'':ty).trim();if(!ty)return '';
   if(DB.accTypes.indexOf(ty)>=0)return ty; /* already known — includes types the user created in Settings */
-  var k=ty.toLowerCase(),AL={'others':'Other Asset','other':'Other Asset','other asset (value)':'Other Asset','other asset (balance)':'Other Balance','other balance':'Other Balance','receivable':'Other Balance','receivables':'Other Balance','money lent':'Other Balance','ewallet':'e-Wallet','e wallet':'e-Wallet','e-wallet':'e-Wallet','credit card':'Card','creditcard':'Card','housing loan':'Loan','personal loan':'Loan','education loan':'Loan','other loan':'Loan','car loan':'Hire Purchase','hire purchase':'Hire Purchase','car / hire purchase loan':'Hire Purchase'};
+  var k=ty.toLowerCase(),AL={'others':'Other Asset','other':'Other Asset','other asset (value)':'Other Asset','other asset (balance)':'Other Balance','other balance':'Other Balance','receivable':'Other Balance','receivables':'Other Balance','money lent':'Other Balance','ewallet':'E-wallet','e wallet':'E-wallet','e-wallet':'E-wallet','credit card':'Card','creditcard':'Card','housing loan':'Loan','personal loan':'Loan','education loan':'Loan','other loan':'Loan','car loan':'Hire Purchase','hire purchase':'Hire Purchase','car / hire purchase loan':'Hire Purchase'};
   if(AL[k])return AL[k];
-  var caps=['Cash','Bank','Card','eWallet','e-Wallet','Credit Card','Loan','Hire Purchase','Property','Vehicle','Investment','Other Asset','Other Balance','Between Us'];
+  var caps=['Cash','Bank','Card','eWallet','E-wallet','Credit Card','Loan','Hire Purchase','Property','Vehicle','Investment','Other Asset','Other Balance','Between Us'];
   for(var i=0;i<caps.length;i++)if(caps[i].toLowerCase()===k)return caps[i];
   if(fm&&(fm.kind==='asset'||fm.kind==='liability'))return ty; /* a type the file itself defines */
   return ''; /* not a type this app knows — do not import it as one */
@@ -1193,7 +1193,7 @@ function templateSampleRows(){
     ['2026-10-03','Transfer','','','Bank','','SAMPLE — move savings to cash','500','','Cash','','']
   ];
   if(pt)rows.push(['2026-10-04','Expense','Food & Dining','Restaurant','Cash',me,'SAMPLE — split dinner 60/40','100',me+':60|'+pt+':40','','','']);
-  rows.push(['2026-10-05','Expense','Transport','Grab','eWallet',pt||me,'SAMPLE — new accounts are created automatically','18.20','','','','']);
+  rows.push(['2026-10-05','Expense','Transport','Grab','E-wallet',pt||me,'SAMPLE — new accounts are created automatically','18.20','','','','']);
   if(pt)rows.push(['2026-10-06','Transfer','','','Cash',me,'SAMPLE — loan between account owners (in the app: tick Amount owed)','150','',pt+' Wallet',pt+' owes '+me,'150']);
   return rows;
 }
@@ -3009,7 +3009,7 @@ function perRange(off,mode){
   return {s:isoD(s2),e:isoD(e2),label:MONTHS[s2.getMonth()]+' '+s2.getFullYear(),short:MONTHS[s2.getMonth()],n:e2.getDate()};
 }
 function whoOK(){if(PER.who!=='couple'&&DB.people.indexOf(PER.who)<0)PER.who='couple';return PER.who;}
-function whoLabel(){return whoOK()==='couple'?(isCouple()?'Couple':'Everyone'):PER.who;}
+function whoLabel(){return whoOK()==='couple'?(isCouple()?'Couple':'Everyone'):(PER.who===meName()&&isCouple()?'You':PER.who);} /* beta 127: the signed-in person is You */
 function perTx(r){var l=DB.txns.filter(function(t){return t.date>=r.s&&t.date<=r.e&&t.type!=='Transfer';});return whoOK()==='couple'?l:applyPerson(l,PER.who);}
 function perWord(){return PER.mode;}
 function peopleWith(m){var p=sortedAlpha(DB.people);Object.keys(m||{}).forEach(function(k){if(p.indexOf(k)<0)p.push(k);});return whoOK()==='couple'?p:p.filter(function(x){return x===PER.who;});}
@@ -4215,7 +4215,7 @@ var JR=[
   {k:'acct',t:'Create your account',d:'Sign up with your email',done:function(){return !!sessGet();}},
   {k:'me',t:'Add yourself',d:'So the app knows who is who',done:function(){var p=(DB.meta.profile||{}).name;return !!p&&DB.people.indexOf(p)>=0;}},
   {k:'partner',t:'Add your partner',d:'Settings → Modes',done:function(){var dp=demoPeople();return DB.people.filter(function(p){return dp.indexOf(p)<0;}).length>=2;}},
-  {k:'account',t:'Add your own account',d:'A bank, card or e-wallet with an account owner',done:function(){var j=jr(),base=j.baseAcc||[],dA=demoAccs();return DB.accounts.some(function(a){return !a.recv&&base.indexOf(a.name)<0&&dA.indexOf(a.name)<0;});}},
+  {k:'account',t:'Add your own account',d:'A bank, card or E-wallet with an account owner',done:function(){var j=jr(),base=j.baseAcc||[],dA=demoAccs();return DB.accounts.some(function(a){return !a.recv&&base.indexOf(a.name)<0&&dA.indexOf(a.name)<0;});}},
   {k:'txn',t:'Record your first expense',d:'Tap + and save one',done:function(){return DB.txns.some(function(t){return !t.isSample&&t.type!=='Transfer';});}},
   {k:'split',t:'Split a bill',d:'Share a bill with your partner',done:function(){return DB.txns.some(function(t){return !t.isSample&&t.group;});}},
   {k:'budget',t:'Set a budget',d:'Couple or personal, per category',done:function(){var s=bgStore();return Object.keys(s).some(function(k){return Object.keys(s[k]||{}).some(function(c){return s[k][c]&&!s[k][c].isSample;});});}},
@@ -4244,7 +4244,7 @@ var TOURS={
     {pre:function(){gotoView('accounts');},sel:'#acc48home [data-act=a48add],[data-act=accaddq]',tx:'Tap <b>+</b> to add an account.',ok:function(){return mgrOpen('accs')||mgrOpen('a48add');}}, /* beta 48.1: Add opens the new Add sheet */
     {sel:'#mgrNewName',tx:'Name it, e.g. <b>Maybank</b> or <b>Touch ’n Go</b>.',ok:function(){return DB.accounts.length>n0;},soft:function(){return (($('mgrNewName')||{}).value||'').trim().length>1;}},
     {sel:'#mgrNewOwner',tx:'Choose who owns it.',ok:function(){return DB.accounts.length>n0;},soft:function(){return !!(($('mgrNewOwner')||{}).value);}},
-    {sel:'#mgrNewAType',tx:'Pick the type (bank, card, e-wallet…).',ok:function(){return DB.accounts.length>n0;},next:1},
+    {sel:'#mgrNewAType',tx:'Pick the type (bank, card, E-wallet…).',ok:function(){return DB.accounts.length>n0;},next:1},
     {sel:'.mgr-add [data-act=mgradd]',tx:'Tap <b>Add account</b>.',ok:function(){return DB.accounts.length>n0;}},
     {sel:'#mgrSheet [data-act=mgrclose]',tx:'Nice! Close this list.',ok:function(){return !$('mgrSheet').classList.contains('on');}}];},
   txn:function(){var n0=DB.txns.length;return [
@@ -4358,10 +4358,10 @@ function sampleBuild(){
   var addP=[],pt='';
   if(cp){pt=(DB.meta.profile||{}).partner||'';if(!pt||pt===me){var o=realPeople().filter(function(x){return x!==me;});pt=o[0]||'Partner';}}
   [me].concat(cp?[pt]:[]).forEach(function(p){if(DB.people.indexOf(p)<0){DB.people.push(p);addP.push(p);}});
-  var tBank=sampleType(['Bank'],'asset'),tCard=sampleType(['Card','Credit Card'],'liability'),tEw=sampleType(['e-Wallet','eWallet'],'asset'),tCash=sampleType(['Cash'],'asset');
+  var tBank=sampleType(['Bank'],'asset'),tCard=sampleType(['Card','Credit Card'],'liability'),tEw=sampleType(['E-wallet','eWallet'],'asset'),tCash=sampleType(['Cash'],'asset');
   function acc(n,ty,owner,start,x){var a=Object.assign({name:sampleName(n),type:ty,owner:owner,start:start,isSample:true},x||{});DB.accounts.push(a);return a.name;}
   var BANK=acc('Sample bank',tBank,me,2400),SAV=acc('Sample savings',tBank,me,8000,adv?{vis:'me',pvby:me}:null),
-      CARD=acc('Sample card',tCard,me,0,{cycle:25,dueDays:20}),EW=acc('Sample e-wallet',tEw,me,150),CASH=acc('Sample cash',tCash,me,300),
+      CARD=acc('Sample card',tCard,me,0,{cycle:25,dueDays:20}),EW=acc('Sample E-wallet',tEw,me,150),CASH=acc('Sample cash',tCash,me,300),
       PBANK=cp?acc(pt+'’s sample bank',tBank,pt,3000):'';
   var td=todayISO(),y=+td.slice(0,4),m=+td.slice(5,7),rows=[];
   function R(k,day,o){var mm=m-k,yy=y;while(mm<1){mm+=12;yy--;}var last=new Date(Date.UTC(yy,mm,0)).getUTCDate(),
@@ -4375,7 +4375,7 @@ function sampleBuild(){
     R(k,1,{type:'Income',category:'Salary',sub:'Monthly salary',account:BANK,note:'Salary',amount:6500});
     R(k,1,{type:'Expense',category:'Rent & Housing',sub:'Rent',account:BANK,note:'Rent',amount:1500,split:cp?split(750,750):''});
     R(k,2,{type:'Transfer',account:BANK,to:SAV,note:'Transfer to savings',amount:500});
-    R(k,3,{type:'Transfer',account:BANK,to:EW,note:'Top up e-wallet',amount:100});
+    R(k,3,{type:'Transfer',account:BANK,to:EW,note:'Top up E-wallet',amount:100});
     R(k,5,{type:'Expense',category:'Bills & Utilities',sub:'Electricity & water',account:BANK,note:'Electricity and water',amount:v([171.20,158.40,165])});
     R(k,8,{type:'Expense',category:'Food & Dining',sub:'Coffee',account:EW,note:'Coffee',amount:12.90});
     R(k,10,{type:'Transfer',account:BANK,to:CASH,note:'Cash withdrawal',amount:200});
@@ -4529,7 +4529,7 @@ function svgPie(items,tot,r){
     if(fr>=0.04){var p=pt((R+r0)/2,(a+a1)/2).split(' ');out+='<text x="'+p[0]+'" y="'+p[1]+'" text-anchor="middle" dominant-baseline="central" font-size="12" font-weight="800" fill="'+(/^#(e69f00|56b4e9|cc79a7)$/i.test(col)?'#111':'#fff')+'" pointer-events="none">'+Math.round(fr*100)+'%</text>';}
     a=a1;
   });
-  return '<svg viewBox="0 0 240 240">'+out+'<text x="120" y="117" text-anchor="middle" font-size="20" font-weight="800" fill="var(--ink)">'+cfmt(tot)+'</text><text x="120" y="137" text-anchor="middle" font-size="10.5" font-weight="700" fill="var(--muted)" letter-spacing=".5">SPENT</text></svg>';
+  return '<svg viewBox="0 0 240 240">'+out+'<text x="120" y="117" text-anchor="middle" font-size="20" font-weight="800" fill="var(--ink)">'+cfmt(tot)+'</text><text x="120" y="137" text-anchor="middle" font-size="11" font-weight="700" fill="var(--muted)" letter-spacing=".5">SPENT</text></svg>';
 };
 /* ---------- 3. app lock: a PIN is always 6 digits ---------- */
 function pinLen(){return 6;}
@@ -5274,7 +5274,7 @@ var JR_BASE=JR;
 function jrFind(k){return JR_BASE.filter(function(x){return x.k===k;})[0];}
 var JR56={
   txn:{k:'txn',t:'Add your first transaction',d:'Tap + and save one',done:function(){return jrFind('txn').done();}},
-  account:{k:'account',t:'Add another account',d:'A bank, card or e-wallet',done:function(){return jrFind('account').done();}},
+  account:{k:'account',t:'Add another account',d:'A bank, card or E-wallet',done:function(){return jrFind('account').done();}},
   budget:{k:'budget',t:'Set a monthly budget',d:'Per category, personal or shared',done:function(){return jrFind('budget').done();}},
   lock:{k:'lock',t:'Turn on app lock',d:'A 6-digit PIN for this phone',done:function(){return !!lockCfg().h;}},
   ps:{k:'ps',t:'Try Privacy Screen',d:'Hide amounts with the eye at the top',done:function(){return !!jr().ps;}},
@@ -5323,7 +5323,7 @@ auPerson=function(){
   if(!DB.txns.length)DB.accounts=DB.accounts.filter(function(a){return !(a.name==='Bank'&&!a.owner&&!a.start);});
   DB.accounts.forEach(function(a){if(!a.owner&&!a.recv&&a.name==='Cash'){a.owner=me;a.vis='me';a.pvby=me;}});
   if(an){
-    var ty={'Bank':'Bank','Cash':'Cash','Credit card':'Credit Card','e-Wallet':'e-Wallet'}[AU.atype]||'Bank';
+    var ty={'Bank':'Bank','Cash':'Cash','Credit card':'Credit Card','E-wallet':'E-wallet'}[AU.atype]||'Bank';
     if(DB.accTypes.indexOf(ty)<0){DB.accTypes.push(ty);DB.accTypeMeta[ty]={kind:ty==='Credit Card'?'liability':'asset',cycle:0};}
     var acc={name:an,start:ty==='Credit Card'?-Math.abs(ab||0):(ab||0),owner:me,type:ty,cycle:0,dueDays:20};
     if(!cp||AU.avis==='me'){acc.vis='me';acc.pvby=me;}
@@ -6209,7 +6209,7 @@ V56.mgr.perfilter=function(){
   var np=!!V57.np,ppl=sortedAlpha(DB.people.filter(function(p){return p!=='Me';}));
   var ap=V57.aper,st=ap||PER; /* beta 89: account Activity reuses this sheet with its own period and no person choice */
   $('mgrBody').innerHTML=(np?'':'<div class="mgr-lb">Period</div><div class="segmini">'+['week','month','year'].map(function(m){return '<button class="'+(st.mode===m?'on':'')+'" data-act="'+(ap?'a89mode':'permode')+'" data-m="'+m+'">'+capW(m)+'</button>';}).join('')+'</div>')
-    +(ap?'':(ppl.length>1||isCouple()?'<div class="mgr-lb">Whose money</div><div class="expchips">'+['couple'].concat(ppl).map(function(p){return '<button class="chip'+(PER.who===p?' on':'')+'" data-act="perwho" data-p="'+esc(p)+'">'+(p==='couple'?ico('users')+' '+(isCouple()?'Couple':'Everyone'):ico('user')+' '+esc(p))+'</button>';}).join('')+'</div>':'')
+    +(ap?'':(ppl.length>1||isCouple()?'<div class="mgr-lb">Whose money</div><div class="expchips">'+['couple'].concat(ppl).map(function(p){return '<button class="chip'+(PER.who===p?' on':'')+'" data-act="perwho" data-p="'+esc(p)+'">'+(p==='couple'?ico('users')+' '+(isCouple()?'Couple':'Everyone'):ico('user')+' '+(p===meName()?'You':esc(p)))+'</button>';}).join('')+'</div>':'')
     +(isCouple()&&myPrivAccs().length?'<div class="mgr-lb">Accounts</div><div class="segmini"><button class="'+((PER.space||'all')==='all'?'on':'')+'" data-act="pvspace" data-v="all">'+ico('user')+' All mine</button><button class="'+(PER.space==='shared'?'on':'')+'" data-act="pvspace" data-v="shared">'+ico('users')+' Shared only</button></div>':''))
     +'<div class="sheet-foot" style="padding-bottom:4px"><button class="btn" data-act="mgrclose">Done</button></div>';
 };
@@ -9471,7 +9471,7 @@ function nwAt(d,who){
     var row={name:a.name,type:a.type||'',owner:a.owner||'',v:v,a:a,half:jm.length?shareLbl123(a.owner,a.name,who):''};
     /* beta21: one rule everywhere — an account is a debt because of its KIND (loan, card,
        hire purchase, other debt), never because its balance is below zero. An overdrawn
-       cash / e-Wallet account stays under assets and simply reduces them. */
+       cash / E-wallet account stays under assets and simply reduces them. */
     if(isDebtAcc21(a)){L.push(row);li+=-v;}else{A.push(row);as+=v;}
   });
   A.sort(function(x,y){return y.v-x.v;});L.sort(function(x,y){return x.v-y.v;});
@@ -9575,8 +9575,8 @@ svgNet=function(tr){
     if(k===sel117)o+='<rect x="'+(cx-step/2+3).toFixed(1)+'" y="2" width="'+(step-6).toFixed(1)+'" height="'+(H-4)+'" rx="8" fill="var(--accent)" opacity=".09"/>';
     o+='<rect x="'+(cx-bw/2).toFixed(1)+'" y="'+y.toFixed(1)+'" width="'+bw.toFixed(1)+'" height="'+h.toFixed(1)+'" rx="4" fill="'+col+'"/>';
     if(x.net<0&&!x.ns)o+='<rect class="ovs121" x="'+(cx-bw/2).toFixed(1)+'" y="'+y.toFixed(1)+'" width="'+bw.toFixed(1)+'" height="'+h.toFixed(1)+'" rx="4" fill="url(#ovs121)"/>'; /* beta 121: overspent bars striped, below the line */
-    o+='<text x="'+cx+'" y="'+(x.net>=0?y-6:y+h+12).toFixed(1)+'" text-anchor="middle" font-size="9.5" font-weight="700" fill="var(--ink)">'+(x.net<0?'-':'')+cfmt(Math.abs(x.net))+'</text>';
-    o+='<text x="'+cx+'" y="'+(H-6)+'" text-anchor="middle" font-size="9.5" font-weight="'+(k===sel117?'800':'600')+'" fill="var(--ink)" opacity="'+(k===sel117?'1':'.78')+'">'+esc(x.lb)+'</text>';
+    o+='<text x="'+cx+'" y="'+(x.net>=0?y-6:y+h+12).toFixed(1)+'" text-anchor="middle" font-size="11" font-weight="700" fill="var(--ink)">'+(x.net<0?'-':'')+cfmt(Math.abs(x.net))+'</text>';
+    o+='<text x="'+cx+'" y="'+(H-6)+'" text-anchor="middle" font-size="11" font-weight="'+(k===sel117?'800':'600')+'" fill="var(--ink)" opacity="'+(k===sel117?'1':'.78')+'">'+esc(x.lb)+'</text>';
     o+='<rect class="hit117" x="'+(cx-step/2)+'" y="0" width="'+step+'" height="'+(H-14)+'" fill="transparent"'+(x.act117!=null?x.act117:tl(x.s,x.e,x.full,'','all'))+tip117(x.tip||[x.full||x.lb,'Savings '+sgm117(x.net)]) /* beta 119: labelled, so the tap box colours it */+' style="cursor:pointer"/>';
   });
   return '<svg viewBox="0 0 '+W+' '+H+'" style="width:100%;height:auto;min-width:'+Math.min(W,320)+'px"><defs><pattern id="ovs121" patternUnits="userSpaceOnUse" width="7" height="7" patternTransform="rotate(45)"><rect width="3" height="7" fill="#fff" opacity=".5"/></pattern></defs>'+o+'</svg>';
@@ -9592,7 +9592,7 @@ svgTrend=function(tr){
     var cx=6+(k+.5)*step,hi=x.i/mx*ph,he=x.ex/mx*ph;
     o+='<rect x="'+(cx-bw-2).toFixed(1)+'" y="'+(base-hi).toFixed(1)+'" width="'+bw+'" height="'+Math.max(1,hi).toFixed(1)+'" rx="3" fill="var(--inc)"/>';
     o+='<rect x="'+(cx+2).toFixed(1)+'" y="'+(base-he).toFixed(1)+'" width="'+bw+'" height="'+Math.max(1,he).toFixed(1)+'" rx="3" fill="var(--exp)"/>';
-    o+='<text x="'+cx+'" y="'+(H-7)+'" text-anchor="middle" font-size="9.5" font-weight="600" fill="var(--muted)">'+esc(x.lb)+'</text>';
+    o+='<text x="'+cx+'" y="'+(H-7)+'" text-anchor="middle" font-size="11" font-weight="600" fill="var(--muted)">'+esc(x.lb)+'</text>';
     o+='<rect class="hit117" x="'+(cx-step/2)+'" y="0" width="'+step+'" height="'+H+'" fill="transparent"'+tl(x.s,x.e,x.full,'','all')+tip117([x.full||x.lb,'Income '+money(x.i),'Spending '+money(x.ex),(x.i-x.ex<0?'Overspent ':'Saved ')+money(Math.abs(x.i-x.ex))])+' style="cursor:pointer"/>';
   });
   return '<svg viewBox="0 0 '+W+' '+H+'" style="width:100%;height:auto">'+o+'</svg>';
@@ -9911,7 +9911,7 @@ V56.mgr.loanpay=function(){
 };
 function lpPrev59(){
   var el=$('lpPrev');if(!el)return;var t=parseAmt(($('lpTot')||{}).value),i=Math.max(0,parseAmt(($('lpInt')||{}).value)),p=Math.max(0,t-i),f=($('lpFrom')||{}).value||'';
-  el.innerHTML=t>0?esc(f)+' <b class="neg">− '+money(t)+'</b> · loan outstanding <b class="pos">− '+money(p)+'</b> (principal)'+(i>0?' · interest &amp; charges <b class="neg">'+money(i)+'</b> as an expense':'')+(i>t?'<br><span class="neg">Interest can’t be more than the instalment.</span>':''):'Enter the instalment you paid.';
+  el.innerHTML=t>0?esc(f)+' <b class="neg">− '+money(t)+'</b> · loan outstanding <b class="pos">− '+money(p)+'</b> (reduces what you owe)'+(i>0?' · interest &amp; charges <b class="neg">'+money(i)+'</b> as an expense':'')+(i>t?'<br><span class="neg">Interest can’t be more than the instalment.</span>':''):'Enter the instalment you paid.';
 }
 
 /* ---------------- sync / storage status: Device only · Backed up · Synced · Offline · Sync problem ---------------- */
@@ -11121,7 +11121,7 @@ B3.addM=addMB3;
 B3.freqL=function(f){return {m:'monthly',f:'fortnightly',w:'weekly',q:'quarterly',y:'yearly'}[f||'m']||'monthly';};
 
 /* ---------- 1. controlled account model (plan §2/§4/§12) ---------- */
-B3.ASSETS=['Property','Vehicle','Investment','Bank','Cash','e-Wallet'];
+B3.ASSETS=['Property','Vehicle','Investment','Bank','Cash','E-wallet'];
 B3.LIABS=['Loan','Hire Purchase','Card'];
 B3.isCtrl=function(ty){return B3.ASSETS.indexOf(ty)>=0||B3.LIABS.indexOf(ty)>=0;};
 B3.unknownTypes=function(){
@@ -11132,7 +11132,7 @@ B3.unknownTypes=function(){
   return (DB.accTypes||[]).filter(function(t){return !B3.isCtrl(t)&&used[t];}); /* types from imported files that the app does not know */
 };
 /* common type names from imported files and sample data map to the app's own types */
-var TYPE_MAP={ 'eWallet':'e-Wallet','Credit Card':'Card','Housing Loan':'Loan','Personal Loan':'Loan','Education Loan':'Loan','Other Loan':'Loan','Car / Hire Purchase Loan':'Hire Purchase' };
+var TYPE_MAP={ 'eWallet':'E-wallet','Credit Card':'Card','Housing Loan':'Loan','Personal Loan':'Loan','Education Loan':'Loan','Other Loan':'Loan','Car / Hire Purchase Loan':'Hire Purchase' };
 B3.ensureTypes=function(){
   if(!DB||!DB.accTypes)return;
   var defs=B3.ASSETS.map(function(t){return [t,'asset'];}).concat(B3.LIABS.map(function(t){return [t,'liability'];}));
@@ -11987,7 +11987,7 @@ if(olB3)olB3.insertAdjacentHTML('beforeend',
   +'<li><b>Simplified Overview:</b> Net Worth hero, This month, Attention needed (max three, each with a direct action), Recent activity (latest five), Household in couple modes, and one dismissible Insight. No duplicated KPIs, cards or report charts.</li>'
   +'<li><b>Transactions refined:</b> the screen opens on the latest 20 with a Load more button, rows lead with the category (Account \u00b7 who \u00b7 Split beneath), tapping opens a read-only detail with Copy and Edit, and split details show participants and allocations only. On the form, Repeat is visible in the main flow and Note is the final full-width multi-line field.</li>'
   +'<li><b>Loan &amp; Hire Purchase accounting:</b> repayments reduce the balance by the full amount paid; interest or finance charges are recorded separately and increase the Loan balance as a finance cost. Hire Purchase never asks for interest. Fixed instalments quietly prefill the repayment, with optional due-date reminders.</li>'
-  +'<li><b>Controlled account types &amp; ownership:</b> Assets \u2014 Property, Vehicle, Investment, Bank, Cash, e-Wallet; Debts \u2014 Loan, Hire Purchase, Card. Ownership is Hubby, Wifey or Joint, and Joint balances are counted once. Delete profile and data lives in Danger zone with a typed-DELETE confirmation, per-step outcomes and retry.</li>');
+  +'<li><b>Controlled account types &amp; ownership:</b> Assets \u2014 Property, Vehicle, Investment, Bank, Cash, E-wallet; Debts \u2014 Loan, Hire Purchase, Card. Ownership is Hubby, Wifey or Joint, and Joint balances are counted once. Delete profile and data lives in Danger zone with a typed-DELETE confirmation, per-step outcomes and retry.</li>');
 })();
 
 ;
@@ -12032,7 +12032,7 @@ B4.guess=function(ty){
   if(/hire|car loan/.test(n))return 'Hire Purchase';
   if(/loan/.test(n))return 'Loan';
   if(/credit|card/.test(n))return 'Card';
-  if(/wallet/.test(n))return 'e-Wallet';
+  if(/wallet/.test(n))return 'E-wallet';
   if(/invest|unit|trust|stock|share|fund|epf|kwsp/.test(n))return 'Investment';
   if(/car|vehicle|motor/.test(n))return 'Vehicle';
   if(/house|property|land/.test(n))return 'Property';
@@ -12294,7 +12294,7 @@ if(olB4)olB4.insertAdjacentHTML('beforeend',
 
 /* v1.60 beta 7 - finance metrics redefined:
    Spending excludes interest charges and loan repayments; Savings = income - spending;
-   Net cash flow = movement of bank / cash / e-Wallet balances over the period. */
+   Net cash flow = movement of bank / cash / E-wallet balances over the period. */
 (function(){
   var B7={};window.B7=B7; /* global: tests and future layers can reach the metric helpers */
   /* ---------- classification helpers ---------- */
@@ -12305,7 +12305,7 @@ if(olB4)olB4.insertAdjacentHTML('beforeend',
     if(/interest|finance charge/.test(s))return true;                          /* interest charges are not spending */
     return /\bloan\b|\bloans\b|repayment|hire purchase|instal?lment/.test(s); /* loan repayments are not spending */
   };
-  B7.isLiquidTy=function(ty){return ty==='Bank'||ty==='Cash'||ty==='e-Wallet'||ty==='eWallet';};
+  B7.isLiquidTy=function(ty){return ty==='Bank'||ty==='Cash'||ty==='E-wallet'||ty==='eWallet';};
   B7.liquidNames=function(who){
     var out=[];(DB.accounts||[]).forEach(function(a){
       if(a.locked||a.recv||/^.+ owes .+$/.test(a.name)||LBL_RE.test(a.name))return;
@@ -12362,7 +12362,7 @@ if(olB4)olB4.insertAdjacentHTML('beforeend',
     }).join('');
     /* beta 121: Savings card, option A (user) — one top line, one split bar, two rows; Full and Simple */
     var smp=false;try{smp=!!(window.simple20&&simple20());}catch(e){}
-    var wIn=smp?'Money In':'Income',wOut=smp?'Money Spent':'Spending';
+    var wIn=smp?'Money in':'Income',wOut=smp?'Money spent':'Spending';
     i=Math.round(i*100)/100;e=Math.round(e*100)/100;sav=Math.round((i-e)*100)/100;
     var pcI=function(v){return i>0?Math.round(v/i*100)+'%':'';};
     var bar;
@@ -12416,7 +12416,7 @@ if(olB4)olB4.insertAdjacentHTML('beforeend',
   document.title=String(document.title).replace(/1\.60 beta 6/,'1.60 beta 7');
   document.querySelectorAll('.sub').forEach(function(e){if(/1\.60 beta 6/.test(e.textContent))e.textContent='v1.60 beta 7';});
   var ol=document.querySelector('#view-settings details.help ol');
-  if(ol)ol.insertAdjacentHTML('beforeend','<li><b>Finance metrics redefined (v1.60 beta 7):</b> Spending excludes interest charges and loan repayments; Savings = income \u2212 spending; Net cash flow is the movement of your bank, cash and e-Wallet balances over the period \u2014 card purchases do not move it until you settle the card.</li>');
+  if(ol)ol.insertAdjacentHTML('beforeend','<li><b>Finance metrics redefined (v1.60 beta 7):</b> Spending excludes interest charges and loan repayments; Savings = income \u2212 spending; Net cash flow is the movement of your bank, cash and E-wallet balances over the period \u2014 card purchases do not move it until you settle the card.</li>');
       })();
 
 ;
@@ -13653,7 +13653,7 @@ V63.propertyConfig={
 
 /* ---------- plain-language categories (plan §6 / §6.1) ---------- */
 V63.CATS={
-  'Money':          {types:['Bank','Cash','e-Wallet'],own:1,ic:'coins121',  ex:'Bank, savings, cash, e-wallet, fixed deposit'},
+  'Money':          {types:['Bank','Cash','E-wallet'],own:1,ic:'coins121',  ex:'Bank, savings, cash, E-wallet, fixed deposit'},
   'Vehicles':       {types:['Vehicle'],                own:1,ic:'car',   ex:'Car, motorcycle, van, commercial vehicle'},
   'Investments':    {types:['Investment'],             own:1,ic:'trend', ex:'Shares, ETF, unit trust, bonds, crypto, EPF, PRS'},
   'Properties':     {types:['Property'],               own:1,ic:'home',  ex:'Home, apartment, land, commercial property'},
@@ -13719,7 +13719,7 @@ function scopedTxns(r){
   var L=DB.txns.filter(function(t){return inPeriod(t,r);});
   return whoOK()==='couple'?L:applyPerson(L,whoOK());
 }
-function isLiq(ty){return ty==='Bank'||ty==='Cash'||ty==='e-Wallet'||ty==='eWallet';}
+function isLiq(ty){return ty==='Bank'||ty==='Cash'||ty==='E-wallet'||ty==='eWallet';}
 V63.liqSet=function(who){
   var s={};(DB.accounts||[]).forEach(function(a){
     if(a.locked||a.recv||/^.+ owes .+$/.test(a.name)||LBL_RE.test(a.name))return;
@@ -13804,20 +13804,20 @@ V63.mv121=function(D,r,sgf){
   INFO25.c121oth=['Other changes','<p class="info23p">Balance movements that are not income or spending — '+(cpl?'for example opening balances, Between Us settlements or accounts outside this view':'mostly spending recorded for one person but paid from the other partner’s account, or the other way round')+'.</p>'];
   var prin=0;try{prin=V63.prin121?V63.prin121(r):(D.loanP||0);}catch(e){prin=D.loanP||0;}
   var inv=D.invest||0;
-  INFO25.c121prin=['Debt principal repaid','<p class="info23p">Money moved from your accounts to pay down a loan or hire purchase. Your cash goes down and the debt goes down by the same amount, so net worth does not change.</p>'+(inv>0.004?'<p class="info23p">Investments of '+money(inv)+' work the same way: money moves between your own accounts.</p>':'')];
+  INFO25.c121prin=['Debt repayments','<p class="info23p">Money paid from your accounts into loans, hire purchase and cards. Your cash goes down and the debt goes down by the same amount, so net worth does not change. Interest and charges show in spending.</p>'+(inv>0.004?'<p class="info23p">Investments of '+money(inv)+' work the same way: money moves between your own accounts.</p>':'')];
   var val=0;(D.rows||[]).forEach(function(x){if(x.kind==='val')val+=x.v;});val=Math.round(val*100)/100;
   INFO25.c121val=['Value updates','<p class="info23p">New values you entered for property, vehicles and other assets. They change net worth from their date, and they never create income, spending or cash flow.</p>'+(Math.abs(val)<0.005?'<p class="info23p">There are none this '+perWord()+'.</p>':'')];
   var h=(D.rows||[]).map(function(x){return '<div class="fline"><span>'+esc(x.label)+(x.kind==='other'?' '+info25('c121oth'):'')+'</span><b class="'+(x.v<0?'neg':'pos')+'">'+sgf(x.v)+'</b></div>';}).join('')
     +'<div class="fline eq"><span><b>Total movement</b></span><b class="'+(D.total<0?'neg':'pos')+'">'+sgf(D.total)+'</b></div>';
   h+='<div class="mv121m">';
-  if(prin>0.004)h+='<div class="fline"><span>Debt principal repaid '+info25('c121prin')+'</span><span>'+money(prin)+'</span></div>';
+  if(prin>0.004)h+='<div class="fline"><span>Debt repayments '+info25('c121prin')+'</span><span>'+money(prin)+'</span></div>';
   h+='<div class="fline"><span>Value updates '+info25('c121val')+'</span><span>'+money(Math.abs(val))+'</span></div>';
   return h+'</div>';
 };
 V63.driversNote=function(D){
   var t='Total movement equals the change in net worth for the same period.';
   if(Math.abs(D.other)>=0.01)t+=' Other changes are balance movements that are not income or spending — '+(whoOK()==='couple'?'for example opening balances, Between Us settlements or accounts outside this view':'mostly spending recorded for one person but paid from the other partner\u2019s account, or the other way round')+'.';
-  if(D.loanP>0.004||D.invest>0.004)t+=' Part of the savings went to '+[D.loanP>0.004?'debt principal '+money(D.loanP):'',D.invest>0.004?'investments '+money(D.invest):''].filter(Boolean).join(' and ')+' — moving money between your own accounts does not change net worth.';
+  if(D.loanP>0.004||D.invest>0.004)t+=' Part of the savings went to '+[D.loanP>0.004?'debt repayments '+money(D.loanP):'',D.invest>0.004?'investments '+money(D.invest):''].filter(Boolean).join(' and ')+' — moving money between your own accounts does not change net worth.';
   return t;
 };
 /* Financial health (plan §3.2 / §7) */
@@ -13953,7 +13953,7 @@ V63.trendSVG=function(S){
   dots.forEach(function(k,j){
     var p=pts[k],lst=j===dots.length-1,anc=lst?'end':(X(k)<40?'start':'middle');
     o+='<circle cx="'+X(k).toFixed(1)+'" cy="'+Y(p.v).toFixed(1)+'" r="'+(lst?5.2:4.2)+'" fill="'+(lst?'var(--accent)':'var(--card)')+'" stroke="var(--accent)" stroke-width="2.2"/>'
-      +'<text x="'+X(k).toFixed(1)+'" y="'+(Y(p.v)-10).toFixed(1)+'" text-anchor="'+anc+'" font-size="11.5" font-weight="700" fill="var(--ink)" stroke="var(--card)" stroke-width="3.2" paint-order="stroke" stroke-linejoin="round">'+fk(p.v)+'</text>'
+      +'<text x="'+X(k).toFixed(1)+'" y="'+(Y(p.v)-10).toFixed(1)+'" text-anchor="'+anc+'" font-size="12" font-weight="700" fill="var(--ink)" stroke="var(--card)" stroke-width="3.2" paint-order="stroke" stroke-linejoin="round">'+fk(p.v)+'</text>'
       +'<text x="'+X(k).toFixed(1)+'" y="'+(H-7)+'" text-anchor="'+(lst?'end':'middle')+'" font-size="11" font-weight="600" fill="var(--muted)">'+esc(lst&&isToday?'Today':p.lb)+'</text>';
   });
   return '<svg class="nwtrend26" viewBox="0 0 '+W+' '+H+'" style="width:100%;height:auto;display:block" role="img" aria-label="Net worth trend">'+o+'</svg>';
@@ -14167,11 +14167,11 @@ function summary16(){
     +'<button data-act="v63rep" data-k="breakdown"><small>Spending</small><b>'+money(e)+'</b></button>'
     +'<button data-act="v63rep" data-k="cash"><small>Monthly surplus</small><b class="'+(sur<0?'neg':'pos')+'">'+sgn16(sur)+'</b></button>'
     +'<button data-act="v63rep" data-k="v_ncf"><small>Net cash flow</small><b class="'+(ncf<0?'neg':'pos')+'">'+sgn16(ncf)+'</b></button>'
-    +'</div><div class="help small" style="margin-top:8px">Monthly surplus = income − spending. Net cash flow = money that actually moved in and out of your bank, cash and e-Wallet accounts — card purchases do not move it until you settle the card.</div>');
+    +'</div><div class="help small" style="margin-top:8px">Monthly surplus = income − spending. Net cash flow = money that actually moved in and out of your bank, cash and E-wallet accounts — card purchases do not move it until you settle the card.</div>');
 }
 function waterfall16(){
   var f=V63.calc.flow(perRange());
-  var rows=[['Income',f.income,'pos'],['Cash spending',-f.spend,'neg'],['Loan principal',-f.loanP,'neg'],['Card payments',-f.cardP,'neg'],['Investments',-f.invest,'neg'],['Asset purchases',-f.assetBuy,'neg'],['Other movements',f.other,f.other<0?'neg':'pos']];
+  var rows=[['Income',f.income,'pos'],['Cash spending',-f.spend,'neg'],['Loan repayments',-f.loanP,'neg'],['Card payments',-f.cardP,'neg'],['Investments',-f.invest,'neg'],['Asset purchases',-f.assetBuy,'neg'],['Other movements',f.other,f.other<0?'neg':'pos']];
   var mx=0;rows.forEach(function(x){mx=Math.max(mx,Math.abs(x[1]));});if(!mx)mx=1;
   var h=rows.filter(function(x){return Math.abs(x[1])>0.004;}).map(function(x){
     var w=Math.max(3,Math.abs(x[1])/mx*100);
@@ -14179,7 +14179,7 @@ function waterfall16(){
   }).join('');
   if(!h)h='<div class="help">No cash movement in this period yet.</div>';
   h+='<div class="wfrow wftot"><span class="wl"><b>Net cash flow</b></span><span></span><span class="wv"><b class="'+(f.ncf<0?'neg':'pos')+'">'+sgn16(f.ncf)+'</b></span></div>'
-    +'<div class="help small" style="margin-top:6px">Cash spending is spending paid from bank, cash and e-Wallet accounts. Card purchases are not cash spending until you pay the card bill — they show as Card payments.</div>';
+    +'<div class="help small" style="margin-top:6px">Cash spending is spending paid from bank, cash and E-wallet accounts. Card purchases are not cash spending until you pay the card bill — they show as Card payments.</div>';
   return card16(ico('swap')+' Net cash flow <span class="sub">'+esc(perRange().label)+'</span>'+det26('v_ncf'),h);
 }
 function cats16(){
@@ -14343,7 +14343,7 @@ var FAM16=[
   ['f_couple','users','Couple','Shared spending, contribution & progress'],
   ['f_goals','target','Goals','Progress, funding & completion'],
   ['f_assets','pie','Assets','Money, investments, property & vehicles'],
-  ['f_loans','card','Loans & Debts','Balances, principal & instalments']
+  ['f_loans','card','Loans & Debts','Balances, repayments & instalments']
 ];
 function famTile16(f){return '<button class="tile" data-act="rep" data-k="'+f[0]+'"><span class="ti">'+ico(f[1])+'</span><b>'+f[2]+'</b><small>'+f[3]+'</small></button>';}
 function famRow16(k,ic,t,sub){return '<button class="famrow" data-act="v63rep" data-k="'+k+'"><span class="fic">'+ico(ic)+'</span><span class="ftx"><b>'+t+'</b><small>'+sub+'</small></span><span class="sch">'+ico('chevright')+'</span></button>';}
@@ -14352,8 +14352,8 @@ V63.FAMROWS={
   f_cash:[['cash','swap','Cash Flow & Savings','income, spending & savings'],['v_income','trend','Income Sources','sources & concentration'],['breakdown','receipt','Where the Money Went','spending by category'],['budget','wallet','Budget vs Actual','spending against plan'],['v_ncf','swap','Net Cash Flow','cash in vs cash out'],['fixed','repeat','Fixed vs Variable','how flexible spending is'],['top','trophy','Top 10 Spending','biggest categories & purchases'],['heat','calendar','Daily Spending','spending day by day'],['v_cattrend','chart','Category Trends','categories over months'],['v_forecast','cal','Forecast','where the next months go']],
   f_couple:[['shared','receipt','Shared Spending','shared vs personal'],['v_contrib','pie','Contribution','a neutral view'],['settle','scale','Between Us','who owes whom'],['v_joint','flag','Joint Progress','household direction']],
   f_goals:[['goals','target','Saving Goals','current vs target'],['v_fundhist','clock','Funding History','money into goals'],['v_goalcast','cal','Forecast Completion','when goals finish']],
-  f_assets:[['v_money','cash','Cash Position','bank, cash & e-Wallets'],['v_invest','trend','Investments','investment accounts'],['v_props','home','Properties','recorded values & loans'],['v_veh','car','Vehicles','recorded values & HP'],['v_business','briefcase','Businesses','business ownership'],['v_recv','undog','Money Owed to Me','receivables'],['v_valhist','nw','Recorded Value History','dated value adjustments']],
-  f_loans:[['v_outstd','card','Debt Mix','what is owed now'],['cc','card','Card Statements','statements & due dates'],['v_prinrep','down','Principal Repaid','progress on debts'],['v_instal','cal','Remaining Instalments','months to go'],['v_repaytrend','chart','Repayment Trend','repayments over time']]
+  f_assets:[['v_money','cash','Cash Position','bank, cash & E-wallets'],['v_invest','trend','Investments','investment accounts'],['v_props','home','Properties','recorded values & loans'],['v_veh','car','Vehicles','recorded values & HP'],['v_business','briefcase','Businesses','business ownership'],['v_recv','undog','Money Owed to Me','receivables'],['v_valhist','nw','Recorded Value History','dated value adjustments']],
+  f_loans:[['v_outstd','card','Debt Mix','what is owed now'],['cc','card','Card Statements','statements & due dates'],['v_prinrep','down','Repayments','progress on debts'],['v_instal','cal','Remaining Instalments','months to go'],['v_repaytrend','chart','Repayment Trend','repayments over time']]
 };
 V63.favAdd=function(k){
   try{
@@ -14436,7 +14436,7 @@ DYNF.v_income=function(){
 DYNF.v_ncf=function(){
   var r=perRange(),f=V63.calc.flow(r),L=perTx(r),i=sumT(L,'Income'),e=sumT(L,'Expense');
   var h='<div class="kpis">'+kpi('Income',money(i),'pos')+kpi('Spending',money(e),'neg')+kpi('Surplus',sgn16(i-e),i-e<0?'neg':'pos')+kpi('Net cash flow',sgn16(f.ncf),f.ncf<0?'neg':'pos')+'</div>';
-  var rows=[['Cash spending',-f.spend],['Loan principal',-f.loanP],['Card payments',-f.cardP],['Investments',-f.invest],['Asset purchases',-f.assetBuy],['Other movements',f.other]];
+  var rows=[['Cash spending',-f.spend],['Loan repayments',-f.loanP],['Card payments',-f.cardP],['Investments',-f.invest],['Asset purchases',-f.assetBuy],['Other movements',f.other]];
   rows.filter(function(x){return Math.abs(x[1])>0.004;}).forEach(function(x){h+='<div class="fline"><span>'+x[0]+'</span><b class="'+(x[1]<0?'neg':'pos')+'">'+sgn16(x[1])+'</b></div>';});
   return card16(ico('swap')+' Net cash flow <span class="sub">'+esc(r.label)+'</span>',h);
 };
@@ -14515,8 +14515,8 @@ function valRows16(pred,ic,title){
 }
 DYNF.v_money=function(){
   var asd=asAt26(),names=Object.keys(V63.liqSet(whoOK())),tot=0,h='';
-  names.sort().forEach(function(n){var b=accountBalAsOf(n,asd);if(isFinite(b))tot+=b;h+='<button class="trow" data-act="acc" data-n="'+esc(n)+'"><span class="lb">'+esc(n)+'<small>Bank, cash or e-Wallet</small></span><span class="amt2'+(b<0?' neg':'')+'">'+money(b)+'</span></button>';});
-  if(!names.length)return '<div class="card"><h2>'+ico('cash')+' Cash position</h2><div class="help">No bank, cash or e-Wallet accounts yet.</div></div>';
+  names.sort().forEach(function(n){var b=accountBalAsOf(n,asd);if(isFinite(b))tot+=b;h+='<button class="trow" data-act="acc" data-n="'+esc(n)+'"><span class="lb">'+esc(n)+'<small>Bank, cash or E-wallet</small></span><span class="amt2'+(b<0?' neg':'')+'">'+money(b)+'</span></button>';});
+  if(!names.length)return '<div class="card"><h2>'+ico('cash')+' Cash position</h2><div class="help">No bank, cash or E-wallet accounts yet.</div></div>';
   h+='<div class="fline eq" style="margin-top:8px"><span><b>Cash position</b></span><b>'+money(tot)+'</b></div>';
   return card16(ico('cash')+' Cash position <span class="sub">as at '+dLabelYW(asd)+'</span>',h);
 };
@@ -14627,7 +14627,7 @@ Object.assign(REP_TITLES,{
   v_income:ico('trend')+' Income Analysis',v_ncf:ico('swap')+' Net Cash Flow',v_cattrend:ico('chart')+' Category Trends',v_forecast:ico('cal')+' Forecast',
   v_contrib:ico('users')+' Contribution',v_joint:ico('users')+' Joint Progress',v_fundhist:ico('clock')+' Funding History',v_goalcast:ico('cal')+' Forecast Completion',
   v_money:ico('cash')+' Money',v_invest:ico('trend')+' Investments',v_props:ico('home')+' Properties',v_veh:ico('car')+' Vehicles',v_business:ico('briefcase')+' Businesses',v_recv:ico('undog')+' Money Owed to Me',v_valhist:ico('nw')+' Recorded Value History',
-  v_outstd:ico('card')+' Outstanding Balances',v_prinrep:ico('down')+' Principal Repaid',v_instal:ico('cal')+' Remaining Instalments',v_repaytrend:ico('chart')+' Repayment Trend'
+  v_outstd:ico('card')+' Outstanding Balances',v_prinrep:ico('down')+' Repayments',v_instal:ico('cal')+' Remaining Instalments',v_repaytrend:ico('chart')+' Repayment Trend'
 });
 /* beta 26 · G12 — one name per report: the Insights card, the Reports menu and the report title match */
 (function(){
@@ -15614,13 +15614,13 @@ SCREEN.on('renderOverview',240027618);
 X63.MAP={
   'Net worth':'What I have − What I owe','Net Worth':'What I have − What I owe',
   'Assets':'What I have','Debts':'What I owe',
-  'Income':'Money In','Spending':'Money Spent',
-  'Monthly surplus':'Money Left','Monthly Surplus':'Money Left',
-  'Net cash flow':'Change in Cash','Net Cash Flow':'Change in Cash',
-  'Debt ratio':'Debt Compared with What I have','Debt Ratio':'Debt Compared with What I have',
-  'Emergency fund':'Months Your Savings Could Cover','Emergency Fund':'Months Your Savings Could Cover',
-  'Wealth drivers':'Why Your Overall Position Changed','Wealth Drivers':'Why Your Overall Position Changed',
-  'Recorded value':'Value Entered','Recorded Value':'Value Entered'
+  'Income':'Money in','Spending':'Money spent',
+  'Monthly surplus':'Money left','Monthly Surplus':'Money left',
+  'Net cash flow':'Change in cash','Net Cash Flow':'Change in cash',
+  'Debt ratio':'Debt compared with what I have','Debt Ratio':'Debt compared with what I have',
+  'Emergency fund':'Months your savings could cover','Emergency Fund':'Months your savings could cover',
+  'Wealth drivers':'Why your overall position changed','Wealth Drivers':'Why your overall position changed',
+  'Recorded value':'Value entered','Recorded Value':'Value entered'
 };
 X63.terminology=function(root){
   if(!X63.isSimple()||!root||!document.createTreeWalker)return;
@@ -15628,9 +15628,9 @@ X63.terminology=function(root){
     var w=document.createTreeWalker(root,NodeFilter.SHOW_TEXT,null),nodes=[];
     while(w.nextNode())nodes.push(w.currentNode);
     /* phrase-level map — multi-word terms are unambiguous inside sentences */
-    var PHR=[['Debt ratio','Debt Compared with What I have'],['Emergency fund','Months Your Savings Could Cover'],
-      ['Monthly surplus','Money Left'],['Net cash flow','Change in Cash'],
-      ['Wealth drivers','Why Your Overall Position Changed'],['Recorded value','Value Entered'],
+    var PHR=[['Debt ratio','Debt compared with what I have'],['Emergency fund','Months your savings could cover'],
+      ['Monthly surplus','Money left'],['Net cash flow','Change in cash'],
+      ['Wealth drivers','Why your overall position changed'],['Recorded value','Value entered'],
       ['Net worth','What I have − What I owe'],['Net Worth','What I have − What I owe']];
     nodes.forEach(function(n){
       var t=String(n.textContent||'');
@@ -15761,7 +15761,7 @@ qa('.sub').forEach(function(e){
   if(/1\.60 beta 17/.test(t)||/^v1\.\d+ beta \d+$/.test(t))e.textContent='v1.60 beta 18';
 });
 var olB=document.querySelector('#view-settings details.help ol');
-if(olB)olB.insertAdjacentHTML('beforeend','<li><b>Simple &amp; Full Experience (v1.60 beta 18):</b> every partner now has an Experience Level. New users answer two short questions and get a neutral recommendation; existing households are asked once on first open. Simple shows a Money tab with Money Available, This Month, payments, Top Spending and one plain-language insight, hides the Wealth tab, narrows Reports to the essentials with a “Show more reports” option and uses plain terms (Money In, Money Spent, Money Left, Change in Cash). Full keeps Wealth, the full Cash Flow analysis and the complete report catalogue. Switch it in Settings → App Preference → Experience Level — the switch shows a preview first and never changes, moves or reclassifies any financial record. Simple users can optionally add one Overall Position card (Settings → App Preference → Wealth features), and unfamiliar numbers carry an explanation sheet. Account summaries became tap-able tiles: tap All, Money, Vehicles, Between Us and more to see the accounts arranged by person, type and account, with Collapse all inside. Toasts now contrast with the theme — near-black in light mode, near-white in dark mode.</li>');
+if(olB)olB.insertAdjacentHTML('beforeend','<li><b>Simple &amp; Full Experience (v1.60 beta 18):</b> every partner now has an Experience Level. New users answer two short questions and get a neutral recommendation; existing households are asked once on first open. Simple shows a Money tab with Money available, This Month, payments, Top Spending and one plain-language insight, hides the Wealth tab, narrows Reports to the essentials with a “Show more reports” option and uses plain terms (Money in, Money spent, Money left, Change in cash). Full keeps Wealth, the full Cash Flow analysis and the complete report catalogue. Switch it in Settings → App Preference → Experience Level — the switch shows a preview first and never changes, moves or reclassifies any financial record. Simple users can optionally add one Overall Position card (Settings → App Preference → Wealth features), and unfamiliar numbers carry an explanation sheet. Account summaries became tap-able tiles: tap All, Money, Vehicles, Between Us and more to see the accounts arranged by person, type and account, with Collapse all inside. Toasts now contrast with the theme — near-black in light mode, near-white in dark mode.</li>');
 })();
 
 ;
@@ -16783,15 +16783,15 @@ function $(id){return document.getElementById(id);}
 function qa(sel,el){return [].slice.call((el||document).querySelectorAll(sel));}
 function txt(el){return (el&&el.textContent||'').trim();}
 
-/* ---------- 0 · one-time data tidy: one e-Wallet type ---------- */
+/* ---------- 0 · one-time data tidy: one E-wallet type ---------- */
 function mig21(){
   if(!window.DB||!DB.accounts)return;
   try{
     var ch=false;
-    DB.accounts.forEach(function(a){if(a.type==='eWallet'){a.type='e-Wallet';ch=true;}});
+    DB.accounts.forEach(function(a){if(a.type==='eWallet'){a.type='E-wallet';ch=true;}});
     var i=DB.accTypes.indexOf('eWallet');
     if(i>=0){DB.accTypes.splice(i,1);ch=true;}
-    if(DB.accTypes.indexOf('e-Wallet')<0&&DB.accounts.some(function(a){return a.type==='e-Wallet';})){DB.accTypes.push('e-Wallet');ch=true;}
+    if(DB.accTypes.indexOf('E-wallet')<0&&DB.accounts.some(function(a){return a.type==='E-wallet';})){DB.accTypes.push('E-wallet');ch=true;}
     var pf=DB.meta.profile||{},mi=DB.people.indexOf('Me');
     if(pf.name&&pf.name!=='Me'&&mi>=0&&!DB.txns.some(function(t){return t.person==='Me'||String(t.split||'').indexOf('Me')>=0||(t.split&&typeof t.split==='object'&&t.split.Me!=null);})&&!DB.accounts.some(function(a){return String(a.owner||'').split(' & ').indexOf('Me')>=0;})){DB.people.splice(mi,1);ch=true;}
     if(ch)save();
@@ -16881,7 +16881,7 @@ function polish21(){
       [].forEach.call(lb.childNodes,function(c){
         if(c.nodeType!==3)return;
         var v=c.nodeValue.trim();
-        var m={'Card':'Credit card','Credit Card':'Credit card','eWallet':'e-Wallet'}[v];
+        var m={'Card':'Credit card','Credit Card':'Credit card','eWallet':'E-wallet'}[v];
         if(m)c.nodeValue=c.nodeValue.replace(v,m);
       });
     });
@@ -18175,9 +18175,9 @@ var NOUN={accs:'account',cats:'category',subs:'sub-category',goals:'saving goal'
 var ICO={accs:'card',cats:'tag',subs:'list',recur:'repeat',goals:'target'};
 var TTL={accs:'Accounts',cats:'Categories',subs:'Sub-categories',recur:'Recurring transactions',goals:'Saving goals'};
 var CANADD={accs:1,cats:1,subs:1,goals:1};
-var TYPE_GROUPS=[['Money I have',['Bank','Cash','e-Wallet']],['Things I own',['Property','Vehicle','Investment','Other Asset','Other Balance']],['Money I owe',['Card','Loan','Hire Purchase']]];
-var TYPE_LB={'Bank':'Bank','Cash':'Cash','e-Wallet':'e-Wallet','Property':'Property','Vehicle':'Vehicle','Investment':'Investment','Other Asset':'Other asset (value)','Other Balance':'Other asset (balance)','Card':'Credit card','Loan':'Loan','Hire Purchase':'Hire purchase'};
-var TYPE_ORDER=['Bank','Cash','e-Wallet','Card','Loan','Hire Purchase','Property','Vehicle','Investment','Other Asset','Other Balance'];
+var TYPE_GROUPS=[['Money I have',['Bank','Cash','E-wallet']],['Things I own',['Property','Vehicle','Investment','Other Asset','Other Balance']],['Money I owe',['Card','Loan','Hire Purchase']]];
+var TYPE_LB={'Bank':'Bank','Cash':'Cash','E-wallet':'E-wallet','Property':'Property','Vehicle':'Vehicle','Investment':'Investment','Other Asset':'Other asset (value)','Other Balance':'Other asset (balance)','Card':'Credit card','Loan':'Loan','Hire Purchase':'Hire purchase'};
+var TYPE_ORDER=['Bank','Cash','E-wallet','Card','Loan','Hire Purchase','Property','Vehicle','Investment','Other Asset','Other Balance'];
 function tyLb(t){return TYPE_LB[t]||String(t||'').replace(/ · debt$/,'')||'Other';}
 function isCardT(t){try{return t==='Card'||typeHasCycle(t);}catch(e){return t==='Card';}}
 function isOweT(t){try{return accTypeKind(t)==='liability';}catch(e){return false;}}
@@ -18953,7 +18953,7 @@ SCREEN.afterDraw(function(){try{drillEdit();}catch(e){}});
       var lbl=!okA?'Enter an amount':(!okC?'Choose a category':(V61.mode==='copy'?'Add as new transaction':(F.id?'Save changes':(trf?'Transfer ':'Add ')+money(Math.abs(amt)))));
       sv.textContent=lbl;sv.disabled=!ok;
       nw.hidden=!!F.id||V61.mode==='copy';nw.disabled=!ok;
-      var ai=$('fAmount');if(ai){var L=(ai.value||ai.placeholder||'0.00').length;ai.style.width=Math.min(Math.max(L,4)+0.6,13)+'ch';}
+      var ai=$('fAmount');if(ai&&window.fitAmt127)fitAmt127(ai); /* beta 127: measured width, cursor right after the number */
       /* hero amount colour */
       var hero=$('fAmount').closest('.ad-amt61');if(hero){var eff=flowEffect(F.type,amt);hero.classList.toggle('t-exp',!trf&&eff<0);hero.classList.toggle('t-inc',!trf&&eff>0);hero.classList.toggle('t-trf',trf);}
     }catch(e){DIAG.note(e,'v61:sync');}
@@ -19432,7 +19432,7 @@ SCREEN.on('accSave',990028011);
 function simpleCoupleHTML28(){return withShared28(function(){
   var r=perRange(),eD=r.e<todayISO()?r.e:todayISO(),liq=DB.accounts.filter(function(a){var t=String(a.type||'').toLowerCase();return !a.locked&&!a.recv&&(t==='bank'||t==='cash'||t==='e-wallet'||t==='ewallet');}),cash=0;
   liq.forEach(function(a){var b=accountBalAsOf(a.name,eD);if(isFinite(b))cash+=b;});
-  var sharedMoney=card16(ico('wallet')+' Shared Money'+det26('v_money'),'<div class="kpis">'+kpi('Money Available',money(cash),cash<0?'neg':'pos')+'</div><div class="help small" data-info23="keep">'+liq.length+' shared bank, cash and e-Wallet account'+(liq.length===1?'':'s')+'.</div>');
+  var sharedMoney=card16(ico('wallet')+' Shared Money'+det26('v_money'),'<div class="kpis">'+kpi('Money available',money(cash),cash<0?'neg':'pos')+'</div><div class="help small" data-info23="keep">'+liq.length+' shared bank, cash and E-wallet account'+(liq.length===1?'':'s')+'.</div>');
   var up=safe28(function(){return V63.calc.upcoming(30).filter(function(x){return x.dl>=-30;});},[]);
   var upcoming=card16(ico('bell')+' Upcoming Shared Payments'+det26('upcoming'),up.length?up.slice(0,5).map(function(x){return V63.UPROW(x,true);}).join(''):'<div class="help">No shared payments due in the next 30 days.</div>');
   var latest=(DB.txns||[]).filter(function(t){return !t.isSample;}).sort(function(a,b){return a.date<b.date?1:a.date>b.date?-1:0;}).slice(0,5);
@@ -19456,10 +19456,10 @@ SCREEN.afterDraw(function(){
 Object.assign(X63.INFO,{
   networth:{t:'Net Worth',m:'The overall position recorded in the app.',c:'Assets minus debts at the selected date.',i:'Money, investments, property, vehicles and other recorded assets; loans and card balances.',x:'Items not added to the app and unrecorded market-value changes.',ex:'Assets RM300,000 minus debts RM80,000 = Net Worth RM220,000.'},
   assetmix:{t:'Asset Mix',m:'How the things you own are distributed by type.',c:'Each asset category divided by total recorded assets.',i:'Positive balances and recorded values in authorised asset accounts.',x:'Debts, income, spending and partner-private assets.',ex:'Property RM200,000 of RM250,000 assets = 80% of the asset mix.'},
-  debtratio:{t:'Debt Compared with What I have',m:'A comparison of recorded debt with recorded assets, not a score.',c:'Total debts divided by total assets.',i:'Authorised loan, Hire Purchase and card balances; recorded asset values.',x:'Income, monthly spending and unavailable private data.',ex:'RM50,000 debt ÷ RM250,000 assets = 20%.'},
-  emergency:{t:'Months Your Savings Could Cover',m:'An estimate of how long eligible savings could cover essential spending.',c:'Eligible savings divided by average essential monthly spending.',i:'Eligible bank and savings balances; expenses marked essential or fixed.',x:'Credit limits, property value and partner-private balances.',ex:'RM12,000 savings ÷ RM3,000 essential spending = 4 months.'},
-  wealthdrivers:{t:'Why Your Overall Position Changed',m:'The recorded reasons your overall position moved.',c:'Cash movement, debt change and recorded non-cash value change reconciled over the period.',i:'Authorised records with dates in the period.',x:'Unrecorded market changes and partner-private data.',ex:'Cash +RM2,000, debt −RM500 and property value +RM5,000 explain a RM7,500 increase.'},
-  recordedvalue:{t:'Value Entered',m:'The latest value you recorded for an asset.',c:'The newest value-history entry effective on or before the selected date; otherwise purchase price.',i:'Purchase price and dated value updates.',x:'Automatic market estimates.',ex:'A vehicle bought for RM80,000 with a later value of RM68,000 uses RM68,000.'}
+  debtratio:{t:'Debt compared with what I have',m:'A comparison of recorded debt with recorded assets, not a score.',c:'Total debts divided by total assets.',i:'Authorised loan, Hire Purchase and card balances; recorded asset values.',x:'Income, monthly spending and unavailable private data.',ex:'RM50,000 debt ÷ RM250,000 assets = 20%.'},
+  emergency:{t:'Months your savings could cover',m:'An estimate of how long eligible savings could cover essential spending.',c:'Eligible savings divided by average essential monthly spending.',i:'Eligible bank and savings balances; expenses marked essential or fixed.',x:'Credit limits, property value and partner-private balances.',ex:'RM12,000 savings ÷ RM3,000 essential spending = 4 months.'},
+  wealthdrivers:{t:'Why your overall position changed',m:'The recorded reasons your overall position moved.',c:'Cash movement, debt change and recorded non-cash value change reconciled over the period.',i:'Authorised records with dates in the period.',x:'Unrecorded market changes and partner-private data.',ex:'Cash +RM2,000, debt −RM500 and property value +RM5,000 explain a RM7,500 increase.'},
+  recordedvalue:{t:'Value entered',m:'The latest value you recorded for an asset.',c:'The newest value-history entry effective on or before the selected date; otherwise purchase price.',i:'Purchase price and dated value updates.',x:'Automatic market estimates.',ex:'A vehicle bought for RM80,000 with a later value of RM68,000 uses RM68,000.'}
 });
 
 /* ---------- private user-profile preferences, analytics and guided onboarding ---------- */
@@ -19484,7 +19484,7 @@ function trackExperience28(name,props){
   try{if(FB&&FB.app&&window.cmmAnalyticsOK&&cmmAnalyticsOK())dynImport('https://www.gstatic.com/firebasejs/'+FBJS+'/firebase-analytics.js').then(function(A){A.logEvent(A.getAnalytics(FB.app),name,props||{});}).catch(function(){});}catch(x){}
 }
 window.trackExperience=trackExperience28;
-function fullWelcome28(){var p=prefGet28();p.experienceTourComplete=p.experienceTourComplete||{};p.experienceTourComplete.full=true;prefSet28(p);trackExperience28('experience_tour_completed',{level:'full'});X63.ovOpen('<div class="xovh"><b>Welcome to Full Experience</b><button class="xovx" data-act="x63ovx">×</button></div><div class="b28-welcome"><div><b>1 · Wealth</b><small>Start with Net Worth and Asset mix.</small></div><div><b>2 · Cash Flow</b><small>See income, spending and Change in Cash.</small></div><div><b>3 · Reports</b><small>Open any card for the full catalogue and drill-downs.</small></div></div><button class="btn" data-act="b28tourgo">Show me Wealth</button>');}
+function fullWelcome28(){var p=prefGet28();p.experienceTourComplete=p.experienceTourComplete||{};p.experienceTourComplete.full=true;prefSet28(p);trackExperience28('experience_tour_completed',{level:'full'});X63.ovOpen('<div class="xovh"><b>Welcome to Full Experience</b><button class="xovx" data-act="x63ovx">×</button></div><div class="b28-welcome"><div><b>1 · Wealth</b><small>Start with Net Worth and Asset mix.</small></div><div><b>2 · Cash Flow</b><small>See income, spending and Change in cash.</small></div><div><b>3 · Reports</b><small>Open any card for the full catalogue and drill-downs.</small></div></div><button class="btn" data-act="b28tourgo">Show me Wealth</button>');}
 ACT.on('b28-review-experience',{b28firstacc:function(){X63.ovClose();try{if(window.M27&&M27.pending){}openMgr('accs');setTimeout(function(){var p=$28('m27plus');if(p)p.click();},80);}catch(e){gotoView('accounts');}},b28tourgo:function(){X63.ovClose();V63.itab='wealth';renderOverview();gotoView('overview');}});
 
 /* ---------- privacy regression catalogue used by QA and the specifications ---------- */
@@ -19541,7 +19541,7 @@ X63.expGo=function(){
   toast(to==='full'?'Switched to Full — Wealth added, data unchanged':'Switched to Simple — Wealth hidden, data unchanged');if(to==='full'&&!p.experienceTourComplete.full)setTimeout(fullWelcome291,320);
 };
 X63.wvPick=function(v){if(['hidden','summary','full-tab'].indexOf(v)<0)return;var p=prefGet28();p.simpleWealthVisibility=v;prefSet28(p);trackExperience28('simple_wealth_changed',{visibility:v});X63.ovClose();renderOverview();toast(v==='hidden'?'Wealth features hidden':v==='summary'?'Overall Position card added to Money':'Full Wealth tab added (Simple wording)');};
-function fullWelcome291(){X63.ovOpen('<div class="xovh"><b>Welcome to Full Experience</b><button class="xovx" data-act="x63ovx">×</button></div><div class="b28-welcome"><div><b>1 · Wealth</b><small>Start with Net Worth and Asset mix.</small></div><div><b>2 · Cash Flow</b><small>See income, spending and Change in Cash.</small></div><div><b>3 · Reports</b><small>Open any card for the full catalogue and drill-downs.</small></div></div><button class="btn" data-act="b291tourdone">Show me Wealth</button>');}
+function fullWelcome291(){X63.ovOpen('<div class="xovh"><b>Welcome to Full Experience</b><button class="xovx" data-act="x63ovx">×</button></div><div class="b28-welcome"><div><b>1 · Wealth</b><small>Start with Net Worth and Asset mix.</small></div><div><b>2 · Cash Flow</b><small>See income, spending and Change in cash.</small></div><div><b>3 · Reports</b><small>Open any card for the full catalogue and drill-downs.</small></div></div><button class="btn" data-act="b291tourdone">Show me Wealth</button>');}
 fullWelcome28=fullWelcome291;
 ACT.on('beta-28.1-private-preferences',{x63wvset:function(el){X63.wvPick(el.dataset.v);},b28tourgo:function(){X63.ovClose();V63.itab='wealth';renderOverview();gotoView('overview');},b291tourdone:function(){var p=prefGet28();p.experienceTourComplete=p.experienceTourComplete||{};p.experienceTourComplete.full=true;prefSet28(p);trackExperience28('experience_tour_completed',{level:'full'});X63.ovClose();V63.itab='wealth';renderOverview();gotoView('overview');}});
 V63.afterBoot=function(){var p=prefDefaults291();if(p.experienceLevel==='simple'&&V63.itab==='wealth')V63.itab='cash';}; /* beta 91: the old questions wizard is gone; onboarding asks the questions */
@@ -19554,7 +19554,7 @@ SCREEN.afterDraw(normalizeVisibleText291);
 simpleCoupleHTML28=function(){return withShared28(function(){
   var r=perRange(),eD=r.e<todayISO()?r.e:todayISO(),liq=DB.accounts.filter(function(a){var t=String(a.type||'').toLowerCase();return !a.locked&&!a.recv&&(t==='bank'||t==='cash'||t==='e-wallet'||t==='ewallet');}),cash=0;
   liq.forEach(function(a){var b=accountBalAsOf(a.name,eD);if(isFinite(b))cash+=b;});
-  var sharedMoney=card16(ico('wallet')+' Shared Money'+det26('v_money'),'<div class="kpis">'+kpi('Money Available',money(cash),cash<0?'neg':'pos')+'</div><div class="help small" data-info23="keep">'+liq.length+' shared bank, cash and e-Wallet account'+(liq.length===1?'':'s')+'.</div>');
+  var sharedMoney=card16(ico('wallet')+' Shared Money'+det26('v_money'),'<div class="kpis">'+kpi('Money available',money(cash),cash<0?'neg':'pos')+'</div><div class="help small" data-info23="keep">'+liq.length+' shared bank, cash and E-wallet account'+(liq.length===1?'':'s')+'.</div>');
   var spend=cShared16();if(!spend)spend=card16(ico('bag')+' Shared Spending'+det26('shared'),'<div class="help">No shared spending in this period.</div>');else spend=spend.replace(/Shared spending/g,'Shared Spending');
   var between=cBetween16();
   var up=safe28(function(){return V63.calc.upcoming(30).filter(function(x){return x.dl>=-30;});},[]),upcoming=card16(ico('bell')+' Upcoming Shared Payments'+det26('upcoming'),up.length?up.slice(0,5).map(function(x){return V63.UPROW(x,true);}).join(''):'<div class="help">No shared payments due in the next 30 days.</div>');
@@ -19706,7 +19706,7 @@ bkFileGo=function(){var pw=(($('bkPw')||{}).value||''),pw2=(($('bkPw2')||{}).val
 /* Partner preview: authoritative shared view, genuine latest activity. */
 if(window.B20)B20.pvData=function(){var me=safe28(function(){return meName();},''),P=safe28(function(){return partnerName();},'your partner'),v=buildSharedView(DB,{purpose:'preview'}),m=v.__sharedView||{},accSet={};(v.accounts||[]).forEach(function(a){if(a&&!a.locked&&!a.recv&&!/^.+ owes .+$/.test(a.name||''))accSet[a.name]=1;});var asc=cmm291Latest(v.txns||[],200).reverse();return {me:me,P:P,accs:(v.accounts||[]).filter(function(a){return accSet[a.name];}),txns:asc,relabel:function(n){return (m.labels||{})[n]||n;},anyPn:m.privateNames||{},accSet:accSet};};
 
-function finish291(){if(!DB)return setTimeout(finish291,30);prefDefaults291();ensureIds291();DB.meta.schemaVersion=SCHEMA291;if(window.experienceConfig){experienceConfig.version=VERSION291;experienceConfig.schemaVersion=SCHEMA291;}if(window.advancedCoupleConfig){advancedCoupleConfig.version=VERSION291;advancedCoupleConfig.schemaVersion=SCHEMA291;}save();document.title='v'+VERSION291+' · Couple Money Manager';var mv=document.querySelector('meta[name="app-version"]');if(mv)mv.content='1.60-beta.125';document.querySelectorAll('.sub').forEach(function(el){el.textContent=el.textContent.replace(/v?1\.60 beta 28(\.\d+)?/g,'v'+VERSION291);});if(X63.isSimple()&&V63.itab==='wealth')V63.itab='cash';renderAll();}
+function finish291(){if(!DB)return setTimeout(finish291,30);prefDefaults291();ensureIds291();DB.meta.schemaVersion=SCHEMA291;if(window.experienceConfig){experienceConfig.version=VERSION291;experienceConfig.schemaVersion=SCHEMA291;}if(window.advancedCoupleConfig){advancedCoupleConfig.version=VERSION291;advancedCoupleConfig.schemaVersion=SCHEMA291;}save();document.title='v'+VERSION291+' · Couple Money Manager';var mv=document.querySelector('meta[name="app-version"]');if(mv)mv.content='1.60-beta.127';document.querySelectorAll('.sub').forEach(function(el){el.textContent=el.textContent.replace(/v?1\.60 beta 28(\.\d+)?/g,'v'+VERSION291);});if(X63.isSimple()&&V63.itab==='wealth')V63.itab='cash';renderAll();}
 setTimeout(finish291,0);
 window.CMM_VERSION=VERSION291;window.CMM_SCHEMA_VERSION=SCHEMA291;
 })();
@@ -20299,7 +20299,7 @@ window.CMM_VERSION=VERSION291;window.CMM_SCHEMA_VERSION=SCHEMA291;
   }
   function openPay(x,fromCentre){
     var target=a59(x.name);if(!target){toast('This account is no longer available');return;}
-    var src=bestSource(target,x);if(!src){toast('Add a bank, cash or e-Wallet account to pay from first');return;}
+    var src=bestSource(target,x);if(!src){toast('Add a bank, cash or E-wallet account to pay from first');return;}
     REM.ctx={key:x.key,x:x,fromCentre:fromCentre,f:REM.f,scroll:fromCentre?($('mgrSheet')||{}).scrollTop:0,saving:false};
     if(fromCentre)closeMgr();
     var amt=x.amt>0?Math.round(x.amt*100)/100:'';
@@ -21313,7 +21313,7 @@ pvBuild=function(space){
    FUTURE BETAS: change B36.ver below (or re-pin with pinVer36) — plain "V59.ver=..." does nothing. */
 var CUR=B36.ver;
 function pinVer36(o){if(!o)return;try{Object.defineProperty(o,'ver',{get:function(){return CUR;},set:function(){},configurable:true});}catch(e){try{o.ver=CUR;}catch(x){}}}
-window.pinVer36=function(v){if(v)CUR=String(v);pinVer36(window.V59);pinVer36(window.V63);pinVer36(window.B20);try{document.title='v'+CUR+' · Couple Money Manager';}catch(e){}};
+window.pinVer36=function(v){if(v)CUR=String(v);pinVer36(window.V59);pinVer36(window.V63);pinVer36(window.B20);try{document.title='Couple Money Manager';}catch(e){}}; /* beta 127: no version in the browser title; Help & About shows it */
 try{pinVer36(typeof V59!=='undefined'?V59:null);}catch(e){}
 try{pinVer36(typeof V63!=='undefined'?V63:null);}catch(e){}
 try{pinVer36(window.B20);}catch(e){}
@@ -21322,7 +21322,7 @@ try{pinVer36(window.B20);}catch(e){}
 try{
   var tEl=document.querySelector('title');
   if(tEl&&window.MutationObserver)new MutationObserver(function(){
-    var want='v'+CUR+' · Couple Money Manager';
+    var want='Couple Money Manager'; /* beta 127: title without the version */
     if(document.title!==want&&/Couple Money Manager/.test(document.title))document.title=want;
   }).observe(tEl,{childList:true,characterData:true,subtree:true});
 }catch(e){}
@@ -21853,7 +21853,7 @@ function acct(n){return DB.accounts.find(function(x){return x.name===n;});}
 try{ICONS.info=ICONS.info||'<circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/>';}catch(e){}
 
 /* ---------- kind + icon + wording ---------- */
-var TY_ICO={Bank:'bank',Cash:'cash','e-Wallet':'wallet',eWallet:'wallet',Card:'card','Credit Card':'card',Loan:'bank','Hire Purchase':'carplus',Property:'home',Vehicle:'car',Investment:'trend','Other Asset':'box','Other Balance':'box'};
+var TY_ICO={Bank:'bank',Cash:'cash','E-wallet':'wallet',eWallet:'wallet',Card:'card','Credit Card':'card',Loan:'bank','Hire Purchase':'carplus',Property:'home',Vehicle:'car',Investment:'trend','Other Asset':'box','Other Balance':'box'};
 function tyIco(a){return TY_ICO[a.type]||(accTypeKind(a.type)==='liability'?'card':'wallet');}
 function kindOf(a){if(isVal(a))return 'val';if(isLoan(a))return 'loan';if(accTypeKind(a.type)==='liability')return 'debt';return 'asset';}
 function ordDay(n){return n+((n%10===1&&n!==11)?'st':(n%10===2&&n!==12)?'nd':(n%10===3&&n!==13)?'rd':'th');}
@@ -22310,6 +22310,7 @@ function sync40(){
     /* long amount shrinks */
     var ai=$('fAmount'),hero=ai?ai.closest('.ad-amt61'):null;
     if(ai&&hero)hero.classList.toggle('long40',String(ai.value||'').replace(/\s/g,'').length>10);
+    fitAmt127(ai);
   }catch(e){DIAG.note(e,'b40:sync');}
 }
 function syncHero40(){
@@ -22319,6 +22320,19 @@ function syncHero40(){
     var on=!!(window.CALC&&CALC.open&&CALC.el===ai);
     hero.classList.toggle('focus40',on);
     var c=$('fCaret40');if(c)c.style.display=on?'':'none';
+    fitAmt127(ai);
+  }catch(e){}
+}
+/* beta 127: the amount box is as wide as the number, so the drawn cursor sits right after the last digit */
+window.fitAmt127=fitAmt127;
+function fitAmt127(ai){
+  try{ai=ai||$('fAmount');if(!ai||!ai.closest('.ad-amt61'))return;
+    var cs=getComputedStyle(ai),t=String(ai.value||'')||ai.placeholder||'0.00';
+    var cv=fitAmt127.cv||(fitAmt127.cv=document.createElement('canvas')),cx=cv.getContext('2d');
+    cx.font=cs.fontWeight+' '+cs.fontSize+' '+cs.fontFamily;
+    var ls=parseFloat(cs.letterSpacing)||0,w=cx.measureText(t).width+ls*t.length;
+    var box=ai.closest('.ad-line61')||ai.parentNode,max=Math.max(60,(box?box.clientWidth:300)-60);
+    ai.style.width=Math.min(max,Math.ceil(w)+2)+'px';
   }catch(e){}
 }
 
@@ -22448,6 +22462,7 @@ document.addEventListener('input',function(e){
   if(!e.target||e.target.id!=='fAmount')return;
   var hero=e.target.closest('.ad-amt61');
   if(hero)hero.classList.toggle('long40',String(e.target.value||'').replace(/\s/g,'').length>10);
+  fitAmt127(e.target);
 });
 
 /* ---------- 8. actions ---------- */
@@ -24351,7 +24366,7 @@ try{
             Bring back, and Add (+) at the top. Any account opens in one tap.
      PAGE   (#pageAcc48, replaces the drill-down account page for every entry point) — sticky
             header with ⋯ menu, one hero per kind with the kind's own primary action:
-              bank / cash / e-wallet / investment → Add transaction · Transfer
+              bank / cash / E-wallet / investment → Add transaction · Transfer
               credit card  → Pay <statement> · Add purchase
               loan         → Record repayment · Interest      (progress bar, next instalment)
               hire purchase→ Record repayment · Payment plan
@@ -24414,7 +24429,7 @@ function catOf(a){
 }
 var HAVE_G=[['Money','coins121'],['Investments','trend'],['Properties','home'],['Vehicles','car'],['Other assets','gem121']];
 var OWE_G=[['Credit cards','card'],['Loans','loan121'],['Hire purchase','carplus']];
-var TIC={Bank:'bank',Cash:'cash','e-Wallet':'phone121',eWallet:'phone121',Investment:'trend',Property:'home',Vehicle:'car','Other Asset':'gem121','Other Balance':'coinhand121',Card:'card','Credit Card':'card','Hire Purchase':'carplus','Car / Hire Purchase Loan':'carplus'};
+var TIC={Bank:'bank',Cash:'cash','E-wallet':'phone121',eWallet:'phone121',Investment:'trend',Property:'home',Vehicle:'car','Other Asset':'gem121','Other Balance':'coinhand121',Card:'card','Credit Card':'card','Hire Purchase':'carplus','Car / Hire Purchase Loan':'carplus'};
 function icOf(a){var f=fam(a);return TIC[a.type]||({card:'card',loan:'loan121',hp:'carplus',prop:'home',other:'box',bu:'scale'}[f])||'wallet';}
 function owe(a){var f=fam(a);return f==='card'||f==='loan'||f==='hp';}
 function stOf(a){try{return V63.statusOf(a)||'active';}catch(e){return a.status||'active';}}
@@ -24518,7 +24533,7 @@ function homeHTML(){
   var bp=bu125();sa+=bp.have;so+=bp.owe;net=sa-so; /* beta 125 (D-92): a person's view counts what is owed between you */
   var pct=sa+so>0?Math.max(0,Math.min(100,sa/(sa+so)*100)):0;
   var cp=couple(),P=pn(),m=me();
-  var scLab={all:'Everyone',me:m||'Me',partner:P||'Partner',joint:'Joint'};
+  var scLab={all:'Everyone',me:'You',partner:P||'Partner',joint:'Joint'}; /* beta 127: You + partner's name */
   var h='<div class="a48pt"><h1>Accounts</h1><button type="button" class="a48plus" data-act="a48add" aria-label="Add account">'+ico('plus')+'</button></div>';
   var sim90=!!(window.simple21&&simple21()); /* beta 90: Simple has no net worth (D-41) — the card keeps What I have / What I owe only */
   h+='<div class="a48card a48nw">'+(sim90?(cp&&X.scope!=='all'?'<div class="l">'+esc(scLab[X.scope])+'</div>':''):'<div class="l">Net worth'+(cp&&X.scope!=='all'?' · '+esc(scLab[X.scope]):'')+'</div><div class="big'+(net<0?' o':'')+'">'+M(net)+'</div>')
@@ -24546,7 +24561,7 @@ function homeHTML(){
       var amt=Math.abs(+l.amt||+l.bal||0),cr=l.creditor,db=l.debtor;
       var t=cr===m?esc(db)+' owes you '+MA(amt):(db===m?'You owe '+esc(cr)+' '+MA(amt):esc(db)+' owes '+esc(cr)+' '+MA(amt));
       return '<div class="a48bu"><button type="button" class="a48bul" data-act="a48open" data-n="'+esc(l.name)+'"><span class="a48ti n">'+ico('scale')+'</span><span class="a48mid"><b>'+t+'</b><small>From shared items · tap for history</small></span></button>'
-        +'<button type="button" class="a48btn sm" data-act="settle" data-n="'+esc(l.name)+'">Settle up</button></div>';}).join('');
+        +'<button type="button" class="a48btn sm ghost" data-act="settle" data-n="'+esc(l.name)+'">Settle up</button></div>';}).join('');
     h+='</div>';
   }
   var closed=DB.accounts.filter(function(a){if(!a||fam(a)==='bu'||stOf(a)==='active')return false;if(a.vis==='me'&&(a.pvby||a.owner)&&(a.pvby||a.owner)!==me())return false;return inScope(a);});
@@ -25137,7 +25152,7 @@ SCREEN.on('renderAll',900000113);
 var TYPES={
   bank:{label:'Bank account',ic:'bank',ex:'Current, savings, fixed deposit',amt:'Balance today',ph:'e.g. Maybank savings',t:'Bank',more:['l4']},
   cash:{label:'Cash',ic:'cash',ex:'Wallet, petty cash',amt:'Cash on hand',ph:'e.g. Cash wallet',t:'Cash',more:[]},
-  ewallet:{label:'e-Wallet',ic:'phone121',ex:'Touch ’n Go, GrabPay',amt:'Balance today',ph:'e.g. TnG eWallet',t:'e-Wallet',more:[]},
+  ewallet:{label:'E-wallet',ic:'phone121',ex:'Touch ’n Go, GrabPay',amt:'Balance today',ph:'e.g. TnG eWallet',t:'E-wallet',more:[]},
   invest:{label:'Investment',ic:'trend',ex:'Shares, unit trust, EPF',amt:'Value today',ph:'e.g. ASB',t:'Investment',more:[]},
   property:{label:'Property',ic:'home',ex:'Home, apartment, land',amt:'Purchase price',ph:'e.g. Condo KL',t:'Property',more:['ptype','pdate']},
   vehicle:{label:'Vehicle',ic:'car',ex:'Car, motorcycle, van',amt:'Purchase price',ph:'e.g. Myvi',t:'Vehicle',more:['vtype','pdate']},
@@ -25289,7 +25304,7 @@ function openEdit(n,plan){
   openMgr('a48edit');
 }
 /* beta 111: change an account's type after it is created.
-   Families: money (Bank, Cash, e-Wallet, Investment: balance = start + transactions),
+   Families: money (Bank, Cash, E-wallet, Investment: balance = start + transactions),
    valued (Property, Vehicle, Other asset: value = latest value update or purchase price),
    debt (Credit card, Loan, Hire purchase: what I owe = start + transactions).
    Inside one family the balance is worked out the same way, so the change is always safe
@@ -26041,7 +26056,7 @@ var ALIAS={
 };
 var OLDNAMES={
   networth:'Wealth Drivers Joint Progress Debt liability',settle:'Money Owed to Me Snapshot receivables',cash:'Net Cash Flow Forecast Income vs expenses waterfall',
-  debts:'Debt Mix Debt Reduction liability liabilities Principal Repaid Remaining Instalments Repayment Trend outstanding loans hire purchase',
+  debts:'Debt Mix Debt Reduction liability liabilities Debt repayments Remaining Instalments Repayment Trend outstanding loans hire purchase',
   spending:'Where the Money Went Top 10 Spending Daily Spending Category Trends Fixed vs Variable Budget vs Actual breakdown',
   shared:'Contribution Shared Spending',goals:'Forecast Completion Funding History',
   v_alloc:'Cash Position Investments Properties Vehicles Businesses Asset Allocation money',
@@ -26177,7 +26192,7 @@ RULES.W3=function(){
   return {id:'W3',tab:'wealth',tag:'Safety net',tone:short?'warn':'good',sev:short?2:5,amt:H.liquid,fires:short||crossed,
     find:'Your cash covers '+m(ef)+' of spending'+(pe!=null&&Math.abs(ef-pe)>=0.1?', '+(ef>pe?'up':'down')+' from '+(Math.round(pe*10)/10)+' '+lastWord():'')+'.',
     evid:'<div class="gauge51"><i style="left:'+g.toFixed(1)+'%"></i></div><div class="gl51"><span>0</span><span>3</span><span>6</span><span>12 months</span></div>',
-    why:money(H.liquid)+' in cash and e-Wallets ÷ '+money(H.avgMonth)+' average monthly spending (last 3 months). 3–6 months is a common guide.',
+    why:money(H.liquid)+' in cash and E-wallets ÷ '+money(H.avgMonth)+' average monthly spending (last 3 months). 3–6 months is a common guide.',
     links:[['Financial Health','v_health']],H:H};
 };
 /* W4 · Concentration */
@@ -26397,7 +26412,7 @@ function cashHero(){
     +(o.tr.length?bars6(o.tr,cur):'')
     +'<div class="whyrow51"><span>Income <b class="pos">+'+money(S.inc)+'</b></span><span>Spent <b class="neg">\u2212'+money(S.exp)+'</b></span></div></div>'; /* beta 119: income green with +, spending red with − ; cash movement has its own card */
 }
-/* beta 119: Cash movement card (Full only) — the change in bank, cash and e-wallet balances, with money in and out */
+/* beta 119: Cash movement card (Full only) — the change in bank, cash and E-wallet balances, with money in and out */
 function cashMoveCard(){
   var r=curR(),m=null;try{m=INS.cashInOut(r);}catch(e){n51(e,'b119:cm');}
   if(!m)return '';
@@ -26407,7 +26422,7 @@ function cashMoveCard(){
     +'<div class="big51 '+(Math.abs(m.d)<0.005?'':up?'pos':'neg')+'"><b>'+(Math.abs(m.d)<0.005?'':'<span class="cm119a" aria-hidden="true">'+(up?'\u25b2':'\u25bc')+'</span>'+(up?'+':'\u2212'))+money(Math.abs(m.d))+'</b></div>'
     +'<div class="cm119io"><span>In <b class="pos">'+money(m.inn)+'</b></span><span>Out <b class="neg">'+money(m.out)+'</b></span></div></div>';
 }
-/* money in and money out of bank, cash and e-wallet accounts in a period; In − Out = the change in their balances (B7.netCF) */
+/* money in and money out of bank, cash and E-wallet accounts in a period; In − Out = the change in their balances (B7.netCF) */
 INS.cashInOut=function(r){
   var cf=B7.netCF(r),set={},inn=0,out=0,sD=addDaysISO(r.s,-1),eD=r.e<todayISO()?r.e:todayISO();
   cf.names.forEach(function(n){var b0=accountBalAsOf(n,sD),b1=accountBalAsOf(n,eD);if(isFinite(b0)&&isFinite(b1))set[n]=1;});
@@ -26426,7 +26441,7 @@ function heroFoot56(N,P,f,eD){
   var simp=false;try{simp=!!(X63.isSimple&&X63.isSimple());}catch(e){}
   if(simp){
     var tot=0,n=0;try{Object.keys(V63.liqSet('couple')).forEach(function(k){var b=accountBalAsOf(k,eD);if(isFinite(b)){tot+=b;n++;}});}catch(e){n51(e,'b56:liq');}
-    return 'Shared Money Available '+money(tot)+(n?' \u00b7 '+n+' account'+(n===1?'':'s'):'');
+    return 'Shared money available '+money(tot)+(n?' \u00b7 '+n+' account'+(n===1?'':'s'):'');
   }
   return 'Household net worth '+money(N.net)+(f!=null&&Math.abs(N.net-P.net)>=0.5?' · '+(f>0?'▲ ':'▼ ')+pc(Math.abs(f))+' '+thisWord():'');
 }
@@ -26436,7 +26451,7 @@ function coupleHero(){
   var simp=false;try{simp=!!(X63.isSimple&&X63.isSimple());}catch(e){}
   var B=betweenUs114(eD),isNow=eD===todayISO();
   var lab,big,line='';
-  if(simp){var ft=heroFoot56(N,P,f,eD),m=ft.match(/^Shared Money Available (.*?)( · .*)?$/);lab='Shared money available';big=m?m[1]:ft;line=m&&m[2]?m[2].replace(/^ · /,'').replace(/ (this|in) .*$/,' since '+esc(dLabelYW(addDaysISO(r.s,-1)))):'';}
+  if(simp){var ft=heroFoot56(N,P,f,eD),m=ft.match(/^Shared money available (.*?)( · .*)?$/);lab='Shared money available';big=m?m[1]:ft;line=m&&m[2]?m[2].replace(/^ · /,'').replace(/ (this|in) .*$/,' since '+esc(dLabelYW(addDaysISO(r.s,-1)))):'';}
   else{lab='Household net worth';big=money(N.net);var d=N.net-P.net;var sd117=esc(dLabelYW(addDaysISO(r.s,-1)));line=Math.abs(d)<0.5?'No change since '+sd117:'<span class="'+(d<0?'neg':'pos')+'">'+(d>0?'▲ ':'▼ ')+money(Math.abs(d))+(f!=null?' ('+pc(Math.abs(f))+')':'')+'</span> since '+sd117;}
   var owe='<div class="owe114"><div class="ot">'+ic('scale')+'<span><small>Between us</small><b>'+(B.amt<0.005?'All settled up':esc(B.debtor)+' owes '+esc(B.creditor)+' '+money(B.amt))+'</b></span></div>'
     +(isNow&&B.amt>=0.005?(B.open.length===1?'<button class="btn ghost sm" data-act="settle" data-n="'+esc(B.open[0].name)+'">Settle up</button>':'<button class="btn ghost sm" data-act="v63rep" data-k="settle">Settle up</button>'):'')+'</div>';
@@ -26478,10 +26493,10 @@ INS.simpleMoneyHTML=function(){
   var who=whoOK(),r=curR(),S=INS.saved(r),ncf=0;try{ncf=B7.netCF(r).d;}catch(e){}
   var names=Object.keys(V63.liqSet(who)),tot=0,asd=nwAsAt(r);names.forEach(function(n){var b=accountBalAsOf(n,asd);if(isFinite(b))tot+=b;});
   var h=perCtrlHTML();
-  h+='<button class="moneyavail18" data-act="ma121"><span class="ma-ic">'+ic('wallet')+'</span><span class="tx"><small>Money Available</small><b>'+money(tot)+'</b><em>'+names.length+' bank, cash and e-Wallet account'+(names.length===1?'':'s')+' · as at '+esc(dLabelYW(asd))+'</em></span></button>';
+  h+='<button class="moneyavail18" data-act="ma121"><span class="ma-ic">'+ic('wallet')+'</span><span class="tx"><small>Money available</small><b>'+money(tot)+'</b><em>'+names.length+' bank, cash and E-wallet account'+(names.length===1?'':'s')+' · as at '+esc(dLabelYW(asd))+'</em></span></button>';
   var sp=S.inc>0.004?Math.min(1,S.exp/S.inc):1;
   h+='<div data-info23="keep" class="card hero51"><h2>'+ic('piggy121')+' '+(S.saved<0?'Overspent':'Saved')+' '+(PER.off===0?'this '+word():'in '+esc(r.label)) /* beta 121: was "Left" */+det26('cash')+'</h2><div class="big51 '+(S.saved<0?'neg':'pos')+'"><b>'+(S.saved<0?'−':'')+money(Math.abs(S.saved))+'</b></div>'
-    +'<div class="sentence51">Money In '+money(S.inc)+' · Money Spent '+money(S.exp)+'</div>'+paceb(sp)+gl(pc(sp)+' of money in spent','Change in Cash '+sg(ncf))+'</div>';
+    +'<div class="sentence51">Money in '+money(S.inc)+' · Money spent '+money(S.exp)+'</div>'+paceb(sp)+gl(pc(sp)+' of money in spent','Change in cash '+sg(ncf))+'</div>';
   return h+list('simple');
 };
 
@@ -26570,7 +26585,7 @@ DYNF.networth=function(){
   var cut=body.indexOf('<div class="card"',5);
   body=cut>0?body.slice(0,cut)+moved+body.slice(cut):body+moved;
   return heroFor('W1',asAtTxt())+body
-    +calc('What I have minus what I owe. Between Us balances don’t count. Uses the values you entered, not market prices.')
+    +calc('What I have minus what I owe. '+(whoOK()==='couple'?(B3.mode()==='solo'?'Between Us balances don’t count.':'Between Us balances don’t count for the household: the two sides cancel.'):'Between Us counts: money owed to this person is part of what they have, and money they owe is part of what they owe.')+' Uses the values you entered, not market prices.')
     +rel([['Asset Mix','v_alloc'],['Debts','debts'],['Financial Health','v_health']]);
 };
 DYNF.v_health=function(){
@@ -26586,7 +26601,7 @@ DYNF.v_health=function(){
   var tr=[];try{tr=periodsBack(6).map(function(x){var rt=x.i>0.004?Math.round((x.i-x.ex)/x.i*100):null;return {lb:x.lb,v:rt||0,top:rt==null?'\u2014':rt+'%',tip:[x.full,'Savings rate '+(rt==null?'\u2014 (no income)':rt+'%'),'Income '+money(x.i),'Spending '+money(x.ex)]};});}catch(e){}
   var srt='<div class="card" data-info23="keep"><h2>'+ic('trend')+' Savings rate <span class="sub">last 6 '+word()+'s</span></h2>'+bars6(tr,tr.length-1)
     +'<div class="help small" style="margin-top:6px">'+(H.savingsRate==null?'No income recorded this '+word()+'.':pc(H.savingsRate)+' of income saved '+thisWord()+' — the same figure as the Cash Flow &amp; Savings hero.')+'</div></div>';
-  return hero+sn+dr+srt+calc('Safety net = liquid money (cash, bank, e-Wallet balances) ÷ average monthly spending over the 3 months before this period. Debt ratio = total debts ÷ total recorded assets. Savings rate = (income − spending) ÷ income, for the selected period.')
+  return hero+sn+dr+srt+calc('Safety net = liquid money (cash, bank, E-wallet balances) ÷ average monthly spending over the 3 months before this period. Debt ratio = total debts ÷ total recorded assets. Savings rate = (income − spending) ÷ income, for the selected period.')
     +rel([['Net Worth','networth'],['Cash Flow & Savings','cash']]);
 };
 DYNF.v_alloc=function(){
@@ -26637,7 +26652,7 @@ DYNF.v_valhist=function(){
    biggest first), By account collapsed with only accounts that moved */
 function net121(f,parts){
   var r=parts.r,net=f.ncf,smp=false;try{smp=!!(window.simple20&&simple20());}catch(e){}
-  var ins=[['Income received',f.income,'inc']],outs=[['Spending',f.spend],['Loan principal',f.loanP],['Card payments',f.cardP],['Investments',f.invest],['Asset purchases',f.assetBuy]];
+  var ins=[['Income received',f.income,'inc']],outs=[['Spending',f.spend],['Loan repayments',f.loanP],['Card payments',f.cardP],['Investments',f.invest],['Asset purchases',f.assetBuy]];
   if(f.other>0.004)ins.push(['Other money in',f.other]);else if(f.other<-0.004)outs.push(['Other money out',-f.other]);
   ins=ins.filter(function(x){return x[1]>0.004;}).sort(function(a,b){return b[1]-a[1];});
   outs=outs.filter(function(x){return x[1]>0.004;}).sort(function(a,b){return b[1]-a[1];});
@@ -26650,7 +26665,7 @@ function net121(f,parts){
       +list.map(function(x){return '<div class="nc121r"><div class="nc121l"><span>'+x[0]+(x[2]==='inc'?' '+info25('c121inc'):'')+'</span><b>'+money(x[1])+'</b></div><div class="nc121b"><i class="'+cls+'" style="width:'+Math.max(2,x[1]/mx*100).toFixed(1)+'%"></i></div></div>';}).join('')+'</div>';
   }
   var moved=(parts.acc||[]).filter(function(x){return Math.abs(x.d)>0.004;}),still=(parts.acc||[]).length-moved.length;
-  var plain=Math.abs(net)<0.005?'Your bank, cash and e-wallets did not change overall.':'Your bank, cash and e-wallets went '+(net<0?'down':'up')+' by '+money(Math.abs(net))+'.';
+  var plain=Math.abs(net)<0.005?'Your bank, cash and E-wallets did not change overall.':'Your bank, cash and E-wallets went '+(net<0?'down':'up')+' by '+money(Math.abs(net))+'.';
   var h='<div class="card" id="cashNet116" data-info23="keep"><h2>'+ic('swap')+' Net cash flow <span class="sub">'+esc(r.label)+'</span></h2>'
     +'<div class="nc121top"><b class="'+(net<0?'neg':'pos')+'">'+sg(net)+'</b><div class="help">'+plain+'</div></div>'
     +(ins.length||outs.length?grp('MONEY IN',ins,tIn,'pos')+grp('MONEY OUT',outs,tOut,'neg'):'<div class="help">No cash movement in this period yet.</div>');
@@ -26663,19 +26678,19 @@ function net121(f,parts){
 }
 DYNF.cash=function(){
   var r=perRange(),f=V63.calc.flow(r);
-  var rows=[['Income received in cash accounts',f.income],['Cash spending',-f.spend],['Loan principal',-f.loanP],['Card payments',-f.cardP],['Investments',-f.invest],['Asset purchases',-f.assetBuy],['Other movements',f.other]];
+  var rows=[['Income received in cash accounts',f.income],['Cash spending',-f.spend],['Loan repayments',-f.loanP],['Card payments',-f.cardP],['Investments',-f.invest],['Asset purchases',-f.assetBuy],['Other movements',f.other]];
   var mx=0;rows.forEach(function(x){mx=Math.max(mx,Math.abs(x[1]));});if(!mx)mx=1;
   var wf=rows.filter(function(x){return Math.abs(x[1])>0.004;}).map(function(x){return '<div class="wfrow"><span class="wl">'+x[0]+'</span><span class="wb"><i class="'+(x[1]<0?'neg':'pos')+'" style="width:'+Math.max(3,Math.abs(x[1])/mx*100).toFixed(1)+'%"></i></span><span class="wv">'+sg(x[1])+'</span></div>';}).join('')||'<div class="help">No cash movement in this period yet.</div>';
-  var mvIn='<div class="mgr-lb" style="margin-top:10px">'+ic('updown121')+' Cash movement \u00b7 bank, cash &amp; e-Wallets</div>'+wf+'<div class="wfrow wftot"><span class="wl"><b>Net cash flow</b></span><span></span><span class="wv"><b class="'+(f.ncf<0?'neg':'pos')+'">'+sg(f.ncf)+'</b></span></div>'
-    +'<div class="help small" style="margin-top:6px">“Income received in cash accounts” counts only income paid into bank, cash and e-Wallet accounts, so it can differ from income in Savings.</div>';
-  var mv='<div class="card" data-info23="keep"><h2>'+ic('updown121')+' Cash movement <span class="sub">bank, cash &amp; e-Wallets</span></h2>'+mvIn.replace(/^<div class="mgr-lb"[^]*?<\/div>/,'')+'</div>';
+  var mvIn='<div class="mgr-lb" style="margin-top:10px">'+ic('updown121')+' Cash movement \u00b7 bank, cash &amp; E-wallets</div>'+wf+'<div class="wfrow wftot"><span class="wl"><b>Net cash flow</b></span><span></span><span class="wv"><b class="'+(f.ncf<0?'neg':'pos')+'">'+sg(f.ncf)+'</b></span></div>'
+    +'<div class="help small" style="margin-top:6px">“Income received in cash accounts” counts only income paid into bank, cash and E-wallet accounts, so it can differ from income in Savings.</div>';
+  var mv='<div class="card" data-info23="keep"><h2>'+ic('updown121')+' Cash movement <span class="sub">bank, cash &amp; E-wallets</span></h2>'+mvIn.replace(/^<div class="mgr-lb"[^]*?<\/div>/,'')+'</div>';
   /* beta 116: two cards — Savings, then Net cash flow (with the cash movement inside it) */
   var parts=null;try{if(window.B7&&B7.cashParts&&OLD.cash===B7.repCash)parts=B7.cashParts();}catch(e){n51(e,'b116:cash');}
   if(parts)return heroFor('C1')+parts.sav+net121(f,parts)+call('v_forecast')
-    +calc('Saved = income minus spending. Cash movement only counts bank, cash and e-wallet accounts — loan and investment changes don’t count. Forecast uses your last 3 months’ average.')
+    +calc('Saved = income minus spending. Cash movement only counts bank, cash and E-wallet accounts — loan and investment changes don’t count. Forecast uses your last 3 months’ average.')
     +rel([['Spending','spending'],['Income Sources','v_income']]);
   return heroFor('C1')+call('cash')+mv+call('v_forecast')
-    +calc('Saved = income minus spending. Cash movement only counts bank, cash and e-wallet accounts — loan and investment changes don’t count. Forecast uses your last 3 months’ average.')
+    +calc('Saved = income minus spending. Cash movement only counts bank, cash and E-wallet accounts — loan and investment changes don’t count. Forecast uses your last 3 months’ average.')
     +rel([['Spending','spending'],['Income Sources','v_income']]);
 };
 REP_TITLES.spending=ic('receipt')+' Spending';
@@ -26757,7 +26772,7 @@ ACT.on('b51',{
   r51am:function(el){R51.am=el.dataset.v;rr();},
   ins51unban:function(){clearTimeout(BAN.t);BAN.undoUntil=0;banSave({});paintBanner();},
   ins51info:function(el){
-    var k=el.dataset.k,t=k==='disc'?['Recorded values','Based on the values you entered, not market prices.']:['Cash actually moved','How much your bank, cash and e-wallet balances changed. Card purchases count when you pay the bill.'];
+    var k=el.dataset.k,t=k==='disc'?['Recorded values','Based on the values you entered, not market prices.']:['Cash actually moved','How much your bank, cash and E-wallet balances changed. Card purchases count when you pay the bill.'];
     try{X63.ovOpen('<div class="xovh"><b>'+esc(t[0])+'</b><button class="xovx" data-act="x63ovx">×</button></div><p class="info23p">'+esc(t[1])+'</p>');}catch(e){toast(t[1]);}
   },
   r51share:function(){sharePDF();},
@@ -26777,7 +26792,7 @@ function sharePDF(){
   try{
     if(typeof psActive==='function'&&psActive()){toast('Turn off the Privacy Screen to share amounts.');return;}
     var title=(($('repTitle')||{}).textContent||'Report').trim(),P=pdfNew(),cards=document.querySelectorAll('#repDyn .card,#repDyn details.calc51');
-    P.h1(title);P.sub('Prepared '+dLabelY(todayISO())+' · '+perRange().label+' · '+whoLabel());
+    P.h1(title);P.sub('Prepared '+dLabelY(todayISO())+' · '+perRange().label+' · '+(whoOK()==='couple'?whoLabel():PER.who)); /* beta 127: a shared PDF names the person */
     [].forEach.call(cards,function(c){
       if(c.closest('[hidden]'))return;
       var h=c.querySelector('h2,summary'),ht=h?h.textContent.replace(/Details\s*›/,'').trim():'';
@@ -27027,7 +27042,7 @@ try{
 }catch(e){}
 })();
 
-;/* ===== v160b56 · Simple Couple tab stays Simple: Between Us shows Shared Money Available, not household net worth ===== */
+;/* ===== v160b56 · Simple Couple tab stays Simple: Between Us shows Shared money available, not household net worth ===== */
 (function(){try{if(window.pinVer36)window.pinVer36('1.60 beta 56');}catch(e){}
 try{if(!window.__B56RN){var ol=document.querySelector('#pageSet details.help ol')||document.querySelector('#view-settings details.help ol');if(ol){ol.insertAdjacentHTML('beforeend','<li><b>Simple Couple tab (beta 56):</b> in Simple, the Couple tab no longer shows household net worth (a Full experience figure); it shows the shared money available instead.</li>');window.__B56RN=1;}}}catch(e){}})();
 
@@ -27588,7 +27603,7 @@ R.profile=function(){var pr=DB.meta.profile||{},p=path(),c=p==='couple'||p==='ad
     +foot('profile');};
 R.account=function(){var p=path(),a=p==='adv',c=p==='couple',t=S.atype||'Bank',me=Me()||'Me',P=Pn(),sp=S.space||'private',ow=S.owner||'me';
   var h=h3('Add your first account','Start with the one you use most'+(pref().experienceLevel==='full'?'. Loans, cards, property and vehicles come later':'')+'.')
-    +'<label class="aul">Type</label><div class="segmini">'+['Bank','Cash','e-Wallet','Card'].map(function(x){return '<button type="button" class="'+(t===x?'on':'')+'" data-act="b62at" data-v="'+x+'">'+x+'</button>';}).join('')+'</div>'
+    +'<label class="aul">Type</label><div class="segmini">'+['Bank','Cash','E-wallet','Card'].map(function(x){return '<button type="button" class="'+(t===x?'on':'')+'" data-act="b62at" data-v="'+x+'">'+x+'</button>';}).join('')+'</div>'
     +'<label class="aul">Account name</label><input class="fin" id="ob62AccN" placeholder="e.g. Maybank savings" value="'+esc(S.accN||'')+'">'
     +'<label class="aul">'+(t==='Card'?'Amount owed today':'Balance today')+' ('+esc(DB.meta.currency||'RM')+')</label><input class="fin" id="ob62AccB" inputmode="decimal" placeholder="0.00" value="'+esc(S.accB||'')+'">';
   if(c)h+='<label class="aul">Whose account is it?</label><div class="segmini">'+[['me',me],['partner',P==='your partner'?'Partner':P],['joint','Joint']].map(function(x){return '<button type="button" class="'+(ow===x[0]?'on':'')+'" data-act="b62ow" data-v="'+x[0]+'">'+esc(x[1])+'</button>';}).join('')+'</div>'+note('In Couple, every household account is visible to both of you.');
@@ -28287,7 +28302,7 @@ function hoName(){return isCollab()?(PN()||'Your partner'):(ME()||'You');}
 function coName(){return isCollab()?(ME()||'You'):(PN()||'Your partner');}
 function who(){return hhOn()?uid():(pdhP().acct||ME()||'me');}
 function initial(n){return (String(n||'?').trim()[0]||'?').toUpperCase();}
-function stKind(){var s=storageMode();return s==='household'?'cloud':(s==='pdh'?'folder':'device');}
+function stKind(){var s=storageMode();if(s==='device'&&hhOn())return 'cloud'; /* beta 126: a phone linked to a cloud household syncs through it, whatever the saved setting says */return s==='household'?'cloud':(s==='pdh'?'folder':'device');}
 
 /* ---------- the household record: cloud households/{id} or rec in the folder's members.cmm ---------- */
 var HR={
@@ -28510,7 +28525,7 @@ SHEETS.share=function(p){
   return {title:'Choose what '+P+' sees',icon:'users',
     body:'<div class="k-lead">'+(p.own119?'<b>Advanced Couple is on.</b> First choose which of your accounts stay private. ':'')+'Tick the accounts '+P+' can see. <b>Unticked accounts '+(p.own119?'become':'stay')+' '+(mode()==='adv'?'Private to you':'on this phone')+'</b> — '+P+' never sees them or their balances.</div>'
       +'<div class="k-lst">'+L.map(function(a){return '<div class="k-li" data-act="m79tgshare" data-n="'+E(a.name)+'" role="switch" aria-checked="'+(!!p.sel[a.name])+'" tabindex="0" style="cursor:pointer"><span class="k-n">'+E(a.name)+'<small>'+E(a.type||'')+' · '+txn(a.name)+'</small></span><span class="k-tg'+(p.sel[a.name]?' k-on':'')+'"></span></div>';}).join('')+'</div>'
-      +'<div class="k-note" style="font-size:12.8px;color:var(--ink)">'+ic('users')+'<span><b>'+P+' will see '+n+' of '+tot+' account'+(tot===1?'':'s')+'.</b></span></div>'
+      +'<div class="k-note" style="font-size:13px;color:var(--ink)">'+ic('users')+'<span><b>'+P+' will see '+n+' of '+tot+' account'+(tot===1?'':'s')+'.</b></span></div>'
       +(n?'<div class="k-blk"><h4>What history does '+P+' get?</h4><div class="k-sg" style="margin-top:2px"><button class="'+(p.hist==='all'?'k-on':'')+'" data-act="m79hist" data-v="all">All history</button><button class="'+(p.hist==='today'?'k-on':'')+'" data-act="m79hist" data-v="today">From today</button></div><div class="k-expl">'+(p.hist==='all'?P+' sees past transactions too.':'Earlier transactions stay private. '+P+' sees new ones from today.')+'</div></div>':''),
     foot:'<button class="k-btn" data-act="m79sharedone">Save</button>'};
 };
@@ -28956,7 +28971,7 @@ function fhero(){
 function dsHero(){
   var P=E(OTH()),st=stKind();
   if(st==='device'){
-    if(!solo())return {cls:'warn',ic:'cloudoff',t:'Sync isn’t set up yet',s:own()?'Choose Couple Money Cloud or Google Drive or OneDrive so '+P+'’s phone and yours stay in step.':P+' hasn’t chosen how to sync yet. Your changes aren’t reaching '+P+'.',btn:own()?{l:'Choose how to sync',a:'d79where'}:null};
+    if(!solo())return {cls:'warn',ic:'cloudoff',t:'Sync isn’t set up yet',s:own()?'Choose Couple Money Cloud or Google Drive or OneDrive so '+P+'’s phone and yours stay in step.':'This phone isn’t in '+P+'’s household yet. Open '+P+'’s invite link on this phone to join. Until then your changes stay on this phone.',btn:own()?{l:'Choose how to sync',a:'d79where'}:null};
     var l=lastBk();
     if(!l)return {cls:'warn',ic:'phone',t:'Only on this phone',s:'If you lose this phone, your data is gone. Turn on live sync, or save a backup file to be safe.',btn:{l:'Back up now',a:'d79bknow'}};
     if(bkDueNow())return {cls:'warn',ic:'phone',t:'Backup due',s:'You have changes since your last backup file ('+fmtDT(l)+').',btn:{l:'Back up now',a:'d79bknow'}};
@@ -29135,7 +29150,7 @@ function folderSetup(){
 function folderActive(){
   var p=pdhP(),X=PX(),P=E(OTH()),o=p.role!=='member',pn=fPN(),hh=fhero(),sl=solo(),is=fIssue(),b=syncBanner(),fj=fJoined();
   b+='<div class="k-card k-pad">'+heroHTML(hh)+'</div>';
-  if(is==='pick'){var nf=fFiles();b+='<div class="k-card k-pad" style="margin-top:12px"><b style="font-size:14px">Files selected</b><div class="k-prog"><i style="width:'+Math.round(nf/NFILES*100)+'%"></i></div><p style="font-size:12.6px;color:var(--muted)"><b>'+nf+' of '+NFILES+'</b> selected — '+(NFILES-nf)+' still missing. Open <b>Couple Money Manager</b> and select every file.</p></div>';}
+  if(is==='pick'){var nf=fFiles();b+='<div class="k-card k-pad" style="margin-top:12px"><b style="font-size:14px">Files selected</b><div class="k-prog"><i style="width:'+Math.round(nf/NFILES*100)+'%"></i></div><p style="font-size:13px;color:var(--muted)"><b>'+nf+' of '+NFILES+'</b> selected — '+(NFILES-nf)+' still missing. Open <b>Couple Money Manager</b> and select every file.</p></div>';}
   if(is==='lost')b+='<div class="k-lbl">What to check</div><div class="k-card k-pad"><ul style="list-style:none;display:grid;gap:9px;font-size:13px;margin:0;padding:0">'+(o
     ?(sl?'<li>'+ic('folder')+' The “Couple Money Manager” folder is still in your '+pn+', not in the bin.</li><li>'+ic('key')+' You’re signed in to the same '+pn+' account.</li><li>'+ic('refresh')+' Then tap <b>Check again</b>.</li>'
       :'<li>'+ic('folder')+' The folder is still in your '+pn+', not in the bin.</li><li>'+ic('users')+' It is shared with '+E(p.email||'your partner')+' with <b>Can edit</b>.</li><li>'+ic('refresh')+' Then tap <b>Check again</b>.</li>')
@@ -30152,20 +30167,20 @@ try{if(!window.__B84RN){var ol=document.querySelector('#pageSet details.help ol'
   if(ol){ol.insertAdjacentHTML('beforeend','<li><b>Beta 84:</b> Data &amp; Sync tidy-up: the \u201cJust you \u00b7 on your own phone and accounts\u201d line now shows only in Advanced Couple, where the private-space section lives under it \u2014 Couple no longer shows it. And on an account\u2019s Activity screen, money going out now shows in red and money coming in stays green, the same as everywhere else in the app. Colour only \u2014 amounts, balances and records are unchanged.</li>');window.__B84RN=1;}}}catch(e){n84(e,'b84:rn');}
 })();
 
-/* ===== v160b85 · the Sync alerts "In-app banner" switch works · Money Available box plain white with gaps =====
+/* ===== v160b85 · the Sync alerts "In-app banner" switch works · Money available box plain white with gaps =====
    1. The In-app banner row on the Sync alerts panel looked exactly like the other switches but was
       a static, always-on look-alike with no tap target, so tapping it did nothing. It is now a real
       switch: off hides the alert banner at the top of Insights and the "Needs attention" dot on
       Settings; the phone-notification switch keeps working on its own. Sync status itself always
       stays on the Data & Sync page, and existing phones keep the banner on until you turn it off.
-   2. The Money Available box on the Money tab was an accent-tinted card sitting directly on the
+   2. The Money available box on the Money tab was an accent-tinted card sitting directly on the
       "This month" box below it. It is now a plain white card like the boxes around it, with the
       same 12 px gap between boxes. Presentation only — no numbers move. */
 (function(){'use strict';
 function n85(e,w){try{DIAG.note(e,w||'b85');}catch(_){}}
 try{if(window.pinVer36)window.pinVer36('1.60 beta 85');}catch(e){n85(e,'b85:pin');}
 try{if(!window.__B85RN){var ol=document.querySelector('#pageSet details.help ol')||document.querySelector('#view-settings details.help ol');
-  if(ol){ol.insertAdjacentHTML('beforeend','<li><b>Beta 85:</b> The \u201cIn-app banner\u201d switch on Sync alerts now works \u2014 tap it to show or hide the alert banner on Insights and the dot on Settings; phone notifications keep their own switch, and sync status always stays on Data &amp; Sync. The Money Available box on the Money tab is now a plain white card like the boxes around it, with a clear gap between boxes.</li>');window.__B85RN=1;}}}catch(e){n85(e,'b85:rn');}
+  if(ol){ol.insertAdjacentHTML('beforeend','<li><b>Beta 85:</b> The \u201cIn-app banner\u201d switch on Sync alerts now works \u2014 tap it to show or hide the alert banner on Insights and the dot on Settings; phone notifications keep their own switch, and sync status always stays on Data &amp; Sync. The Money available box on the Money tab is now a plain white card like the boxes around it, with a clear gap between boxes.</li>');window.__B85RN=1;}}}catch(e){n85(e,'b85:rn');}
 })();
 
 /* ===== v160b86 · the experience questions join the onboarding steps · import asks about duplicates · no unknown account types from import =====
@@ -30431,7 +30446,7 @@ try{if(window.pinVer36)window.pinVer36('1.60 beta 94'+(window.PAGE75&&PAGE75.sta
 
 /* ===== beta 101 · merge of the other tool's beta 93–100 (Transactions tidy-up, update toast, type roles, cleanup) with Claude's beta 94 (invitation email) ===== */
 (function(){'use strict';
-  try{var mv=document.querySelector('meta[name="app-version"]');if(mv)mv.content='1.60-beta.125';}catch(e){}
+  try{var mv=document.querySelector('meta[name="app-version"]');if(mv)mv.content='1.60-beta.127';}catch(e){}
   try{if(window.pinVer36)window.pinVer36('1.60 beta 101'+(window.PAGE75&&PAGE75.stale?' · old page file ('+(PAGE75.page||'none')+')':''));}catch(e){}
 })();
 
@@ -30547,7 +30562,7 @@ window.addEventListener('click',function(e){if(JUST&&e.target.closest&&e.target.
 })();
 
 ;/* ===== v160b107 · Account Activity — one bar, Back to Overview =====
-   Account page Activity tab (bank, e-wallet, cash, card, loan, hire purchase, property, vehicle):
+   Account page Activity tab (bank, E-wallet, cash, card, loan, hire purchase, property, vehicle):
    type tabs + period card + Import line replaced by one sticky bar (‹ period › + type menu); search and
    Import statement are icons in the title row (bank-type and card accounts). The bar sticks under the
    title row at its measured height. Phone Back and the ← button on Activity go to that account's Overview.
@@ -30675,7 +30690,7 @@ try{if(!window.__B109RN){var ol=document.querySelector('#pageSet details.help ol
 (function(){ 'use strict';
 try{if(window.pinVer36)window.pinVer36('1.60 beta 111'+(window.PAGE75&&PAGE75.stale?' · old page file ('+(PAGE75.page||'none')+')':''));}catch(e){}
 try{if(!window.__B111RN){var ol=document.querySelector('#pageSet details.help ol')||document.querySelector('#view-settings details.help ol');
-  if(ol){ol.insertAdjacentHTML('beforeend','<li><b>Beta 111:</b> Edit account now has a Type. Bank, Cash, e-Wallet and Investment can switch among themselves; so can Property, Vehicle and Other asset, and Credit card, Loan and Hire purchase. A change between these groups, or between What I have and What I owe, is allowed only while the account has no transactions or value updates. Restore from a backup › Choose a backup file opens the file picker again. Your Profile has no (i) on Your name and Sign-in. Joining with an invite link now says what is wrong when it can’t continue: the cloud sign-in, the connection, or the invite service. Try with sample data on an empty Insights or Transactions screen, or in Data &amp; Sync › Sample data: a 3-month example with its own Sample accounts, only on this phone, removed in one tap.</li>');window.__B111RN=1;}}}catch(e){}
+  if(ol){ol.insertAdjacentHTML('beforeend','<li><b>Beta 111:</b> Edit account now has a Type. Bank, Cash, E-wallet and Investment can switch among themselves; so can Property, Vehicle and Other asset, and Credit card, Loan and Hire purchase. A change between these groups, or between What I have and What I owe, is allowed only while the account has no transactions or value updates. Restore from a backup › Choose a backup file opens the file picker again. Your Profile has no (i) on Your name and Sign-in. Joining with an invite link now says what is wrong when it can’t continue: the cloud sign-in, the connection, or the invite service. Try with sample data on an empty Insights or Transactions screen, or in Data &amp; Sync › Sample data: a 3-month example with its own Sample accounts, only on this phone, removed in one tap.</li>');window.__B111RN=1;}}}catch(e){}
 })();
 
 ;/* ===== sample data UI · "Try with sample data" (isSample) =====
@@ -30982,6 +30997,7 @@ function isDebt(a){return !!a&&!a.recv&&!/^.+ owes .+$/.test(String(a.name))&&(i
 function isCard(a){return !!a&&!isLoan(a)&&accTypeKind(a.type)==='liability';}
 var INTRE=/interest|fee|charge/i;
 function isCharge(t){return t.type==='Expense'&&(!!t.lcharge||INTRE.test(String(t.category||''))||INTRE.test(String(t.subcategory||'')));}
+function repaid126(r,who){var f=debtFlow(r,who),t=0;(f.rows||[]).forEach(function(p){t+=+p.repay||0;});return Math.round(t*100)/100;}
 function debtFlow(r,who){
   who=who||whoOK();var per={},acc={};
   DB.accounts.forEach(function(a){if(isDebt(a)&&ownerHas(a.owner,who))acc[a.name]=a;});
@@ -31001,9 +31017,9 @@ function debtFlow(r,who){
   return {principal:r2(principal),interest:r2(interest),cardPay:r2(cardPay),total:r2(principal+interest),rows:rows,items:items};
 }
 B.debtFlow=debtFlow;
-try{V63.prin121=function(r){return debtFlow(r).principal;};}catch(e){}
+try{V63.prin121=function(r){return repaid126(r);};}catch(e){} /* beta 126: Debt repayments = all money paid into loans, hire purchase and cards */
 /* every older caller (cash-flow notes, Insights) now gets the corrected figures */
-try{var dn117=V63.driversNote;V63.driversNote=function(D){var t=dn117.apply(this,arguments);try{var pr=debtFlow(perRange()).principal;t=t.replace(/debt principal RM ?[\d,.]+/,'debt principal '+money(pr));}catch(e){}return t;};}catch(e){n117(e,'b117:dn');}
+try{var dn117=V63.driversNote;V63.driversNote=function(D){var t=dn117.apply(this,arguments);try{var pr=repaid126(perRange());t=t.replace(/debt repayments RM ?[\d,.]+/,'debt repayments '+money(pr));}catch(e){}return t;};}catch(e){n117(e,'b117:dn');}
 B.openDebtList=function(s,e,label){
   var r={s:s,e:e},f=debtFlow(r),w=whoOK();
   openTxnList('Card payments & loan repayments · '+label,function(){return payFlow({s:s,e:e},w).items;}); /* beta 119: the payments behind the bar */
@@ -31058,8 +31074,8 @@ function stackSVG(tr){
     if(k===sel)o+='<rect x="'+(cx-step/2+3).toFixed(1)+'" y="2" width="'+(step-6).toFixed(1)+'" height="'+(H-4)+'" rx="8" fill="var(--accent)" opacity=".09"/>';
     if(hl>0)o+='<rect x="'+(cx-bw/2).toFixed(1)+'" y="'+(base-hl).toFixed(1)+'" width="'+bw+'" height="'+Math.max(1.5,hl).toFixed(1)+'" rx="3" fill="'+RPC.l+'"/>';
     if(hc>0)o+='<rect x="'+(cx-bw/2).toFixed(1)+'" y="'+(base-hl-hc).toFixed(1)+'" width="'+bw+'" height="'+Math.max(1.5,hc).toFixed(1)+'" rx="3" fill="'+RPC.c+'"/>';
-    if(x.c+x.l>0.004)o+='<text x="'+cx+'" y="'+(base-hl-hc-6).toFixed(1)+'" text-anchor="middle" font-size="9.5" font-weight="700" fill="var(--ink)">'+cfmt(x.c+x.l)+'</text>';
-    o+='<text x="'+cx+'" y="'+(H-7)+'" text-anchor="middle" font-size="9.5" font-weight="'+(k===sel?'800':'600')+'" fill="var(--ink)" opacity="'+(k===sel?'1':'.78')+'">'+esc(x.lb)+'</text>';
+    if(x.c+x.l>0.004)o+='<text x="'+cx+'" y="'+(base-hl-hc-6).toFixed(1)+'" text-anchor="middle" font-size="11" font-weight="700" fill="var(--ink)">'+cfmt(x.c+x.l)+'</text>';
+    o+='<text x="'+cx+'" y="'+(H-7)+'" text-anchor="middle" font-size="11" font-weight="'+(k===sel?'800':'600')+'" fill="var(--ink)" opacity="'+(k===sel?'1':'.78')+'">'+esc(x.lb)+'</text>';
     o+='<rect class="hit117" x="'+(cx-step/2)+'" y="0" width="'+step+'" height="'+H+'" fill="transparent" data-act="debt117list" data-s="'+x.s+'" data-e="'+x.e+'" data-h="'+esc(x.full)+'"'+tip117([x.full,'Card payments '+money(x.c),'Loan repayments '+money(x.l),'Total '+money(x.c+x.l)])+' style="cursor:pointer"/>';
   });
   return '<svg viewBox="0 0 '+W+' '+H+'" style="width:100%;height:auto;min-width:'+Math.min(W,320)+'px">'+o+'</svg>';
@@ -31147,7 +31163,7 @@ DYNF.networth=function(){
     mv='<div class="card mv117" data-info23="keep"><h2>'+ico('trend')+' What moved it <span class="sub">'+esc(r.label)+'</span></h2>'
       +V63.mv121(D,r,sgm117)+'</div>';}catch(e){n117(e,'b117:nwmv');}
   return hero117('W1',asAt117())+sum+mv+pr
-    +calc117('What I have minus what I owe. Between Us balances don’t count. Uses the values you entered, not market prices.')
+    +calc117('What I have minus what I owe. '+(whoOK()==='couple'?(B3.mode()==='solo'?'Between Us balances don’t count.':'Between Us balances don’t count for the household: the two sides cancel.'):'Between Us counts: money owed to this person is part of what they have, and money they owe is part of what they owe.')+' Uses the values you entered, not market prices.')
     +rel117([['Asset Mix','v_alloc'],['Debts','debts'],['Financial Health','v_health']]);
 };
 try{DYNF.cash=(function(prev){return function(){return String(prev.apply(this,arguments)).replace("<span class=\"wl\">Loan principal</span>","<span class=\"wl\">Loan repayments</span>");};})(DYNF.cash);}catch(e){n117(e,'b117:cash');}
@@ -31469,7 +31485,7 @@ try{ACT.on('b121',{ma121:function(){
   }catch(e){n121(e,'b121:ma');}
 }});}catch(e){n121(e,'b121:maact');}
 /* info cards */
-try{INFO25.c121inc=['Income received','<p class="info23p">Only income paid into bank, cash and e-Wallet accounts. Income paid straight into a loan, card or investment is not counted here, so this can differ from income in Savings.</p>'];}catch(e){n121(e,'b121:info');}
+try{INFO25.c121inc=['Income received','<p class="info23p">Only income paid into bank, cash and E-wallet accounts. Income paid straight into a loan, card or investment is not counted here, so this can differ from income in Savings.</p>'];}catch(e){n121(e,'b121:info');}
 })();
 ;/* ===== v160b121 pin · version + release note ===== */
 try{if(window.pinVer36)window.pinVer36('1.60 beta 121'+(window.PAGE75&&PAGE75.stale?' · old page file ('+(PAGE75.page||'none')+')':''));}catch(e){}
@@ -31588,3 +31604,53 @@ try{if(!window.__B124RN){var ol=document.querySelector('#pageSet details.help ol
 try{if(window.pinVer36)window.pinVer36('1.60 beta 125'+(window.PAGE75&&PAGE75.stale?' · old page file ('+(PAGE75.page||'none')+')':''));}catch(e){}
 try{if(!window.__B125RN){var ol=document.querySelector('#pageSet details.help ol')||document.querySelector('#view-settings details.help ol');
   if(ol){ol.insertAdjacentHTML('beforeend','<li><b>Beta 125:</b> Between Us now counts in each person’s net worth: money your partner owes you is part of what you have, and money you owe your partner is part of what you owe. The household figure does not change.</li>');window.__B125RN=1;}}}catch(e){}
+;/* ===== v160b126 · a phone linked to a cloud household keeps the Couple Money Cloud setting (D-93) ===== */
+function heal126(why){
+  try{if(!DB||!DB.meta)return false;var v=m59(),s=v.storage||'device';if(s!=='device')return false;
+    var linked=!!(window.HH&&HH.id&&HH.info)||(!!DB.meta.hh&&!!DB.meta.cloudSyncOn);if(!linked)return false;
+    (v.log=v.log||[]).unshift({at:Date.now(),from:'device',to:'household',why:why||'linked'});v.log=v.log.slice(0,20);
+    v.storage='household';save();return true;}catch(e){try{DIAG.note(e,'b126:heal');}catch(x){}return false;}
+}
+window.heal126=heal126;
+try{var _ha126=hhAttach;hhAttach=function(){var r=_ha126.apply(this,arguments);try{return Promise.resolve(r).then(function(x){if(heal126('attached'))try{renderAll();}catch(e){}return x;});}catch(e){return r;}};}catch(e){}
+(function w126(){if(!window.DB||!DB.meta)return setTimeout(w126,200);if(heal126('start'))try{renderAll();}catch(e){}})();
+try{if(window.pinVer36)window.pinVer36('1.60 beta 126'+(window.PAGE75&&PAGE75.stale?' · old page file ('+(PAGE75.page||'none')+')':''));}catch(e){}
+try{if(!window.__B126RN){var ol=document.querySelector('#pageSet details.help ol')||document.querySelector('#view-settings details.help ol');
+  if(ol){ol.insertAdjacentHTML('beforeend','<li><b>Beta 126:</b> Data &amp; Sync shows the household sync correctly on a partner’s phone that joined earlier. Net Worth › What moved it shows Debt repayments: everything paid into loans, hire purchase and cards.</li>');window.__B126RN=1;}}}catch(e){}
+
+/* ===== beta 127 · UI consistency (ui-consistency/UI_FIX_PLAN.md) ===== */
+/* 10 · people: the signed-in person reads "You" in Between Us sentences ("You owe Kim", "Kim owes you").
+   Display only: ledger names and stored data are unchanged. */
+(function(){
+  function esc127(x){return String(x).replace(/[.*+?^${}()|[\]\\]/g,'\\$&');}
+  var SKIP=/^(SCRIPT|STYLE|TEXTAREA|INPUT|OPTION|SELECT)$/;
+  function rx(){try{if(!window.DB||!DB.meta)return null;var me=meName(),pt=partnerName();
+    if(!me||!pt||me===pt)return null;var k=me+'|'+pt;if(rx.k===k)return rx.v;
+    rx.k=k;rx.v=[[new RegExp('(^|[^\\p{L}])'+esc127(me)+' owes '+'(?='+esc127(pt)+'(?![\\p{L}]))','gu'),'$1You owe '],
+      [new RegExp('(^|[^\\p{L}])'+esc127(pt)+' owes '+esc127(me)+'(?![\\p{L}])','gu'),'$1'+pt+' owes you']];return rx.v;}catch(e){return null;}}
+  function fix(root){var R=rx();if(!R||!root)return;
+    var w=document.createTreeWalker(root,NodeFilter.SHOW_TEXT,{acceptNode:function(n){var p=n.parentNode;
+      if(!p||SKIP.test(p.nodeName)||(p.closest&&p.closest('[contenteditable],.pdfsrc')))return NodeFilter.FILTER_REJECT;
+      return n.nodeValue.indexOf(' owes ')>=0?NodeFilter.FILTER_ACCEPT:NodeFilter.FILTER_SKIP;}}),n,list=[];
+    while((n=w.nextNode()))list.push(n);
+    list.forEach(function(t){var v=t.nodeValue,o=v;R.forEach(function(r){v=v.replace(r[0],r[1]);});if(v!==o)t.nodeValue=v;});}
+  window.youOwe127=fix;
+  var q=[],pend=false;
+  function run(){pend=false;var l=q;q=[];l.forEach(function(r){if(r.isConnected)fix(r.nodeType===3?r.parentNode:r);});}
+  new MutationObserver(function(ms){ms.forEach(function(m){if(m.type==='characterData')q.push(m.target);else m.addedNodes.forEach(function(a){q.push(a);});});
+    if(!pend&&q.length){pend=true;requestAnimationFrame(run);}}).observe(document.body,{childList:true,subtree:true,characterData:true});
+  fix(document.body);
+})();
+/* 16 · category tiles: a long single word steps down to 12 then 11 px instead of breaking in the middle */
+(function(){
+  function fit(){document.querySelectorAll('.ad-cat61.t121 .nm').forEach(function(n){n.style.fontSize='';
+    var words=String(n.textContent||'').split(/\s+/);if(!n.parentNode||!n.parentNode.clientWidth)return;
+    var cv=fit.cv||(fit.cv=document.createElement('canvas').getContext('2d')),cs=getComputedStyle(n),sz=parseFloat(cs.fontSize);
+    function widest(px){cv.font=cs.fontWeight+' '+px+'px '+cs.fontFamily;return Math.max.apply(null,words.map(function(w){return cv.measureText(w).width;}));}
+    var tile=n.parentNode,tcs=getComputedStyle(tile),room=tile.clientWidth-parseFloat(tcs.paddingLeft)-parseFloat(tcs.paddingRight);[12,11].forEach(function(px){if(widest(sz)>room&&px<sz){n.style.fontSize=px+'px';sz=px;}});});}
+  window.fitCats127=fit;
+  var t=null;new MutationObserver(function(){clearTimeout(t);t=setTimeout(fit,30);}).observe(document.body,{childList:true,subtree:true});
+})();
+try{if(window.pinVer36)window.pinVer36('1.60 beta 127'+(window.PAGE75&&PAGE75.stale?' · old page file ('+(PAGE75.page||'none')+')':''));}catch(e){}
+try{if(!window.__B127RN){var ol=document.querySelector('#pageSet details.help ol')||document.querySelector('#view-settings details.help ol');
+  if(ol){ol.insertAdjacentHTML('beforeend','<li><b>Beta 127:</b> One look across the app: flat buttons in your theme colour, one set of corner and text sizes, "You" in Between Us lines, sentence-case labels and E-wallet spelling. The Red theme is gone and Green is a darker green. The amount cursor sits right after the number.</li>');window.__B127RN=1;}}}catch(e){}
