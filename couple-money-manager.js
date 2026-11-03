@@ -25794,7 +25794,7 @@ RULES.C2=function(){
   var mv=Object.keys(keys).map(function(k){return {c:k,d:r2((mc[k]||0)-(mp[k]||0))};}).filter(function(x){return Math.abs(x.d)>=1;}).sort(function(a,b){return Math.abs(b.d)-Math.abs(a.d);}).slice(0,3);
   var cmpTxt=isCurrent(r)?'vs the same point '+lastWord():'vs '+lastWord();
   var fires=f!=null&&Math.abs(f)>=0.1&&Math.abs(d)>=50;
-  var find=f==null?('You have spent '+money(sc)+' '+thisWord(r)+'.'):('Spending is '+(d>=0?'up ':'down ')+pc(Math.abs(f))+' '+cmpTxt+'.');
+  var find=f==null?('You have spent '+money(sc)+' '+thisWord(r)+'.'):(pc(Math.abs(f))==='0%'?('Spending is about the same as '+(isCurrent(r)?'this point ':'')+lastWord()+'.'):('Spending is '+(d>=0?'up ':'down ')+pc(Math.abs(f))+' '+cmpTxt+'.'));/* v4.2: no "up 0%" */
   var mx=mv.length?Math.abs(mv[0].d):1;
   /* beta 122 (D-86): name and "▼/▲ RM x" on one line, a full-width bar under it sized against the biggest change */
   var evid=(f!=null?'<div class="sub122">'+money(sc)+' '+(isCurrent(r)?'so far':thisWord(r))+' · '+money(sp)+' '+(isCurrent(r)?'by this point ':'')+lastWord()+'</div>':'')
@@ -31349,7 +31349,7 @@ try{if(window.DB)instSyncAll129();}catch(e){}
   function partner(){try{return (typeof partnerName==='function'&&partnerName())||(DB&&DB.meta&&DB.meta.profile&&DB.meta.profile.partner)||'';}catch(e){return '';}}
   function couple(){try{return typeof isCouple==='function'&&isCouple();}catch(e){return false;}}
   function simple(){try{return !!(window.X63&&X63.isSimple&&X63.isSimple());}catch(e){return true;}}
-  function initial(n){n=txt(n);return n?n.charAt(0).toUpperCase():'Y';}
+  function initial(n){n=txt(n);if(!n||/^(you|me)$/i.test(n))return '';return n.charAt(0).toUpperCase();}
   function setTextOnly(el,value){
     if(!el)return;
     var nodes=Array.prototype.slice.call(el.childNodes).filter(function(n){return n.nodeType===3;});
@@ -31361,6 +31361,7 @@ try{if(window.DB)instSyncAll129();}catch(e){}
     Array.prototype.slice.call(el.childNodes).forEach(function(n){if(n.nodeType===3&&match.test(txt(n.nodeValue)))n.nodeValue=' '+value;});
   }
   function cap(s){s=txt(s);return s?s.charAt(0).toUpperCase()+s.slice(1):s;}
+  function keepRM(root){if(!root)return;var w=document.createTreeWalker(root,4),n;while((n=w.nextNode())){if(/RM [\d−-]/.test(n.nodeValue))n.nodeValue=n.nodeValue.replace(/RM (?=[\d−-])/g,'RM\u00a0');}}/* v4.2: never break between RM and the amount */
   function ensureLead(view,key,title,body){
     if(!view)return;
     var lead=q(':scope > .eucie-page-lead',view);
@@ -31385,6 +31386,7 @@ try{if(window.DB)instSyncAll129();}catch(e){}
     var hm=q('#hdrMenuBtn');if(hm){
       var badge=q('#hmenuBadge'),dot=q('.sdot118',hm),badgeHTML=badge?badge.outerHTML:'<span class="bdg" id="hmenuBadge" hidden></span>';
       if(!q('.eucie-avatar',hm))hm.innerHTML='<span class="eucie-avatar">'+initial(me())+'</span>'+badgeHTML;
+      var av=q('.eucie-avatar',hm),ini=initial(me());if(av&&av.textContent!==ini)av.textContent=ini;/* v4.2: keep the initial in step with the profile name */
       if(dot&&!q('.sdot118',hm))hm.appendChild(dot);
       hm.setAttribute('aria-label','Open your menu');
     }
@@ -31413,21 +31415,26 @@ try{if(window.DB)instSyncAll129();}catch(e){}
   function home(){
     var v=q('#view-overview');if(!v)return;
     var h=(new Date()).getHours(),g=h<12?'Good morning':h<18?'Good afternoon':'Good evening';
-    ensureLead(v,'Mine · Yours · Ours',g+', '+(me()==='Me'?'you':me()),couple()?'A quiet view of what is yours, what is '+(partner()||'your partner')+'’s, and what you are building together.':'A quiet place to understand your money and what comes next.');
+    ensureLead(v,'',g+', '+(me()==='Me'?'you':me()),couple()?'A quiet view of what is yours, what is '+(partner()||'your partner')+'’s, and what you are building together.':'A quiet place to understand your money and what comes next.');
     qa('#perBody .stab button',v).forEach(function(b){
       var k=b.getAttribute('data-t');
       if(k==='wealth')b.textContent=simple()?'Money':'Wealth';
       else if(k==='cash')b.textContent=simple()?'Money':'Cash Flow';
       else if(k==='couple')b.textContent='Couple';
     });
+    qa('#perBody .stab button',v).forEach(function(b){b.setAttribute('data-eucie-tab','1');});
     var note=q('.eucie-scope-note',v),pb=q('#perBody',v);
     if(couple()&&pb){
       var ours=false;try{ours=typeof whoOK==='function'&&whoOK()==='couple';}catch(e){}
       if(!note){note=document.createElement('div');note.className='eucie-scope-note';var tabs=q('.stab',pb);if(tabs)tabs.insertAdjacentElement('afterend',note);else pb.insertAdjacentElement('afterbegin',note);}
-      note.innerHTML=ours&&DB&&DB.meta&&DB.meta.usage==='adv'?'Shared accounts only — private accounts and private entries never count in Ours.':'Mine · '+(partner()?(partner()+'’s'):'Yours')+' · Ours';
+      var advOurs=ours&&DB&&DB.meta&&DB.meta.usage==='adv';note.innerHTML=advOurs?'Shared accounts only — private accounts and private entries never count in Ours.':'';note.hidden=!advOurs;
     }else if(note)note.remove();
     qa('#perBody [data-act="perwho"],#perBody .perchip',v).forEach(labelPersonControl);
-    qa('#perBody button',v).forEach(function(b){var t=txt(b.textContent);if(!t)return;
+    qa('#perBody .perchip',v).forEach(function(b){var w0=document.createTreeWalker(b,4),n0;if(!couple()){while((n0=w0.nextNode())){var u=n0.nodeValue.replace(/\s*·\s*Everyone/g,'');if(u!==n0.nodeValue)n0.nodeValue=u;}}
+      var lb=qa('b,small',b).map(function(c){return txt(c.textContent).replace(/\s*▾$/,'');}).filter(Boolean).join(', ');if(lb)b.setAttribute('aria-label','Period: '+lb);/* v4.2: readable label (was "this monthMonth") */
+      if(!couple())return;var p=partner(),w=document.createTreeWalker(b,4),n;/* v4.2: rename inside the label's text nodes so its two lines stay separate */
+      while((n=w.nextNode())){var t0=n.nodeValue,t1=t0.replace(/\bCouple\b|\bEveryone\b/g,'Ours').replace(/\bYou\b/g,'Mine').replace(/\s*·\s*All my money/g,'');if(p&&t1.indexOf(p+'’s')<0)t1=t1.split(p).join(p+'’s');if(t1!==t0)n.nodeValue=t1;}});
+    qa('#perBody button',v).forEach(function(b){var t=txt(b.textContent);if(!t||b.hasAttribute('data-eucie-tab')||b.classList.contains('perchip'))return;
       if(couple()&&/(Couple|Everyone|You|All my money)/i.test(t)){
         var p=partner(),n=t.replace(/Couple|Everyone/g,'Ours').replace(/\bYou\b/g,'Mine').replace(/\s*·\s*All my money/g,'');
         if(p)n=n.replace(new RegExp(p.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'),'g'),p+'’s');
@@ -31437,7 +31444,7 @@ try{if(window.DB)instSyncAll129();}catch(e){}
   }
   function activity(){
     var v=q('#view-txns');if(!v)return;
-    ensureLead(v,'Your money journal','Activity','October 2026 · newest first');
+    ensureLead(v,'','Activity','Newest first');
     var s=q('#txSearch');if(s){s.placeholder='Search activity…';s.setAttribute('aria-label','Search activity');}
     var ft=q('#txfTitle');if(ft)ft.textContent='Filter activity';
     qa('#txfBody .grp,#txfBody .mgr-lb').forEach(function(e){if(/^People$/i.test(txt(e.textContent)))e.textContent='Whose';});
@@ -31461,7 +31468,7 @@ try{if(window.DB)instSyncAll129();}catch(e){}
   }
   function accounts(){
     var v=q('#view-accounts');if(!v)return;
-    ensureLead(v,'Mine · '+(partner()?(partner()+'’s'):'Yours')+' · Joint · Ours','Accounts','What is owned, what is owed, and who each account belongs to.');
+    ensureLead(v,'','Accounts','What is owned, what is owed, and who each account belongs to.');
     qa('#acc48home .a48chip,#acc48home .chip,#acc48home [data-act="v63accf"],#view-accounts .accchips button').forEach(labelPersonControl);
     qa('#view-accounts .a48hp,#view-accounts .help').forEach(function(e){
       if(/partner-private|private entries/i.test(e.textContent)&&DB&&DB.meta&&DB.meta.usage==='adv')e.textContent='Ours includes shared accounts only. Private accounts and private entries never appear.';
@@ -31469,12 +31476,12 @@ try{if(window.DB)instSyncAll129();}catch(e){}
   }
   function reports(){
     var v=q('#view-reports');if(!v)return;
-    ensureLead(v,'Questions, not a catalogue','Reports','Choose the question you want Eucie to answer.');
+    ensureLead(v,'','Reports','Choose the question you want Eucie to answer.');
     qa('#v63tiles button').forEach(function(b){b.setAttribute('aria-label',txt(b.textContent));});
   }
   function settings(){
     var v=q('#view-settings');if(!v)return;
-    ensureLead(v,'Short lists · plain words','Settings','Core choices first. Details appear only after you choose a destination.');
+    ensureLead(v,'','Settings','');
     qa('#view-settings .srow .stx b,#view-settings .setrow b').forEach(function(b){
       var t=txt(b.textContent);if(t==='App Preferences'||t==='App Preference')b.textContent='Preferences';
       else if(t==='Privacy & Security')b.textContent='Privacy & security';
@@ -31510,7 +31517,8 @@ try{if(window.DB)instSyncAll129();}catch(e){}
   }
   function decorate(){
     queued=false;
-    try{brand();nav();menu();home();activity();accounts();reports();settings();sheets();auth();version();document.title='Eucie';document.body.classList.add('eucie-v41');}catch(e){try{if(window.DIAG)DIAG.note(e,'eucie-v41');}catch(_){} }
+    try{brand();nav();menu();home();activity();accounts();reports();settings();sheets();auth();version();document.title='Eucie';(function(){var p=partner();var fix=function(t){t=t.replace(/(Net worth|What I have|What I owe)\s*·\s*You\b/g,'$1 · Mine').replace(/\bMonth · Couple\b/g,'Month · Ours').replace(/(\d{4}) · Couple\b/g,'$1 · Ours');if(p)t=t.replace(new RegExp('(Net worth|What I have|What I owe) · '+p+'(?!’)'),'$1 · '+p+'’s');return t;};
+      qa('#view-accounts .a48card, #pageReport .perchip, #pageReport #repSub, #pageReport .rhd, #pageReport header').forEach(function(root){var w=document.createTreeWalker(root,4),n;while((n=w.nextNode())){var u=fix(n.nodeValue);if(u!==n.nodeValue)n.nodeValue=u;}});})();/* v4.2: one vocabulary — Mine · Kim’s · Joint · Ours */qa('#view-overview .bu b,#view-overview b,#view-accounts .a48mid b').forEach(keepRM);document.body.classList.add('eucie-v41');}catch(e){try{if(window.DIAG)DIAG.note(e,'eucie-v41');}catch(_){} }
   }
   function schedule(){if(queued)return;queued=true;requestAnimationFrame(decorate);}
   try{
@@ -31563,15 +31571,15 @@ try{if(window.DB)instSyncAll129();}catch(e){}
     var cp=couple(),simple=false;
     try{simple=!!(window.X63&&X63.isSimple&&X63.isSimple());}catch(e){}
     var g=[
-      {id:'money',ic:'swap',q:cp?'Where does our money go?':'Where does my money go?',sub:'Spending, income and cash flow',items:[['spending','Spending','by category and trend'],['v_income','Income Sources','sources and changes'],['cash','Cash Flow & Savings','income, spending and savings'],['cc','Card Statements','statements and due dates']]},
-      cp?{id:'together',ic:'users',q:'How are we doing together?',sub:'Between Us, shared and personal',items:[['settle','Between Us','who owes whom and settle up'],['shared','Shared vs Personal','shared and personal activity']]}:null,
-      {id:'goals',ic:'target',q:cp?'Are we reaching our goals?':'Am I reaching my goals?',sub:'Saving goals and budgets',items:[['goals','Saving Goals','progress and pace to finish']]},
-      simple?null:{id:'stand',ic:'trend',q:cp?'Where do we stand?':'Where do I stand?',sub:'Net worth and financial health',items:[['networth','Net Worth','trend and what moved it'],['v_health','Financial Health','safety net and ratios']]},
-      simple?null:{id:'assets',ic:'pie',q:cp?'What do we own and owe?':'What do I own and owe?',sub:'Asset mix, debts and value history',items:[['v_alloc','Asset Mix','what is owned by category'],['debts','Debts','balances, repayments and schedule'],['v_valhist','Recorded Value History','dated value adjustments']]}
+      {id:'money',ic:'swap',q:cp?'Where does our money go?':'Where does my money go?',sub:'Spending, income and cash flow',items:[['spending','Spending','by category and trend'],['v_income','Income sources','sources and changes'],['cash','Cash flow & savings','income, spending and savings'],['cc','Card statements','statements and due dates']]},
+      cp?{id:'together',ic:'users',q:'How are we doing together?',sub:'Between Us, shared and personal',items:[['settle','Between Us','who owes whom and settle up'],['shared','Shared vs personal','shared and personal activity']]}:null,
+      {id:'goals',ic:'target',q:cp?'Are we reaching our goals?':'Am I reaching my goals?',sub:'Saving goals and budgets',items:[['goals','Saving goals','progress and pace to finish']]},
+      simple?null:{id:'stand',ic:'trend',q:cp?'Where do we stand?':'Where do I stand?',sub:'Net worth and financial health',items:[['networth','Net worth','trend and what moved it'],['v_health','Financial health','safety net and ratios']]},
+      simple?null:{id:'assets',ic:'pie',q:cp?'What do we own and owe?':'What do I own and owe?',sub:'Asset mix, debts and value history',items:[['v_alloc','Asset mix','what is owned by category'],['debts','Debts','balances, repayments and schedule'],['v_valhist','Recorded value history','dated value adjustments']]}
     ];
     return g.filter(Boolean);
   }
-  function monthWord(){try{var d=todayISO(),m=+d.slice(5,7)-1;return MONTHS[m]||'This month';}catch(e){return 'This month';}}
+  function monthWord(){try{var d=todayISO(),m=+d.slice(5,7)-1;return ['January','February','March','April','May','June','July','August','September','October','November','December'][m]||'This month';}catch(e){return 'This month';}}
   function groupsHTML(){
     return reportGroups().map(function(g){var open=!!OPEN[g.id];
       return '<div class="eucie-report-group"><button type="button" class="eucie-report-question" data-act="v41qgrp" data-g="'+g.id+'" aria-expanded="'+open+'"><span class="eucie-report-icon">'+ico(g.ic)+'</span><span class="eucie-report-copy"><b>'+esc(g.q)+'</b><small>'+esc(g.sub)+'</small></span><span class="eucie-report-count">'+g.items.length+'</span>'+ico(open?'chevdown':'chevright')+'</button>'
