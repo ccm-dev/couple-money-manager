@@ -9,7 +9,7 @@ var CMM_FN_REGION='asia-southeast1';
    place before anything is drawn, loads the matching stylesheet, and clears the offline copies so
    the next start fetches fresh files. Help & About then says "old page file". */
 var PAGE75=(function(){
-  var JSV='1.60-beta.129',out={js:JSV,page:'',stale:false,fixed:false};
+  var JSV='1.60-beta.130',out={js:JSV,page:'',stale:false,fixed:false};
   try{
     var m=document.querySelector('meta[name="app-version"]');out.page=m?m.content:'';
     out.stale=out.page!==JSV;
@@ -1409,7 +1409,8 @@ var TXF71=(function(){
     return true;
   }
   function whoHit(t,w){
-    if(w==='Joint')return isJoint(ownerOf(t.account))||isJoint(t.person);
+    if(w==='Ours')return adv()?isSharedItem(t):true;
+    if(w==='Joint')return isJoint(ownerOf(t.account))||isJoint(ownerOf(t.to))||isJoint(t.person);
     return shareOf(t,w)>0; /* the person filter rule: the transaction's own person or a split share */
   }
   function isOnlyMe(t){var m=me();return (!!t.priv&&!t.masked&&(!t.pby||t.pby===m))||myPrivAcc(t.account)||myPrivAcc(t.to);}
@@ -1444,7 +1445,7 @@ var TXF71=(function(){
   function sanitize(){
     var F=TXF;
     if(!couple()){F.who=[];F.between=false;}
-    else{var ok=[me(),pa(),'Joint'];F.who=F.who.filter(function(w){return ok.indexOf(w)>=0;});}
+    else{var ok=[me(),pa(),'Joint','Ours'];F.who=F.who.filter(function(w){return ok.indexOf(w)>=0;}).slice(0,1);}
     if(!adv())F.space='all';
     var names={};DB.accounts.forEach(function(a){names[a.name]=1;});
     F.acc=F.acc.filter(function(n){return names[n];});
@@ -1467,14 +1468,25 @@ var TXF71=(function(){
   function moneyS(n){return curL()+Number(n).toLocaleString('en-MY',{maximumFractionDigits:2});}
   function amtLbl(){var F=TXF;if(F.min==null&&F.max==null)return 'Amount';if(F.min!=null&&F.max!=null)return moneyS(F.min)+' – '+moneyS(F.max);return F.min!=null?'Over '+moneyS(F.min):'Under '+moneyS(F.max);}
   function spaceLbl(){return {all:'Space',shared:'Shared only',private:'Only me'}[TXF.space];}
-  function whoLbl(w){return w==='Joint'?'Joint':w;}
+  function whoLbl(w){return w==='Ours'?'Ours':w==='Joint'?'Joint':w===me()?'Mine':w===pa()?(pa()+'’s'):w;}
+  function whoMark(w){
+    if(w==='Joint'||w==='Ours')return '<span class="eucie-ownmark pair" aria-hidden="true"><i></i><i></i></span>';
+    return '<span class="eucie-ownmark '+(w===me()?'mine':'yours')+'" aria-hidden="true">'+esc(lead121(w||'?'))+'</span>';
+  }
+  function whoseHelp(w){
+    if(!w)return 'None chosen — showing everything you can see.';
+    if(w==='Ours')return adv()?'Shared activity only — private accounts and private entries never count in Ours.':'All household activity — joint activity is counted once.';
+    if(w==='Joint')return 'Joint-account activity at full value.';
+    if(w===me())return 'Your accounts, your share of joint accounts and your share of split bills.';
+    return esc(pa()||'Your partner')+'’s accounts, share of joint accounts and split bills.';
+  }
   /* one person picked → amounts show that person's share (the existing person-filter behaviour) */
-  function sharePerson(){var w=TXF.who;return (w.length===1&&w[0]!=='Joint')?w[0]:'';}
+  function sharePerson(){var w=TXF.who;return (w.length===1&&w[0]!=='Joint'&&w[0]!=='Ours')?w[0]:'';}
   /* ---------- toolbar ---------- */
   function chipsList(){var F=TXF,c=[];
     if(F.period.k!=='month')c.push({d:'period',l:periodLabel()});
     if(F.type!=='all')c.push({d:'type',l:lblType(F.type)});
-    F.who.forEach(function(v){c.push({d:'who',v:v,l:whoLbl(v)});});
+    F.who.forEach(function(v){c.push({d:'who',v:v,l:whoLbl(v),mark:whoMark(v)});});
     F.acc.forEach(function(v){c.push({d:'acc',v:v,l:v});});
     F.cat.forEach(function(v){c.push({d:'cat',v:v,l:v});});
     if(F.min!=null||F.max!=null)c.push({d:'amt',l:amtLbl()});
@@ -1485,7 +1497,7 @@ var TXF71=(function(){
   function toolbar(n){
     var F=TXF;
     var c=chipsList(),ac=$('txfAct');
-    if(ac){ac.hidden=!c.length;ac.innerHTML=c.map(function(x){return '<button type="button" class="txf71-achip" data-act="txfrmchip" data-d="'+x.d+'" data-v="'+esc(x.v||'')+'" aria-label="Remove '+esc(x.l)+' filter">'+esc(x.l)+ico('x')+'</button>';}).join('')
+    if(ac){ac.hidden=!c.length;ac.innerHTML=c.map(function(x){return '<button type="button" class="txf71-achip" data-act="txfrmchip" data-d="'+x.d+'" data-v="'+esc(x.v||'')+'" aria-label="Remove '+esc(x.l)+' filter">'+(x.mark||'')+esc(x.l)+ico('x')+'</button>';}).join('')
       +(c.length>1?'<button type="button" class="txf71-arst" data-act="txfreset1">Reset</button>':'');}
     var b=badgeN(),fb=$('txFilterBtn'),fn=$('txFilterN');
     if(fb){fb.classList.toggle('on',!!b);fb.setAttribute('aria-label','Filters'+(b?', '+b+' active':''));}
@@ -1506,14 +1518,14 @@ var TXF71=(function(){
   function secSum(k){var F=TXF;switch(k){
     case 'period':return {t:periodLabel(),on:F.period.k!=='month'};
     case 'type':return {t:lblType(F.type),on:F.type!=='all'};
-    case 'who':return {t:lst(F.who,'Anyone'),on:F.who.length>0};
+    case 'who':return {t:lst(F.who,'Everything'),on:F.who.length>0};
     case 'acc':return {t:lst(F.acc,'All accounts'),on:F.acc.length>0};
     case 'cat':return {t:lst(F.cat,'All categories'),on:F.cat.length>0};
     case 'amt':return {t:(F.min==null&&F.max==null)?'Any amount':amtLbl(),on:F.min!=null||F.max!=null};
     case 'more':{var a=[];if(F.between)a.push('Between Us');if(F.rec)a.push('Recurring');return {t:a.length?a.join(', '):'Off',on:a.length>0};}
     case 'space':return {t:spaceLbl()==='Space'?'All':spaceLbl(),on:F.space!=='all'};
   }return {t:'',on:false};}
-  var SECT={period:'Period',type:'Type',who:'Who',acc:'Account',cat:'Category',amt:'Amount',more:'More',space:'Space'};
+  var SECT={period:'Period',type:'Type',who:'Whose',acc:'Account',cat:'Category',amt:'Amount',more:'More',space:'Space'};
   function chk(){return '<span class="ck">'+ico('check')+'</span>';}
   function catList(){
     var F=TXF,q=UI.catQ.toLowerCase(),p=list('cat'),cnt={};
@@ -1542,9 +1554,9 @@ var TXF71=(function(){
     case 'type':
       return '<div class="sec"><div class="cw">'+['all','Expense','Income','Transfer'].map(function(t){var on=F.type===t;return '<button type="button" class="chip'+(on?' on':'')+'" data-act="txftype" data-v="'+t+'" aria-pressed="'+on+'">'+lblType(t)+'</button>';}).join('')+'</div></div>';
     case 'who':{
-      var P=[[me(),'',me()+' (you)'],[pa(),'b',pa()],['Joint','j','Joint accounts']].filter(function(x){return x[0];}),pl=list('who');
+      var P=[[me(),'Mine'],[pa(),pa()+'’s'],['Joint','Joint'],['Ours','Ours']].filter(function(x){return x[0];}),pl=list('who');
       return '<div class="sec"><div class="cw">'+P.map(function(x){var c=rows(pl.filter(function(t){return whoHit(t,x[0]);})),on=F.who.indexOf(x[0])>=0;
-        return '<button type="button" class="chip'+(on?' on':'')+((c||on)?'':' z')+'" data-act="txfwho" data-v="'+esc(x[0])+'" aria-pressed="'+on+'"><span class="av '+x[1]+'">'+esc(x[0]==='Joint'?'J':lead121(x[0]))+'</span>'+esc(x[2])+'<i>'+c+'</i></button>';}).join('')+'</div></div>';}
+        return '<button type="button" class="chip eucie-whose-chip'+(on?' on':'')+'" data-act="txfwho" data-v="'+esc(x[0])+'" aria-pressed="'+on+'">'+whoMark(x[0])+esc(x[1])+'<i>'+c+'</i></button>';}).join('')+'</div><p class="help small eucie-whose-help">'+whoseHelp(F.who[0]||'')+'</p></div>';}
     case 'acc':{
       var m0=me(),p0=pa(),cp=couple(),groups={},order=[],al=list('acc');
       DB.accounts.forEach(function(a){var o=a.owner||'',g=!cp?'':(o===m0?'me':o===p0?'pa':isJoint(o)?'joint':'other');if(!groups[g]){groups[g]=[];order.push(g);}groups[g].push(a);});
@@ -27580,7 +27592,7 @@ ACT.on('b71-txf',{
   txfsec:function(el){var U=TXF71.UI,k=el.dataset.v;U.sec=U.sec===k?null:k;U.catQ='';TXF71.renderSheet();
     try{var o=document.querySelector('#txfBody .acc.open');if(o)o.scrollIntoView({block:'nearest'});}catch(e){}},
   txfper:function(el){TXF.period=el.dataset.v==='ym'?{k:'ym',ym:el.dataset.ym}:{k:el.dataset.v};apply();},
-  txfwho:function(el){tog(TXF.who,el.dataset.v);apply();},
+  txfwho:function(el){var v=el.dataset.v;TXF.who=(TXF.who.length===1&&TXF.who[0]===v)?[]:[v];apply();},
   txfacc:function(el){tog(TXF.acc,el.dataset.v);apply();},
   txfcat:function(el){tog(TXF.cat,el.dataset.v);apply();},
   txfcatclr:function(){TXF.cat=[];apply();},
@@ -31321,4 +31333,274 @@ try{if(window.DB)instSyncAll129();}catch(e){}
     finally{INST129.m=0;INST129.r='';}
     return r;
   };
+})();
+
+;/* ===== Eucie v4.1 · Warm Financial Home · v1.60 beta 130 =====
+   Presentation and information hierarchy only. The Beta 129 data model,
+   calculations, transaction routes, privacy rules, permissions and sync remain
+   authoritative. */
+(function(){
+  'use strict';
+  var VERSION='1.60 beta 130', queued=false, observing=false;
+  function q(s,r){return (r||document).querySelector(s);}
+  function qa(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s));}
+  function txt(x){return String(x==null?'':x).trim();}
+  function me(){try{return (typeof meName==='function'&&meName())||(DB&&DB.meta&&DB.meta.profile&&DB.meta.profile.name)||'You';}catch(e){return 'You';}}
+  function partner(){try{return (typeof partnerName==='function'&&partnerName())||(DB&&DB.meta&&DB.meta.profile&&DB.meta.profile.partner)||'';}catch(e){return '';}}
+  function couple(){try{return typeof isCouple==='function'&&isCouple();}catch(e){return false;}}
+  function simple(){try{return !!(window.X63&&X63.isSimple&&X63.isSimple());}catch(e){return true;}}
+  function initial(n){n=txt(n);return n?n.charAt(0).toUpperCase():'Y';}
+  function setTextOnly(el,value){
+    if(!el)return;
+    var nodes=Array.prototype.slice.call(el.childNodes).filter(function(n){return n.nodeType===3;});
+    if(nodes.length){nodes.forEach(function(n,i){n.nodeValue=i===nodes.length-1?value:'';});}
+    else el.appendChild(document.createTextNode(value));
+  }
+  function replaceTextNode(el,match,value){
+    if(!el)return;
+    Array.prototype.slice.call(el.childNodes).forEach(function(n){if(n.nodeType===3&&match.test(txt(n.nodeValue)))n.nodeValue=' '+value;});
+  }
+  function cap(s){s=txt(s);return s?s.charAt(0).toUpperCase()+s.slice(1):s;}
+  function ensureLead(view,key,title,body){
+    if(!view)return;
+    var lead=q(':scope > .eucie-page-lead',view);
+    if(!lead){lead=document.createElement('div');lead.className='eucie-page-lead';view.insertAdjacentElement('afterbegin',lead);}
+    var html=(key?'<div class="eucie-cap">'+key+'</div>':'')+'<h1>'+title+'</h1>'+(body?'<p>'+body+'</p>':'');
+    if(lead.innerHTML!==html)lead.innerHTML=html;
+    qa(':scope > .a48pt, :scope > .sethdr25',view).forEach(function(h){h.hidden=true;});
+  }
+  function iconPath(){return 'icons/icon-192.png';}
+  function brand(){
+    document.title='Eucie';
+    var meta=q('meta[name="application-name"]');if(meta)meta.content='Eucie';
+    meta=q('meta[name="apple-mobile-web-app-title"]');if(meta)meta.content='Eucie';
+    meta=q('meta[name="app-version"]');if(meta)meta.content='1.60-beta.130';
+    var evening=document.documentElement.getAttribute('data-mode')==='dark'||(!document.documentElement.getAttribute('data-mode')&&window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches);
+    meta=q('meta[name="theme-color"]');if(meta)meta.content=(evening?'#1C1714':'#F8F4EE');
+    var appHeader=q('header.hdr');if(appHeader)appHeader.style.setProperty('background',evening?'#1C1714':'#F8F4EE','important');
+    document.documentElement.removeAttribute('data-accent');
+    var logo=q('.hdr .logo');if(logo&&(!q('img',logo)||q('img',logo).getAttribute('src')!==iconPath()))logo.innerHTML='<img src="'+iconPath()+'" alt="">';
+    var bh=q('.hdr .brand h1');if(bh)bh.textContent='eucie';
+    var bs=q('#brandSub');if(bs)bs.textContent='Mine. Yours. Ours.';
+    var hm=q('#hdrMenuBtn');if(hm){
+      var badge=q('#hmenuBadge'),dot=q('.sdot118',hm),badgeHTML=badge?badge.outerHTML:'<span class="bdg" id="hmenuBadge" hidden></span>';
+      if(!q('.eucie-avatar',hm))hm.innerHTML='<span class="eucie-avatar">'+initial(me())+'</span>'+badgeHTML;
+      if(dot&&!q('.sdot118',hm))hm.appendChild(dot);
+      hm.setAttribute('aria-label','Open your menu');
+    }
+    var auth=q('#authScr');if(auth){
+      var al=q('.aulogo',auth);if(al)al.innerHTML='<img src="'+iconPath()+'" alt="">';
+      var at=q('.autitle',auth);if(at)at.textContent='eucie';
+    }
+    var lock=q('#lockScr .lklogo');if(lock)lock.innerHTML='<img src="'+iconPath()+'" alt="">';
+    qa('.sub').forEach(function(e){if(/v?1\.60 beta \d+/.test(e.textContent))e.textContent=e.textContent.replace(/v?1\.60 beta \d+/, 'v'+VERSION);});
+    try{if(window.V59)V59.ver=VERSION;}catch(e){}
+  }
+  function nav(){
+    var n=q('.nav');if(!n)return;
+    qa('.nbtn',n).forEach(function(b){
+      var v=b.getAttribute('data-v');
+      if(v==='txns')setTextOnly(b,'Activity');
+      else if(v==='overview')setTextOnly(b,'Home');
+      else if(v==='accounts')setTextOnly(b,'Accounts');
+      else if(v==='reports')setTextOnly(b,'Reports');
+    });
+  }
+  function menu(){
+    var labels={hdrProfile:'My profile',hdrSettings:'Settings',hdrBell16:'Reminder centre',hdrAsk:'Money assistant',eyeBtn:(function(){try{return psActive&&psActive()?'Show amounts':'Hide amounts';}catch(e){return 'Hide amounts';}})()};
+    Object.keys(labels).forEach(function(id){var b=q('#'+id);if(!b)return;var s=q('.eucie-menu-label',b);if(!s){s=document.createElement('span');s.className='eucie-menu-label';b.appendChild(s);}s.textContent=labels[id];});
+  }
+  function home(){
+    var v=q('#view-overview');if(!v)return;
+    var h=(new Date()).getHours(),g=h<12?'Good morning':h<18?'Good afternoon':'Good evening';
+    ensureLead(v,'Mine · Yours · Ours',g+', '+(me()==='Me'?'you':me()),couple()?'A quiet view of what is yours, what is '+(partner()||'your partner')+'’s, and what you are building together.':'A quiet place to understand your money and what comes next.');
+    qa('#perBody .stab button',v).forEach(function(b){
+      var k=b.getAttribute('data-t');
+      if(k==='wealth')b.textContent=simple()?'Money':'Wealth';
+      else if(k==='cash')b.textContent=simple()?'Money':'Cash Flow';
+      else if(k==='couple')b.textContent='Couple';
+    });
+    var note=q('.eucie-scope-note',v),pb=q('#perBody',v);
+    if(couple()&&pb){
+      var ours=false;try{ours=typeof whoOK==='function'&&whoOK()==='couple';}catch(e){}
+      if(!note){note=document.createElement('div');note.className='eucie-scope-note';var tabs=q('.stab',pb);if(tabs)tabs.insertAdjacentElement('afterend',note);else pb.insertAdjacentElement('afterbegin',note);}
+      note.innerHTML=ours&&DB&&DB.meta&&DB.meta.usage==='adv'?'Shared accounts only — private accounts and private entries never count in Ours.':'Mine · '+(partner()?(partner()+'’s'):'Yours')+' · Ours';
+    }else if(note)note.remove();
+    qa('#perBody [data-act="perwho"],#perBody .perchip',v).forEach(labelPersonControl);
+    qa('#perBody button',v).forEach(function(b){var t=txt(b.textContent);if(!t)return;
+      if(couple()&&/(Couple|Everyone|You|All my money)/i.test(t)){
+        var p=partner(),n=t.replace(/Couple|Everyone/g,'Ours').replace(/\bYou\b/g,'Mine').replace(/\s*·\s*All my money/g,'');
+        if(p)n=n.replace(new RegExp(p.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'),'g'),p+'’s');
+        if(n!==t)b.textContent=n;
+      }else if(!couple()&&/\s*·\s*Everyone/i.test(t))b.textContent=t.replace(/\s*·\s*Everyone/i,'');
+    });
+  }
+  function activity(){
+    var v=q('#view-txns');if(!v)return;
+    ensureLead(v,'Your money journal','Activity','October 2026 · newest first');
+    var s=q('#txSearch');if(s){s.placeholder='Search activity…';s.setAttribute('aria-label','Search activity');}
+    var ft=q('#txfTitle');if(ft)ft.textContent='Filter activity';
+    qa('#txfBody .grp,#txfBody .mgr-lb').forEach(function(e){if(/^People$/i.test(txt(e.textContent)))e.textContent='Whose';});
+    qa('#txfBody [data-act="txfwho"],#txfAct [data-d="who"]').forEach(labelPersonControl);
+    var show=q('#txfShow');if(show&&/^Show$/i.test(txt(show.textContent)))show.textContent='Show activity';
+  }
+  function personLabel(raw){
+    raw=txt(raw);var m=me(),p=partner();
+    if(!raw||raw==='all'||raw==='couple'||raw==='Everyone'||raw==='Couple')return 'Ours';
+    if(raw==='You'||raw===m||raw===m+' (you)')return 'Mine';
+    if(raw==='Joint'||/Joint accounts/i.test(raw))return 'Joint';
+    if(p&&(raw===p||raw===p+'’s'))return p+'’s';
+    return raw;
+  }
+  function labelPersonControl(el){
+    if(!el)return;
+    var raw=el.getAttribute('data-p')||el.getAttribute('data-v')||el.getAttribute('data-f')||txt(el.textContent);
+    var label=personLabel(raw);
+    Array.prototype.slice.call(el.childNodes).forEach(function(n){if(n.nodeType===3&&txt(n.nodeValue))n.nodeValue=' '+label+' ';});
+    el.setAttribute('aria-label',label);
+  }
+  function accounts(){
+    var v=q('#view-accounts');if(!v)return;
+    ensureLead(v,'Mine · '+(partner()?(partner()+'’s'):'Yours')+' · Joint · Ours','Accounts','What is owned, what is owed, and who each account belongs to.');
+    qa('#acc48home .a48chip,#acc48home .chip,#acc48home [data-act="v63accf"],#view-accounts .accchips button').forEach(labelPersonControl);
+    qa('#view-accounts .a48hp,#view-accounts .help').forEach(function(e){
+      if(/partner-private|private entries/i.test(e.textContent)&&DB&&DB.meta&&DB.meta.usage==='adv')e.textContent='Ours includes shared accounts only. Private accounts and private entries never appear.';
+    });
+  }
+  function reports(){
+    var v=q('#view-reports');if(!v)return;
+    ensureLead(v,'Questions, not a catalogue','Reports','Choose the question you want Eucie to answer.');
+    qa('#v63tiles button').forEach(function(b){b.setAttribute('aria-label',txt(b.textContent));});
+  }
+  function settings(){
+    var v=q('#view-settings');if(!v)return;
+    ensureLead(v,'Short lists · plain words','Settings','Core choices first. Details appear only after you choose a destination.');
+    qa('#view-settings .srow .stx b,#view-settings .setrow b').forEach(function(b){
+      var t=txt(b.textContent);if(t==='App Preferences'||t==='App Preference')b.textContent='Preferences';
+      else if(t==='Privacy & Security')b.textContent='Privacy & security';
+      else if(t==='Help & About')b.textContent='Help & about';
+      else if(t==='Manage List'||t==='Manage Lists')b.textContent='Manage lists';
+    });
+    preferences();
+  }
+  function preferences(){
+    var a=q('#accentSw');if(a){var c=a.closest('.card')||a.closest('.f-row');if(c)c.classList.add('eucie-theme-removed');}
+    var ms=q('#modeSeg');if(ms){qa('button',ms).forEach(function(b){var m=b.getAttribute('data-m');if(m==='light')replaceTextNode(b,/Light|Day/i,'Day');else if(m==='dark')replaceTextNode(b,/Dark|Evening/i,'Evening');else if(m==='auto')replaceTextNode(b,/Auto|Follow phone/i,'Follow phone');});}
+    var st=q('#setTitle');if(st&&txt(st.textContent)==='App Preferences')st.textContent='Preferences';
+    qa('#pageSet .card>h2').forEach(function(h){if(/Theme Colou?r/i.test(h.textContent)){var c=h.closest('.card');if(c)c.classList.add('eucie-theme-removed');}});
+  }
+  function sheets(){
+    var title=q('#sheetTitle');if(title&&/Add|Edit|Copy/i.test(title.textContent))title.textContent=title.textContent.replace('Add transaction','Add transaction').replace('Edit transaction','Edit transaction');
+    var amount=q('#fAmount');if(amount)amount.setAttribute('aria-label','Amount');
+    var save=q('#fSave');if(save&&txt(save.textContent)==='Save transaction')save.textContent='Enter an amount';
+    var mgr=q('#mgrTitle');if(mgr&&/Transactions/i.test(mgr.textContent)&&!/Recurring/i.test(mgr.textContent))mgr.innerHTML=mgr.innerHTML.replace(/Transactions/g,'Activity');
+  }
+  function auth(){
+    var sub=q('#auSub');if(sub&&/money|track|partner|together/i.test(sub.textContent))sub.textContent='A quiet place to understand money — on your own, or together.';
+    qa('#authScr button').forEach(function(b){
+      if(/^Start new/i.test(txt(b.textContent))){var sm=q('small',b);if(sm)sm.textContent='Set up Eucie for yourself, or with a partner';}
+    });
+  }
+  function version(){
+    try{if(window.pinVer36)window.pinVer36(VERSION+(window.PAGE75&&PAGE75.stale?' · old page file ('+(PAGE75.page||'none')+')':''));}catch(e){}
+    if(!window.__EUCIE_V41_RN){
+      var ol=q('#pageSet details.help ol')||q('#view-settings details.help ol');
+      if(ol){ol.insertAdjacentHTML('beforeend','<li><b>Beta 130:</b> Eucie v4.1 applies the Warm Financial Home system across Home, Activity, Accounts, Reports, forms, settings, onboarding, day and evening modes. Product rules and financial behaviour are unchanged.</li>');window.__EUCIE_V41_RN=1;}
+    }
+  }
+  function decorate(){
+    queued=false;
+    try{brand();nav();menu();home();activity();accounts();reports();settings();sheets();auth();version();document.title='Eucie';document.body.classList.add('eucie-v41');}catch(e){try{if(window.DIAG)DIAG.note(e,'eucie-v41');}catch(_){} }
+  }
+  function schedule(){if(queued)return;queued=true;requestAnimationFrame(decorate);}
+  try{
+    if(window.SCREEN){
+      ['renderOverview','renderTxns','renderAccounts','renderSettings','renderAll','renderReport','openSheet','renderMgr','renderAuth','gotoView'].forEach(function(n,i){try{SCREEN.after(n,990130000+i,{call:'apply',ret:false},schedule);SCREEN.on(n,990130000+i);}catch(e){}});
+      try{SCREEN.after('B3.renderPrefsSub',990130100,{call:'apply',ret:false},schedule);SCREEN.on('B3.renderPrefsSub',990130100);}catch(e){}
+    }
+  }catch(e){}
+  function start(){
+    if(!observing){observing=true;new MutationObserver(schedule).observe(document.body,{childList:true,subtree:true,characterData:true});}
+    decorate();setTimeout(decorate,250);setTimeout(decorate,900);setTimeout(decorate,2400);setTimeout(decorate,5200);
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start);else start();
+  window.EUCIE_V41={decorate:decorate,version:VERSION};
+})();
+
+
+;/* ===== Eucie Beta 130 v4.1 · QA closure (QA-01 / QA-02) =====
+   Fixes the Activity Whose selector, strict Advanced-Couple Ours scope and
+   Reports landing hierarchy. Report-page period controls remain the unchanged
+   Beta 129 controls by explicit user decision. */
+(function(){
+  'use strict';
+  var OPEN={money:true};
+  function $(id){return document.getElementById(id);}
+  function advanced(){try{return (typeof usageMode==='function'?usageMode():(DB.meta||{}).usage)==='adv';}catch(e){return false;}}
+  function couple(){try{return typeof isCouple==='function'&&isCouple();}catch(e){return false;}}
+  function oursSelected(){try{return advanced()&&couple()&&typeof whoOK==='function'&&whoOK()==='couple';}catch(e){return false;}}
+  function accountRefs(o){return [o&&o.account,o&&o.to,o&&o.fromAccount,o&&o.toAccount,o&&o.payerAccount,o&&o.fundingAccount,o&&o.accountId,o&&o.fromAccountId,o&&o.toAccountId].filter(Boolean);}
+  function strictOursDB(){
+    var source=DB,copy;
+    try{copy=JSON.parse(JSON.stringify(source));}catch(e){return source;}
+    var priv={};(source.accounts||[]).forEach(function(a){if(a&&a.vis==='me'){if(a.name)priv[a.name]=1;if(a.id)priv[a.id]=1;}});
+    function touchesPrivate(o){return accountRefs(o).some(function(n){return !!priv[n];});}
+    copy.accounts=(copy.accounts||[]).filter(function(a){return a&&a.vis!=='me';});
+    copy.txns=(copy.txns||[]).filter(function(t){return t&&!t.priv&&!t.masked&&!touchesPrivate(t);});
+    copy.recur=(copy.recur||[]).filter(function(r){return r&&r.tpl&&!r.tpl.priv&&!touchesPrivate(r.tpl);});
+    copy.goals=(copy.goals||[]).filter(function(g){return g&&!touchesPrivate(g);});
+    copy.meta=source.meta;
+    return copy;
+  }
+  function withStrictOurs(fn,force){
+    if(!(force||oursSelected()))return fn();
+    var original=DB,scoped=strictOursDB();
+    if(scoped===original)return fn();
+    DB=scoped;
+    try{return fn();}finally{DB=original;}
+  }
+  function reportGroups(){
+    var cp=couple(),simple=false;
+    try{simple=!!(window.X63&&X63.isSimple&&X63.isSimple());}catch(e){}
+    var g=[
+      {id:'money',ic:'swap',q:cp?'Where does our money go?':'Where does my money go?',sub:'Spending, income and cash flow',items:[['spending','Spending','by category and trend'],['v_income','Income Sources','sources and changes'],['cash','Cash Flow & Savings','income, spending and savings'],['cc','Card Statements','statements and due dates']]},
+      cp?{id:'together',ic:'users',q:'How are we doing together?',sub:'Between Us, shared and personal',items:[['settle','Between Us','who owes whom and settle up'],['shared','Shared vs Personal','shared and personal activity']]}:null,
+      {id:'goals',ic:'target',q:cp?'Are we reaching our goals?':'Am I reaching my goals?',sub:'Saving goals and budgets',items:[['goals','Saving Goals','progress and pace to finish']]},
+      simple?null:{id:'stand',ic:'trend',q:cp?'Where do we stand?':'Where do I stand?',sub:'Net worth and financial health',items:[['networth','Net Worth','trend and what moved it'],['v_health','Financial Health','safety net and ratios']]},
+      simple?null:{id:'assets',ic:'pie',q:cp?'What do we own and owe?':'What do I own and owe?',sub:'Asset mix, debts and value history',items:[['v_alloc','Asset Mix','what is owned by category'],['debts','Debts','balances, repayments and schedule'],['v_valhist','Recorded Value History','dated value adjustments']]}
+    ];
+    return g.filter(Boolean);
+  }
+  function monthWord(){try{var d=todayISO(),m=+d.slice(5,7)-1;return MONTHS[m]||'This month';}catch(e){return 'This month';}}
+  function groupsHTML(){
+    return reportGroups().map(function(g){var open=!!OPEN[g.id];
+      return '<div class="eucie-report-group"><button type="button" class="eucie-report-question" data-act="v41qgrp" data-g="'+g.id+'" aria-expanded="'+open+'"><span class="eucie-report-icon">'+ico(g.ic)+'</span><span class="eucie-report-copy"><b>'+esc(g.q)+'</b><small>'+esc(g.sub)+'</small></span><span class="eucie-report-count">'+g.items.length+'</span>'+ico(open?'chevdown':'chevright')+'</button>'
+        +(open?'<div class="eucie-report-items">'+g.items.map(function(it){return '<button type="button" class="eucie-report-item" data-act="v63rep" data-k="'+it[0]+'"><span><b>'+esc(it[1])+'</b><small>'+esc(it[2])+'</small></span>'+ico('chevright')+'</button>';}).join('')+'</div>':'')+'</div>';
+    }).join('');
+  }
+  function reportsHome(){
+    var sec=$('view-reports');if(!sec)return;
+    var lead=sec.querySelector('.eucie-page-lead'),host=$('r51home');
+    if(!host){host=document.createElement('div');host.id='r51home';if(lead&&lead.nextSibling)sec.insertBefore(host,lead.nextSibling);else sec.appendChild(host);}
+    Array.prototype.slice.call(sec.children).forEach(function(c){if(c!==lead&&c!==host)c.remove();});
+    host.innerHTML='<button type="button" class="eucie-reflection" data-act="v63rep" data-k="cash"><span class="eucie-cap">Monthly reflection</span><span class="eucie-reflection-title">Your '+esc(monthWord())+', gently</span><span class="eucie-reflection-help">A short look back at the month'+(couple()?' you shared':'')+'.</span><span class="eucie-reflection-link">Read it '+ico('chevright')+'</span></button>'
+      +'<div class="eucie-questions-title">Questions</div><div id="v63tiles">'+groupsHTML()+'</div>';
+  }
+  try{
+    if(window.SCREEN){
+      SCREEN.around('renderOverview',990131001,function(prev){return function(){var self=this,args=arguments;return withStrictOurs(function(){return prev.apply(self,args);});};});SCREEN.on('renderOverview',990131001);
+      SCREEN.around('renderReport',990131002,function(prev){return function(){var self=this,args=arguments;return withStrictOurs(function(){return prev.apply(self,args);});};});SCREEN.on('renderReport',990131002);
+      SCREEN.after('renderAccounts',990131003,{call:'none',ret:false},function(){try{if(window.ACC48&&ACC48.scope==='all'&&advanced())withStrictOurs(function(){ACC48.renderHome();},true);}catch(e){if(window.DIAG)DIAG.note(e,'eucie-v41-qa:accounts');}});SCREEN.on('renderAccounts',990131003);
+      SCREEN.after('gotoView',990131004,{call:'apply',ret:false},function(v){if(v==='reports')reportsHome();});SCREEN.on('gotoView',990131004);
+      try{SCREEN.after('X63.reportsFilter',990131005,{call:'none',ret:false},reportsHome);SCREEN.on('X63.reportsFilter',990131005);}catch(e){}
+    }
+  }catch(e){try{if(window.DIAG)DIAG.note(e,'eucie-v41-qa:hooks');}catch(_){} }
+  try{if(window.ACT)ACT.on('eucie-v41-qa',{
+    v41qgrp:function(el){var k=el.dataset.g;OPEN[k]=!OPEN[k];reportsHome();},
+    a48scope:function(el,next){var r=next(el);try{if(window.ACC48&&ACC48.scope==='all'&&advanced())withStrictOurs(function(){ACC48.renderHome();},true);}catch(e){}return r;}
+  });}catch(e){}
+  window.renderReports=reportsHome;
+  try{if(window.INS)INS.renderHome=reportsHome;}catch(e){}
+  window.EUCIE_V41_QA={reportsHome:reportsHome,strictOursDB:strictOursDB,withStrictOurs:withStrictOurs};
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',reportsHome);else setTimeout(reportsHome,0);
 })();
