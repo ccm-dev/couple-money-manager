@@ -1,6 +1,6 @@
 /* Couple Money Manager service worker.
    Bump VERSION each time you upload a new index.html so phones pick up the update. */
-const VERSION = 'cmm-v1.60-beta129';
+const VERSION = 'eucie-v1.60-beta130-v41-qa1';
 const APP_SHELL = [
   './',
   './index.html',
@@ -149,6 +149,16 @@ self.addEventListener('notificationclick', event => {
   const data = (event.notification && event.notification.data) || {};
   const remKey = data.cmm32 ? (data.remKey || '') : '';
   event.notification.close();
+  /* beta 79: a sync alert opens Data & Sync */
+  if (data.cmm79) {
+    event.waitUntil(
+      self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then(list => {
+        for (const c of list) { if ('focus' in c) { c.postMessage({ type: 'cmm-open-sync' }); return c.focus(); } }
+        return self.clients.openWindow('./index.html#sync');
+      })
+    );
+    return;
+  }
   event.waitUntil(
     self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then(list => {
       for (const c of list) {
