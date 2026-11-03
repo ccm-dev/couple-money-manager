@@ -1,6 +1,6 @@
 /* Couple Money Manager service worker.
    Bump VERSION each time you upload a new index.html so phones pick up the update. */
-const VERSION = 'eucie-v1.60-beta130-v41-qa1';
+const VERSION = 'eucie-v1.60-beta130-v42-visual';
 const APP_SHELL = [
   './',
   './index.html',
