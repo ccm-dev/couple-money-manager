@@ -4488,3 +4488,139 @@ html[data-mode="dark"] .hdr .hmenu{background:#2F2722!important;color:#F3EAE2!im
 #view-reports .eucie-report-item b{font-size:13.5px;font-weight:650}
 #view-reports .eucie-report-item small{font-size:11.5px;line-height:1.35;color:var(--ink2)}
 #view-reports .eucie-report-item>svg{width:14px;height:14px;color:var(--ink3)}
+
+
+/* ===== Eucie Beta 130 · v4.2 visual composition pass =====
+   Presentation only. No calculation, privacy, ownership, mode, sync or
+   transaction behaviour is changed here. */
+
+/* V1 · Header: wordmark left, avatar right */
+.hdr .logo,.hdr #brandSub{display:none!important}
+.hdr .brand h1{font-family:var(--eucie-serif)!important;font-weight:500!important;font-size:22px!important;letter-spacing:-.04em!important;line-height:1!important}
+.eucie-avatar{background:var(--tone)!important;color:var(--ink)!important;border:2px solid var(--sand);font-family:var(--eucie-sans)}
+.eucie-avatar:empty::before{content:"";width:14px;height:14px;background:currentColor;
+  -webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round'%3E%3Ccircle cx='12' cy='8' r='4'/%3E%3Cpath d='M4 21a8 8 0 0 1 16 0'/%3E%3C/svg%3E") center/contain no-repeat;
+  mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round'%3E%3Ccircle cx='12' cy='8' r='4'/%3E%3Cpath d='M4 21a8 8 0 0 1 16 0'/%3E%3C/svg%3E") center/contain no-repeat}
+
+/* V2 · Quick menu: labelled rail, so no duplicate tooltip */
+#hdrRail .rbtn::after{display:none!important}
+#hdrRail .rbtn:focus:not(:focus-visible){box-shadow:none!important;outline:0!important;border-color:transparent!important;background:transparent!important}
+
+/* V3 · Home hierarchy: greeting and money first; First steps below */
+#view-overview.on{display:flex!important;flex-direction:column}
+#view-overview > .eucie-page-lead{order:-3}
+#view-overview > #ovEmpty{order:-2}
+#view-overview > #ovMain{order:-1}
+#view-overview > #jrnBox{order:5;margin-top:4px}
+.eucie-page-lead h1{font-family:var(--eucie-serif)!important;font-weight:400!important;font-size:26px!important;line-height:1.15!important;letter-spacing:-.02em!important}
+.eucie-page-lead p{font-family:var(--eucie-serif);font-style:italic;font-size:15px;line-height:1.4;color:var(--ink2);margin-top:6px}
+.eucie-page-lead p:empty,.eucie-page-lead .eucie-cap:empty{display:none}
+.eucie-scope-note[hidden]{display:none!important}
+
+/* V4 · Period selector: two clean lines */
+.perbar .perchip{display:flex!important;flex-direction:column;align-items:center;justify-content:center;gap:2px;line-height:1.2;min-height:44px}
+.perbar .perchip b,.perbar .perchip small{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.perbar .perchip small{font-size:12px!important;color:var(--terra-ink)!important}
+#view-overview .card.perbar{background:var(--bg)!important;box-shadow:none!important;border:0!important;padding:6px 0!important;margin-bottom:8px}
+
+/* V5 · One hero: Money available 28; Saved this month 20 */
+#view-overview .moneyavail18{background:var(--paper)!important;box-shadow:none!important;border:0!important;border-radius:18px!important}
+#view-overview .moneyavail18 .ma-ic{background:var(--tone)!important;color:var(--ink)!important;box-shadow:none!important}
+#view-overview .moneyavail18 .tx small{text-transform:none!important;letter-spacing:0!important;font-size:13px!important;font-weight:600!important;color:var(--ink2)!important}
+#view-overview .moneyavail18 .tx b{font-family:var(--eucie-serif)!important;font-weight:500!important;font-size:28px!important;line-height:1.15!important;letter-spacing:-.02em!important;color:var(--ink)!important}
+#view-overview .hero51 .big51,#view-overview .hero51 .big51 b{font-size:20px!important;line-height:1.2!important}
+#view-overview .hero51 h2,#view-overview .ins51 h2{text-transform:none!important;letter-spacing:0!important;font-size:13px!important;font-weight:600!important;color:var(--ink2)!important}
+
+/* V6 · One quiet surface for insight cards */
+#view-overview .ins51,#view-overview .ins51:nth-of-type(n){background:var(--tone)!important;border:0!important;box-shadow:none!important}
+.ins51 .ins114k{display:none!important}
+.ins51 .find{font-weight:600!important;font-size:14px!important;line-height:1.45!important;color:var(--ink)!important}
+.ins51 .paceb51 i{background:var(--sage)!important}
+
+/* V7 · Amounts never cut off */
+.a48mid b,.a48bu b{white-space:normal!important;overflow:visible!important;text-overflow:clip!important}
+.a48bul{min-width:0}
+
+/* V8 · Accounts: Mine · Kim's · Joint · Ours; owing is not an error */
+.a48chips{display:flex!important}
+.a48chips .a48chip[data-s="me"]{order:1}.a48chips .a48chip[data-s="partner"]{order:2}
+.a48chips .a48chip[data-s="joint"]{order:3}.a48chips .a48chip[data-s="all"]{order:4}
+.a48hl2 i.r{background:var(--terra)!important}
+.a48bar{background:var(--terra)!important}.a48bar i{background:var(--sage)!important}
+.a48sec span.o,.a48gt.o,#view-accounts .av.neg{color:var(--ink)!important}
+
+/* V9 · Add transaction */
+#sheet .seg button.on-exp,#sheet .seg button.on-inc,#sheet .seg button.on-trf,#sheet .seg button.on{background:var(--paper)!important;color:var(--ink)!important;box-shadow:0 1px 2px rgba(85,68,61,.08)!important}
+#sheet .ad-cat61{padding-left:2px!important;padding-right:2px!important}
+#sheet .ad-cat61 .nm{white-space:normal!important;overflow:visible!important;text-overflow:clip!important;line-height:1.15!important;font-size:11px!important;letter-spacing:-.01em;word-break:normal!important;overflow-wrap:normal!important}
+#sheet .ad-cat61.more{background:transparent!important;box-shadow:inset 0 0 0 1px var(--line)!important;color:var(--ink2)!important}
+#sheet .sheet-foot{display:flex!important;gap:10px}
+#sheet .sheet-foot #fSaveNew61{flex:0 0 34%!important;width:auto!important;min-width:0!important;white-space:nowrap;padding:0 10px!important}
+#sheet .sheet-foot #fSaveNew61 svg{display:none}
+#sheet .sheet-foot #fSave61{flex:1 1 0!important;width:auto!important;min-width:0!important;white-space:nowrap}
+
+/* V10 · Whose chips: four on one row */
+#txfBody .sec .cw:has(.eucie-whose-chip){display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px!important}
+#txfBody .eucie-whose-chip{justify-content:center;padding:0 4px!important;gap:4px!important;min-height:40px;font-size:12.5px!important;min-width:0;white-space:nowrap}
+#txfBody .eucie-whose-chip .eucie-ownmark{width:16px!important;height:16px!important;flex:0 0 16px!important;margin-right:0!important}
+#txfBody .eucie-whose-chip i{font-style:normal;font-weight:600;color:var(--ink3);margin-left:1px}
+#txfBody .eucie-whose-chip.on i{color:inherit;opacity:.75}
+
+/* V11 · Quiet "Sample" pill */
+.smpl-pill{background:transparent!important;border:1px solid var(--line)!important;color:var(--ink3)!important;font-weight:600!important}
+
+/* V12 · Welcome and sign-in */
+#authScr .aulink,#authScr a{color:var(--terra-ink)!important;text-decoration:none!important}
+#authScr .usecard.on .aucard-ic{background:var(--paper)!important}
+#authScr .oauth .oabtn{background:var(--paper)!important;color:var(--ink)!important;box-shadow:inset 0 0 0 1px var(--line)!important}
+#authScr .ob62t{font-family:var(--eucie-serif)!important;font-weight:400!important;font-size:26px!important;line-height:1.15!important;letter-spacing:-.02em!important}
+#authScr .aul{text-transform:none!important;letter-spacing:0!important;font-size:12px!important;font-weight:600!important}
+
+/* V13 · Report pages: segmented = paper, chips = mocha */
+#pageReport .stab51{background:var(--tone)!important;border-radius:12px;padding:3px}
+#pageReport .stab51 button.on{background:var(--paper)!important;color:var(--ink)!important;box-shadow:0 1px 2px rgba(85,68,61,.08)!important}
+#pageReport .trendchips button.on{background:var(--ink)!important;color:var(--sand)!important;border-color:transparent!important}
+
+/* V14 · Wealth / Cash Flow hero: when there is no Money-available card, the
+   hero51 figure is the screen's hero and keeps 28px. */
+#view-overview:not(:has(.moneyavail18)) .hero51 .big51,#view-overview:not(:has(.moneyavail18)) .hero51 .big51 b{font-size:28px!important;line-height:1.15!important}
+
+/* V15 · A single Home tab ("Money" alone in Personal Simple) is not a choice:
+   hide the tab strip when it has only one tab. */
+#perBody .stab:not(:has(button:nth-of-type(2))){display:none!important}
+
+/* V15b · lone Home tab: the strip has a hidden second button */
+#perBody .stab:not(:has(button:not([hidden]) ~ button:not([hidden]))){display:none!important}
+
+/* V16 · Sticky period bar: it stuck at 118px (sized for the old, taller
+   header), so cards scrolled visibly through the gap above it. Stick it
+   directly under the slimmer header and give it a full-width sand band. */
+#view-overview .card.perbar{top:calc(var(--eucie-hdr-h,72px) - 1px)!important;box-shadow:0 0 0 22px var(--bg)!important;clip-path:inset(-6px -22px -6px -22px);z-index:31}
+
+/* V17 · Between Us lines wrap as phrases, never inside an amount */
+.a48mid b,#view-overview .bu b{text-wrap:balance}
+
+/* V18 · Add transaction: date chips selected = mocha (v4.1 chip rule), not peach */
+#fDates61 button.on{background:var(--ink)!important;color:var(--sand)!important;border-color:transparent!important;box-shadow:none!important}
+
+/* V19 · Accounts: person chips come before the totals they control */
+#acc48home{display:flex;flex-direction:column}
+#acc48home > .a48pt{order:-3}
+#acc48home > .a48chips{order:-2;margin-top:0}
+#acc48home > .a48nw{order:-1}
+
+/* V20 · Activity rows: the "Sample" marker crowded the transaction name */
+#txList .smpl-pill{font-size:10px!important;line-height:14px!important;padding:0 5px!important;margin-left:4px!important}
+
+/* V21 · Avatar sat inside a second circular button ring */
+.hdr .hmenu:has(.eucie-avatar){background:transparent!important;box-shadow:none!important;border:0!important}
+
+/* V22 · Focus rings: programmatic focus (menu open / close) drew a heavy
+   terracotta ring on "My profile" and on the avatar. Keep a quiet ring. */
+#hdrRail .rbtn:focus-visible{outline:0!important;border-color:transparent!important;box-shadow:none!important;background:var(--tone)!important}
+.hdr .hmenu:focus-visible{outline:2px solid var(--line)!important;outline-offset:2px;box-shadow:none!important}
+
+/* V23 · Onboarding: the "Popular" badge sat on top of the Couple
+   description. Lift it onto the card's top edge so it never covers text. */
+#authScr .usecard{position:relative;overflow:visible!important}
+#authScr .usecard .pvpill{position:absolute!important;height:18px!important;min-height:0!important;width:auto!important;display:inline-block!important;top:-9px!important;right:14px!important;left:auto!important;bottom:auto!important;margin:0!important;background:var(--ink)!important;color:var(--sand)!important;border:0!important;font-size:10.5px!important;font-weight:700!important;line-height:18px!important;padding:0 8px!important;border-radius:999px!important;box-shadow:none!important}
