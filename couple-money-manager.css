@@ -18,7 +18,7 @@
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 :root{
   --bg:#eef1f7; --card:#ffffff; --ink:#18213a; --muted:#56607a; --line:#e4e8f2;
-  --accent:#2563eb; --accent-soft:#e8efff; --accent-2:#7c3aed; --accent-glow:rgba(37,99,235,.4);
+  --accent:#D99572; --accent-soft:#F6E9E0; --accent-2:#A7B89B; --accent-glow:rgba(217,149,114,.18);
   --inc:#16a34a; --inc-soft:#e2f6ea; --exp:#ef4444; --exp-soft:#fdeaea; --warn:#d97706;
    
 }
@@ -4624,3 +4624,143 @@ html[data-mode="dark"] .hdr .hmenu{background:#2F2722!important;color:#F3EAE2!im
    description. Lift it onto the card's top edge so it never covers text. */
 #authScr .usecard{position:relative;overflow:visible!important}
 #authScr .usecard .pvpill{position:absolute!important;height:18px!important;min-height:0!important;width:auto!important;display:inline-block!important;top:-9px!important;right:14px!important;left:auto!important;bottom:auto!important;margin:0!important;background:var(--ink)!important;color:var(--sand)!important;border:0!important;font-size:10.5px!important;font-weight:700!important;line-height:18px!important;padding:0 8px!important;border-radius:999px!important;box-shadow:none!important}
+
+
+/* ===== Eucie Beta 130 · Accounts + Activity implementation v5.2 =====
+   Visual implementation of the approved Accounts / Activity prototype.
+   Behavioural calculations, ownership, privacy, sync and transaction routes are unchanged. */
+@font-face{font-family:"Manrope Local";src:url("fonts/Manrope-Latin-Regular.woff2") format("woff2");font-style:normal;font-weight:400;font-display:swap}
+@font-face{font-family:"Eucie Display Fallback";src:url("fonts/Display-Fallback-Prata.woff2") format("woff2");font-style:normal;font-weight:400;font-display:swap}
+:root{
+  --eucie-sans:"Manrope Local","Manrope",system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  --eucie-serif:"Marcellus","Eucie Display Fallback",Georgia,"Times New Roman",serif;
+  --income:#5E6A2E;--income-soft:#EEF0DD;--ink3:#7D6B63;
+}
+body,button,input,select,textarea{font-family:var(--eucie-sans)!important}
+/* Marcellus must not be artificially emboldened or italicised. */
+:is(.eucie-page-lead h1,.a48pt h1,.page .hdrrow b,.a48ph .a48pht b,.autitle,.ob62wel h1,.ob62wel h2){font-family:var(--eucie-serif)!important;font-synthesis:none!important;font-weight:400!important;font-style:normal!important}
+.fin,.amt,.amt2,.a48fig,.a48gt,.a48end,.a48hl2 b,.big51,.money-figure{font-family:var(--eucie-sans)!important;font-variant-numeric:lining-nums tabular-nums;font-feature-settings:"lnum" 1,"tnum" 1}
+html[data-mode="dark"]{--income:#C9D08A;--income-soft:#2B2F20;--ink3:#8E7E74}
+
+/* Approved PNG wordmark. */
+.hdr .brand{display:flex;align-items:center;min-width:0;flex:1}
+.hdr .brand .eucie-wordmark{display:block;width:auto;height:28px;max-width:112px;object-fit:contain}
+.hdr .brand h1{display:none!important}
+
+/* Accounts · scope first, calm layered hero, collapsed families. */
+#acc48home{display:flex;flex-direction:column}
+#acc48home>.a48pt{order:1;margin-bottom:10px}
+#acc48home>.a48chips{order:2;margin:0 0 8px;display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;overflow:visible}
+#acc48home>.eucie-acc-scope{order:3;margin:0 2px 10px;display:flex;align-items:flex-start;gap:6px;color:var(--ink2);font-size:11px;line-height:1.4}
+#acc48home>.eucie-acc-scope svg{width:14px;height:14px;flex:none;margin-top:1px}
+#acc48home>.a48nw{order:4;isolation:isolate;position:relative;background:#FFFAF4!important;padding:18px 18px 40px!important;overflow:hidden}
+#acc48home>.a48nw:before,#acc48home>.a48nw:after{content:"";position:absolute;z-index:0;pointer-events:none;left:auto;top:auto;transform:none;opacity:1}
+#acc48home>.a48nw:before{left:-8%;bottom:-5%;width:76%;height:24%;border-radius:55% 70% 0 0/100% 100% 0 0;background:rgba(226,190,167,.25)}
+#acc48home>.a48nw:after{left:34%;bottom:-7%;width:82%;height:22%;border-radius:65% 52% 0 0/100% 100% 0 0;background:rgba(213,196,173,.24)}
+#acc48home>.a48nw>*{position:relative;z-index:1}
+html[data-mode="dark"] #acc48home>.a48nw{background:#29221E!important}
+html[data-mode="dark"] #acc48home>.a48nw:before{background:rgba(153,105,81,.15)}
+html[data-mode="dark"] #acc48home>.a48nw:after{background:rgba(173,150,122,.11)}
+#acc48home>.a48sec:first-of-type{order:5}#acc48home>.a48sec,#acc48home>.a48grp{order:6}
+#acc48home .a48chip{width:100%;min-width:0!important;justify-content:center;min-height:38px!important;padding:6px 4px!important;font-size:12px;white-space:nowrap}
+#acc48home .a48card .big{font:700 28px/1.15 var(--eucie-sans)!important;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+#acc48home .a48hl2 b{font-size:14px!important;font-weight:700!important}
+#acc48home .a48grp{border-radius:18px!important;background:var(--paper)!important;margin-bottom:10px;overflow:hidden}
+#acc48home .a48gh{min-height:56px!important;padding:10px 13px!important}
+#acc48home .a48gh>b{font-size:14px!important;font-weight:700!important}
+#acc48home .a48gh .a48gt{font-size:14px!important;font-weight:700!important;min-width:88px;text-align:right}
+#acc48home .a48row{min-height:58px!important;padding:10px 13px!important}
+#acc48home .a48sec{padding:10px 2px 7px}
+#acc48home .a48sec b{color:var(--ink3)!important;font-size:10px!important;letter-spacing:.08em!important}
+#acc48home .a48sec span{font-size:13px!important;font-weight:700!important}
+
+/* Activity · one adaptive period, sticky journal context and approved row language. */
+#view-txns>.eucie-activity-period{margin:0 0 10px}
+.eucie-adaptive-period{display:grid;grid-template-columns:minmax(104px,auto) 32px minmax(0,1fr) 32px;align-items:center;gap:3px;min-height:50px;padding:5px 6px;border:1px solid var(--hair);border-radius:15px;background:var(--paper);box-shadow:0 4px 14px rgba(85,68,61,.035)}
+.eucie-adaptive-period .kind{position:relative;min-width:0;height:40px;border-radius:10px;background:var(--tone);overflow:hidden}
+.eucie-adaptive-period .kind:before{content:"Period";position:absolute;left:9px;top:4px;color:var(--ink3);font:800 7px/1 var(--eucie-sans);letter-spacing:.08em;text-transform:uppercase;pointer-events:none}
+.eucie-adaptive-period .kind:after{content:"⌄";position:absolute;right:8px;top:13px;color:var(--ink2);font:700 12px var(--eucie-sans);pointer-events:none}
+.eucie-adaptive-period select{width:100%;height:100%;appearance:none;-webkit-appearance:none;border:0;outline:0;background:transparent;color:var(--ink);padding:9px 24px 0 9px;font:700 10px var(--eucie-sans)}
+.eucie-adaptive-period .step{width:32px;height:32px;display:grid;place-items:center;border-radius:10px;color:var(--ink2)}
+.eucie-adaptive-period .step svg{width:16px;height:16px}
+.eucie-adaptive-period .label{min-width:0;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--ink);font:700 10px/1.2 var(--eucie-sans);font-variant-numeric:tabular-nums}
+#view-txns .txf71{position:sticky!important;top:calc(72px + env(safe-area-inset-top));z-index:14;margin:0 0 10px!important;padding:6px 0!important;background:color-mix(in srgb,var(--sand) 96%,transparent)!important;backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
+#txList .dayg>.day-h{position:sticky!important;top:calc(136px + env(safe-area-inset-top))!important;z-index:8;padding:8px 2px 7px!important;background:color-mix(in srgb,var(--sand) 96%,transparent)!important;backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
+#txList .dayg{margin-bottom:18px!important}
+#txList .rowsw{padding:2px 14px!important}
+#txList .txn.txr,#txList .txn{min-height:62px!important}
+#txList .txn .mid b{font-size:13.5px!important;font-weight:650!important}
+#txList .txn .amt{font-size:14px!important;font-weight:600!important;min-width:88px;text-align:right}
+#txList .txn .amt.neg{color:var(--ink)!important}#txList .txn .amt.pos{color:var(--income)!important}
+#txList .txn[data-ty="Transfer"] .amt{color:var(--ink2)!important}
+#txfBody [data-act="txfwho"][data-v="Joint"]{display:none!important}
+
+/* Account Activity gets the same self-identifying adaptive period treatment. */
+#pageAcc48 .a107p{position:relative;display:grid!important;grid-template-columns:32px minmax(0,1fr) 32px;align-items:center;min-height:50px;padding:5px 6px 5px 112px!important;border:1px solid var(--hair)!important;border-radius:15px!important;background:var(--paper)!important;box-shadow:0 4px 14px rgba(85,68,61,.035)!important}
+#pageAcc48 .a107p:before{content:"Period";position:absolute;left:8px;top:5px;width:96px;height:39px;padding:17px 9px 0;border-radius:10px;background:var(--tone);color:var(--ink3);font:800 7px/1 var(--eucie-sans);letter-spacing:.08em;text-transform:uppercase}
+#pageAcc48 .a107p:after{content:"Selected";position:absolute;left:17px;top:20px;color:var(--ink);font:700 10px/1 var(--eucie-sans)}
+#pageAcc48 .a107p .a107m{min-width:0;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+/* Every bottom sheet uses one 16px horizontal inset. */
+.sheet,#mgrSheet,#aiSheet,.txf71-sheet{padding-left:16px!important;padding-right:16px!important}
+.sheet .sx-head61,.sheet .sx-body61,.sheet .sheet-foot,.sheet .txf71-shead,.sheet .txf71-sbody,.sheet .txf71-sfoot{padding-left:0!important;padding-right:0!important}
+#mgrSheet.acc99-screen .acc99-head,#mgrSheet.acc99-screen .acc99-body,#mgrSheet.acc99-screen .acc99-foot{padding-left:0!important;padding-right:0!important}
+.txf71-shead{padding-top:8px!important}.txf71-sfoot{padding-bottom:max(12px,env(safe-area-inset-bottom))!important}
+
+/* Add transaction · compact content-height sheet (user-approved deviation from mockup). */
+#sheet.sx61{height:auto!important;max-height:92dvh!important;display:flex;flex-direction:column;overflow:hidden!important;padding:0 16px!important}
+#sheet.sx61>.grab{flex:none;margin:8px auto 2px}
+#sheet.sx61>.sx-head61{flex:none;min-height:48px;height:48px;padding:0!important;gap:6px}
+#sheet.sx61>.sx-head61>[data-act="closesheet"]{order:-3;margin-left:-8px}
+#sheet.sx61>.sx-head61>#sheetTitle{order:-2;font-size:18px!important;font-weight:600!important}
+#sheet.sx61>.sx-body61{flex:0 1 auto;min-height:0;overflow-y:auto;padding:0!important;overscroll-behavior:contain}
+#sheet.sx61>.sheet-foot{position:static!important;flex:none;margin:0!important;padding:10px 0 max(12px,env(safe-area-inset-bottom))!important;gap:9px!important;border-top:1px solid var(--hair);box-shadow:none!important;background:var(--paper)}
+#sheet.form61 .seg{margin:0 0 12px!important}
+#sheet.form61 .seg button{min-height:40px!important;font-size:12px}
+#sheet.form61 .ad-amt61{min-height:0!important;height:70px!important;margin:0 0 12px!important;padding:8px 12px!important}
+#sheet.form61 .ad-amt61 .amt-wrap,#sheet.form61 .ad-amt61 #fAmount{font-size:30px!important;line-height:1.1!important;font-weight:700!important;letter-spacing:-.02em!important}
+#sheet.form61 #fCatBox{margin:0 0 12px!important}
+#sheet.form61 .ad-lb61{margin:0 2px 6px!important;min-height:0!important}
+#sheet.form61 .ad-lb61 label{font-size:9px!important;line-height:1.1!important}
+#sheet.form61 .ad-cats61{display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:6px!important}
+#sheet.form61 .ad-cat61{min-width:0!important;min-height:42px!important;height:42px!important;padding:2px 4px!important;border-radius:11px!important}
+#sheet.form61 .ad-cat61 .nm{font-size:9.5px!important;line-height:1.12!important}
+#sheet.form61 #fAcc52{margin:0 0 12px!important}
+#sheet.form61 .ad-flow61{margin:0!important;border-radius:14px!important}
+#sheet.form61 .ad-flow61 .row61{min-height:52px!important;padding:7px 11px!important}
+#sheet.form61 .ad-card61{margin:0!important;border-radius:14px!important;overflow:hidden}
+#sheet.form61 .ad-card61>.row61{min-height:48px!important;padding:7px 11px!important}
+#sheet.form61 .ad-card61>.row61+.row61{border-top:1px solid var(--hair)!important}
+#sheet.form61 .row61>svg{width:17px!important;height:17px!important}
+#sheet.form61 .row61 label{font-size:10px!important}
+#sheet.form61 .row61 .fin,#sheet.form61 .row61 .otxt{min-height:0!important;height:auto!important;background:transparent!important;border-radius:0!important;font-size:11.5px!important}
+#sheet.form61 #fOptLb61{margin:10px 2px 6px!important}
+#sheet.form61 .ad-opts61{gap:7px!important;margin:0 0 2px!important}
+#sheet.form61 .ad-opt61{min-height:34px!important;height:34px!important;padding:0 11px!important;font-size:10.5px!important}
+#sheet.form61 .sheet-foot .btn{min-height:48px!important;height:48px!important;padding:0 10px!important;font-size:12px!important;white-space:nowrap!important;overflow:hidden;text-overflow:clip}
+#sheet.form61 .sheet-foot #fSaveNew61{flex:0 0 35%!important}
+#sheet.form61 .sheet-foot #fSave61{flex:1 1 auto!important}
+body.calc-on #sheet.sx61{height:min(92dvh,760px)!important}
+body.calc-on #sheet.sx61>.sx-body61{padding-bottom:286px!important}
+#calcPad.docked40{left:-16px!important;right:-16px!important}
+
+@media(max-width:420px){
+  .eucie-adaptive-period{grid-template-columns:minmax(100px,auto) 30px minmax(0,1fr) 30px}
+  #acc48home>.a48chips{gap:5px}#acc48home .a48chip{font-size:11.5px}
+}
+@media(max-height:720px){#sheet.sx61>.sx-body61{overflow-y:auto}#sheet.form61 .ad-amt61{height:64px!important}.sheet.sx61{max-height:94dvh!important}}
+
+
+/* ===== v5.2 · installed-app system bars and safe areas ===== */
+html,body{background:#F8F4EE}
+html[data-mode="dark"],html[data-mode="dark"] body{background:#1C1714}
+@media(prefers-color-scheme:dark){html:not([data-mode="light"]),html:not([data-mode="light"]) body{background:#1C1714}}
+/* Header already owns the top safe area, so black-translucent is safe on iPhone. */
+.hdr{padding-top:calc(10px + env(safe-area-inset-top));background:#F8F4EE!important}
+html[data-mode="dark"] .hdr{background:#1C1714!important}
+@media(prefers-color-scheme:dark){html:not([data-mode="light"]) .hdr{background:#1C1714!important}}
+/* Extend Eucie's paper surface behind Android gesture navigation / iPhone home indicator. */
+.nav{height:calc(76px + env(safe-area-inset-bottom))!important;min-height:calc(76px + env(safe-area-inset-bottom));padding:10px 8px calc(8px + env(safe-area-inset-bottom))!important;background:#FFFDFC!important;background-clip:border-box!important}
+html[data-mode="dark"] .nav{background:#27201C!important}
+@media(prefers-color-scheme:dark){html:not([data-mode="light"]) .nav{background:#27201C!important}}
+html,body{max-width:100%;overflow-x:hidden}
