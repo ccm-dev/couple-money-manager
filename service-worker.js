@@ -1,6 +1,6 @@
 /* Couple Money Manager service worker.
    Bump VERSION each time you upload a new index.html so phones pick up the update. */
-const VERSION = 'eucie-v1.60-beta130-v42-visual';
+const VERSION = 'eucie-v1.60-beta130-v52-system-bars';
 const APP_SHELL = [
   './',
   './index.html',
@@ -11,10 +11,13 @@ const APP_SHELL = [
   './icons/icon-512.png',
   './icons/icon-maskable-512.png',
   './icons/apple-touch-icon.png',
-  './icons/icon.svg'
+  './icons/icon.svg',
+  './assets/Eucie-Wordmark-Terracotta-Leaf.png',
+  './fonts/Manrope-Latin-Regular.woff2',
+  './fonts/Display-Fallback-Prata.woff2'
 ];
 /* Libraries the app loads on demand (Firebase SDK, Excel and PDF readers). Cached after first use so they work offline. */
-const LIB_HOSTS = ['www.gstatic.com', 'cdn.jsdelivr.net', 'cdnjs.cloudflare.com'];
+const LIB_HOSTS = ['www.gstatic.com', 'cdn.jsdelivr.net', 'cdnjs.cloudflare.com', 'fonts.googleapis.com', 'fonts.gstatic.com'];
 /* Never cached: live data and sign-in. */
 const NO_CACHE = /firestore\.googleapis\.com|identitytoolkit\.googleapis\.com|securetoken\.googleapis\.com|googleapis\.com\/.*(token|auth)|firebaseinstallations|google-analytics|googletagmanager|api\.openai\.com|generativelanguage\.googleapis\.com|\/__\/auth\//;
 
