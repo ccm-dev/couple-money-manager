@@ -173,7 +173,7 @@ var esc=function(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){r
 var uid=function(){return Date.now().toString(36)+Math.random().toString(36).slice(2,7);};
 var MONTHS=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 var PALETTE=['#0072b2','#e69f00','#009e73','#cc79a7','#56b4e9','#d55e00','#4b5563','#b8860b']; /* beta 121: Okabe-Ito order, colour-blind safe; charts group past 8 into Other */
-var ACCENTS=[['blue','#2563eb'],['green','#166534'],['purple','#7c3aed'],['pink','#db2777'],['orange','#ea580c'],['teal','#0d9488'],['slate','#475569']]; /* beta 127: no Red theme; Green is a forest green so it never reads as money in */
+var ACCENTS=[['blue','#D99572'],['green','#166534'],['purple','#7c3aed'],['pink','#db2777'],['orange','#ea580c'],['teal','#0d9488'],['slate','#475569']]; /* beta 127: no Red theme; Green is a forest green so it never reads as money in */
 /* ===== v1.16: consistent stroke-icon set (replaces every pictorial emoji) ===== */
 var ICONS={
   user:'<circle cx="12" cy="8" r="4"/><path d="M5 21c0-3.9 3.1-7 7-7s7 3.1 7 7"/>',
@@ -267,9 +267,13 @@ function applyTheme(){
   var root=document.documentElement;
   if(a&&a!=='blue')root.setAttribute('data-accent',a);else root.removeAttribute('data-accent');
   if(m==='light'||m==='dark')root.setAttribute('data-mode',m);else root.removeAttribute('data-mode');
-  var hex='';ACCENTS.forEach(function(x){if(x[0]===a)hex=x[1];});
-  var mc=document.querySelector('meta[name="theme-color"]');
-  if(mc)mc.setAttribute('content',(m==='dark')?'#0b101e':(hex||'#2563eb'));
+  /* v5.2: installed-app system bars follow Day / Evening, never the optional chart accent. */
+  var metas=document.querySelectorAll('meta[name="theme-color"]');
+  Array.prototype.forEach.call(metas,function(mc){
+    if(m==='dark')mc.setAttribute('content','#1C1714');
+    else if(m==='light')mc.setAttribute('content','#F8F4EE');
+    else mc.setAttribute('content',/dark/.test(mc.getAttribute('media')||'')?'#1C1714':'#F8F4EE');
+  });
 }
 function todayStr(){var d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
 function parseAmt(v){
@@ -18519,7 +18523,7 @@ SCREEN.afterDraw(function(){try{drillEdit();}catch(e){}});
       /* buttons */
       var amt=parseAmt($('fAmount').value),okA=trf?amt>0:!!amt,okC=trf||!!F.cat,ok=okA&&okC;
       var sv=$('fSave61'),nw=$('fSaveNew61');
-      var lbl=!okA?'Enter an amount':(!okC?'Choose a category':(V61.mode==='copy'?'Add as new transaction':(F.id?'Save changes':(trf?'Transfer ':'Add ')+money(Math.abs(amt)))));
+      var lbl=!okA?'Enter an amount':(!okC?'Choose a category':(V61.mode==='copy'?'Add as new transaction':(F.id?'Save changes':(trf?'Transfer ':'Add '+String(F.type||'transaction').toLowerCase()+' ')+money(Math.abs(amt)))));
       sv.textContent=lbl;sv.disabled=!ok;
       nw.hidden=!!F.id||V61.mode==='copy';nw.disabled=!ok;
       var ai=$('fAmount');if(ai&&window.fitAmt127)fitAmt127(ai); /* beta 127: measured width, cursor right after the number */
@@ -30570,7 +30574,7 @@ B.openDebtList=function(s,e,label){
 ACT.on('b117d',{
   debt117list:function(el){B.openDebtList(el.dataset.s,el.dataset.e,el.dataset.h||'');}
 });
-var DCOL={'Loans':'#ea580c','Hire Purchase':'#0d9488','Cards & credit lines':'#2563eb','Other':'#64748b'}; /* beta 121: clear contrast */
+var DCOL={'Loans':'#ea580c','Hire Purchase':'#0d9488','Cards & credit lines':'#D99572','Other':'#64748b'}; /* beta 121: clear contrast */
 var DLB={'Loans':'Loans','Hire Purchase':'Hire purchase','Cards & credit lines':'Credit cards','Other':'Other debts'};
 function nextDue(a){
   try{if(isCard(a)){var c=cardStatus(a);if(c&&c.due&&c.stillDue>=0.005)return c.due;return '';}return a.remDue||'';}catch(e){return '';}
@@ -30623,7 +30627,7 @@ function stackSVG(tr){
   });
   return '<svg viewBox="0 0 '+W+' '+H+'" style="width:100%;height:auto;min-width:'+Math.min(W,320)+'px">'+o+'</svg>';
 }
-var RPC={c:'#2563eb',l:'#ea580c'}; /* beta 121: card payments blue, loan repayments orange (same as Debts Balances) */
+var RPC={c:'#D99572',l:'#ea580c'}; /* beta 121: card payments blue, loan repayments orange (same as Debts Balances) */
 function payFlow(r,who){
   var f=debtFlow(r,who),c=0,l=0,items=[];
   f.rows.forEach(function(p){if(p.repay<0.005)return;if(p.card)c+=p.repay;else l+=p.repay;items=items.concat(p.rt);});
@@ -31377,7 +31381,7 @@ try{if(window.DB)instSyncAll129();}catch(e){}
     meta=q('meta[name="apple-mobile-web-app-title"]');if(meta)meta.content='Eucie';
     meta=q('meta[name="app-version"]');if(meta)meta.content='1.60-beta.130';
     var evening=document.documentElement.getAttribute('data-mode')==='dark'||(!document.documentElement.getAttribute('data-mode')&&window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches);
-    meta=q('meta[name="theme-color"]');if(meta)meta.content=(evening?'#1C1714':'#F8F4EE');
+    qa('meta[name="theme-color"]').forEach(function(meta){meta.content=evening?'#1C1714':'#F8F4EE';});
     var appHeader=q('header.hdr');if(appHeader)appHeader.style.setProperty('background',evening?'#1C1714':'#F8F4EE','important');
     document.documentElement.removeAttribute('data-accent');
     var logo=q('.hdr .logo');if(logo&&(!q('img',logo)||q('img',logo).getAttribute('src')!==iconPath()))logo.innerHTML='<img src="'+iconPath()+'" alt="">';
@@ -31611,4 +31615,117 @@ try{if(window.DB)instSyncAll129();}catch(e){}
   try{if(window.INS)INS.renderHome=reportsHome;}catch(e){}
   window.EUCIE_V41_QA={reportsHome:reportsHome,strictOursDB:strictOursDB,withStrictOurs:withStrictOurs};
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',reportsHome);else setTimeout(reportsHome,0);
+})();
+
+
+;/* ===== Eucie Beta 130 · Accounts + Activity implementation v5.2 =====
+   Presentation/decorating layer only. The existing calculation, transaction, privacy,
+   ownership, mode and sync functions remain the source of truth. */
+(function(){
+'use strict';
+var ORDER=990132000,queued=false,watching=false;
+function q(s,r){return (r||document).querySelector(s);}function qa(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s));}
+function safe(fn,d){try{return fn();}catch(e){try{if(window.DIAG)DIAG.note(e,'eucie-v52');}catch(_){}return d;}}
+function pad(n){return n<10?'0'+n:String(n);}function iso(d){return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());}
+function dateOf(s){var p=String(s||'').split('-');return new Date(+p[0],(+p[1]||1)-1,+p[2]||1,12);}
+function plusDays(s,n){var d=dateOf(s);d.setDate(d.getDate()+n);return iso(d);}function plusMonths(s,n){var d=dateOf(s);d.setMonth(d.getMonth()+n);return iso(d);}
+function endMonth(s){var d=dateOf(s);return iso(new Date(d.getFullYear(),d.getMonth()+1,0,12));}
+function fmtDate(s,year){if(!s)return '';var d=dateOf(s);return d.toLocaleDateString('en-MY',{day:'numeric',month:'short',year:year?'numeric':undefined});}
+function today(){return safe(function(){return todayISO();},iso(new Date()));}
+function partner(){return safe(function(){return partnerName()||'Partner';},'Partner');}
+function advanced(){return safe(function(){return DB&&DB.meta&&DB.meta.usage==='adv';},false);}
+function couple(){return safe(function(){return typeof isCouple==='function'&&isCouple();},false);}
+function icon(n){return safe(function(){return ico(n);},'');}
+function wordmark(){
+  var b=q('.hdr .brand');if(!b)return;
+  var im=q('.eucie-wordmark',b);if(!im){b.innerHTML='<img class="eucie-wordmark" src="assets/Eucie-Wordmark-Terracotta-Leaf.png" alt="Eucie">';}
+}
+function accountScope(){
+  var root=q('#acc48home');if(!root)return;
+  var chips=q(':scope>.a48chips',root),sc=safe(function(){return ACC48.scope;},'all'),P=partner();
+  if(chips){qa('.a48chip',chips).forEach(function(b){var s=b.dataset.s,l=s==='me'?'Mine':s==='partner'?P+'’s':s==='joint'?'Joint':'Ours';if(b.textContent!==l)b.textContent=l;if(b.getAttribute('aria-label')!==l)b.setAttribute('aria-label',l);});}
+  var note=q(':scope>.eucie-acc-scope',root);if(!note){note=document.createElement('div');note.className='eucie-acc-scope';if(chips)chips.insertAdjacentElement('afterend',note);else{var pt=q(':scope>.a48pt',root);if(pt)pt.insertAdjacentElement('afterend',note);}}
+  if(!couple()){note.remove();return;}
+  var tx='';
+  if(sc==='all')tx=advanced()?'Shared accounts only — private accounts and private entries never count in Ours.':'Your household accounts, with joint accounts counted once.';
+  else if(sc==='me')tx='Your accounts, plus your ownership share of joint accounts.';
+  else if(sc==='partner')tx=P+'’s accounts, plus their ownership share of joint accounts.';
+  else tx='Joint accounts at full value.';
+  var nh=icon(sc==='all'&&advanced()?'lock':sc==='joint'?'users':'user')+'<span>'+esc(tx)+'</span>';if(note.innerHTML!==nh)note.innerHTML=nh;
+}
+function periodMode(p){
+  if(!p)return 'month';if(p.eucieMode)return p.eucieMode;if(p.k==='year')return 'year';if(p.k==='custom')return 'custom';return 'month';
+}
+function periodLabel(){
+  var p=window.TXF&&TXF.period||{k:'month'},td=today(),mode=periodMode(p);
+  if(mode==='week'||mode==='year'||mode==='custom')return fmtDate(p.from||td,true)+' – '+fmtDate(p.to||td,true);
+  if(p.k==='ym'){var s=p.ym+'-01';return new Intl.DateTimeFormat('en-MY',{month:'short',year:'numeric'}).format(dateOf(s));}
+  if(p.k==='last'){var d=dateOf(td);d.setMonth(d.getMonth()-1);return new Intl.DateTimeFormat('en-MY',{month:'short',year:'numeric'}).format(d);}
+  return new Intl.DateTimeFormat('en-MY',{month:'short',year:'numeric'}).format(dateOf(td));
+}
+function currentWeek(){var d=dateOf(today()),day=(d.getDay()+6)%7;d.setDate(d.getDate()-day);var s=iso(d);return {k:'custom',from:s,to:plusDays(s,6),eucieMode:'week'};}
+function currentYear(){var y=today().slice(0,4);return {k:'custom',from:y+'-01-01',to:y+'-12-31',eucieMode:'year'};}
+function setPeriod(mode){
+  if(!window.TXF)return;
+  if(mode==='week')TXF.period=currentWeek();
+  else if(mode==='year')TXF.period=currentYear();
+  else if(mode==='month')TXF.period={k:'month',eucieMode:'month'};
+  else {TXF.period={k:'custom',from:'',to:'',eucieMode:'custom'};var f=q('#txFilterBtn');if(f)setTimeout(function(){f.click();},0);}
+  renderTxns();
+}
+function stepPeriod(dir){
+  if(!window.TXF)return;var p=TXF.period||{k:'month'},mode=periodMode(p),td=today();
+  if(mode==='week'){var s=plusDays(p.from||currentWeek().from,7*dir);TXF.period={k:'custom',from:s,to:plusDays(s,6),eucieMode:'week'};}
+  else if(mode==='year'){var y=+(p.from||td).slice(0,4)+dir;TXF.period={k:'custom',from:y+'-01-01',to:y+'-12-31',eucieMode:'year'};}
+  else if(mode==='month'){
+    var base=p.k==='ym'?p.ym+'-01':p.k==='last'?plusMonths(td.slice(0,7)+'-01',-1):td.slice(0,7)+'-01',s=plusMonths(base,dir),ym=s.slice(0,7);
+    TXF.period=ym===td.slice(0,7)?{k:'month',eucieMode:'month'}:{k:'ym',ym:ym,eucieMode:'month'};
+  }
+  renderTxns();
+}
+function activityPeriod(){
+  var v=q('#view-txns'),bar=q('#txf71',v);if(!v||!bar)return;var box=q(':scope>.eucie-activity-period',v);
+  if(!box){box=document.createElement('div');box.className='eucie-activity-period eucie-adaptive-period';box.innerHTML='<span class="kind"><select id="eucieActivityPeriod" aria-label="Period"><option value="week">Week</option><option value="month">Month</option><option value="year">Year</option><option value="custom">Custom</option></select></span><button type="button" class="step" data-eucie-period-step="-1" aria-label="Previous period">'+icon('chevleft')+'</button><span class="label"></span><button type="button" class="step" data-eucie-period-step="1" aria-label="Next period">'+icon('chevright')+'</button>';v.insertBefore(box,bar);}
+  var p=window.TXF&&TXF.period||{k:'month'},mode=periodMode(p),sel=q('select',box),lb=q('.label',box),next=q('[data-eucie-period-step="1"]',box);if(sel&&sel.value!==mode)sel.value=mode;var pl=periodLabel();if(lb&&lb.textContent!==pl)lb.textContent=pl;
+  if(next){var end=p.to||(p.k==='ym'?endMonth(p.ym+'-01'):p.k==='last'?endMonth(plusMonths(today().slice(0,7)+'-01',-1)):p.k==='year'?today().slice(0,4)+'-12-31':endMonth(today()));next.disabled=end>=today();}
+}
+function activityDetails(){
+  var body=q('#txfBody');if(body){var j=q('[data-act="txfwho"][data-v="Joint"]',body);if(j)j.remove();}
+  var empty=q('#txList .txf71-empty');if(empty&&!q('.eucie-empty-art',empty)){var art=document.createElement('div');art.className='eucie-empty-art';art.innerHTML=icon('receipt');empty.insertBefore(art,empty.firstChild);}
+}
+function sheets(){
+  qa('.sheet').forEach(function(s){s.classList.add('eucie-sheet-16');});
+  var title=q('#sheetTitle');if(title&&q('#sheet.on')&&!title.dataset.eucie52){title.dataset.eucie52='1';}
+}
+function decorate(){queued=false;wordmark();accountScope();activityPeriod();activityDetails();sheets();}
+function schedule(){if(queued)return;queued=true;requestAnimationFrame(decorate);}
+document.addEventListener('change',function(e){if(e.target&&e.target.id==='eucieActivityPeriod')setPeriod(e.target.value);});
+document.addEventListener('click',function(e){var b=e.target&&e.target.closest&&e.target.closest('[data-eucie-period-step]');if(b&&!b.disabled){e.preventDefault();stepPeriod(+b.dataset.euciePeriodStep||0);}});
+try{
+  if(window.SCREEN){['renderTxns','renderAccounts','renderAll','openSheet','renderMgr','openAccount','gotoView'].forEach(function(n,i){SCREEN.after(n,ORDER+i,{call:'apply',ret:false},schedule);SCREEN.on(n,ORDER+i);});}
+}catch(e){}
+function start(){if(!watching){watching=true;new MutationObserver(schedule).observe(document.body,{childList:true,subtree:true,characterData:true});}decorate();setTimeout(decorate,250);setTimeout(decorate,900);}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start);else start();
+window.EUCIE_V52={decorate:decorate,setPeriod:setPeriod,stepPeriod:stepPeriod};
+})();
+
+;/* v5.2 · preserve unsaved Add/Edit transaction work */
+(function(){
+'use strict';
+var snap='',discarding=false,ORDER=990132100;
+function val(id){var e=document.getElementById(id);return e?(e.type==='checkbox'?!!e.checked:String(e.value||'')):'';}
+function state(){try{return JSON.stringify({id:window.F&&F.id||'',type:window.F&&F.type||'',cat:window.F&&F.cat||'',sub:window.F&&F.sub||'',amount:val('fAmount'),date:val('fDate'),note:val('fNote'),account:val('fAccount'),to:val('fTo'),repeat:val('fRep'),every:val('fRepEvery'),times:val('fRepTimes'),priv:val('fPriv'),split:window.SPLIT&&SPLIT.rows?SPLIT.rows.map(function(r){return [r.p,r.v,r.a];}):[]});}catch(e){return '';}}
+function arm(){setTimeout(function(){snap=state();},80);}
+try{SCREEN.after('openSheet',ORDER,{call:'apply',ret:false},arm);SCREEN.on('openSheet',ORDER);}catch(e){}
+ACT.on('eucie-v52-discard',{
+  closesheet:function(el,next){
+    if(discarding||!document.getElementById('sheet').classList.contains('on')||(window.CALC&&CALC.open)||el.closest('.sub61'))return next(el);
+    if(!snap||state()===snap)return next(el);
+    var msg=document.getElementById('confirmMsg'),ok=document.getElementById('confirmOk'),modal=document.getElementById('cmodal');
+    if(msg)msg.textContent='Discard changes? What you entered on this transaction will be lost.';
+    if(ok){ok.textContent='Discard';ok.className='btn red-solid';}
+    window.confirmCb=function(){discarding=true;try{closeSheet();}finally{discarding=false;snap='';}};
+    if(modal)modal.classList.add('on');try{navSync();}catch(e){}
+  }
+});
 })();
