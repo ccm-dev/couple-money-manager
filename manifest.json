@@ -1,8 +1,16 @@
 {
- "name":"Eucie","short_name":"Eucie","start_url":"./index.html","scope":"./","display":"standalone","background_color":"#F8F4EE","theme_color":"#F8F4EE","orientation":"portrait-primary",
+  "name": "Eucie",
+  "short_name": "Eucie",
+  "description": "mine · yours · ours. A warm home for your money, on your own or together.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "theme_color": "#F8F4EE",
+  "background_color": "#F8F4EE",
   "icons": [
-    {"src":"icons/icon-192.png","sizes":"192x192","type":"image/png","purpose":"any"},
-    {"src":"icons/icon-512.png","sizes":"512x512","type":"image/png","purpose":"any"},
-    {"src":"icons/icon-maskable-512.png","sizes":"512x512","type":"image/png","purpose":"maskable"}
+    {"src": "icons/eucie-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable"},
+    {"src": "icons/eucie-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable"},
+    {"src": "icons/eucie-icon.svg", "sizes": "any", "type": "image/svg+xml"}
   ]
 }
