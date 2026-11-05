@@ -7,28 +7,27 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#F8F4EE" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#1C1714" media="(prefers-color-scheme: dark)">
+<meta name="color-scheme" content="light dark">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="application-name" content="Eucie">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="Eucie">
-<meta name="app-version" content="1.60-beta.130">
+<meta name="application-name" content="Eucie">
+<meta name="app-version" content="beta-2.0">
 <meta name="format-detection" content="telephone=no">
-<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="apple-touch-icon" href="icons/eucie-180.png">
 <title>Eucie</title>
 <link rel="manifest" href="manifest.json">
-<meta name="description" content="Eucie is a quiet place to understand money — on your own, or together.">
-<link rel="icon" href="icons/icon.svg" type="image/svg+xml">
-<!-- v5.2: Manrope is bundled for offline use; Marcellus uses the bundled display fallback when the local face is unavailable. -->
-<link rel="stylesheet" href="couple-money-manager.css?v=1.60-beta.130-v52">
+<meta name="description" content="Eucie · mine · yours · ours. A warm home for your money, on your own or together.">
+<link rel="icon" href="icons/eucie-icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="couple-money-manager.css?v=beta-2.0">
 
 </head>
 <body>
 <header class="hdr">
   <!-- v1.60 b30 · header redesign per mockup: full brand on the left (logo + name + tagline),
        one hamburger action on the right — it opens the quick-menu rail under it -->
-  <div class="logo" aria-hidden="true"><img src="icons/icon-192.png" alt=""></div>
-  <div class="brand"><h1>eucie</h1><span class="brand-sub" id="brandSub">Mine. Yours. Ours.</span></div>
+  <div class="brand"><h1 class="wm97" aria-label="eucie"><span aria-hidden="true">euc<span class="wm97-i">ı<svg class="wm97-leaf" viewBox="0 0 40 24"><path d="M2 20C6 6 22 0 38 2C34 16 20 24 2 20Z"/></svg></span>e</span></h1><span class="brand-sub" id="brandSub">mine · yours · ours</span></div>
   <button class="hmenu" id="hdrMenuBtn" type="button" data-act="hdrmenu" aria-label="Open quick menu" aria-haspopup="true" aria-controls="hdrRail" aria-expanded="false"><svg class="icn" viewBox="0 0 24 24" aria-hidden="true" id="hdrMenuIco"><path d="M4 7h16M4 12h16M4 17h16"/></svg><span class="bdg" id="hmenuBadge" hidden></span></button>
 </header>
 <div class="hscrim" id="hdrScrim" aria-hidden="true"></div>
@@ -46,16 +45,17 @@
   <!-- ============ OVERVIEW ============ -->
   <section class="view on" id="view-overview">
     <div id="jrnBox"></div>
+    <div class="skl200" aria-hidden="true"><i style="height:30px;width:70%;margin-bottom:8px"></i><i style="height:16px;width:55%;margin-bottom:22px"></i><i style="height:170px"></i><i style="height:84px;margin-bottom:26px"></i><i style="height:14px;width:30%;margin-bottom:10px"></i><i style="height:60px"></i><i style="height:14px;width:30%;margin-bottom:10px"></i><i style="height:180px"></i></div>
     <div id="ovEmpty" hidden>
-      <div class="card"><div class="empty">
-        <div class="big" style="color:var(--accent)"><svg class="icn" viewBox="0 0 24 24"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4Z"/></svg></div>
-        <div class="smpl-empty"><b>No transactions yet</b>
-        <p>Add your first transaction or explore the app with sample data.</p>
-        <button class="btn" data-act="add"><svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Add transaction</button>
-        <div style="height:8px"></div>
-        <button class="btn ghost" data-act="demoadd"><svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><polygon points="6 4 20 12 6 20 6 4"/></svg> Try with sample data</button>
-        <button type="button" class="smpl-alt" data-act="import">Or import a file</button></div>
-      </div></div>
+      <div class="a7-200">
+        <h2 class="a7h" id="a7h">Welcome</h2>
+        <p class="a7l" id="a7l">Let’s start with one account. Everything else can wait.</p>
+        <div class="a7art" id="a7art" aria-hidden="true"></div>
+        <p class="a7s" id="a7s">Add the account you use most. You can add the rest later.</p>
+        <div id="a7btns"></div>
+        <button class="btn ghost" data-act="demoadd">Try with sample data</button>
+        <button type="button" class="smpl-alt" data-act="import">Or import a file</button>
+      </div>
     </div>
     <div id="ovMain">
       <div id="perBody"></div>
@@ -76,7 +76,7 @@
     <div class="txf71" id="txf71">
       <div class="txf71-srch" id="txfSrch">
         <svg class="icn txf71-si" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
-        <input class="fin" id="txSearch" type="search" placeholder="Search transactions…" autocomplete="off" aria-label="Search transactions" oninput="TXF.q=this.value;$('txClr').hidden=!this.value;renderTxns()">
+        <input class="fin" id="txSearch" type="search" placeholder="Search activity…" autocomplete="off" aria-label="Search activity" oninput="TXF.q=this.value;$('txClr').hidden=!this.value;renderTxns()">
         <button type="button" class="srchx" id="txClr" data-act="txclr" hidden aria-label="Clear search"><svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
         <button type="button" class="txf71-fbtn" id="txFilterBtn" data-act="txfilter" aria-label="Filters" aria-haspopup="dialog"><svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6"/></svg><span class="bd" id="txFilterN" hidden></span></button>
       </div>
@@ -162,11 +162,10 @@
     </div>
     <div class="card">
       <h2><svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg> Display</h2>
-      <div class="f-row"><label>Theme color</label><div class="chips" id="accentSw" style="gap:10px;padding:4px 0"></div></div>
       <div class="f-row"><label>Appearance</label><div class="segmini" id="modeSeg" style="margin-bottom:0"></div></div>
       <div class="f-row" style="margin-bottom:0"><label>Currency symbol</label><input class="fin" id="curSymbol" placeholder="RM, $, € …" onchange="DB.meta.currency=this.value.trim();touch();openSheetRefresh()"></div>
     </div>
-    <div class="card"><h2><svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><line x1="12" y1="10.5" x2="12" y2="16"/><line x1="12" y1="7.5" x2="12" y2="7.6"/></svg> About <span class="sub">v1.60 beta 130</span></h2><div class="help"><b>Eucie</b> is a private money app for individuals and couples that works offline. Your data lives on this device and cloud sync is opt-in.</div>
+    <div class="card"><h2><svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><line x1="12" y1="10.5" x2="12" y2="16"/><line x1="12" y1="7.5" x2="12" y2="7.6"/></svg> About <span class="sub">v1.60 beta 42</span></h2><div class="help"><b>Couple Money Manager</b> is a single-file app for couples that works offline. Your data lives on this device and cloud sync is opt-in.</div>
       <details class="help" style="margin-top:10px"><summary>Help &amp; tips</summary><ol>
         <li><b>Add:</b> tap ＋, pick a category chip, then Save. Your last category is remembered.</li>
         <li><b>Edit:</b> tap a transaction. <b>Select several:</b> long-press one.</li>
@@ -319,8 +318,8 @@
 </div>
 
 <div id="calcPad" aria-label="calculator"><div class="cpv"><span id="cpLbl">Amount</span><b id="cpRes"></b></div><div class="cpg"><button type="button" data-ck="7" tabindex="-1">7</button><button type="button" data-ck="8" tabindex="-1">8</button><button type="button" data-ck="9" tabindex="-1">9</button><button type="button" data-ck="/" class="op" tabindex="-1">÷</button><button type="button" data-ck="4" tabindex="-1">4</button><button type="button" data-ck="5" tabindex="-1">5</button><button type="button" data-ck="6" tabindex="-1">6</button><button type="button" data-ck="*" class="op" tabindex="-1">×</button><button type="button" data-ck="1" tabindex="-1">1</button><button type="button" data-ck="2" tabindex="-1">2</button><button type="button" data-ck="3" tabindex="-1">3</button><button type="button" data-ck="-" class="op" tabindex="-1">−</button><button type="button" data-ck="." tabindex="-1">.</button><button type="button" data-ck="0" tabindex="-1">0</button><button type="button" data-ck="bk" class="fn" tabindex="-1">⌫</button><button type="button" data-ck="+" class="op" tabindex="-1">+</button><button type="button" data-ck="C" class="fn" tabindex="-1">C</button><button type="button" data-ck="=" class="op" tabindex="-1">=</button><button type="button" data-ck="done" class="eq" tabindex="-1" style="grid-column:span 2">Done</button></div></div>
-<div id="lockScr" hidden><div class="lkbox"><div class="lklogo"><svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></div><b id="lkTitle">Enter your PIN</b><div class="lkdots" id="lkDots"></div><div class="lkmsg" id="lkMsg"></div><div class="lkpad"><button type="button" data-act="lk" data-k="1">1</button><button type="button" data-act="lk" data-k="2">2</button><button type="button" data-act="lk" data-k="3">3</button><button type="button" data-act="lk" data-k="4">4</button><button type="button" data-act="lk" data-k="5">5</button><button type="button" data-act="lk" data-k="6">6</button><button type="button" data-act="lk" data-k="7">7</button><button type="button" data-act="lk" data-k="8">8</button><button type="button" data-act="lk" data-k="9">9</button><button type="button" id="lkCancel" data-act="lk" data-k="x" class="lkf">Cancel</button><button type="button" data-act="lk" data-k="0">0</button><button type="button" data-act="lk" data-k="bk" class="lkf">⌫</button></div><button type="button" id="lkForgot" class="lkforgot" data-act="prforgot" hidden>Forgot PIN?</button></div></div>
-<div id="authScr" hidden><div class="aubox"><div class="aulogo"><img src="icons/icon-192.png" alt=""></div><h1 class="autitle">eucie</h1><p class="ausub" id="auSub"></p><div id="auBody"></div></div></div>
+<div id="lockScr" hidden><div class="lkbox"><div class="lklogo"><img src="icons/eucie-icon.svg" alt="" width="62" height="62"></div><p class="lkhi" id="lkHi" hidden></p><b id="lkTitle">Enter your PIN</b><div class="lkdots" id="lkDots"></div><div class="lkmsg" id="lkMsg"></div><div class="lkpad"><button type="button" data-act="lk" data-k="1">1</button><button type="button" data-act="lk" data-k="2">2</button><button type="button" data-act="lk" data-k="3">3</button><button type="button" data-act="lk" data-k="4">4</button><button type="button" data-act="lk" data-k="5">5</button><button type="button" data-act="lk" data-k="6">6</button><button type="button" data-act="lk" data-k="7">7</button><button type="button" data-act="lk" data-k="8">8</button><button type="button" data-act="lk" data-k="9">9</button><button type="button" id="lkCancel" data-act="lk" data-k="x" class="lkf">Cancel</button><button type="button" data-act="lk" data-k="0">0</button><button type="button" data-act="lk" data-k="bk" class="lkf">⌫</button></div><button type="button" id="lkForgot" class="lkforgot" data-act="prforgot" hidden>Forgot PIN?</button></div></div>
+<div id="authScr" hidden><div class="aubox"><div class="aulogo"><img src="icons/eucie-icon.svg" alt="" width="64" height="64"></div><h1 class="autitle wm97" aria-label="eucie"><span aria-hidden="true">euc<span class="wm97-i">ı<svg class="wm97-leaf" viewBox="0 0 40 24"><path d="M2 20C6 6 22 0 38 2C34 16 20 24 2 20Z"/></svg></span>e</span></h1><p class="ausub" id="auSub"></p><div id="auBody"></div></div></div>
 <div id="tourRing" hidden></div><div id="tourTip" hidden></div>
 <div class="toast" id="toast"><span id="toastMsg"></span><button id="toastUndo" data-act="undo"><svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 14 4 9l5-5"/><path d="M4 9h10a6 6 0 0 1 6 6v5"/></svg> Undo</button><span id="toastBar" aria-hidden="true"><i></i></span></div>
 
@@ -338,6 +337,6 @@
   privacyUrl:'privacy.html',
   termsUrl:'terms.html',
   supportEmail:''      /* e.g. 'support@yourdomain.com' — shown as a Support link */};</script>
-<script src="couple-money-manager.js?v=1.60-beta.130-v52"></script>
+<script src="couple-money-manager.js?v=beta-2.0"></script>
 </body>
 </html>
