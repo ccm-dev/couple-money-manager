@@ -1,23 +1,23 @@
-/* Couple Money Manager service worker.
+/* Eucie service worker.
    Bump VERSION each time you upload a new index.html so phones pick up the update. */
-const VERSION = 'eucie-v1.60-beta130-v52-system-bars';
+const VERSION = 'eucie-beta-2.0';
 const APP_SHELL = [
   './',
   './index.html',
   './couple-money-manager.css',
   './couple-money-manager.js',
   './manifest.json',
-  './icons/icon-192.png',
-  './icons/icon-512.png',
-  './icons/icon-maskable-512.png',
-  './icons/apple-touch-icon.png',
-  './icons/icon.svg',
-  './assets/Eucie-Wordmark-Terracotta-Leaf.png',
-  './fonts/Manrope-Latin-Regular.woff2',
-  './fonts/Display-Fallback-Prata.woff2'
+  './icons/eucie-icon.svg',
+  './icons/eucie-180.png',
+  './icons/eucie-192.png',
+  './icons/eucie-512.png',
+  './fonts/manrope-latin.woff2',
+  './fonts/manrope-latin-ext.woff2',
+  './fonts/marcellus-latin.woff2',
+  './fonts/marcellus-latin-ext.woff2'
 ];
 /* Libraries the app loads on demand (Firebase SDK, Excel and PDF readers). Cached after first use so they work offline. */
-const LIB_HOSTS = ['www.gstatic.com', 'cdn.jsdelivr.net', 'cdnjs.cloudflare.com', 'fonts.googleapis.com', 'fonts.gstatic.com'];
+const LIB_HOSTS = ['www.gstatic.com', 'cdn.jsdelivr.net', 'cdnjs.cloudflare.com'];
 /* Never cached: live data and sign-in. */
 const NO_CACHE = /firestore\.googleapis\.com|identitytoolkit\.googleapis\.com|securetoken\.googleapis\.com|googleapis\.com\/.*(token|auth)|firebaseinstallations|google-analytics|googletagmanager|api\.openai\.com|generativelanguage\.googleapis\.com|\/__\/auth\//;
 
