@@ -13,21 +13,22 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="Eucie">
 <meta name="application-name" content="Eucie">
-<meta name="app-version" content="beta-2.0">
+<meta name="app-version" content="beta-2.04">
 <meta name="format-detection" content="telephone=no">
 <link rel="apple-touch-icon" href="icons/eucie-180.png">
 <title>Eucie</title>
 <link rel="manifest" href="manifest.json">
-<meta name="description" content="Eucie · mine · yours · ours. A warm home for your money, on your own or together.">
+<meta name="description" content="Eucie · a quiet place for your money, on your own or together.">
 <link rel="icon" href="icons/eucie-icon.svg" type="image/svg+xml">
-<link rel="stylesheet" href="couple-money-manager.css?v=beta-2.0">
+<link rel="icon" href="icons/eucie-32.png" type="image/png" sizes="32x32">
+<link rel="stylesheet" href="couple-money-manager.css?v=beta-2.04">
 
 </head>
 <body>
 <header class="hdr">
   <!-- v1.60 b30 · header redesign per mockup: full brand on the left (logo + name + tagline),
        one hamburger action on the right — it opens the quick-menu rail under it -->
-  <div class="brand"><h1 class="wm97" aria-label="eucie"><span aria-hidden="true">euc<span class="wm97-i">ı<svg class="wm97-leaf" viewBox="0 0 40 24"><path d="M2 20C6 6 22 0 38 2C34 16 20 24 2 20Z"/></svg></span>e</span></h1><span class="brand-sub" id="brandSub">mine · yours · ours</span></div>
+  <div class="brand"><h1 class="wm97" aria-label="eucie"><span aria-hidden="true">euc<span class="wm97-i">ı<svg class="wm97-leaf" viewBox="-40 -230 180 240"><defs><linearGradient id="wmLeaf1" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FCE7B6"/><stop offset=".35" stop-color="#E2B868"/><stop offset=".6" stop-color="#F6D896"/><stop offset="1" stop-color="#B98A3E"/></linearGradient></defs><path transform="rotate(35)" d="M0 0C-62-46-74-150 26-214C92-146 70-44 0 0Z" fill="url(#wmLeaf1)"/></svg></span>e</span></h1></div>
   <button class="hmenu" id="hdrMenuBtn" type="button" data-act="hdrmenu" aria-label="Open quick menu" aria-haspopup="true" aria-controls="hdrRail" aria-expanded="false"><svg class="icn" viewBox="0 0 24 24" aria-hidden="true" id="hdrMenuIco"><path d="M4 7h16M4 12h16M4 17h16"/></svg><span class="bdg" id="hmenuBadge" hidden></span></button>
 </header>
 <div class="hscrim" id="hdrScrim" aria-hidden="true"></div>
@@ -319,7 +320,7 @@
 
 <div id="calcPad" aria-label="calculator"><div class="cpv"><span id="cpLbl">Amount</span><b id="cpRes"></b></div><div class="cpg"><button type="button" data-ck="7" tabindex="-1">7</button><button type="button" data-ck="8" tabindex="-1">8</button><button type="button" data-ck="9" tabindex="-1">9</button><button type="button" data-ck="/" class="op" tabindex="-1">÷</button><button type="button" data-ck="4" tabindex="-1">4</button><button type="button" data-ck="5" tabindex="-1">5</button><button type="button" data-ck="6" tabindex="-1">6</button><button type="button" data-ck="*" class="op" tabindex="-1">×</button><button type="button" data-ck="1" tabindex="-1">1</button><button type="button" data-ck="2" tabindex="-1">2</button><button type="button" data-ck="3" tabindex="-1">3</button><button type="button" data-ck="-" class="op" tabindex="-1">−</button><button type="button" data-ck="." tabindex="-1">.</button><button type="button" data-ck="0" tabindex="-1">0</button><button type="button" data-ck="bk" class="fn" tabindex="-1">⌫</button><button type="button" data-ck="+" class="op" tabindex="-1">+</button><button type="button" data-ck="C" class="fn" tabindex="-1">C</button><button type="button" data-ck="=" class="op" tabindex="-1">=</button><button type="button" data-ck="done" class="eq" tabindex="-1" style="grid-column:span 2">Done</button></div></div>
 <div id="lockScr" hidden><div class="lkbox"><div class="lklogo"><img src="icons/eucie-icon.svg" alt="" width="62" height="62"></div><p class="lkhi" id="lkHi" hidden></p><b id="lkTitle">Enter your PIN</b><div class="lkdots" id="lkDots"></div><div class="lkmsg" id="lkMsg"></div><div class="lkpad"><button type="button" data-act="lk" data-k="1">1</button><button type="button" data-act="lk" data-k="2">2</button><button type="button" data-act="lk" data-k="3">3</button><button type="button" data-act="lk" data-k="4">4</button><button type="button" data-act="lk" data-k="5">5</button><button type="button" data-act="lk" data-k="6">6</button><button type="button" data-act="lk" data-k="7">7</button><button type="button" data-act="lk" data-k="8">8</button><button type="button" data-act="lk" data-k="9">9</button><button type="button" id="lkCancel" data-act="lk" data-k="x" class="lkf">Cancel</button><button type="button" data-act="lk" data-k="0">0</button><button type="button" data-act="lk" data-k="bk" class="lkf">⌫</button></div><button type="button" id="lkForgot" class="lkforgot" data-act="prforgot" hidden>Forgot PIN?</button></div></div>
-<div id="authScr" hidden><div class="aubox"><div class="aulogo"><img src="icons/eucie-icon.svg" alt="" width="64" height="64"></div><h1 class="autitle wm97" aria-label="eucie"><span aria-hidden="true">euc<span class="wm97-i">ı<svg class="wm97-leaf" viewBox="0 0 40 24"><path d="M2 20C6 6 22 0 38 2C34 16 20 24 2 20Z"/></svg></span>e</span></h1><p class="ausub" id="auSub"></p><div id="auBody"></div></div></div>
+<div id="authScr" hidden><div class="aubox"><div class="aulogo"><img src="icons/eucie-icon.svg" alt="" width="64" height="64"></div><h1 class="autitle wm97" aria-label="eucie"><span aria-hidden="true">euc<span class="wm97-i">ı<svg class="wm97-leaf" viewBox="-40 -230 180 240"><defs><linearGradient id="wmLeaf2" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FCE7B6"/><stop offset=".35" stop-color="#E2B868"/><stop offset=".6" stop-color="#F6D896"/><stop offset="1" stop-color="#B98A3E"/></linearGradient></defs><path transform="rotate(35)" d="M0 0C-62-46-74-150 26-214C92-146 70-44 0 0Z" fill="url(#wmLeaf2)"/></svg></span>e</span></h1><p class="ausub" id="auSub"></p><div id="auBody"></div></div></div>
 <div id="tourRing" hidden></div><div id="tourTip" hidden></div>
 <div class="toast" id="toast"><span id="toastMsg"></span><button id="toastUndo" data-act="undo"><svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 14 4 9l5-5"/><path d="M4 9h10a6 6 0 0 1 6 6v5"/></svg> Undo</button><span id="toastBar" aria-hidden="true"><i></i></span></div>
 
@@ -337,6 +338,6 @@
   privacyUrl:'privacy.html',
   termsUrl:'terms.html',
   supportEmail:''      /* e.g. 'support@yourdomain.com' — shown as a Support link */};</script>
-<script src="couple-money-manager.js?v=beta-2.0"></script>
+<script src="couple-money-manager.js?v=beta-2.04"></script>
 </body>
 </html>
