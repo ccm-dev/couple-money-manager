@@ -1,6 +1,6 @@
 /* Eucie service worker.
    Bump VERSION each time you upload a new index.html so phones pick up the update. */
-const VERSION = 'eucie-beta-2.0';
+const VERSION = 'eucie-beta-2.04';
 const APP_SHELL = [
   './',
   './index.html',
@@ -11,6 +11,7 @@ const APP_SHELL = [
   './icons/eucie-180.png',
   './icons/eucie-192.png',
   './icons/eucie-512.png',
+  './icons/eucie-32.png',
   './fonts/manrope-latin.woff2',
   './fonts/manrope-latin-ext.woff2',
   './fonts/marcellus-latin.woff2',
