@@ -4520,3 +4520,212 @@ html:not(.drawn200) #view-overview #ovEmpty,html:not(.drawn200) #view-overview #
 .per200 .perchip small{font-size:12px;color:var(--ink-soft,var(--muted));margin:0}
 .per200 .perchip b{font-weight:700;font-size:13px}
 .per200 .perchip span{font-size:11px;color:var(--terracotta,var(--accent))}
+
+/* beta 2.01: debt group header in credit */
+.a48gt.cr123{text-align:right}.a48gt.cr123 small{display:block;font-size:var(--fs-12);font-weight:700;margin-top:2px}
+#calcPad.docked40.st201{position:sticky;bottom:0;left:auto;right:auto}
+/* ===== Beta 2.02 ===== */
+/* item 14: Filters › Account and Category: one scrolling sheet, search on top, flat rows, plain foot line */
+#txfSheet .txf202 .ddq{position:relative;border:1.5px solid var(--line);border-radius:12px;background:var(--card);margin:2px 0 6px}
+#txfSheet .txf202 .ddq input{padding:11px 12px 11px 38px;font-size:var(--fs-15)}
+#txfSheet .txf202 .ddf{background:none;border-top:0;padding:8px 4px;min-height:40px}
+#txfSheet .txf202 .grp:first-child{margin-top:4px}
+#txfSheet .txf202-none{padding:12px 4px;margin:0}
+/* items 16, 36: Reports home = title row with a search icon, then Questions */
+#view-reports-t73 .r202sb svg{width:18px;height:18px}
+#r51home .search51[hidden]{display:none}
+#r51home .search51{position:relative}
+#r51home .r202qx{position:absolute;right:6px;top:50%;transform:translateY(-50%);width:36px;height:36px;border:0;background:none;color:var(--muted);display:grid;place-items:center}
+#r51home .r202qx svg{width:16px;height:16px}
+.q202lab{font-size:var(--fs-12);font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:var(--muted);margin:16px 4px 8px}
+#view-reports .grp51.q202>button{padding:14px 13px;gap:12px}
+#view-reports .grp51.q202>button .gt b{font-family:var(--font-display);font-weight:400;font-size:var(--fs-18);line-height:1.25;letter-spacing:0}
+#view-reports .grp51.q202>button .gt small{font-size:var(--fs-12)}
+#view-reports .grp51.q202 .gch{flex:none;color:var(--muted);display:grid;place-items:center;transition:transform .18s}
+#view-reports .grp51.q202 .gch svg{width:16px;height:16px}
+#view-reports .grp51.q202.open .gch{transform:rotate(180deg)}
+#view-reports .grp51.q202 .famrow .ftx b{font-size:var(--fs-15);font-weight:600}
+/* item 38: Financial Health savings line links to Savings */
+.card.fh202sav{display:flex;align-items:center;gap:12px;width:100%;text-align:left;font:inherit;color:inherit;cursor:pointer}
+.card.fh202sav .tx{flex:1;min-width:0}.card.fh202sav .tx b{display:block;font-size:var(--fs-15)}
+.card.fh202sav .tx small{font-size:var(--fs-12);color:var(--muted)}
+.card.fh202sav .lnk{color:var(--accent);font-weight:700;font-size:var(--fs-13)}
+.rfc200 .rfc202{display:block;font-size:var(--fs-13);color:var(--muted);margin-top:4px;position:relative;z-index:1}
+/* item 18: a total has one solid rule above it, no dashed line as well */
+.fline:has(+ .fline.eq),.wfrow:has(+ .wftot),.mini:has(+ .fline.eq){border-bottom:0}
+.rtab.sp114 tr:has(+ tr.tot) td{border-bottom:0}
+.rtab.sp114 tr.tot td{border-top:1.5px solid var(--line);border-bottom:0}
+/* item 19: one type scale on report screens (D-99)
+   20 = the one headline figure of a card · 15 = row values that lead a row · 14 = group rows and values · 12 = "since …" and sub lines · 11 = captions */
+#pageReport #repDyn :is(.dbtot117,.dbtot117 b,.nc121top b,.sv121t b,.big51 b){font-size:var(--fs-20)!important;line-height:1.25}
+#pageReport #repDyn .card.hero51 .big51 b{font-size:var(--fs-24)!important}
+#pageReport #repDyn :is(.am117g summary .nm,.am117g summary .vv,.nc121l span,.nc121l b,.sv121r b,.sv121r span,.t121w,.dbrow117 .l1 .nm,.dbrow117 .l1 b,.cctop b,.cctop){font-size:var(--fs-14)!important}
+#pageReport #repDyn :is(.am117g summary .nm small,.am117g summary .vv small,.dbrow117 .l2,.sentence51){font-size:var(--fs-12)!important;line-height:1.35}
+#pageReport #repDyn .am117g summary .nm small{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#pageReport #repDyn .am117g summary .nm{min-width:0;overflow:hidden}
+#pageReport #repDyn .nw117 .sentence51{margin:2px 0 8px;display:block}
+#pageReport #repDyn .kpi b{font-size:var(--fs-14)!important}
+#pageReport #repDyn .kpi small{font-size:var(--fs-11)}
+#pageReport #repDyn .ins51 .find,#pageReport #repDyn .rh51 .find{font-size:var(--fs-15)}
+/* item 28: value history rows keep the date and never overlap */
+#pageReport #repDyn .lgrow .nm{min-width:38%}
+#pageReport #repDyn .lgrow .vv{max-width:60%;white-space:normal}
+#pageReport #repDyn .lgrow .vv small{white-space:normal}
+/* item 23: Card Statements compact */
+#pageReport #repDyn .ccmid b{font-size:var(--fs-16)!important}
+#pageReport #repDyn :is(.cctop,.cctop b){font-size:var(--fs-14)!important}
+#pageReport #repDyn :is(.ccmid,.ccbot,.ccrow small){font-size:var(--fs-12)}
+.card.perbar.per202{padding:8px 10px;background:none;border:0;box-shadow:none}
+.card.perbar.per202 .a48chips{padding:0}
+.h202chips{padding:2px 0 10px}
+#pageReport #repDyn .ccrow{padding:9px 12px;margin-bottom:6px}
+/* item 17: Accounts net worth card, small and simple */
+.acc48 .a48card.a48nw.n202{padding:12px 14px;margin-bottom:10px}
+.a48nw.n202 .n202t{display:flex;align-items:baseline;justify-content:space-between;gap:10px}
+.a48nw.n202 .n202t b{font-size:var(--fs-20);font-weight:800;font-variant-numeric:tabular-nums;letter-spacing:-.3px}
+.a48nw.n202 .n202t b.o{color:var(--exp)}
+.a48nw.n202 .n202s{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 8px;margin-top:6px;font-size:var(--fs-12);color:var(--muted);font-weight:600}
+.a48nw.n202 .n202s b{color:var(--ink);font-weight:700;font-variant-numeric:tabular-nums}
+.a48nw.n202 .n202m{color:var(--muted)}
+/* item 32: account header card, smaller and simpler */
+.a48hero.h202{padding:12px 14px}
+.a48hero.h202 .a48hr{gap:9px;flex-wrap:wrap}
+.a48hero.h202 .a48hr .a48ti{width:30px;height:30px;border-radius:10px}
+.a48hero.h202 .a48hr .a48ti svg{width:16px;height:16px}
+.a48hero.h202 .a48nm small{font-size:var(--fs-13);font-weight:600;color:var(--ink)}
+.a48hero.h202 .a48tags{margin:0;gap:4px}
+.a48hero.h202 .a48lab{font-size:var(--fs-12);margin-top:10px}
+.a48hero.h202 .a48fig{font-size:var(--fs-24);letter-spacing:-.5px}
+.a48hero.h202 .a48sub{font-size:var(--fs-12);margin-top:2px}
+.a48hero.h202 .a48prog{margin-top:8px}
+.a48hero.h202 .a48acts{gap:8px;margin-top:10px}
+.a48hero.h202 .a48acts .a48btn{min-height:38px;font-size:var(--fs-13);border-radius:12px}
+.a48hero.h202 .a48acts .a48btn svg{width:15px;height:15px}
+/* item 31: Add / Edit account, Add payment and the other account sheets: smaller type, compact rows, Save never covers a row */
+#mgrSheet.acc99-screen #mgrTitle{font-size:var(--fs-16)!important}
+#mgrSheet.acc99-screen .a48fld{margin-bottom:10px}
+#mgrSheet.acc99-screen .a48fld>label,#mgrSheet.acc99-screen label{font-size:var(--fs-11);margin-bottom:4px}
+#mgrSheet.acc99-screen .fin{padding:9px 12px;font-size:var(--fs-14)!important;min-height:42px;border-radius:11px}
+#mgrSheet.acc99-screen .a48seg2 button{min-height:36px;font-size:var(--fs-13)}
+#mgrSheet.acc99-screen .a48seg button{min-height:32px}
+#mgrSheet.acc99-screen .a48ctx{padding:9px 11px}
+#mgrSheet.acc99-screen .a48dng{margin-bottom:6px}
+#mgrSheet.acc99-screen .a48dng button{min-height:42px;padding:9px 14px;font-size:var(--fs-14)}
+#mgrSheet.acc99-screen .a48ol{margin-top:12px}
+#mgrSheet.acc99-screen .a48sf{padding:8px 0 4px;margin-top:10px;z-index:3;box-shadow:0 -10px 12px -12px rgba(0,0,0,.28)}
+#mgrSheet.acc99-screen .a48sf .btn{min-height:44px;font-size:var(--fs-15)}
+/* item 37: Budgets = a plain list in the app's row style (hairlines only, soft inputs, room for long names) */
+.bg202chips{padding:0 0 8px}
+.bg202{margin:0 0 6px}
+.bg202 .bgrow{grid-template-columns:minmax(0,1fr) 84px 84px;gap:8px;padding:6px 2px;border-bottom:1px solid var(--hair)}
+.bg202 .bgrow:last-of-type{border-bottom:0}
+.bg202 .bgrow.bghd{display:grid;padding:2px 2px 6px;border-bottom:1px solid var(--hair);background:none}
+#mgrSheet .bg202 .bgrow.bghd>span{font-size:var(--fs-11)!important;text-align:right}
+#mgrSheet .bg202 .bgrow.bghd>span:first-child{text-align:left}
+#mgrSheet .bg202 .bgrow>.lb{font-size:var(--fs-14);font-weight:600;white-space:normal;line-height:1.3;overflow-wrap:anywhere}
+.bg202 .bgrow .af40.cell40{min-height:36px;box-shadow:none;background:color-mix(in srgb,var(--bg) 70%,var(--card));border-radius:10px}
+.bg202 .bgrow .af40.cell40:focus-within{box-shadow:inset 0 0 0 1.5px var(--accent)}
+.bg202 .bgrow .af40.cell40 input.fin{font-size:var(--fs-14);font-weight:600}
+.bg202 #bgTot{padding:9px 2px!important;border-top:1px solid var(--hair)}
+/* item 26: Reminder centre as a full screen, simpler */
+#mgrSheet.rc202{top:0;max-height:100dvh;height:100dvh;border-radius:0!important}
+#mgrSheet.rc202>.grab{display:none}
+#mgrSheet.rc202 .r32sum{margin-bottom:8px}
+#mgrSheet.rc202 .a48chips{padding:0 0 10px}
+#mgrSheet.rc202 .rc202set{display:block;margin:12px auto 4px}
+#mgrSheet.rc202{padding-top:calc(14px + env(safe-area-inset-top))}
+/* ===== Beta 2.03 ===== */
+/* item 40: Home › Shared, tighter: Between Us is one compact row card, no "Looking for the lists?" line, smaller gaps */
+#perBody .cpl114 ~ .help{display:none}
+#perBody .cpl114 ~ .ins51{margin-bottom:10px}
+#perBody .cpl114 ~ .h200end{gap:8px;margin-top:10px}
+#perBody .cpl114 .spark51{margin-top:8px}
+.bu200c{padding:12px 14px}
+.bu200c>h2{margin-bottom:8px}
+.bu200c .bu200{display:grid;grid-template-columns:auto minmax(0,1fr);column-gap:12px;align-items:center;text-align:left;padding:0}
+.bu200c .bu200p{grid-row:1/3;margin:0;gap:4px}
+.bu200c .bu200p .av{width:28px;height:28px;font-size:12px}
+.bu200c .bu200p .arr{font-size:13px}
+.bu200c .bu200a{font-size:var(--fs-20);font-weight:800;line-height:1.2}
+.bu200c .bu200t{font:600 var(--fs-13) var(--font-ui);color:var(--muted)}
+.bu200c .bu200r{display:none}
+.bu200c .lnk200{display:inline-block;margin:8px 0 0}
+#perBody .cpl114 ~ .h200end .h200full{min-height:40px;padding:4px 16px}
+/* taglines: lower case, letter-spaced Manrope, muted mocha */
+.t203tag{font:600 12px var(--font-ui);letter-spacing:.22em;text-transform:lowercase;color:var(--ink2);margin:8px 0 0}
+.t203sign{text-align:center;margin:18px 0 8px}
+.ob62 .t203tag,.t203tag:first-child{margin:0 0 10px}
+/* item 41: Spending report (approved Eucie mockup) */
+#repDyn .sp203hero{padding:18px 18px 16px}
+.sp203lab{font-size:var(--fs-11);font-weight:700;letter-spacing:.7px;text-transform:uppercase;color:var(--muted)}
+.sp203big{font:400 var(--fs-24) var(--font-display);margin-top:6px;font-variant-numeric:tabular-nums;color:var(--ink)}
+.sp203chg{display:flex;align-items:center;gap:6px;margin-top:6px;font-size:var(--fs-13);font-weight:600;color:var(--muted)}
+.sp203chg.up{color:var(--accent)}.sp203chg.dn{color:var(--olive)}
+.sp203chg .icn{width:14px;height:14px;stroke-width:2.2}
+.sp203plan{margin-top:14px;height:8px;border-radius:99px;background:color-mix(in srgb,var(--line) 70%,var(--card));overflow:hidden}
+.sp203plan i{display:block;height:100%;border-radius:99px;background:var(--terra)}
+.sp203plan i.over{background:repeating-linear-gradient(135deg,var(--mocha) 0 5px,color-mix(in srgb,var(--mocha) 75%,var(--card)) 5px 10px)}
+.sp203pl{display:flex;justify-content:space-between;gap:8px;margin-top:7px;font-size:var(--fs-12);font-weight:600;color:var(--muted)}
+.sp203pl b{color:var(--ink);font-weight:700}
+.sp203note{margin-top:12px;padding:10px 12px;border-radius:14px;background:color-mix(in srgb,var(--peach) 45%,var(--card));font-size:var(--fs-13);line-height:1.4;color:var(--ink)}
+.sp203h{display:flex;align-items:baseline;justify-content:space-between;gap:8px;padding:18px 6px 8px}
+.sp203h h2{margin:0;font:400 var(--fs-20) var(--font-display);color:var(--ink);letter-spacing:0;text-transform:none}
+.sp203h span{font-size:var(--fs-12);font-weight:600;color:var(--muted)}
+#repDyn .sp203list{padding:2px 14px}
+.sp203row,.sp203tx{width:100%;display:flex;align-items:center;gap:12px;padding:12px 0;border:0;border-bottom:1px solid var(--hair);background:none;text-align:left;font:inherit;color:inherit;cursor:pointer}
+.sp203list>button:last-of-type{border-bottom:0}
+.sp203ic{width:36px;height:36px;border-radius:12px;flex:none;display:grid;place-items:center;background:color-mix(in srgb,var(--line) 55%,var(--card));color:var(--accent)}
+.sp203ic.p{background:color-mix(in srgb,var(--peach) 45%,var(--card))}
+.sp203ic .icn{width:18px;height:18px}
+.sp203mid{flex:1;min-width:0;display:flex;flex-direction:column;gap:5px}
+.sp203t{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.sp203t .nm,.sp203tx .nm{font-size:var(--fs-15);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sp203t b,.sp203tx>b{font-size:var(--fs-15);font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap}
+.sp203bar{display:block;height:6px;border-radius:99px;background:color-mix(in srgb,var(--line) 70%,var(--card));overflow:hidden}
+.sp203bar i{display:block;height:100%;border-radius:99px;background:var(--peach)}
+.sp203bar i.plan{background:var(--terra)}
+.sp203bar i.over{background:repeating-linear-gradient(135deg,var(--mocha) 0 5px,color-mix(in srgb,var(--mocha) 75%,var(--card)) 5px 10px)}
+.sp203s{display:flex;justify-content:space-between;gap:8px;font-size:var(--fs-12);font-weight:600;color:var(--muted)}
+.sp203s .over{color:var(--accent)}.sp203s .left{color:var(--olive)}
+.sp203more{width:100%;text-align:center;justify-content:center;min-height:46px;border:0;border-top:1px solid var(--hair);background:none;font:700 var(--fs-13) var(--font-ui);color:var(--accent);cursor:pointer}
+.sp203tx .sp203mid{gap:2px}
+.sp203tx small{font-size:var(--fs-12);color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sp203av{width:30px;height:30px;border-radius:50%;flex:none;display:grid;place-items:center;font:800 12px var(--font-ui);background:var(--mocha);color:var(--sand)}
+.sp203av.pt{background:var(--peach);color:var(--mocha)}
+.sp203av.j{background:color-mix(in srgb,var(--sage) 55%,var(--card));color:var(--mocha)}
+#repDyn .sp203fx,#repDyn .sp203tr{padding:14px 16px;margin-top:12px}
+.sp203ct{display:block;font-size:var(--fs-15);font-weight:700}
+.sp203fb{display:flex;gap:2px;height:10px;border-radius:99px;overflow:hidden;margin-top:12px}
+.sp203fb i:first-child{background:var(--mocha)}.sp203fb i:last-child{flex:1;background:var(--peach)}
+.sp203fl{display:flex;justify-content:space-between;gap:10px;margin-top:10px}
+.sp203fl .r{text-align:right}
+.sp203fl small{display:flex;align-items:center;gap:6px;font-size:var(--fs-12);font-weight:600;color:var(--muted)}
+.sp203fl .r small{justify-content:flex-end}
+.sp203fl b{display:block;font-size:var(--fs-15);font-weight:700;margin-top:2px;font-variant-numeric:tabular-nums}
+.sp203fl .k{width:8px;height:8px;border-radius:3px}.sp203fl .k.fx{background:var(--mocha)}.sp203fl .k.fl{background:var(--peach)}
+.sp203fn{font-size:var(--fs-12);color:var(--muted);line-height:1.4;margin-top:10px}
+#repDyn .sp203cal{padding:12px 12px 14px}
+.sp203g{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:5px}
+.sp203g .dw{text-align:center;font-size:var(--fs-11);font-weight:700;color:var(--muted)}
+.sp203d{aspect-ratio:1/1.08;border-radius:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;background:color-mix(in srgb,var(--line) 45%,var(--card));color:var(--muted)}
+.sp203d.e{background:none}
+.sp203d em{font-style:normal;font-size:var(--fs-11);font-weight:700;opacity:.8}
+.sp203d b{font-size:var(--fs-11);font-weight:800;font-variant-numeric:tabular-nums}
+.sp203d.l1{background:color-mix(in srgb,var(--terra) 25%,var(--card));color:var(--ink)}
+.sp203d.l2{background:color-mix(in srgb,var(--terra) 55%,var(--card));color:var(--ink)}
+.sp203d.l3{background:color-mix(in srgb,var(--terra) 85%,var(--mocha));color:#FFFDFC}
+.sp203d.l4{background:var(--accent);color:#FFFDFC}
+.sp203d.td{box-shadow:inset 0 0 0 2px var(--ink)}
+.sp203key{display:flex;align-items:center;justify-content:flex-end;gap:6px;margin-top:12px;font-size:var(--fs-11);font-weight:600;color:var(--muted)}
+.sp203key i{width:14px;height:14px;border-radius:4px}
+.sp203key .l1{background:color-mix(in srgb,var(--terra) 25%,var(--card))}.sp203key .l2{background:color-mix(in srgb,var(--terra) 55%,var(--card))}
+.sp203key .l3{background:color-mix(in srgb,var(--terra) 85%,var(--mocha))}.sp203key .l4{background:var(--accent)}
+.sp203tl{display:flex;align-items:center;gap:10px;margin-top:9px}
+.sp203tl>span:first-child{width:34px;font-size:var(--fs-12);font-weight:700;color:var(--muted)}
+.sp203tb{flex:1;display:block;height:10px;border-radius:99px;background:color-mix(in srgb,var(--line) 45%,var(--card));overflow:hidden}
+.sp203tb i{display:block;height:100%;border-radius:99px;background:color-mix(in srgb,var(--terra) 45%,var(--card))}
+.sp203tb i.now{background:var(--terra)}
+.sp203tl b{width:88px;text-align:right;font-size:var(--fs-14);font-weight:700;font-variant-numeric:tabular-nums}
+/* ===== Beta 2.04: Eucie wordmark gold leaf (D-101, user pick 5 Nov) =====
+   The dot of the i is the plain gold foil leaf from the app icon, rising and leaning 35deg, close to the i. */
+.wm97 .wm97-leaf{left:50%;top:-.01em;width:.25em;height:.333em;transform:translateX(-24%);fill:none}
