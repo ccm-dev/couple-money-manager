@@ -9,7 +9,7 @@ var CMM_FN_REGION='asia-southeast1';
    place before anything is drawn, loads the matching stylesheet, and clears the offline copies so
    the next start fetches fresh files. Help & About then says "old page file". */
 var PAGE75=(function(){
-  var JSV='beta-2.0',out={js:JSV,page:'',stale:false,fixed:false};
+  var JSV='beta-2.04',out={js:JSV,page:'',stale:false,fixed:false};
   try{
     var m=document.querySelector('meta[name="app-version"]');out.page=m?m.content:'';
     out.stale=out.page!==JSV;
@@ -267,8 +267,11 @@ function applyTheme(){ /* Beta 2.0: Look = Day (light) / Evening (dark) / Follow
   var root=document.documentElement;
   if(m==='light'||m==='dark')root.setAttribute('data-mode',m);else root.removeAttribute('data-mode');
   var dark=m==='dark'||(m!=='light'&&window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches);
-  var mc=document.querySelector('meta[name="theme-color"]');
-  if(mc)mc.setAttribute('content',dark?'#1C1714':'#F8F4EE');
+  /* beta 2.02 (item 30): every theme-color tag follows the app's own Look (the phone's dark mode no longer wins over Day),
+     and color-scheme tells Android to draw its bars light with dark icons in Day */
+  [].slice.call(document.querySelectorAll('meta[name="theme-color"]')).forEach(function(mc){mc.setAttribute('content',dark?'#1C1714':'#F8F4EE');});
+  var cs=document.querySelector('meta[name="color-scheme"]');if(cs)cs.setAttribute('content',dark?'dark':'light');
+  try{root.style.colorScheme=dark?'dark':'light';}catch(e){}
   pal200(dark);
 }
 /* Beta 2.0: the mocha chart series turns light mocha in Evening so it stays visible */
@@ -652,6 +655,8 @@ function hasSplit(t){return !!(t&&Array.isArray(t.split)&&t.split.length);}
 function splitMap(t){var m={};if(hasSplit(t))t.split.forEach(function(x){if(x&&x.p)m[x.p]=(m[x.p]||0)+Math.max(0,+x.v||0);});return m;}
 /* beta 122 (D-85): a joint person ("A & B") is two people. Names are matched to the people list
    case-insensitively, so "hko&why" and "HKO & WHY" are the same pair. Returns [] when not joint. */
+/* beta 2.01 (D-98): is <who> one of the account owners in <owner> ("A" or "A & B"); ignores case and extra spaces */
+function ownIs201(owner,who){var k=function(x){return String(x==null?'':x).trim().replace(/\s+/g,' ').toLowerCase();},w=k(who);if(!w)return false;return String(owner||'').split(/\s*&\s*/).some(function(x){return k(x)===w;});}
 function canonP122(x){x=String(x||'').trim();if(!x)return '';var L=(DB&&DB.people)||[],lx=x.toLowerCase();for(var i=0;i<L.length;i++){if(String(L[i]).trim().toLowerCase()===lx)return L[i];}return x;}
 function jointOf122(o){var s=String(o||'');if(s.indexOf('&')<0)return [];var m=s.split(/\s*&\s*/).map(canonP122).filter(Boolean);return (m.length===2&&m[0]!==m[1])?m:[];}
 /* half of a joint amount in cents: the first member gets the extra cent */
@@ -1388,7 +1393,7 @@ var TXF=txfDefaults();
    Everything is computed on the same privacy view as the list (withPV + withView), so a partner's
    private data never reaches a list, a count or a facet. */
 var TXF71=(function(){
-  var UI={sec:null,catQ:''};
+  var UI={sec:null,catQ:'',accQ:''};
   function me(){try{return meName()||'';}catch(e){return '';}}
   function pa(){try{var p=partnerName();return (p&&p!=='your partner')?p:'';}catch(e){return '';}}
   function couple(){try{return !!isCouple();}catch(e){return false;}}
@@ -1509,12 +1514,13 @@ var TXF71=(function(){
   /* ---------- Filters sheet ---------- */
   function secs(){var s=['period','type'];if(couple())s.push('who');s.push('acc','cat','amt','more');if(adv())s.push('space');return s;}
   function lst(a,none){return a.length?(a.length<=2?a.map(whoLbl).join(', '):whoLbl(a[0])+' +'+(a.length-1)):none;}
+  function lstN(a,none){return a.length?(a.length<=2?a.join(', '):a[0]+' +'+(a.length-1)):none;} /* beta 2.02: account and category names as they are (no person wording) */
   function secSum(k){var F=TXF;switch(k){
     case 'period':return {t:periodLabel(),on:F.period.k!=='month'};
     case 'type':return {t:lblType(F.type),on:F.type!=='all'};
     case 'who':return {t:lst(F.who,'All'),on:F.who.length>0};
-    case 'acc':return {t:lst(F.acc,'All accounts'),on:F.acc.length>0};
-    case 'cat':return {t:lst(F.cat,'All categories'),on:F.cat.length>0};
+    case 'acc':return {t:lstN(F.acc,'All accounts'),on:F.acc.length>0};
+    case 'cat':return {t:lstN(F.cat,'All categories'),on:F.cat.length>0};
     case 'amt':return {t:(F.min==null&&F.max==null)?'Any amount':amtLbl(),on:F.min!=null||F.max!=null};
     case 'more':{var a=[];if(F.between)a.push('Between Us');if(F.rec)a.push('Recurring');return {t:a.length?a.join(', '):'Off',on:a.length>0};}
     case 'space':return {t:spaceLbl()==='Space'?'All':spaceLbl(),on:F.space!=='all'};
@@ -1529,11 +1535,33 @@ var TXF71=(function(){
     function grp(ty){
       var l=allC[ty].filter(function(c){return !q||c.toLowerCase().indexOf(q)>=0;}).sort(function(a,b){return (cnt[b]||0)-(cnt[a]||0)||a.localeCompare(b);});
       if(!l.length)return '';
-      return '<div class="ddg">'+(simple()?(ty==='Expense'?'Spent on':'Received from'):ty)+'</div>'+l.map(function(c){var on=F.cat.indexOf(c)>=0;
-        return '<button type="button" class="ddr'+(on?' on':'')+((cnt[c]||on)?'':' z')+'" data-act="txfcat" data-v="'+esc(c)+'" role="checkbox" aria-checked="'+on+'">'+chk()+'<span class="nm">'+esc(c)+'</span><span class="cnt">'+(cnt[c]||0)+'</span></button>';}).join('');
+      return '<div class="grp">'+(simple()?(ty==='Expense'?'Spent on':'Received from'):ty)+'</div>'+l.map(function(c){var on=F.cat.indexOf(c)>=0;
+        return '<button type="button" class="arow'+(on?' on':'')+((cnt[c]||on)?'':' z')+'" data-act="txfcat" data-v="'+esc(c)+'" aria-pressed="'+on+'">'+chk()+'<span class="nm"><b>'+esc(c)+'</b></span><span class="cnt">'+(cnt[c]||0)+'</span></button>';}).join('');
     }
     var body=grp('Expense')+grp('Income');
-    return body||'<p class="help small" style="padding:14px;margin:0">No category matches “'+esc(UI.catQ)+'”.</p>';
+    return body||'<p class="help small txf202-none">No category matches “'+esc(UI.catQ)+'”.</p>';
+  }
+  /* beta 2.02 (item 14): Account rows with a search, like Category */
+  function accList(){
+    var F=TXF,q=String(UI.accQ||'').toLowerCase().trim(),m0=me(),p0=pa(),cp=couple(),groups={},order=[],al=list('acc');
+    DB.accounts.forEach(function(a){if(q&&(a.name+' '+(a.type||'')).toLowerCase().indexOf(q)<0&&F.acc.indexOf(a.name)<0)return;var o=a.owner||'',g=!cp?'':(window.ownIs201?(ownIs201(o,m0)?'me':ownIs201(o,p0)?'pa':isJoint(o)?'joint':'other'):(o===m0?'me':o===p0?'pa':isJoint(o)?'joint':'other'));if(!groups[g]){groups[g]=[];order.push(g);}groups[g].push(a);});
+    if(!order.length)return '<p class="help small txf202-none">No account matches “'+esc(UI.accQ||'')+'”.</p>';
+    var rank={me:0,pa:1,joint:2,other:3,'':0};order.sort(function(a,b){return rank[a]-rank[b];});
+    var gl={me:m0,pa:p0,joint:'Joint',other:'Other accounts'};
+    return order.map(function(g){return (cp?'<div class="grp">'+esc(gl[g])+'</div>':'')+groups[g].map(function(a){
+      var c=rows(al.filter(function(t){return t.account===a.name||t.to===a.name;})),on=F.acc.indexOf(a.name)>=0,pv=adv()&&a.vis==='me';
+      return '<button type="button" class="arow'+(on?' on':'')+((c||on)?'':' z')+'" data-act="txfacc" data-v="'+esc(a.name)+'" aria-pressed="'+on+'">'+chk()+'<span class="nm"><b>'+esc(a.name)+(pv?'<span class="lockp">'+ico('lock')+' Only me</span>':'')+'</b><small>'+esc(a.type||'')+'</small></span><span class="cnt">'+c+'</span></button>';}).join('');}).join('');
+  }
+  function accFoot(){var n=TXF.acc.length;return '<span>'+(n?n+' selected':'None selected = all accounts')+'</span>'+(n?'<button type="button" data-act="txfaccclr">Clear</button>':'');}
+  /* a tick updates the rows, the section summary and the Show button in place (no sheet rebuild) */
+  function patchSel(k){
+    UI.typing=1;try{renderTxns();}finally{UI.typing=0;}
+    inView(function(){
+      var sh=$('txfShow');if(sh)sh.textContent=showTxt(rows(list()));
+      ['acc','cat'].forEach(function(d){var hd=document.querySelector('#txfBody .acc[data-sec='+d+'] .as'),m=secSum(d);if(hd){hd.textContent=m.t;hd.classList.toggle('on',m.on);}});
+      var L=$(k==='acc'?'txfAccL':'txfCatL');if(L)L.innerHTML=k==='acc'?accList():catList();
+      var Fo=$(k==='acc'?'txfAccF':'txfCatF');if(Fo)Fo.innerHTML=k==='acc'?accFoot():catFoot();
+    });
   }
   function catFoot(){var n=TXF.cat.length;return '<span>'+(n?n+' selected':'None selected = all categories')+'</span>'+(n?'<button type="button" data-act="txfcatclr">Clear</button>':'');}
   function secHTML(k){var F=TXF;switch(k){
@@ -1551,7 +1579,11 @@ var TXF71=(function(){
       var P=[[me(),'',me()+' (you)'],[pa(),'b',pa()],['Joint','j','Joint accounts']].filter(function(x){return x[0];}),pl=list('who');
       return '<div class="sec"><div class="cw">'+P.map(function(x){var c=rows(pl.filter(function(t){return whoHit(t,x[0]);})),on=F.who.indexOf(x[0])>=0;
         return '<button type="button" class="chip'+(on?' on':'')+((c||on)?'':' z')+'" data-act="txfwho" data-v="'+esc(x[0])+'" aria-pressed="'+on+'"><span class="av '+x[1]+'">'+esc(x[0]==='Joint'?'J':lead121(x[0]))+'</span>'+esc(x[2])+'<i>'+c+'</i></button>';}).join('')+'</div></div>';}
-    case 'acc':{
+    case 'acc':
+      return '<div class="sec txf202"><div class="ddq">'+ico('search')+'<input id="txfAccQ" type="search" placeholder="Find an account" value="'+esc(UI.accQ||'')+'" autocomplete="off" aria-label="Find an account"></div><div id="txfAccL">'+accList()+'</div><div class="ddf" id="txfAccF">'+accFoot()+'</div></div>';
+    case 'cat':
+      return '<div class="sec txf202"><div class="ddq">'+ico('search')+'<input id="txfCatQ" type="search" placeholder="Find a category" value="'+esc(UI.catQ)+'" autocomplete="off" aria-label="Find a category"></div><div id="txfCatL">'+catList()+'</div><div class="ddf" id="txfCatF">'+catFoot()+'</div></div>';
+    case 'acc_old':{
       var m0=me(),p0=pa(),cp=couple(),groups={},order=[],al=list('acc');
       DB.accounts.forEach(function(a){var o=a.owner||'',g=!cp?'':(o===m0?'me':o===p0?'pa':isJoint(o)?'joint':'other');if(!groups[g]){groups[g]=[];order.push(g);}groups[g].push(a);});
       var rank={me:0,pa:1,joint:2,other:3,'':0};order.sort(function(a,b){return rank[a]-rank[b];});
@@ -1559,8 +1591,6 @@ var TXF71=(function(){
       return '<div class="sec">'+order.map(function(g){return (cp?'<div class="grp">'+esc(gl[g])+'</div>':'')+groups[g].map(function(a){
         var c=rows(al.filter(function(t){return t.account===a.name||t.to===a.name;})),on=F.acc.indexOf(a.name)>=0,pv=adv()&&a.vis==='me';
         return '<button type="button" class="arow'+(on?' on':'')+((c||on)?'':' z')+'" data-act="txfacc" data-v="'+esc(a.name)+'" aria-pressed="'+on+'">'+chk()+'<span class="nm"><b>'+esc(a.name)+(pv?'<span class="lockp">'+ico('lock')+' Only me</span>':'')+'</b><small>'+esc(a.type||'')+'</small></span><span class="cnt">'+c+'</span></button>';}).join('');}).join('')+'</div>';}
-    case 'cat':
-      return '<div class="sec"><div class="dd"><div class="ddq">'+ico('search')+'<input id="txfCatQ" type="search" placeholder="Find a category" value="'+esc(UI.catQ)+'" autocomplete="off" aria-label="Find a category"></div><div class="ddl" id="txfCatL">'+catList()+'</div><div class="ddf" id="txfCatF">'+catFoot()+'</div></div></div>';
     case 'amt':{
       var Q=[['Under 50',null,50],['50 – 200',50,200],['200 – 1,000',200,1000],['Over 1,000',1000,null]];
       return '<div class="sec"><div class="cw">'+Q.map(function(q,i2){return '<button type="button" class="chip'+(F.min===q[1]&&F.max===q[2]?' on':'')+'" data-act="txfamtq" data-v="'+i2+'">'+q[0]+'</button>';}).join('')+'</div>'
@@ -1591,11 +1621,11 @@ var TXF71=(function(){
     try{calcMark();}catch(e){}
   }
   function open(){
-    UI.sec=null;UI.catQ='';
+    UI.sec=null;UI.catQ='';UI.accQ='';try{$('txfSheet').style.height='';}catch(e){}
     $('txfOvl').classList.add('on');$('txfSheet').classList.add('on');
     renderSheet();$('txfBody').scrollTop=0;navSync();
   }
-  function close(){if(!isOpen())return false;try{if(window.CALC&&CALC.open)calcClose(true);}catch(e){}$('txfOvl').classList.remove('on');$('txfSheet').classList.remove('on');navSync();return true;}
+  function close(){if(!isOpen())return false;try{if(window.CALC&&CALC.open)calcClose(true);}catch(e){}try{$('txfSheet').style.height='';}catch(e){}$('txfOvl').classList.remove('on');$('txfSheet').classList.remove('on');navSync();return true;}
   /* changes apply live: the list behind re-renders, and its hook re-renders the open sheet */
   function apply(){renderTxns();}
   /* typing in the amount range: refresh the list, the row summary, the quick chips and the Show button without rebuilding the inputs */
@@ -1609,7 +1639,7 @@ var TXF71=(function(){
     });
   }
   return {list:list,rows:rows,sanitize:sanitize,toolbar:toolbar,emptyHTML:emptyHTML,sharePerson:sharePerson,inView:inView,
-    open:open,close:close,isOpen:isOpen,renderSheet:renderSheet,apply:apply,patchAmt:patchAmt,resetDim:resetDim,catList:catList,catFoot:catFoot,UI:UI};
+    open:open,close:close,isOpen:isOpen,renderSheet:renderSheet,apply:apply,patchAmt:patchAmt,resetDim:resetDim,catList:catList,catFoot:catFoot,accList:accList,accFoot:accFoot,patchSel:patchSel,UI:UI};
 })();
 var BSEL={on:false,ids:[]};
 var EXP={txn:'',grp:{}}; /* v1.35: the transaction id whose detail card is expanded on the Transactions screen */
@@ -2873,9 +2903,16 @@ function drillFrom(){if(REPORT.open)return esc((($('repTitle')||{}).textContent|
 var TXR={n:40,io:null};
 var LP={h:0,fired:false};
 function startSel(id){if(BSEL.on)return;BSEL.on=true;BSEL.ids=[id];EXP.txn='';renderTxns();navSync();try{if(navigator.vibrate)navigator.vibrate(15);}catch(e){DIAG.note(e,"core/16-v1-36-couple-reports-week-month:127");}}
-document.addEventListener('touchstart',function(e){var el=e.target.closest&&e.target.closest('#txList .txn');if(!el)return;LP.fired=false;clearTimeout(LP.h);LP.h=setTimeout(function(){LP.fired=true;startSel(el.dataset.id);},480);},{passive:true});
-['touchend','touchmove','touchcancel'].forEach(function(ev){document.addEventListener(ev,function(){clearTimeout(LP.h);},{passive:true});});
-document.addEventListener('contextmenu',function(e){var el=e.target.closest&&e.target.closest('#txList .txn');if(!el)return;e.preventDefault();startSel(el.dataset.id);});
+/* beta 2.02 (item 13): long press needs a still finger for 600 ms, cancels on a move over 10 px, and never starts
+   right after the list was scrolling (a finger that stops a fling). Android's contextmenu obeys the same checks. */
+LP.x=0;LP.y=0;LP.ok=false;LP.scrollAt=0;
+document.addEventListener('scroll',function(){LP.scrollAt=Date.now();clearTimeout(LP.h);LP.ok=false;},{passive:true,capture:true});
+document.addEventListener('touchstart',function(e){LP.touch=true;var el=e.target.closest&&e.target.closest('#txList .txn');LP.ok=false;if(!el)return;LP.fired=false;clearTimeout(LP.h);
+  var t=e.touches&&e.touches[0];LP.x=t?t.clientX:0;LP.y=t?t.clientY:0;if(Date.now()-LP.scrollAt<400)return;
+  LP.ok=true;LP.h=setTimeout(function(){if(!LP.ok)return;LP.fired=true;startSel(el.dataset.id);},600);},{passive:true});
+document.addEventListener('touchmove',function(e){var t=e.touches&&e.touches[0];if(!t)return;if(Math.abs(t.clientX-LP.x)>10||Math.abs(t.clientY-LP.y)>10){clearTimeout(LP.h);LP.ok=false;}},{passive:true});
+['touchend','touchcancel'].forEach(function(ev){document.addEventListener(ev,function(){clearTimeout(LP.h);setTimeout(function(){LP.ok=false;LP.touch=false;},350);},{passive:true});});
+document.addEventListener('contextmenu',function(e){var el=e.target.closest&&e.target.closest('#txList .txn');if(!el)return;e.preventDefault();if(LP.touch)return; /* a touch: the 600 ms timer decides */startSel(el.dataset.id);});
 /* settings: Data & Sync status line + budgets count */
 
 /* ===================== v1.45: collaborators — per-account access, invite & sync files =====================
@@ -2921,11 +2958,11 @@ function perRange(off,mode){
   return {s:isoD(s2),e:isoD(e2),label:MONTHS[s2.getMonth()]+' '+s2.getFullYear(),short:MONTHS[s2.getMonth()],n:e2.getDate()};
 }
 function whoOK(){if(PER.who!=='couple'&&DB.people.indexOf(PER.who)<0)PER.who='couple';return PER.who;}
-function whoLabel(){return whoOK()==='couple'?(isCouple()?'Ours':'Everyone'):(PER.who===meName()&&isCouple()?'Mine':(isCouple()?PER.who+'\u2019s':PER.who));} /* Beta 2.0 (spec) */ /* beta 127: the signed-in person is You */
+function whoLabel(){return whoOK()==='couple'?(isCouple()?'Shared':'Everyone'):(PER.who===meName()&&isCouple()?'Mine':(isCouple()?PER.who+'\u2019s':PER.who));} /* Beta 2.0 (spec) */ /* beta 127: the signed-in person is You */
 function perTx(r){var l=DB.txns.filter(function(t){return t.date>=r.s&&t.date<=r.e&&t.type!=='Transfer';});return whoOK()==='couple'?l:applyPerson(l,PER.who);}
 function perWord(){return PER.mode;}
 function peopleWith(m){var p=sortedAlpha(DB.people);Object.keys(m||{}).forEach(function(k){if(p.indexOf(k)<0)p.push(k);});return whoOK()==='couple'?p:p.filter(function(x){return x===PER.who;});}
-function ownedByWho(owner){if(whoOK()==='couple')return true;return owner===PER.who||String(owner||'').split(' & ').indexOf(PER.who)>=0;}
+function ownedByWho(owner){if(whoOK()==='couple')return true;return ownIs201(owner,PER.who);}
 function tip117(lines){return ' data-tip="'+esc((lines||[]).filter(function(x){return x!==''&&x!=null;}).join('|'))+'"';} /* beta 117: every chart point/bar carries its values; a tap shows them (D-69) */
 function sgm117(v){return (v<0?'\u2212':v>0?'+':'')+money(Math.abs(v));}
 function tl(s,e,h,c,ty){return ' data-act="tlist" data-s="'+s+'" data-e="'+e+'" data-h="'+esc(h)+'"'+(c?' data-c="'+esc(c)+'"':'')+(ty?' data-t="'+ty+'"':'');}
@@ -2949,9 +2986,12 @@ function renderBudgetMgr(){
   if(!BG.work)BG.work=JSON.parse(JSON.stringify(bgStore()));
   if(BG.scope!=='couple'&&DB.people.indexOf(BG.scope)<0)BG.scope='couple';
   var sc=BG.scope,b=BG.work[sc]||{},cats=sortedAlpha(DB.categories.Expense||[]);
-  $('mgrBody').innerHTML='<div class="chips" style="margin-bottom:10px">'+['couple'].concat(sortedAlpha(DB.people)).map(function(p){return '<button class="chip'+(sc===p?' on':'')+'" data-act="bgscope" data-p="'+esc(p)+'">'+(p==='couple'?ico('users')+' Couple':ico('user')+' '+esc(p))+'</button>';}).join('')+'</div>'
-    +'<div class="help small" style="margin-bottom:8px"><b>'+(sc==='couple'?'Couple budget':esc(sc)+'\u2019s personal budget')+'</b>, monthly amounts. <b>Fixed</b> = bills that stay the same, like rent or loans. <b>Variable</b> = day-to-day spending.</div>'
-    +'<div class="dayg"><div class="day-h bgrow bghd"><span>Category</span><span>Fixed</span><span>Variable</span></div>'
+  /* beta 2.02 (item 37): the Accounts people chips (Mine \u00b7 Kim's \u00b7 Shared) and a plain list, no boxed table */
+  var cpl37=false;try{cpl37=isCouple();}catch(e){}
+  var who37=cpl37?[meName(),partnerName(),'couple'].filter(function(p){return p==='couple'||DB.people.indexOf(p)>=0;}):[];
+  $('mgrBody').innerHTML=(who37.length>1?'<div class="a48chips bg202chips" role="group" aria-label="Whose budget">'+who37.map(function(p){return '<button type="button" class="a48chip'+(sc===p?' on':'')+'" aria-pressed="'+(sc===p)+'" data-act="bgscope" data-p="'+esc(p)+'">'+(p==='couple'?'Shared':(p===meName()?'Mine':esc(p)+'\u2019s'))+'</button>';}).join('')+'</div>':'')
+    +'<div class="help small" style="margin-bottom:8px"><b>'+(sc==='couple'?(cpl37?'Shared budget':'Your budget'):(sc===meName()?'Your personal budget':esc(sc)+'\u2019s personal budget'))+'</b>, monthly amounts. <b>Fixed</b> = bills that stay the same, like rent or loans. <b>Variable</b> = day-to-day spending.</div>'
+    +'<div class="bg202"><div class="bgrow bghd"><span>Category</span><span>Fixed</span><span>Variable</span></div>'
     +cats.map(function(c){var e=b[c]||{};return '<div class="bgrow"><span class="lb">'+esc(c)+'</span><input class="fin" inputmode="decimal" data-c="'+esc(c)+'" data-k="f" value="'+(e.f||'')+'" placeholder="0" oninput="bgEdit(this)" aria-label="fixed budget for '+esc(c)+'"><input class="fin" inputmode="decimal" data-c="'+esc(c)+'" data-k="v" value="'+(e.v||'')+'" placeholder="0" oninput="bgEdit(this)" aria-label="variable budget for '+esc(c)+'"></div>';}).join('')
     +'<div class="help small" id="bgTot" style="padding:9px 12px"></div></div>'
     +'<div class="sheet-foot" style="padding-bottom:4px"><button class="btn" data-act="bgsave">Save budgets</button></div>';
@@ -3473,7 +3513,7 @@ function aiLocal(q0){
     return '<b>Between Us</b> as at '+dLabelYW(d)+':'+aiBul(ls.map(function(l){return oweTxt(l.name,l.bal);}));
   }
   if(/\bdue\b|card|statement|credit|payment/.test(q)){
-    var du=dueList(31);if(who!=='couple')du=du.filter(function(x){return String(x.owner||'').split(' & ').indexOf(who)>=0;});
+    var du=dueList(31);if(who!=='couple')du=du.filter(function(x){return ownIs201(x.owner,who);});
     return du.length?'<b>Card payments to make</b>:'+aiBul(du.map(function(x){return esc(x.name)+': '+money(x.stillDue)+', '+dueTxt(x);})):'No card payments are due in the next 31 days. ✓';
   }
   if(/goal/.test(q)){
@@ -4288,7 +4328,7 @@ function sampleBuild(){
     R(k,14,{type:'Expense',category:'Bills & Utilities',sub:'Mobile & internet',account:BANK,note:'Mobile and internet',amount:128});
     R(k,17,{type:'Expense',category:'Food & Dining',sub:'Hawker lunch',account:CASH,note:'Lunch',amount:18.50});
     R(k,19,{type:'Expense',category:'Groceries',sub:'Wet market',account:CASH,note:'Fresh produce',amount:v([58.20,71.40,64.30])});
-    R(k,20,{type:'Transfer',account:BANK,to:CARD,note:'Credit card payment',amount:k===2?410:cardSpent[i-1]});
+    R(k,20,{type:'Transfer',account:BANK,to:CARD,note:'Card payment',amount:k===2?410:cardSpent[i-1]});
     R(k,24,{type:'Expense',category:'Health',sub:'Pharmacy',account:EW,note:'Pharmacy',amount:v([38.60,0,24.90])});
     R(k,27,{type:'Income',category:'Business',sub:'Freelance',account:BANK,note:'Freelance project',amount:v([0,600,0])});
     R(k,28,{type:'Expense',category:'Personal Care',sub:'Haircut',account:CASH,note:'Haircut',amount:v([35,0,35])});
@@ -5040,7 +5080,7 @@ function plFullOK(){
 }
 
 /* ---------- 2. private accounts (“Only me”) ---------- */
-function pvMine(a){var me=meName();return !!a&&(a.vis==='me'||!!a.shareFrom)&&(!me||(a.pvby||a.owner)===me);}
+function pvMine(a){var me=meName();return !!a&&(a.vis==='me'||!!a.shareFrom)&&(!me||ownIs201(a.pvby||a.owner,me));}
 function pushPrivate(){} /* the working version is assigned later in this file */;
 var _ms56=mergeShared;mergeShared=function(R){
   var keep=DB.accounts.filter(pvMine).map(function(a){return JSON.parse(JSON.stringify(a));}),loc={};
@@ -5059,7 +5099,7 @@ V56.mgr={};
 MGR_TITLE.sharepick=ico('users')+' Choose accounts to share';
 V56.mgr.sharepick=function(){
   var me=meName(),P=esc(partnerName());
-  var l=DB.accounts.filter(function(a){return !a.recv&&!a.locked&&!/^.+ owes .+$/.test(a.name)&&!LBL_RE.test(a.name)&&(!me||!a.owner||a.owner===me||String(a.owner).split(' & ').indexOf(me)>=0)&&!(DB.meta.sample&&DB.meta.sample.on&&(DB.meta.sample.accounts||[]).indexOf(a.name)>=0);});
+  var l=DB.accounts.filter(function(a){return !a.recv&&!a.locked&&!/^.+ owes .+$/.test(a.name)&&!LBL_RE.test(a.name)&&(!me||!a.owner||ownIs201(a.owner,me))&&!(DB.meta.sample&&DB.meta.sample.on&&(DB.meta.sample.accounts||[]).indexOf(a.name)>=0);});
   $('mgrBody').innerHTML='<div class="help small" style="margin-bottom:10px">Tick the accounts '+P+' may see. <b>Unticked accounts stay private</b>: '+P+' won’t see them, their transactions or their balances.</div>'
     +(l.length?'<div class="dayg">'+l.sort(function(x,y){return alphasort(x.name,y.name);}).map(function(a){return '<label class="mgr-row" style="padding:10px 12px;cursor:pointer"><span class="lb">'+esc(a.name)+'<small>'+esc(a.type||'')+'</small></span><input type="checkbox" class="tgl pvck" data-n="'+esc(a.name)+'"'+(a.vis==='me'?'':' checked')+'></label>';}).join('')+'</div>':'<div class="help">You don’t have any accounts yet.</div>')
     +'<div class="sheet-foot" style="padding-bottom:4px"><button class="btn" data-act="sharesave">Save</button></div>';
@@ -6048,7 +6088,8 @@ V56.mgr.perfilter=function(){
   var np=!!V57.np,ppl=sortedAlpha(DB.people.filter(function(p){return p!=='Me';}));
   var ap=V57.aper,st=ap||PER; /* beta 89: account Activity reuses this sheet with its own period and no person choice */
   $('mgrBody').innerHTML=(np?'':'<div class="mgr-lb">Period</div><div class="segmini">'+['week','month','year'].map(function(m){return '<button class="'+(st.mode===m?'on':'')+'" data-act="'+(ap?'a89mode':'permode')+'" data-m="'+m+'">'+capW(m)+'</button>';}).join('')+'</div>')
-    +(ap?'':(ppl.length>1||isCouple()?'<div class="mgr-lb">Whose money</div><div class="expchips">'+(isCouple()?ppl.slice().sort(function(a,b){return (b===meName())-(a===meName());}).concat(['couple']):['couple'].concat(ppl)).map(function(p){return '<button class="chip'+(PER.who===p?' on':'')+'" data-act="perwho" data-p="'+esc(p)+'">'+(p==='couple'?ico('users')+' '+(isCouple()?'Ours':'Everyone'):ico('user')+' '+(isCouple()?(p===meName()?'Mine':esc(p)+'\u2019s'):esc(p)))+'</button>';}).join('')+'</div>':'')
+    +(ap?'':(ppl.length>1||isCouple()?'<div class="mgr-lb">Whose money</div><div class="a48chips p202chips" role="group" aria-label="Whose money">'+(isCouple()?[meName(),partnerName(),'Joint','couple']:['couple'].concat(ppl)).map(function(p){var on=whoOK()===p; /* beta 2.02 (item 25): the Accounts people chips: Mine · Kim's · Joint · Shared */
+      return '<button type="button" class="a48chip'+(on?' on':'')+'" aria-pressed="'+on+'" data-act="perwho" data-p="'+esc(p)+'">'+(p==='couple'?(isCouple()?'Shared':'Everyone'):p==='Joint'?'Joint':(isCouple()?(p===meName()?'Mine':esc(p)+'\u2019s'):esc(p)))+'</button>';}).join('')+'</div>':'')
     +(isCouple()&&myPrivAccs().length?'<div class="mgr-lb">Accounts</div><div class="segmini"><button class="'+((PER.space||'all')==='all'?'on':'')+'" data-act="pvspace" data-v="all">'+ico('user')+' All mine</button><button class="'+(PER.space==='shared'?'on':'')+'" data-act="pvspace" data-v="shared">'+ico('users')+' Shared only</button></div>':''))
     +'<div class="sheet-foot" style="padding-bottom:4px"><button class="btn" data-act="mgrclose">Done</button></div>';
 };
@@ -9016,6 +9057,7 @@ SCREEN.around('accDel',260007059,function(_ad20){return function(n){
 /* beta 26 · G14 — say what a single-person view counts */
 function whoNote26(){
   var w=whoOK();if(w==='couple')return '';
+  if(w==='Joint')return '<div class="note-soft">'+ico('users')+' Showing <b>joint accounts</b> only, in full.</div>'; /* beta 2.02 */
   return '<div class="note-soft">'+ico('users')+' Showing <b>'+esc(w)+'</b>: income and spending follow who the transaction is for; balances, net worth and cash flow follow who owns the account.</div>';
 }
 SCREEN.base('V63.wealthHTML',220026440,function(){
@@ -9249,7 +9291,7 @@ function a59(n){return DB.accounts.find(function(a){return a.name===n;});}
 function m59(){var m=DB.meta;if(!m.v59||typeof m.v59!=='object')m.v59={};return m.v59;}
 function isVal(a){return !!a&&VAL_T.indexOf(a.type)>=0;}
 function storageMode(){var s=(DB&&DB.meta&&DB.meta.v59&&DB.meta.v59.storage)||'device';return STG_L[s]?s:'device';}
-function ownerHas(owner,who){return !who||who==='couple'||owner===who||String(owner||'').split(' & ').indexOf(who)>=0;}
+function ownerHas(owner,who){return !who||who==='couple'||ownIs201(owner,who);}
 
 /* ---------------- data defaults (runs after every normalizeDB). Beta 61: new app — no conversion of older data shapes ---------------- */
 function ensure59(){
@@ -9388,7 +9430,7 @@ function nwCardHTML(){
 }
 
 /* ---------------- reports: plan names, one question each, networth tile, flat 2D charts ---------------- */
-var TITLE59={breakdown:'Where the Money Went',cash:'Cash Flow & Savings',budget:'Budget',fixed:'Fixed vs Variable',settle:'Between Us',networth:'Net Worth'};
+var TITLE59={breakdown:'Where the Money Went',cash:'Cash Flow',budget:'Budget',fixed:'Fixed vs Variable',settle:'Between Us',networth:'Net Worth'};
 var REPQ59={breakdown:['Where did our money go?','Where did my money go?'],cash:['What came in and went out?','What came in and went out?'],budget:['Are we spending according to plan?','Am I spending according to plan?'],fixed:['How flexible is our spending base?','How flexible is my spending base?'],settle:['Who owes whom?','Who owes whom?'],networth:['Is our financial position improving?','Is my financial position improving?']};
 DYNF.networth=repNetWorth59;
 REP_TITLES.networth=ico('nw')+' Net Worth';
@@ -9527,7 +9569,7 @@ function permFor59(n){
   var a=a59(n);if(!a)return 'owner';
   if(a.locked)return 'view';
   var me=meName();if(!me||!a.owner||a.recv)return 'owner';
-  if(a.owner===me||String(a.owner).split(' & ').indexOf(me)>=0)return 'owner';
+  if(ownIs201(a.owner,me)||(window.PID201&&PID201.isMyAccount(a)))return 'owner'; /* beta 2.01 (D-98): IDs first, names ignore case and spaces */
   if(a.vis==='me')return 'none';
   return a.partnerAccess||'add';
 }
@@ -9934,6 +9976,7 @@ authNextMode=function(){
 };
 SCREEN.on('renderAuth',10072286);
 function stgPick59(k){
+  if(window.member203&&member203()){DB.meta.storageAsked=1;save();auNext();return;} /* beta 2.03 (item 42): a phone in a household keeps household sync; this step never turns it off */
   var v=m59();v.storage=k;DB.meta.storageAsked=1;
   if(k==='household'){DB.meta.syncChoice='yes';DB.meta.cloudSyncOn=true;}else{DB.meta.syncChoice='no';DB.meta.cloudSyncOn=false;}
   if(k==='drive'||k==='onedrive')v.provider=k;
@@ -10482,7 +10525,7 @@ function migPrompt6(){
 MGR_TITLE.share6=ico('users')+' Choose accounts to share';
 V56.mgr.share6=function(){
   var me=meName(),P=esc(partnerName());
-  var l=DB.accounts.filter(function(a){return !a.recv&&!a.locked&&!/^.+ owes .+$/.test(a.name)&&!LBL_RE.test(a.name)&&(!me||!a.owner||a.owner===me||String(a.owner).split(' & ').indexOf(me)>=0)&&!(DB.meta.sample&&DB.meta.sample.on&&(DB.meta.sample.accounts||[]).indexOf(a.name)>=0);});
+  var l=DB.accounts.filter(function(a){return !a.recv&&!a.locked&&!/^.+ owes .+$/.test(a.name)&&!LBL_RE.test(a.name)&&(!me||!a.owner||ownIs201(a.owner,me))&&!(DB.meta.sample&&DB.meta.sample.on&&(DB.meta.sample.accounts||[]).indexOf(a.name)>=0);});
   V6.share={};
   l.forEach(function(a){if(a.vis!=='me')V6.share[a.name]=1;});
   $('mgrBody').innerHTML='<div class="help small" style="margin-bottom:10px">Tick the accounts '+P+' may see, then tap Save. <b>Unticked accounts stay on this device</b> — '+P+' never sees them, their transactions or their balances. Nothing is shared until you tick it.</div>'
@@ -11342,7 +11385,7 @@ B3.attList=function(){
 B3.oneInsight=function(L,Pv,r){
   var out=[],W=perWord(),exp=sumT(L,'Expense'),pexp=sumT(Pv,'Expense'),cp=isCouple();
   if(pexp>0&&exp>0){var pc=Math.round((exp-pexp)/pexp*100);
-    if(Math.abs(pc)>=10)out.push({k:'spend',t:'Spending '+(pc<=0?'down ':'up ')+Math.abs(pc)+'% vs last '+W,s:money(exp)+' vs '+money(pexp),rep:'cash'});}
+    if(Math.abs(pc)>=10)out.push({k:'spend',t:'Spending '+(pc<=0?'down ':'up ')+Math.abs(pc)+'% vs last '+W,s:money(exp)+' vs '+money(pexp),rep:'spending'});}
   try{
     var bc=expBy(L,function(t){return t.category||'Other';}),cats=Object.keys(bc).filter(function(c){return bc[c]>0;}).sort(function(a,b){return bc[b]-bc[a];});
     if(cats.length&&exp>0){var tc=cats[0],sh=Math.round(bc[tc]/exp*100);
@@ -11833,6 +11876,7 @@ if(olB4)olB4.insertAdjacentHTML('beforeend',
   if(window.MutationObserver){
     SCREEN.afterDraw(schedule);
   }
+  (window.TIDY202=window.TIDY202||[]).push(polish);
   B5.polish=polish;
 
   /* ---------- 3. one read-only detail for every list ---------- */
@@ -12551,6 +12595,7 @@ function t10soon(){ if(t10timer)clearTimeout(t10timer); t10timer=setTimeout(func
 if(window.MutationObserver){
   SCREEN.afterDraw(t10soon);
 }
+(window.TIDY202=window.TIDY202||[]).push(function(){B10.fixTiles();B10.cleanup();});
 
 /* ---------- 12 · CSS ---------- */
  
@@ -13440,7 +13485,7 @@ V63.calc.upcoming=function(horizon,who){
   dueList(horizon||90).forEach(function(x){
     if(!ownerHas(x.owner,who))return;
     var a=a59(x.name)||{};
-    out.push({name:x.name,owner:x.owner,due:x.due,dl:x.dl,amt:x.stillDue,kind:'Credit card payment',autopay:!!a.autopay,act:'v63cardpay',basis:a.remBasis||'statement'});
+    out.push({name:x.name,owner:x.owner,due:x.due,dl:x.dl,amt:x.stillDue,kind:'Card payment',autopay:!!a.autopay,act:'v63cardpay',basis:a.remBasis||'statement'});
   });
   (DB.accounts||[]).forEach(function(a){
     if(!isLoan(a)||!a.remDue||a.locked)return;
@@ -13916,7 +13961,7 @@ SCREEN.on('V63.coupleHTML',220039856);V63.coupleHTML=SCREEN.define('V63.coupleHT
 /* ---------- Insights render chain replacement ---------- */
 function stabHTML16(){
   var tabs=[['wealth','Wealth'],['cash','Cash Flow']];
-  if(V63.coupleOK())tabs.push(['couple','Ours']); /* Beta 2.0 (user): was Couple */
+  if(V63.coupleOK())tabs.push(['couple','Shared']); /* beta 2.02: was Ours */ /* Beta 2.0 (user): was Couple */
   if(tabs.every(function(t){return t[0]!==V63.itab;}))V63.itab='wealth';
   return '<div class="stab">'+tabs.map(function(t){
     return '<button class="'+(V63.itab===t[0]?'on':'')+'" data-act="v63tab" data-t="'+t[0]+'">'+t[1]+'</button>';
@@ -14048,10 +14093,12 @@ DYNF.v_cattrend=function(){
   return card16(ico('chart')+' Category trends <span class="sub">last 6 '+perWord()+'s</span>',h+'</tbody></table></div><div class="help small" style="margin-top:8px">Top 6 spending categories, rounded to the nearest '+(cur()||'unit')+'. Swipe the table to see earlier '+perWord()+'s.</div>');
 };
 DYNF.v_forecast=function(){
-  var tr=periodsBack(3),net=tr.reduce(function(s,x){return s+x.net;},0)/Math.max(1,tr.length);
+  /* beta 2.02 (item 38): average NET CASH FLOW of the last 3 periods (loan / card payments and investments count), in cents */
+  var nc=[],k;for(k=2;k>=0;k--){try{nc.push(Math.round(V63.calc.flow(perRange(PER.off-k)).ncf*100));}catch(e){}}
+  var net=nc.length?Math.round(nc.reduce(function(a,b){return a+b;},0)/nc.length)/100:0;
   var liq=0;Object.keys(V63.liqSet(whoOK())).forEach(function(n){var b=accountBalAsOf(n,todayISO());if(isFinite(b))liq+=b;});
-  var f3=liq+net*3,f6=liq+net*6;
-  var h='<div class="kpis">'+kpi('Avg net movement · 3 '+perWord()+'s',sgn16(net),net<0?'neg':'pos')+kpi('Liquid now',money(liq),'')+kpi('In 6 '+perWord()+'s',sgn16(f6),f6<0?'neg':'pos')+'</div>'
+  liq=Math.round(liq*100)/100;var f3=Math.round((liq+net*3)*100)/100,f6=Math.round((liq+net*6)*100)/100;
+  var h='<div class="kpis">'+kpi('Avg net cash flow · 3 '+perWord()+'s',sgn16(net),net<0?'neg':'pos')+kpi('Liquid now',money(liq),'')+kpi('In 6 '+perWord()+'s',sgn16(f6),f6<0?'neg':'pos')+'</div>'
     +'<div class="fline"><span>Projected liquid · 3 '+perWord()+'s ahead</span><b class="'+(f3<0?'neg':'')+'">'+money(f3)+'</b></div>'
 ;
   return card16(ico('cal')+' Forecast',h);
@@ -14186,7 +14233,7 @@ function liabFlow16(r){
   var who=whoOK(),out=0,int2=0;
   DB.txns.forEach(function(t){
     if(t.date<r.s||t.date>r.e)return;
-    if(who!=='couple'){var o=ownerOf(t.account);if(o&&o!==who&&String(o).split(' & ').indexOf(who)<0)return;}
+    if(who!=='couple'){var o=ownerOf(t.account);if(o&&!ownIs201(o,who))return;}
     if(t.type==='Transfer'&&t.to){var a=a59(t.to);if(a&&(isLoan(a)||accTypeKind(a.type)==='liability'))out+=t.amount;}
     if(t.type==='Expense'&&B7.excl(t))int2+=t.amount;
   });
@@ -14226,7 +14273,7 @@ Object.assign(REP_TITLES,{
 });
 /* beta 26 · G12 — one name per report: the Insights card, the Reports menu and the report title match */
 (function(){
-  var N26={networth:'Net Worth',v_alloc:'Asset Mix',v_outstd:'Debt Mix',v_drivers:'Wealth Drivers',v_health:'Financial Health',cash:'Cash Flow & Savings',
+  var N26={networth:'Net Worth',v_alloc:'Asset Mix',v_outstd:'Debt Mix',v_drivers:'Wealth Drivers',v_health:'Financial Health',cash:'Cash Flow',savings:'Savings',
     v_ncf:'Net Cash Flow',breakdown:'Where the Money Went',v_income:'Income Sources',v_money:'Cash Position',shared:'Shared Spending',settle:'Between Us',
     v_contrib:'Contribution',goals:'Saving Goals',budget:'Budget vs Actual',fixed:'Fixed vs Variable',top:'Top 10 Spending',heat:'Daily Spending',cc:'Card Statements'};
   Object.keys(N26).forEach(function(k){var ic=(REP_TITLES[k]||'').match(/^<svg[\s\S]*?<\/svg>/);REP_TITLES[k]=(ic?ic[0]:'')+' '+N26[k];});
@@ -16904,7 +16951,7 @@ function infoize(){
 function openInfo(k){
   var L=INFO[+k]||[];if(!L.length)return;
   var host=qa('[data-info23k="'+k+'"]')[0],h=host&&host.querySelector('h2,.hdrrow b');
-  var title='';if(!h&&host){var lb=host.querySelector('.mgr-sec,label,b,strong,h3');if(lb)title=txt(lb);}if(!title&&host){title=String(host.getAttribute('aria-label')||'');}if(!title)title='More information';if(h){var hc=h.cloneNode(true);[].slice.call(hc.querySelectorAll('.det26,.info23,.sub')).forEach(function(x){x.remove();});title=txt(hc).replace(/\s*i$/,'')||title;}
+  var title='';if(!h&&host){var lb=host.querySelector('.mgr-sec,label,b,strong,h3');if(lb){var lc=lb.cloneNode(true);[].slice.call(lc.querySelectorAll('.det26,.info23,.sub,button')).forEach(function(x){x.remove();});title=txt(lc).trim();}} /* beta 2.02 (item 37): the (i) button's own "i" is not part of the title */if(!title&&host){title=String(host.getAttribute('aria-label')||'');}if(!title)title='More information';if(h){var hc=h.cloneNode(true);[].slice.call(hc.querySelectorAll('.det26,.info23,.sub')).forEach(function(x){x.remove();});title=txt(hc).replace(/\s*i$/,'')||title;}
   title=title.split(' \u00b7 ')[0];
   X63.ovOpen('<div class="xovh"><b>'+esc(title)+'</b><button class="xovx" data-act="x63ovx">\u00d7</button></div>'
     +L.map(function(x){return '<p class="info23p">'+x+'</p>';}).join(''));
@@ -16961,6 +17008,7 @@ function dataSync(){
 }
 function pass(){q=false;try{dataSync();}catch(e){DIAG.note(e,"46-v160-b23-simplify:160");}try{infoize();}catch(e){DIAG.note(e,"46-v160-b23-simplify:160");}}
 SCREEN.afterDraw(function(){if(!q){q=true;requestAnimationFrame(pass);}});
+(window.TIDY202=window.TIDY202||[]).push(pass); /* beta 2.02 (item 13): help notes are hidden before the first paint */
 
 /* ---------- version ---------- */
 /* older layers write their own version when they start (some after boot) — pin it */
@@ -18921,9 +18969,9 @@ window.CMM_SERVER_POLICY={version:1,envelope:permissionEnvelope28,normalizedColl
 /* ---------- P0.4: reminder entitlement + selected person + mask at dispatch ---------- */
 function reminderAllowed28(a){
   if(!a)return false;var me=safe28(function(){return meName();},''),owner=a.pvby||a.owner||'',who=a.remWho||'owner';
-  if(a.vis==='me')return !owner||owner===me||String(owner).split(' & ').indexOf(me)>=0;
+  if(a.vis==='me')return !owner||ownIs201(owner,me);
   if(who==='both')return true;
-  if(who==='owner')return !owner||owner===me||String(owner).split(' & ').indexOf(me)>=0;
+  if(who==='owner')return !owner||ownIs201(owner,me);
   if(who.indexOf('person:')===0)return who.slice(7)===me;
   return who===me;
 }
@@ -19129,7 +19177,7 @@ V63.coupleHTML=function(){return X63.isSimple()?simpleCoupleHTML28():withShared2
 
 /* Stable IDs and normalized Firestore documents. */
 function ensureIds291(){var used={};(DB.accounts||[]).forEach(function(a,i){var id=String(a.id||'');if(!id||used[id])id='a_'+cmm291Hash((a.name||'')+'|'+(a.owner||'')+'|'+i+'|'+Date.now()+'|'+Math.random()); /* beta 115: unique per phone, so two phones' starter accounts never share an id */while(used[id])id+='x';a.id=id;used[id]=1;});}
-function profileUidByName291(name){var ps=profiles291(),uids=members291(),hit='';uids.forEach(function(u){var p=ps[u]||{};if(String(p.displayName||'').trim()===String(name||'').trim())hit=u;});return hit;}
+function profileUidByName291(name){var ps=profiles291(),uids=members291(),hit='';try{var pe=window.PID201&&PID201.idOf(name);if(pe&&uids.indexOf(pe)>=0)return pe;}catch(e){} /* beta 2.01 (D-98): the person's ID first */uids.forEach(function(u){var p=ps[u]||{};if(String(p.displayName||'').trim()===String(name||'').trim())hit=u;});return hit;}
 function accountSecurity291(a){
   var uid=stableUid291(),members=members291();if(members.indexOf(uid)<0)members.push(uid);var ownerUids=(a.ownerUids||[]).filter(function(u){return members.indexOf(u)>=0;}),own=String(a.owner||''),me=safe28(function(){return meName();},'');
   /* beta 115: a joint account belongs to every member, and an account named for a member belongs to that member,
@@ -19160,7 +19208,8 @@ function nameClash115(){try{var me=String(meName()||'').trim()||'mine';Object.ke
 function keepLocal115(){var seen=N291.seenA=N291.seenA||{};Object.keys(N291.remoteA).forEach(function(k){seen[k]=1;});
   var del=(DB.meta&&DB.meta.del)||{};return (DB.accounts||[]).filter(function(a){return a&&a.id&&!seen[a.id]&&!a.isSample&&!del['a:'+a.id];}).map(function(a){return cmm291Clone(a);});}
 function addBack115(keep){if(!keep.length)return 0;var n=0;keep.forEach(function(a){if(!DB.accounts.some(function(x){return x.id===a.id||x.name===a.name;})){DB.accounts.push(a);n++;}});return n;}
-function applyNormalized291(){if(N291.applying||!N291.readyA||!N291.readyT||!N291.readyS||!N291.state)return;N291.applying=true;nameClash115();var keep115=keepLocal115();try{var R=cmm291Clone(N291.state.record||{});R.accounts=Object.keys(N291.remoteA).map(function(k){return cmm291Clone(N291.remoteA[k].record);});R.txns=Object.keys(N291.remoteT).map(function(k){return cmm291Clone(N291.remoteT[k].record);});R.meta=R.meta||{changedAt:N291.state.changedAt||0,del:{}};mergeShared(R);if(addBack115(keep115))setTimeout(function(){try{hhPush();}catch(e){}},800);ensureIds291();stampInit();save();renderAll();}catch(e){console.warn('normalized-apply',e);}finally{N291.applying=false;}}
+function applyNormalized291(){return window.SYNC202hook?window.SYNC202hook(applyNormalized291real):applyNormalized291real();}
+function applyNormalized291real(){if(N291.applying||!N291.readyA||!N291.readyT||!N291.readyS||!N291.state)return;N291.applying=true;nameClash115();var keep115=keepLocal115();try{var R=cmm291Clone(N291.state.record||{});R.accounts=Object.keys(N291.remoteA).map(function(k){return cmm291Clone(N291.remoteA[k].record);});R.txns=Object.keys(N291.remoteT).map(function(k){return cmm291Clone(N291.remoteT[k].record);});R.meta=R.meta||{changedAt:N291.state.changedAt||0,del:{}};mergeShared(R);if(addBack115(keep115))setTimeout(function(){try{hhPush();}catch(e){}},800);ensureIds291();stampInit();save();renderAll();}catch(e){console.warn('normalized-apply',e);}finally{N291.applying=false;}}
 function attachNormalized291(F,id){
   var uid=stableUid291(),stateRef=F.doc(FB.db,'households',id,'sharedState','core');
   N291.unsubS=F.onSnapshot(stateRef,function(s){N291.state=s.exists()?s.data():null;N291.readyS=true;applyNormalized291();},function(e){console.warn('shared-state',e);});
@@ -19249,7 +19298,7 @@ hhLeave=function(){askConfirm('Leave this household? Your partner keeps the shar
 window.CMM_SERVER_POLICY={version:2,storageVersion:3,normalizedCollections:['sharedState','accounts','transactions'],joinLeave:'trusted-cloud-functions',rulesFile:'firestore.rules'};
 
 /* Stable permission IDs and shared-view notifications. */
-var _permFor59291=permFor59;permFor59=function(n){var a=a59(n),p=a&&cmm291Permission(a,stableUid291());return p&&p!=='none'?p:_permFor59291(n);};
+var _permFor59291=permFor59;permFor59=function(n){var a=a59(n);if(a&&isCouple()&&!a.locked&&!a.recv&&window.PID201&&PID201.isJoint(a)&&a.vis!=='me')return 'owner'; /* beta 2.01 (D-98): a joint account belongs to both people, whatever an older cloud entry says */var p=a&&cmm291Permission(a,stableUid291());return p&&p!=='none'?p:_permFor59291(n);};
 function sharedAccountForReminder291(a,shared){if(a.vis==='me')return a;return (shared.accounts||[]).filter(function(x){return x.id===a.id||x.name===a.name;})[0]||null;}
 function reminderAllowed291(a){return cmm291ReminderAllowed(a,stableUid291());}
 remCheck=function(){if(!DB)return;var c=remCfg();if(!c.on||typeof Notification==='undefined'||Notification.permission!=='granted')return;var td=todayISO(),n=0,shared=buildSharedView(DB,{purpose:'shared-notifications'});dueList(30).forEach(function(x){var raw=a59(x.name)||{},a=sharedAccountForReminder291(raw,shared);if(!a||!reminderAllowed291(a))return;var lead=a.remLead==null?(+c.days||3):+a.remLead;if(x.dl>lead||x.dl<-30||(a.autopay&&x.dl>0))return;if(dispatchReminder28((a.id||a.name)+'|'+x.due,'Card payment '+(x.dl<0?'overdue':'due'),a.name+': '+money(x.stillDue)+' '+dueTxt(x),c))n++;});(DB.accounts||[]).forEach(function(raw){var a=sharedAccountForReminder291(raw,shared);if(!a||!isLoan(a)||!a.remDue||a.locked||!reminderAllowed291(a))return;var dl=Math.round((Date.parse(a.remDue+'T12:00:00Z')-Date.parse(td+'T12:00:00Z'))/864e5),lead=+a.remLead||0;if(dl>lead||dl<-30)return;var ttl=(a.type==='Hire Purchase'?'Car financing / Hire Purchase':'Loan')+' payment '+(dl<0?'overdue':'due');if(dispatchReminder28((a.id||a.name)+'|'+a.remDue,ttl,a.name+': '+(a.instalment>0?money(a.instalment)+' ':'')+'due '+dLabelW(a.remDue),c))n++;});if(n)save();};
@@ -19268,9 +19317,10 @@ bkFileGo=function(){var pw=(($('bkPw')||{}).value||''),pw2=(($('bkPw2')||{}).val
 /* Partner preview: authoritative shared view, genuine latest activity. */
 if(window.B20)B20.pvData=function(){var me=safe28(function(){return meName();},''),P=safe28(function(){return partnerName();},'your partner'),v=buildSharedView(DB,{purpose:'preview'}),m=v.__sharedView||{},accSet={};(v.accounts||[]).forEach(function(a){if(a&&!a.locked&&!a.recv&&!/^.+ owes .+$/.test(a.name||''))accSet[a.name]=1;});var asc=cmm291Latest(v.txns||[],200).reverse();return {me:me,P:P,accs:(v.accounts||[]).filter(function(a){return accSet[a.name];}),txns:asc,relabel:function(n){return (m.labels||{})[n]||n;},anyPn:m.privateNames||{},accSet:accSet};};
 
-function finish291(){if(!DB)return setTimeout(finish291,30);prefDefaults291();ensureIds291();DB.meta.schemaVersion=SCHEMA291;if(window.experienceConfig){experienceConfig.version=VERSION291;experienceConfig.schemaVersion=SCHEMA291;}if(window.advancedCoupleConfig){advancedCoupleConfig.version=VERSION291;advancedCoupleConfig.schemaVersion=SCHEMA291;}save();document.title='v'+VERSION291+' · Couple Money Manager';var mv=document.querySelector('meta[name="app-version"]');if(mv)mv.content='beta-2.0';document.querySelectorAll('.sub').forEach(function(el){el.textContent=el.textContent.replace(/v?1\.60 beta 28(\.\d+)?/g,'v'+VERSION291);});if(X63.isSimple()&&V63.itab==='wealth')V63.itab='cash';renderAll();}
+function finish291(){if(!DB)return setTimeout(finish291,30);prefDefaults291();ensureIds291();DB.meta.schemaVersion=SCHEMA291;if(window.experienceConfig){experienceConfig.version=VERSION291;experienceConfig.schemaVersion=SCHEMA291;}if(window.advancedCoupleConfig){advancedCoupleConfig.version=VERSION291;advancedCoupleConfig.schemaVersion=SCHEMA291;}save();document.title='v'+VERSION291+' · Couple Money Manager';var mv=document.querySelector('meta[name="app-version"]');if(mv)mv.content='beta-2.04';document.querySelectorAll('.sub').forEach(function(el){el.textContent=el.textContent.replace(/v?1\.60 beta 28(\.\d+)?/g,'v'+VERSION291);});if(X63.isSimple()&&V63.itab==='wealth')V63.itab='cash';renderAll();}
 setTimeout(finish291,0);
 window.CMM_VERSION=VERSION291;window.CMM_SCHEMA_VERSION=SCHEMA291;
+window.CMM291={stableUid:function(){return stableUid291();},members:function(){return members291();},snapshot:function(){return normalizedSnapshot291();},ensureIds:function(){return ensureIds291();},security:function(a){return accountSecurity291(a);}}; /* beta 2.01: for the people IDs and the two-phone test */
 })();
 
 /* ===================================================================================
@@ -19826,8 +19876,7 @@ window.CMM_VERSION=VERSION291;window.CMM_SCHEMA_VERSION=SCHEMA291;
       line='<div class="p32bal'+(amt>bal+0.004?' short':'')+'"><span>Available in '+esc(from)+'</span><b>'+money(bal)+'</b></div>';
       if(amt>bal+0.004)line+='<div class="p32warn" role="status">'+ico('warn')+'<span>This leaves '+esc(from)+' short by '+money(Math.round((amt-bal)*100)/100)+'. You can still save it.</span></div>';
     }
-    return '<div class="p32head s-'+(x.noDue||x.basis==='early'?'none':(x.dl<0?'over':(x.dl===0?'today':(x.dl<=x.lead?'soon':'none'))))+'"><span class="r32ic" aria-hidden="true">'+icoOf(x)+'</span><span class="p32tx"><b>'+esc(x.name)+'</b><small>'+esc(st)+(basis?' · '+esc(basis):'')+'</small></span>'
-      +'<button type="button" class="p32edit" data-act="rem32edit">'+ico('bell')+'<span>Edit reminder</span></button></div>'+line;
+    return line; /* beta 2.01 (user): no reminder card (due date / Edit reminder) at the top of Add payment; the reminder is edited from the account's Payment plan & reminder */
   }
   function paint(){
     var c=REM.ctx,sh=$('sheet');if(!c||!sh)return;
@@ -19946,7 +19995,7 @@ window.CMM_VERSION=VERSION291;window.CMM_SCHEMA_VERSION=SCHEMA291;
       /* name-based entitlement, used only where no stable-UID ownership exists on the account
          (device-only / personal-backup storage). UID-governed accounts stay with the beta 28.1 dispatcher. */
       var allowed=function(a){
-        var owner=a.pvby||a.owner||'',who=a.remWho||'owner',mine=!owner||owner===me||String(owner).split(' & ').indexOf(me)>=0;
+        var owner=a.pvby||a.owner||'',who=a.remWho||'owner',mine=!owner||ownIs201(owner,me);
         if(a.vis==='me')return mine;
         if(who==='both')return true;if(who==='owner')return mine;if(who==='person:'+me)return true;
         return false;};
@@ -19979,7 +20028,7 @@ window.CMM_VERSION=VERSION291;window.CMM_SCHEMA_VERSION=SCHEMA291;
     var cs=cardStatus(a),hasCyc=!!accCycleFor(a),stmt=+cs.stillDue||0;
     var full=Math.abs(amt-stmt)>=0.005||stmt<0.005; /* beta 123: nothing due (statement paid, or the card is in credit) is never "overdue" */
     var due=hasCyc&&cs.due?cs.due:todayISO();
-    var x={act:'v63cardpay',name:a.name,owner:a.owner,due:due,dl:daysTo(due),amt:amt,kind:'Credit card payment',autopay:!!a.autopay};
+    var x={act:'v63cardpay',name:a.name,owner:a.owner,due:due,dl:daysTo(due),amt:amt,kind:'Card payment',autopay:!!a.autopay};
     enrich(x);
     if(!hasCyc){x.noDue=true;x.basis='full';}
     else if(full){x.basis=stmt<0.005?'early':'full';x.key+='|'+x.basis+'|'+todayISO();}
@@ -20066,7 +20115,7 @@ window.CMM_VERSION=VERSION291;window.CMM_SCHEMA_VERSION=SCHEMA291;
   function allowed(a){
     if(!a)return false;
     if(hasUids(a)){try{return cmm291ReminderAllowed(a,myUid());}catch(e){return false;}}
-    var me=meName(),owner=a.pvby||a.owner||'',who=a.remWho||'owner',mine=!owner||owner===me||String(owner).split(' & ').indexOf(me)>=0;
+    var me=meName(),owner=a.pvby||a.owner||'',who=a.remWho||'owner',mine=!owner||ownIs201(owner,me);
     if(a.vis==='me')return mine;if(who==='both')return true;if(who==='owner')return mine;return who==='person:'+me;
   }
   function plain(v){return money(v).replace(/<[^>]+>/g,'');}
@@ -20234,6 +20283,9 @@ function profAutoFillB33(){
     /* beta 62 · NAME-02: the collaborator renamed themselves later. Follow it only while the household owner still uses the
        name that was filled in automatically; an household owner's own name for them is kept, with a one-line notice. */
     if(!c.real||!pr.partnerAutoNick||c.nick===pr.partnerAutoNick)return '';
+    /* beta 2.01 (D-98): renames now travel with the people IDs (newest rename wins on both phones), so the
+       household record's display name only updates the remembered nickname here */
+    if(window.PID201&&PID201.active()){pr.partnerAutoNick=c.nick;save();return '';}
     var was=pr.partnerAutoNick;pr.partnerAutoNick=c.nick;
     if(old===was&&DB.people.indexOf(old)>=0){
       if(DB.people.indexOf(c.nick)>=0){save();try{window.B62&&B62.nameClash(old,c.nick);}catch(e){n33(e,'b62:clash2');}return '';}
@@ -21596,7 +21648,7 @@ function detHTML(g){
   if(a.owner)rows.push(fl('Account owner',esc(a.owner)));
   rows.push(fl('Visible to',a.vis==='me'?(ico('lock')+' Only me'):(isCouple()?'Shared with your partner':'On this device')));
   if(a.l4)rows.push(fl('Account number','•••• '+esc(a.l4)));
-  if(!g.val&&isFinite(g.bal))rows.push(fl('Opening balance',money(a.start)));
+  /* beta 2.01: no Opening balance in the details card */
   if(g.cyc){
     rows.push(fl('Statement day',ordDay(g.cyc)+' of each month'));
     rows.push(fl('Payment due','within '+(a.dueDays||20)+' days of the statement'));
@@ -22637,7 +22689,7 @@ function cardHTML(a){
   if(loan){x=REM.loanItem(a);}
   else{
     var cs=cardStatus(a)||{};
-    x={act:'v63cardpay',name:a.name,owner:a.owner,due:cs.due||todayISO(),dl:+cs.dl||0,amt:+cs.stillDue||0,kind:'Credit card payment',autopay:!!a.autopay};
+    x={act:'v63cardpay',name:a.name,owner:a.owner,due:cs.due||todayISO(),dl:+cs.dl||0,amt:+cs.stillDue||0,kind:'Card payment',autopay:!!a.autopay};
     REM.enrich(x);
     paid=!(+cs.stillDue>=0.005);
   }
@@ -22841,7 +22893,7 @@ try{INFO25.rem[1]='<p class="info23p">Card statements, loan and hire-purchase in
 
 /* ---------- 2 · Household / Mine ---------- */
 REM.own=REM.own||'all';
-function mine(x){var me=meName(),o=String(x.owner||'');return !o||o===me||o.split(' & ').indexOf(me)>=0;}
+function mine(x){var me=meName(),o=String(x.owner||'');return !o||ownIs201(o,me);}
 var _ctr44=V56.mgr.v63remctr;
 V56.mgr.v63remctr=function(){
   var all=[];try{all=V63.calc.upcoming(90);}catch(e){n44(e,'b44:ctr');}
@@ -22853,7 +22905,7 @@ V56.mgr.v63remctr=function(){
   try{_ctr44.apply(this,arguments);}finally{V63.calc.upcoming=up;}
   if(!show)return;
   var mb=$('mgrBody');if(!mb)return;
-  var chips='<div class="r44own" role="group" aria-label="Whose payments">'+[['mine','Mine'],['all','Ours']].map(function(o){
+  var chips='<div class="r44own" role="group" aria-label="Whose payments">'+[['mine','Mine'],['all','Shared']].map(function(o){
     return '<button type="button" aria-pressed="'+(REM.own===o[0])+'" class="'+(REM.own===o[0]?'on':'')+'" data-act="remown44" data-o="'+o[0]+'">'+o[1]+'</button>';}).join('')+'</div>';
   var sum=mb.querySelector('.r32sum');if(sum)sum.insertAdjacentHTML('afterend',chips);else mb.insertAdjacentHTML('afterbegin',chips);
   if(filt&&!all.some(mine)){
@@ -24004,7 +24056,7 @@ function balOf(a){
 function ownerKind(a){
   var o=String(a.owner||''),m=me();
   if(/ & /.test(o))return 'joint';
-  if(!o||o===m)return 'me';
+  if(!o||ownIs201(o,m))return 'me';
   return 'partner';
 }
 function inScope(a){var s=X.scope;if(!couple()||s==='all')return true;var k=ownerKind(a);return k===s||(s!=='joint'&&k==='joint');} /* beta 123 (D-89): a person's view includes joint accounts at half */
@@ -24073,9 +24125,11 @@ function rowHTML(a){
 function groupHTML(g,list,oweSide){
   var key=(oweSide?'o:':'h:')+g[0],open=!!X.open120[key]; /* beta 120: groups start collapsed; open only after a tap */
   var tot=list.reduce(function(s,a){return s+(hid(a)?0:(oweSide?-bal123(a):Math.abs(bal123(a))));},0); /* beta 123 (D-88): a debt in credit lowers the group total */
-  if(oweSide)tot=Math.max(0,tot);
+  /* beta 2.01: a debt group that is in credit overall says "In credit" like its account rows, not RM 0.00 */
+  var gcr=oweSide&&tot<=-0.005&&!list.every(hid);
+  var gt=gcr?'<span class="a48gt cr123">'+M(-tot)+'<small class="cr123">In credit</small></span>':'<span class="a48gt'+(oweSide?' o':'')+'">'+MA(oweSide?Math.max(0,tot):tot)+'</span>';
   return '<div class="a48grp"><button type="button" class="a48gh'+(open?' open':'')+'" data-act="a48grp" data-k="'+esc(key)+'" aria-expanded="'+open+'">'
-    +'<span class="a48gi">'+ico(g[1])+'</span><b>'+esc(g[0])+'<small>'+list.length+'</small></b><span class="a48gt'+(oweSide?' o':'')+'">'+MA(tot)+'</span><span class="a48cv">'+ico('chevright')+'</span></button>'
+    +'<span class="a48gi">'+ico(g[1])+'</span><b>'+esc(g[0])+'<small>'+list.length+'</small></b>'+gt+'<span class="a48cv">'+ico('chevright')+'</span></button>'
     +(open?list.map(rowHTML).join(''):'')+'</div>';
 }
 function buRows(){
@@ -24097,12 +24151,12 @@ function homeHTML(){
   var bp=bu125();sa+=bp.have;so+=bp.owe;net=sa-so; /* beta 125 (D-92): a person's view counts what is owed between you */
   var pct=sa+so>0?Math.max(0,Math.min(100,sa/(sa+so)*100)):0;
   var cp=couple(),P=pn(),m=me();
-  var scLab={all:'Ours',me:'Mine',partner:(P||'Partner')+'\u2019s',joint:'Joint'}; /* Beta 2.0 (spec): Mine · Kim's · Joint · Ours */
+  var scLab={all:'Shared',me:'Mine',partner:(P||'Partner')+'\u2019s',joint:'Joint'}; /* Beta 2.0 (spec): Mine · Kim's · Joint · Ours */
   var h='<div class="a48pt"><h1>Accounts</h1><button type="button" class="a48plus" data-act="a48add" aria-label="Add account">'+ico('plus')+'</button></div>';
   var sim90=!!(window.simple21&&simple21()); /* beta 90: Simple has no net worth (D-41) — the card keeps What I have / What I owe only */
-  h+='<div class="a48card a48nw">'+(sim90?(cp&&X.scope!=='all'?'<div class="l">'+esc(scLab[X.scope])+'</div>':''):'<div class="l">Net worth'+(cp&&X.scope!=='all'?' · '+esc(scLab[X.scope]):'')+'</div><div class="big'+(net<0?' o':'')+'">'+M(net)+'</div>')
-    +'<div class="a48bar"><i style="width:'+pct.toFixed(1)+'%"></i></div>'
-    +'<div class="a48hl2"><div><i class="g"></i>What I have<b>'+MA(sa)+'</b></div><div style="text-align:right"><i class="r"></i>What I owe<b>'+MA(so)+'</b></div></div>'
+  /* beta 2.02 (item 17): a smaller, simpler card: Net worth = What I have − What I owe, no bar */
+  h+='<div class="a48card a48nw n202">'+(sim90?'':'<div class="n202t"><span class="l">Net worth'+(cp&&X.scope!=='all'?' · '+esc(scLab[X.scope]):'')+'</span><b class="'+(net<0?'o':'')+'">'+M(net)+'</b></div>')
+    +'<div class="n202s"><span>What I have <b>'+MA(sa)+'</b></span><span class="n202m">'+(sim90?'·':'−')+'</span><span>What I owe <b>'+MA(so)+'</b></span></div>'
     +(anyHid?'<div class="a48note">Balances your partner hid are not included.</div>':'')+'</div>';
   if(cp){
     var sc=['me','partner','joint','all'];
@@ -24311,7 +24365,7 @@ function eqRows(a){
   return linkedOf(a).map(function(l){
     var asset=f==='prop'?a:l,debts=f==='prop'?[l]:[a];
     var eq=balOf(asset)+debts.reduce(function(s,d){return s+balOf(d);},0); /* beta 123: a debt in credit adds to equity */
-    return '<button type="button" class="a48eq" data-act="a48open" data-n="'+esc(l.name)+'">'+ico(icOf(l))+'<span>'+(f==='prop'?'Equity after '+esc(l.name):'Equity in '+esc(l.name))+'</span><b class="'+(eq<0?'o':'')+'">'+(hid(a)||hid(l)?'••••':M(eq))+'</b>'+ico('chevright')+'</button>';
+    return '<button type="button" class="a48eq" data-act="a48open" data-n="'+esc(l.name)+'">'+ico(icOf(l))+'<span>'+(f==='prop'?'Yours after paying off '+esc(l.name):'Yours in '+esc(l.name)+' after paying this off') /* beta 2.01: plain words, no "equity" */+'</span><b class="'+(eq<0?'o':'')+'">'+(hid(a)||hid(l)?'••••':M(eq))+'</b>'+ico('chevright')+'</button>';
   }).join('');
 }
 function heroHTML(a,compact){
@@ -24323,8 +24377,9 @@ function heroHTML(a,compact){
   var fig=h?'••••':(o?MA(b):M(b));
   if(cr)o=false;
   if(compact)return '<div class="a48card blk a48hc"><span class="a48ti'+(o?' o':'')+'">'+ico(icOf(a))+'</span><div class="a48mid"><b>'+esc(a.name)+'</b><small>'+subOf(a)+'</small></div><div class="a48hb"><small>'+lab+'</small><b class="'+(o&&!h?'o':'')+(cr&&!h?' cr123':'')+'">'+fig+'</b></div></div>';
-  var hh='<div class="a48card blk a48hero"><div class="a48hr"><span class="a48ti'+(o?' o':'')+'">'+ico(icOf(a))+'</span><div class="a48nm"><b>'+esc(a.name)+'</b><small>'+subOf(a)+'</small></div></div>'
-    +'<div class="a48tags">'+tagWho(a)+visTag(a)+stateTags(a)+'</div><div class="a48lab">'+lab+'</div><div class="a48fig'+(o&&!h?' o':'')+(cr&&!h?' cr123':'')+'">'+fig+'</div>';
+  /* beta 2.02 (item 32): one compact row (small icon, type, owner / shared pills); the name is already in the title bar */
+  var hh='<div class="a48card blk a48hero h202"><div class="a48hr"><span class="a48ti'+(o?' o':'')+'">'+ico(icOf(a))+'</span><div class="a48nm"><small>'+subOf(a)+'</small></div>'
+    +'<div class="a48tags">'+tagWho(a)+visTag(a)+stateTags(a)+'</div></div><div class="a48lab">'+lab+'</div><div class="a48fig'+(o&&!h?' o':'')+(cr&&!h?' cr123':'')+'">'+fig+'</div>';
   var sub='',acts='';
   if(f==='bank'){
     var d=monthNet(a);sub=h?'':(Math.abs(d)>=0.005?'<b class="'+(d>=0?'p':'o')+'">'+(d>=0?'▲':'▼')+' '+MA(d)+'</b> this month':'No movement this month');
@@ -24388,7 +24443,7 @@ function detailsCard(a){
   rows.push(kv('Type',esc(otl112(a.type))));
   if(f==='prop'||f==='other'){var pp=0;try{pp=purchaseOf(a);}catch(e){}rows.push(kv('Purchase price',MA(pp)));if(a.purchaseDate)rows.push(kv('Purchase date',esc(dLabelY(a.purchaseDate))));
     if(a.propType)rows.push(kv('Property type',esc(a.propType)));if(a.vehicleType)rows.push(kv('Vehicle type',esc(a.vehicleType)));if(+a.ownPct>0&&+a.ownPct<100)rows.push(kv('Ownership share',esc(a.ownPct)+'%'));}
-  else{if(a.l4)rows.push(kv(f==='card'?'Card number':'Account number','•••• '+esc(a.l4)));if(f==='bank'||f==='card')rows.push(kv('Opening balance',M(+a.start||0)));}
+  else{if(a.l4)rows.push(kv(f==='card'?'Card number':'Account number','•••• '+esc(a.l4)));} /* beta 2.01: no Opening balance in Account details (it stays in Edit account, where the starting balance is set) */
   if(couple()){
     rows.push(kv('Account owner',/ & /.test(String(a.owner||''))?'Joint · '+esc(a.owner)+(function(){var jm=jointOf122(a.owner),pc=ownPct123(a.owner,a.name);return jm.length&&pc!==50?' · '+pc+' / '+(100-pc):'';})():esc(a.owner||me()))); /* beta 123: ownership split */
     var perm='owner';try{perm=permFor59(a.name);}catch(e){}
@@ -24487,7 +24542,7 @@ function propRecent(a){
   if(!has){
     return cardH('tag','Income &amp; costs',act,'<div class="a48empty"><b>No categories linked yet</b>'
       +(ed?'Choose the categories that belong to this '+(isV?'vehicle':'property')+' — for example '+(isV?'Road tax, Insurance or Service':'Rental income, Maintenance or Quit rent')+' — and their transactions show here, past ones included.':'Its account owner can choose which categories belong to it.')+'</div>'
-      +(ed?'<button type="button" class="a48btn sm" data-act="a52cats" data-n="'+esc(a.name)+'" style="margin-top:4px">'+ico('tag')+'Choose categories</button>':''));
+      +(ed?'<button type="button" class="a48btn sm" data-act="a52cats" data-n="'+esc(a.name)+'" style="margin-top:4px">'+ico('tag')+'Choose categories</button>':'')+'<button type="button" class="a48lnk blk2 a48all200" data-act="a48tab" data-t="ac">See value history and all activity ›</button>');
   }
   var from=addDaysISO(addMonthsISO(td(),-12),1),inc=0,cost=0;
   ruleTxns(a).forEach(function(t){if(t.date<from)return;if(t.type==='Income')inc+=+t.amount||0;else cost+=+t.amount||0;});
@@ -24497,14 +24552,14 @@ function propRecent(a){
   var e=propEvents(a).filter(function(x){return x.k==='cost';}).slice(0,5); /* Beta 2.0 */
   /* beta 81: day headers like the Transactions tab — the rows no longer carry dates themselves */
   var body=stats+(e.length?dayGroups80(e,function(x){return x.d;},function(x){return x.e;},function(x){return propRow(x,a,true);})
-    :'<div class="a48empty"><b>Nothing recorded yet</b>Transactions in these categories, from any account, show here.</div>');
+    :'<div class="a48empty"><b>Nothing recorded yet</b>Transactions in these categories, from any account, show here.</div>')+'<button type="button" class="a48lnk blk2 a48all200" data-act="a48tab" data-t="ac">See value history and all activity ›</button>';
   return cardH('tag','Income &amp; costs',act,body);
 }
 function overviewHTML(a){
   var f=fam(a);
   if(f==='card'){var ci=cardInfo(a),cyc=txList(a).filter(function(x){return !ci.le||x.t.date>ci.le;});return stmtCard(a)+cardPlansCard129(a,{cardH:cardH,kv:kv,MA:MA,hid:hid(a)})+recentCard(a,'Recent activity','Purchases and payments on this card show here.')+detailsCard(a);} /* Beta 2.0: 5 most recent; cycles on See all */
   if(f==='loan'||f==='hp')return planCard(a)+chartCard(a,'Owed at month-end')+recentCard(a,'Recent activity','Repayments you record will show here.')+detailsCard(a);
-  if(f==='prop'||f==='other')return valueCard(a)+propRecent(a)+'<button type="button" class="a48lnk blk2 a48all200" data-act="a48tab" data-t="ac">See value history and all activity ›</button>'+detailsCard(a); /* Beta 2.0 */
+  if(f==='prop'||f==='other')return valueCard(a)+propRecent(a)+detailsCard(a); /* Beta 2.0; beta 2.01: the See value history link sits inside Income & costs */
   return chartCard(a,a.type==='Investment'?'Value over time':'Balance over time')+recentCard(a)+detailsCard(a);
 }
 /* ---------- activity ---------- */
@@ -24613,7 +24668,7 @@ function propActivity(a){
   if(k==='inc')ev=ev.filter(function(x){return x.k==='cost'&&x.e>0;});
   var can=canAdd59(a.name)&&stOf(a)==='active';
   var h=toolbar([['all','All'],['val','Value'],['cost','Costs'],['inc','Income']],false,null);
-  if(can)h+='<div class="a48tb a48tb2"><button type="button" class="a48btn sm" data-act="valopen" data-n="'+esc(a.name)+'">'+ico('trend')+'Update value</button><button type="button" class="a48btn sm ghost" data-act="a48costinc" data-n="'+esc(a.name)+'">'+ico('plus')+'Cost or income</button>'+(permFor59(a.name)==='owner'?'<button type="button" class="a48btn sm ghost" data-act="a52cats" data-n="'+esc(a.name)+'">'+ico('tag')+'Categories</button>':'')+'</div>';
+  if(can)h+='<div class="a48tb a48tb2"><button type="button" class="a48btn sm" data-act="valopen" data-n="'+esc(a.name)+'">'+ico('trend')+'Update value</button><button type="button" class="a48btn sm ghost" data-act="a48costinc" data-n="'+esc(a.name)+'">'+ico('plus')+'Cost or income</button>'+'</div>'; /* beta 2.01: no Categories button here; Choose categories lives on the account screen's Income & costs card */
   if(!ev.length)return h+emptyBox({cost:['No costs yet',isV?'Road tax, insurance, service and repairs you record show here.':'Assessment, quit rent, maintenance and repairs you record show here.'],inc:['No income yet',isV?'Income from this vehicle would show here.':'Rental income you record against this property shows here.'],val:['No value changes','Update the recorded value when a valuation changes it.']}[k]||['Nothing yet','']);
   var by={},order=[];ev.forEach(function(x){var y=x.d?x.d.slice(0,4):'Undated';if(!by[y]){by[y]=[];order.push(y);}by[y].push(x);});
   order.sort(function(p,q){return p==='Undated'?1:(q==='Undated'?-1:(p<q?1:-1));}).forEach(function(y){
@@ -25113,11 +25168,7 @@ function payExtras(){
     if(owed>=0.005)opts.push(['full','Full outstanding',owed]);
     if(cr123>=0.005&&ci.stmt<0.005)h='<div class="a48credit123">'+ico('check')+' <span>'+esc(a.name)+' is in credit by <b>'+MA(cr123)+'</b>. Nothing to pay.</span></div>'; /* beta 123 (D-88): overpaid card */
     else h='<div class="a48paych" role="radiogroup" aria-label="How much to pay">'+opts.map(function(o){var on=!hit&&Math.abs(curA-o[2])<0.005;if(on)hit=true;return '<button type="button" role="radio" aria-checked="'+on+'" class="'+(on?'on':'')+'" data-act="a48payamt" data-v="'+o[2]+'"><b>'+o[1]+'</b><small>'+MA(o[2])+'</small></button>';}).join('')+'</div>';
-  }else if(f==='loan'){
-    var L=PAY.loanInt||(PAY.loanInt={on:false,amt:''});
-    h='<div class="a48introw"><label class="a48trow"><span><b>Part of this was interest</b><small>Records the interest as a charge so the balance drops correctly</small></span><input type="checkbox" class="tgl" id="a48int" '+(L.on?'checked':'')+'></label>'
-      +(L.on?'<div class="a48mi sm"><span>'+esc(cur()||'RM')+'</span><input id="a48intamt" inputmode="decimal" placeholder="Interest and charges" value="'+esc(L.amt)+'"></div>':'')+'</div>';
-  }else{if(old)old.remove();return;}
+  }else{if(old)old.remove();return;} /* beta 2.01 (user): no "Part of this was interest" toggle on a loan payment; interest is recorded with the loan's Interest button (an expense, D-70) */
   if(!old){old=document.createElement('div');old.id='pay48x';old.className='pay48x';host.insertAdjacentElement('afterend',old);}
   var ae=document.activeElement;if(ae&&old.contains(ae)&&ae.tagName==='INPUT')return;   /* typing the interest */
   if(old.__h!==h){old.innerHTML=h;old.__h=h;}
@@ -25599,30 +25650,31 @@ try{
 }catch(e){n51(e,'b51:nwchg');}
 
 /* ---------- report catalogue (5 questions, 12 reports) ---------- */
+/* beta 2.02 (items 36, 38): Reports home is a list of questions (user's mock). t = Couple wording, tp = Personal wording, q = the question's line. */
 var CAT=[
-  {id:'stand',t:'Where I stand',ic:'nw',q:'Am I getting richer?',items:[['networth','Net Worth','trend, what moved it, assets & debts'],['v_health','Financial Health','safety net, debt ratio, savings rate']]},
-  {id:'assets',t:'Assets & debts',ic:'pie',q:'What do I own and owe?',items:[['v_alloc','Asset Mix','what I have, drill by type'],['debts','Debts','balances, repayments, schedule'],['cc','Card Statements','statements & due dates'],['v_valhist','Recorded Value History','value updates · revaluations over time']]},
-  {id:'money',t:'Money in & out',ic:'inout121',q:'Where is my money going?',items:[['cash','Cash Flow & Savings','income, spending, cash movement & forecast'],['spending','Spending','by category, vs budget, top items & trend'],['v_income','Income Sources','sources & changes']]},
-  {id:'together',t:'Together',ic:'users',q:'How are we doing as a couple?',items:[['settle','Between Us','who owes whom, settle up'],['shared','Shared vs Personal','who paid, who earned']]},
-  {id:'goals',t:'Goals',ic:'target',q:'Are we on track?',items:[['goals','Saving Goals','progress and pace to finish']]}
+  {id:'money',t:'Where does our money go?',tp:'Where does my money go?',ic:'inout121',q:'Spending, income, cash flow and savings',items:[['spending','Spending','by category, vs budget, top items & trend'],['v_income','Income Sources','sources & changes'],['cash','Cash Flow','money in, money out & forecast'],['savings','Savings','how much I kept & the trend'],['cc','Card Statements','statements & due dates']]},
+  {id:'together',t:'How are we doing together?',tp:'How are we doing together?',ic:'users',q:'Between Us, shared and personal',items:[['settle','Between Us','who owes whom, settle up'],['shared','Shared vs Personal','who paid, who earned']]},
+  {id:'goals',t:'Are we reaching our goals?',tp:'Am I reaching my goals?',ic:'target',q:'Saving goals and budgets',items:[['goals','Saving Goals','progress and pace to finish'],['budget','Budgets','spending against budget']]},
+  {id:'stand',t:'Where do we stand?',tp:'Where do I stand?',ic:'nw',q:'Net worth and financial health',items:[['networth','Net Worth','trend, what moved it, assets & debts'],['v_health','Financial Health','safety net, debt ratio, savings rate']]},
+  {id:'assets',t:'What do we own and owe?',tp:'What do I own and owe?',ic:'pie',q:'Asset mix, debts and value history',items:[['v_alloc','Asset Mix','what I have, drill by type'],['debts','Debts','balances, repayments, schedule'],['v_valhist','Recorded Value History','value updates · revaluations over time']]}
 ];
 INS.CAT=CAT;
 /* old report keys → new home (search and links keep working) */
 var ALIAS={
-  v_drivers:{k:'networth'},v_joint:{k:'networth'},snapshot:{k:'settle'},trend:{k:'cash'},
+  v_drivers:{k:'networth'},v_joint:{k:'networth'},snapshot:{k:'settle'},trend:{k:'savings'},
   v_liabred:{k:'debts',dt:'bal'},v_outstd:{k:'debts',dt:'bal'},v_prinrep:{k:'debts',dt:'rep'},v_repaytrend:{k:'debts',dt:'rep'},v_instal:{k:'debts',dt:'sch'},
   breakdown:{k:'spending',sp:'cat'},fixed:{k:'spending',sp:'cat',spf:'fixed'},budget:{k:'spending',sp:'budget'},top:{k:'spending',sp:'top'},heat:{k:'spending',sp:'trend',tr:'day'},v_cattrend:{k:'spending',sp:'trend',tr:'month'},
-  v_ncf:{k:'cash'},v_forecast:{k:'cash'},monthly:{k:'cash'},
+  v_ncf:{k:'cash'},v_forecast:{k:'cash'},monthly:{k:'savings'},
   v_contrib:{k:'shared'},v_recv:{k:'settle'},v_goalcast:{k:'goals'},v_fundhist:{k:'goals'},
   v_money:{k:'v_alloc',am:'money'},v_invest:{k:'v_alloc',am:'inv'},v_props:{k:'v_alloc',am:'prop'},v_veh:{k:'v_alloc',am:'veh'},v_business:{k:'v_alloc',am:'biz'},
   upcoming:{rem:1},rem:{rem:1},
   f_wealth:{home:1},f_cash:{home:1},f_couple:{home:1},f_goals:{home:1},f_assets:{home:1},f_loans:{home:1}
 };
 var OLDNAMES={
-  networth:'Wealth Drivers Joint Progress Debt liability',settle:'Money Owed to Me Snapshot receivables',cash:'Net Cash Flow Forecast Income vs expenses waterfall',
+  networth:'Wealth Drivers Joint Progress Debt liability',settle:'Money Owed to Me Snapshot receivables',cash:'Net Cash Flow Forecast Cash movement Change in cash Cash Flow & Savings waterfall',savings:'Cash Flow & Savings savings rate saved overspent Income vs expenses Money left kept',goals:'Forecast Completion Funding History',
   debts:'Debt Mix Debt Reduction liability liabilities Debt repayments Remaining Instalments Repayment Trend outstanding loans hire purchase',
   spending:'Where the Money Went Top 10 Spending Daily Spending Category Trends Fixed vs Variable Budget vs Actual breakdown',
-  shared:'Contribution Shared Spending',goals:'Forecast Completion Funding History',
+  shared:'Contribution Shared Spending',budget:'Budget vs Actual budgets plan',
   v_alloc:'Cash Position Investments Properties Vehicles Businesses Asset Allocation money',
   v_valhist:'Dated entries revaluation value updates',v_health:'emergency fund debt ratio savings rate',cc:'credit card statements minimum payment',v_income:'income analysis concentration'
 };
@@ -25637,7 +25689,7 @@ INS.resolve=function(k){
 /* titles: one name per report, same as the catalogue */
 try{
   var T51={networth:['nw','Net Worth'],v_health:['heart','Financial Health'],v_alloc:['pie','Asset Mix'],debts:['card','Debts'],cc:['card','Card Statements'],v_valhist:['nw','Recorded Value History'],
-    cash:['swap','Cash Flow & Savings'],spending:['receipt','Spending'],v_income:['trend','Income Sources'],settle:['scale','Between Us'],shared:['users','Shared vs Personal'],goals:['target','Saving Goals']};
+    cash:['swap','Cash Flow'],savings:['piggy121','Savings'],spending:['receipt','Spending'],v_income:['trend','Income Sources'],settle:['scale','Between Us'],shared:['users','Shared vs Personal'],goals:['target','Saving Goals']};
   Object.keys(T51).forEach(function(k){REP_TITLES[k]=ic(T51[k][0])+' '+T51[k][1];});
 }catch(e){n51(e,'b51:titles');}
 
@@ -25803,7 +25855,7 @@ RULES.C1=function(){
   var lbl=(S.saved<0?'Overspent ':'Saved ')+(PER.off===0?'this '+word():'in '+r.label);
   var tr=[];try{tr=periodsBack(6).map(function(x){return {lb:x.lb,v:x.net,tip:[x.full,(x.net<0?'Overspent ':'Savings ')+money(Math.abs(x.net)),'Income '+money(x.i),'Spending '+money(x.ex)]};});}catch(e){}
   var find=S.saved<0?('You spent '+money(-S.saved)+' more than came in '+thisWord(r)+'.'):('You saved '+money(S.saved)+' '+thisWord(r)+(S.rate!=null?' — '+pc(S.rate)+' of income':'')+(P.rate!=null&&S.rate!=null?(pts(S.rate)===pts(P.rate)?', the same as '+lastWord():', '+(S.rate>P.rate?'up':'down')+' from '+pc(P.rate)+' '+lastWord()):'')+'.');
-  return {id:'C1',tab:'cash',tag:'Cash Flow & Savings',tone:S.saved<0?'warn':'good',hero:1,fires:true,find:find,S:S,P:P,ncf:ncf,lbl:lbl,tr:tr,links:[['Cash Flow & Savings','cash']]};
+  return {id:'C1',tab:'cash',tag:'Savings',tone:S.saved<0?'warn':'good',hero:1,fires:true,find:find,S:S,P:P,ncf:ncf,lbl:lbl,tr:tr,links:[['Savings','savings']]};
 };
 /* C2 · Spending movers */
 RULES.C2=function(){
@@ -25910,21 +25962,41 @@ function partnerPriv116(t){
   return false;
 }
 window.partnerPriv116=partnerPriv116;
+/* beta 2.02 (item 35, D-99): joint-account spending and income count to each owner by their ownership share
+   (50 / 50 unless the account sets another split), like everywhere else in the app (D-85, D-89).
+   Split bills still count in full to whoever paid (the partner's part shows in Between Us). Sums in cents.
+   beta 2.03 (item 35b, user 6 Nov): split bills count by each person's SHARE, not to whoever paid. Who paid and
+   who owes whom stays on Between Us. */
 function sharedBills(r){
-  var paid={},joint=0,inc={},tot=0;
+  var paid={},inc={},jc=0,tc=0,even=true;
+  function add(m,p,c){if(!p||!c)return;p=canonP122(p);m[p]=(m[p]||0)+c;}
   DB.txns.forEach(function(t){
     if(t.date<r.s||t.date>r.e)return;
     if(partnerPriv116(t))return;
-    var o=ownerOf(t.account)||t.person||'';
+    var o=ownerOf(t.account)||t.person||'',jm=jointOf122(o),c=Math.round((+t.amount||0)*100);
+    if(jm.length&&ownPct123(o,t.account)!==50)even=false;
     if(t.type==='Expense'){
-      var jt=String(o).indexOf(' & ')>=0;
-      if(!(t.group||jt))return;
-      tot+=+t.amount||0;
-      if(jt)joint+=+t.amount||0;else paid[o]=(paid[o]||0)+(+t.amount||0);
-    }else if(t.type==='Income'){var ip=t.person||o;if(ip&&String(ip).indexOf(' & ')<0)inc[ip]=(inc[ip]||0)+(+t.amount||0);}
+      var sp=hasSplit(t);
+      if(!(t.group||jm.length||sp))return;
+      tc+=c;if(jm.length)jc+=c;
+      if(t.group){ /* one row per share: count it to the share's person */
+        var who=t.person||o,wj=jointOf122(who);
+        if(wj.length){var a0=Math.round(part123(c/100,who,t.account,wj[0])*100);add(paid,wj[0],a0);add(paid,wj[1],c-a0);}
+        else add(paid,who,c);
+      }else if(sp){ /* a split kept on one transaction (joint): each person's share */
+        var ps=[meName(),partnerName()].filter(Boolean).map(canonP122),a1=ps.length?Math.round((+shareOf(t,ps[0])||0)*100):0;
+        if(ps.length===2){add(paid,ps[0],a1);add(paid,ps[1],c-a1);}else if(ps.length)add(paid,ps[0],c);
+      }else if(jm.length){var a2=Math.round(part123(c/100,o,t.account,jm[0])*100);add(paid,jm[0],a2);add(paid,jm[1],c-a2);}
+      else add(paid,o,c);
+    }else if(t.type==='Income'){
+      if(jm.length)jm.forEach(function(p){add(inc,p,Math.round(part123(c/100,o,t.account,p)*100));});
+      else{var ip=t.person||o;if(ip&&!jointOf122(ip).length)add(inc,ip,c);}
+    }
   });
-  return {paid:paid,joint:r2(joint),inc:inc,tot:r2(tot)};
+  var cv=function(m){var x={};Object.keys(m).forEach(function(k){x[k]=m[k]/100;});return x;};
+  return {paid:cv(paid),joint:jc/100,inc:cv(inc),tot:tc/100,even:even};
 }
+window.sharedBills202=sharedBills; /* beta 2.02: read by the tests */
 window.sharedBills116=sharedBills;
 function splitOf(m,a,b){var x=m[a]||0,y=m[b]||0;return (x+y)>0.004?x/(x+y):null;}
 RULES.K2=function(){
@@ -25933,11 +26005,13 @@ RULES.K2=function(){
   var s=splitOf(c.paid,me,pn),ps=splitOf(p.paid,me,pn),si=splitOf(c.inc,me,pn);
   var mv=(s!=null&&ps!=null)?Math.abs(pts(s)-pts(ps)):0,tch=p.tot>0.004?Math.abs(c.tot-p.tot)/p.tot:1;
   var fires=mv>=10||tch>=0.2;
-  var find='Shared bills were '+money(c.tot)+' '+thisWord(r)+(s!=null?': '+esc(me)+' paid '+pts(s)+'%, '+esc(pn)+' '+(100-pts(s))+'%'+(ps!=null?' ('+pts(ps)+'% / '+(100-pts(ps))+'% '+lastWord()+')':''):'')+'.';
+  var allJ=Math.abs(c.joint-c.tot)<0.005;
+  var find=allJ?'Shared bills were '+money(c.tot)+' '+thisWord(r)+', all from joint accounts ('+(c.even?'half each':'by your shares')+').'
+    :'Shared bills were '+money(c.tot)+' '+thisWord(r)+(s!=null?': '+esc(me)+'’s share '+pts(s)+'%, '+esc(pn)+'’s '+(100-pts(s))+'%'+(ps!=null?' ('+pts(ps)+'% / '+(100-pts(ps))+'% '+lastWord()+')':''):'')+'.'; /* beta 2.03: each person's share (split bills and joint accounts) */
   function duo(l,f){if(f==null)return '';var a=pts(f);return '<div class="duo51"><div class="dl"><span>'+l+'</span><span>'+a+'% / '+(100-a)+'%</span></div><div class="db"><i class="a" style="width:'+a+'%"></i><i class="b" style="width:'+(100-a)+'%"></i></div></div>';}
   return {id:'K2',tab:'couple',tag:'Shared bills',tone:'neu',sev:3,amt:c.tot,fires:fires,find:find,
-    evid:duo('Shared bills paid',s)+duo('Income recorded',si),
-    why:(c.joint>0.004?money(c.joint)+' was paid from joint accounts. ':'')+'A neutral view: what each of you paid and recorded, not whether it is fair.',links:[['Shared vs Personal','shared']]};
+    evid:(allJ?'':duo('Shared bills',s))+duo('Income recorded',si),
+    why:'A neutral view: each of your shares, not whether it is fair.',links:[['Shared vs Personal','shared']]};
 };
 /* G1 · payment banner items */
 INS.attItems=function(){
@@ -25970,7 +26044,7 @@ function wealthHero(){
 }
 function cashHero(){
   var o=RULES.C1(),S=o.S,P=o.P,cur=o.tr.length-1;
-  return '<div data-info23="keep" class="card hero51"><h2>'+ic('piggy121')+' Savings <span class="sub">'+esc(curR().label)+'</span>'+det26('cash')+'</h2>' /* beta 117: "Saved this month" -> Savings + period */
+  return '<div data-info23="keep" class="card hero51"><h2>'+ic('piggy121')+' Savings <span class="sub">'+esc(curR().label)+'</span>'+det26('savings')+'</h2>' /* beta 117: "Saved this month" -> Savings + period */
     +'<div class="big51 '+(S.saved<0?'neg':'pos')+'"><b>'+(S.saved<0?'\u2212':'')+money(Math.abs(S.saved))+'</b></div>'
     +'<div class="sentence51">'+(S.rate!=null?pc(S.rate)+' of income':'No income recorded')+' · '+(function(){var dd=Math.round((S.saved-P.saved)*100)/100,pl='';try{pl=perRange(PER.off-1).label;}catch(e){pl=lastWord();}return Math.abs(dd)<0.5?'No change vs '+esc(pl):'<span class="'+(dd<0?'neg':'pos')+'">'+(dd>0?'▲ ':'▼ ')+money(Math.abs(dd))+'</span> vs '+esc(pl);})()+'</div>'
     +(o.tr.length?bars6(o.tr,cur):'')
@@ -26021,7 +26095,12 @@ function coupleHero(){
     +(isNow&&B.amt>=0.005?(B.open.length===1?'<button class="btn ghost sm" data-act="settle" data-n="'+esc(B.open[0].name)+'">Settle up</button>':'<button class="btn ghost sm" data-act="v63rep" data-k="settle">Settle up</button>'):'')+'</div>';
   return '<div data-info23="keep" class="card hero51 sum114 cpl114"><h2>'+ic('househeart121')+' Household <span class="sub">as at '+esc(dLabelYW(eD))+'</span>'+det26(simp?'settle':'networth')+'</h2>'
     +'<div class="lab114">'+lab+'</div><div class="big51'+(!simp&&N.net<0?' neg':'')+'"><b>'+big+'</b></div>'
-    +(line?'<div class="sentence51">'+line+'</div>':'')+owe+'</div>';
+    +(line?'<div class="sentence51">'+line+'</div>':'')+(simp?'':nwSpark203())+'</div>'; /* beta 2.03 (item 39): the household net worth line, like Wealth; Between us + Settle up live on the Between Us card and report */
+}
+function nwSpark203(){
+  var vals=[],tips=null,pw=PER.who;
+  try{PER.who='couple';var T=V63.calc.trend('6M');vals=[T.base.v].concat(T.line.map(function(p){return p.v;}));tips=[T.base].concat(T.line).map(function(p){return (p.d?dLabelYW(p.d):p.lb)+'|Household net worth '+money(p.v);});}catch(e){}finally{PER.who=pw;}
+  return spark(vals,tips);
 }
 /* beta 114: one net figure between the two of you, as at a date, plus how it moved in the period */
 function betweenUs114(asd,r){
@@ -26059,7 +26138,7 @@ INS.simpleMoneyHTML=function(){
   var h=perCtrlHTML();
   h+='<button class="moneyavail18" data-act="ma121"><span class="ma-ic">'+ic('wallet')+'</span><span class="tx"><small>Money available</small><b>'+money(tot)+'</b><em>'+names.length+' bank, cash and E-wallet account'+(names.length===1?'':'s')+' · as at '+esc(dLabelYW(asd))+'</em></span></button>';
   var sp=S.inc>0.004?Math.min(1,S.exp/S.inc):1;
-  h+='<div data-info23="keep" class="card hero51"><h2>'+ic('piggy121')+' '+(S.saved<0?'Overspent':'Saved')+' '+(PER.off===0?'this '+word():'in '+esc(r.label)) /* beta 121: was "Left" */+det26('cash')+'</h2><div class="big51 '+(S.saved<0?'neg':'pos')+'"><b>'+(S.saved<0?'−':'')+money(Math.abs(S.saved))+'</b></div>'
+  h+='<div data-info23="keep" class="card hero51"><h2>'+ic('piggy121')+' '+(S.saved<0?'Overspent':'Saved')+' '+(PER.off===0?'this '+word():'in '+esc(r.label)) /* beta 121: was "Left" */+det26('savings')+'</h2><div class="big51 '+(S.saved<0?'neg':'pos')+'"><b>'+(S.saved<0?'−':'')+money(Math.abs(S.saved))+'</b></div>'
     +'<div class="sentence51">Money in '+money(S.inc)+' · Money spent '+money(S.exp)+'</div>'+paceb(sp)+gl(pc(sp)+' of money in spent','Change in cash '+sg(ncf))+'</div>';
   return h+list('simple');
 };
@@ -26163,10 +26242,9 @@ DYNF.v_health=function(){
   var w2=INS.get('W2');
   var dr='<div class="card" data-info23="keep"><h2>'+ic('card')+' Debt ratio <span class="sub">'+(H.debtRatio==null?'—':pts(H.debtRatio)+'%')+'</span></h2>'+(w2?w2.evid+'<div class="help small" style="margin-top:6px">'+w2.find+' '+(w2.why||'')+'</div>':'<div class="help">No debts recorded.</div>')+'</div>';
   var tr=[];try{tr=periodsBack(6).map(function(x){var rt=x.i>0.004?Math.round((x.i-x.ex)/x.i*100):null;return {lb:x.lb,v:rt||0,top:rt==null?'\u2014':rt+'%',tip:[x.full,'Savings rate '+(rt==null?'\u2014 (no income)':rt+'%'),'Income '+money(x.i),'Spending '+money(x.ex)]};});}catch(e){}
-  var srt='<div class="card" data-info23="keep"><h2>'+ic('trend')+' Savings rate <span class="sub">last 6 '+word()+'s</span></h2>'+bars6(tr,tr.length-1)
-    +'<div class="help small" style="margin-top:6px">'+(H.savingsRate==null?'No income recorded this '+word()+'.':pc(H.savingsRate)+' of income saved '+thisWord()+' — the same figure as the Cash Flow &amp; Savings hero.')+'</div></div>';
+  var srt='<button class="card fh202sav" data-act="v63rep" data-k="savings"><span class="tx"><b>Savings rate</b><small>'+(H.savingsRate==null?'No income recorded this '+word()+'.':pc(H.savingsRate)+' of income saved '+thisWord())+'</small></span><span class="lnk">Savings ›</span></button>'; /* beta 2.02 (item 38): the 6-period chart lives in Savings */
   return hero+sn+dr+srt+calc('Safety net = liquid money (cash, bank, E-wallet balances) ÷ average monthly spending over the 3 months before this period. Debt ratio = total debts ÷ total recorded assets. Savings rate = (income − spending) ÷ income, for the selected period.')
-    +rel([['Net Worth','networth'],['Cash Flow & Savings','cash']]);
+    +rel([['Net Worth','networth'],['Savings','savings']]);
 };
 DYNF.v_alloc=function(){
   var o=INS.get('W4'),M=V63.calc.mix(whoOK(),nwAsAt(perRange()));
@@ -26205,8 +26283,8 @@ DYNF.v_valhist=function(){
     var desc=rows.slice().reverse();
     h+='<div class="card" data-info23="keep"><h2>'+ic(a.type==='Vehicle'?'car':'home')+' '+esc(a.name)+' <span class="sub">newest first</span></h2>'
       +(rows.length>1?spark(rows.map(function(x){return x.v;})):'')
-      +desc.map(function(x,i){var p=desc[i+1],d=p?r2(x.v-p.v):0;return '<div class="lgrow"><span class="nm"><b style="font-weight:700">'+esc(x.note)+'</b><small>'+(x.d?esc(dLabelY(x.d)):'')+'</small></span><span class="vv">'+money(x.v)+(p?'<small class="'+(d>=0?'pos':'neg')+'">'+sg(d)+' vs previous</small>':'<small>starting value</small>')+'</span></div>';}).join('')
-      +'<button class="btn ghost sm" data-act="acc" data-n="'+esc(a.name)+'" style="width:100%;margin-top:8px">Record a new value</button></div>';
+      +desc.map(function(x,i){var p=desc[i+1],d=p?r2(x.v-p.v):0;return '<div class="lgrow"><span class="nm"><b style="font-weight:700">'+esc(x.note)+'</b><small>'+(x.d?esc(dLabelY(x.d)):'Date not set')+'</small></span><span class="vv">'+money(x.v)+(p?'<small class="'+(d>=0?'pos':'neg')+'">'+sg(d)+' vs previous</small>':'<small>starting value</small>')+'</span></div>';}).join('')
+      +'</div>'; /* beta 2.02 (item 28): reports are read-only; a new value is recorded on the account screen */
   });
   var hero=first?INS.repHero({tag:'Value updates',tone:'neu',find:esc(first.a.name)+' has been revalued '+(first.rows.length===2?'once':(first.rows.length-1)+' times')+', from '+money(first.rows[0].v)+' to '+money(first.rows[first.rows.length-1].v)+'.'},asAtTxt()):'';
   return hero+h+'<div class="help small" style="margin:-2px 4px 10px">Value updates change Net Worth from their date. They never create income, spending or cash flow.</div>';
@@ -26250,30 +26328,111 @@ DYNF.cash=function(){
   var mv='<div class="card" data-info23="keep"><h2>'+ic('updown121')+' Cash movement <span class="sub">bank, cash &amp; E-wallets</span></h2>'+mvIn.replace(/^<div class="mgr-lb"[^]*?<\/div>/,'')+'</div>';
   /* beta 116: two cards — Savings, then Net cash flow (with the cash movement inside it) */
   var parts=null;try{if(window.B7&&B7.cashParts&&OLD.cash===B7.repCash)parts=B7.cashParts();}catch(e){n51(e,'b116:cash');}
-  if(parts)return heroFor('C1')+parts.sav+net121(f,parts)+call('v_forecast')
-    +calc('Saved = income minus spending. Cash movement only counts bank, cash and E-wallet accounts — loan and investment changes don’t count. Forecast uses your last 3 months’ average.')
-    +rel([['Spending','spending'],['Income Sources','v_income']]);
-  return heroFor('C1')+call('cash')+mv+call('v_forecast')
-    +calc('Saved = income minus spending. Cash movement only counts bank, cash and E-wallet accounts — loan and investment changes don’t count. Forecast uses your last 3 months’ average.')
-    +rel([['Spending','spending'],['Income Sources','v_income']]);
+  /* beta 2.02 (item 38): Cash Flow = Net cash flow + Forecast; Savings has its own report */
+  var cx='Cash flow only counts bank, cash and E-wallet accounts. Loan and investment balances don’t count. Card purchases count when you pay the bill. Forecast uses the average net cash flow of the last 3 '+perWord()+'s.';
+  if(parts)return net121(f,parts)+call('v_forecast')+calc(cx)+rel([['Savings','savings'],['Spending','spending'],['Income Sources','v_income']]);
+  return mv+call('v_forecast')+calc(cx)+rel([['Savings','savings'],['Spending','spending'],['Income Sources','v_income']]);
+};
+DYNF.savings=function(){
+  var parts=null;try{if(window.B7&&B7.cashParts)parts=B7.cashParts();}catch(e){n51(e,'b202:sav');}
+  return heroFor('C1')+(parts?parts.sav:'')
+    +calc('Saved = income minus spending. Transfers (including loan repayments and card payments) are not income or spending.')
+    +rel([['Cash Flow','cash'],['Saving Goals','goals'],['Financial Health','v_health']]);
 };
 REP_TITLES.spending=ic('receipt')+' Spending';
+/* beta 2.03 (item 41, D-100): the Spending report is one scrolling screen (approved Eucie mockup, 6 Nov):
+   hero (total, change vs the same point last period, plan used), Where it went (each category with its plan bar),
+   Fixed and flexible, Biggest spends, Day by day, Last 3 months. No Category / vs Budget / Top / Trend switch.
+   Sums in cents. Simple: "Money spent" words, top 5 categories + Show all, 3 biggest spends, no calendar / split. */
+function spIcon203(c){
+  var k=String(c||'').toLowerCase(),L=[[/rent|housing|home/,'home'],[/grocer/,'basket121'],[/shop|cloth/,'bag'],[/bill|utilit|electric|phone|internet/,'bolt'],[/food|dining|restaurant|eat/,'utensils'],[/transport|petrol|fuel|\bcar\b|parking|toll/,'car'],[/entertain|movie|fun/,'play'],[/personal|care|beauty/,'sparkle'],[/health|medic|clinic/,'heart'],[/educat|school|book/,'book'],[/travel|holiday/,'flag'],[/gift/,'heart'],[/insur/,'shield']];
+  for(var i=0;i<L.length;i++)if(L[i][0].test(k)){try{var h=ico(L[i][1]);if(h)return h;}catch(e){}}
+  return ic('receipt');
+}
 DYNF.spending=function(){
-  var t=R51.sp||'cat',body='';
-  if(t==='cat'){
-    var r=perRange(),L=perTx(r),filt=R51.spf||'all',m={},tot=0,fx=0,all=0;
-    L.forEach(function(x){if(x.type!=='Expense')return;var f=false;try{f=isFixed(x);}catch(e){}all+=+x.amount||0;if(f)fx+=+x.amount||0;if(filt==='fixed'&&!f)return;if(filt==='variable'&&f)return;var c=x.category||'Other';m[c]=(m[c]||0)+(+x.amount||0);tot+=+x.amount||0;});
-    var cats=Object.keys(m).sort(function(a,b){return m[b]-m[a];}),mxv=cats.length?m[cats[0]]:1;
-    body=chips('r51spf',[['all','All'],['fixed','Fixed'],['variable','Variable']],filt)
-      +'<div class="card" data-info23="keep"><h2>'+ic('receipt')+' By category <span class="sub">'+money(tot)+'</span></h2>'
-      +(cats.length?cats.map(function(c){return '<button class="hbrow" data-act="v63catlist" data-c="'+esc(c)+'"><span class="hl">'+esc(c)+'</span><span class="hb"><i style="width:'+(m[c]/mxv*100).toFixed(1)+'%;background:var(--accent)"></i></span><span class="hv">'+money(m[c])+'<small>'+(tot?pts(m[c]/tot):0)+'%</small></span></button>';}).join(''):'<div class="help">No spending here in this period.</div>')
-      +(all>0.004&&fx>0.004?'<div class="help small" style="margin-top:6px">'+pts(fx/all)+'% of spending is fixed ('+money(fx)+') — committed before you decide anything. Fixed = recurring transactions plus categories whose budget is all fixed.</div>':'')+'</div>';
-  }else if(t==='budget')body=call('budget');
-  else if(t==='top')body=call('top');
-  else{var tr=R51.tr||'day';body=chips('r51tr',[['day','Day'],['month','Month']],tr)+(tr==='day'?call('heat'):call('v_cattrend'));}
-  return heroFor('C2')+stab('r51sp',[['cat','Category'],['budget','vs Budget'],['top','Top'],['trend','Trend']],t)+body;
+  var smp=false;try{smp=!!(window.simple20&&simple20());}catch(e){}
+  var solo=false;try{solo=!isCouple();}catch(e){}
+  var C=function(v){return Math.round((+v||0)*100);},M=function(c){return money(c/100);};
+  var r=curR(),cur=isCurrent(r),L=perTx(r).filter(function(t){return t.type==='Expense';});
+  var tot=0,cm={},fx=0;L.forEach(function(t){var c=C(t.amount),k=t.category||'Other';tot+=c;cm[k]=(cm[k]||0)+c;var f=false;try{f=isFixed(t);}catch(e){}if(f)fx+=c;});
+  var mon=r.label;try{if(PER.mode==='month')mon=new Date(r.s+'T12:00:00').toLocaleString('en-GB',{month:'long'});}catch(e){}
+  var who=solo?'I spent':'Spent';
+  /* change vs the same point last period (the C2 rule) */
+  var pr=prevR(),pp=samePoint(r,pr),Lc=perTx(curCut(r)),Lp=perTx(pp),sc=C(sumBy(Lc,'Expense')),sp=C(sumBy(Lp,'Expense')),d=sc-sp;
+  var pmon=pr.label;try{if(PER.mode==='month')pmon=new Date(pr.s+'T12:00:00').toLocaleString('en-GB',{month:'long'});}catch(e){}
+  var chg='';
+  if(sp>0&&Math.abs(d)>=100){
+    var up=d>0,arrow='<svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><path d="'+(up?'M7 14l5-5 5 5':'M7 10l5 5 5-5')+'"/></svg>';
+    chg=smp?M(Math.abs(d))+(up?' more':' less')+' than '+(cur?'the same point in ':'')+esc(pmon)+' ('+M(sp)+')'
+      :pts(Math.abs(d)/sp)+'% '+(up?'more':'less')+' than '+(cur?'the same point in ':'')+esc(pmon);
+    chg='<div class="sp203chg '+(up?'up':'dn')+'">'+arrow+chg+'</div>';
+  }else if(sp>0)chg='<div class="sp203chg">About the same as '+(cur?'the same point in ':'')+esc(pmon)+'</div>';
+  /* plan (budgets) */
+  var rows=[];try{rows=budgetRows();}catch(e){}
+  var plan={},ptot=0,pused=0;rows.forEach(function(x){var b=C(x.b);plan[x.c]=b;ptot+=b;pused+=Math.min(cm[x.c]||0,b)+Math.max(0,(cm[x.c]||0)-b);});
+  var planBar='';
+  if(ptot>0&&!smp){var pu=0;rows.forEach(function(x){pu+=cm[x.c]||0;});var f=pu/ptot,left=ptot-pu;
+    planBar='<div class="sp203plan"><i style="width:'+Math.min(100,f*100).toFixed(1)+'%"'+(f>1?' class="over"':'')+'></i></div>'
+      +'<div class="sp203pl"><span>'+pts(f)+'% of the '+M(ptot)+' plan</span><b>'+(left>=0?M(left)+' left':M(-left)+' over')+'</b></div>';}
+  /* the biggest movers behind the change */
+  var note='';
+  if(sp>0&&Math.abs(d)>=100){
+    var mc=catMap(Lc,'Expense'),mp=catMap(Lp,'Expense'),ks={};Object.keys(mc).concat(Object.keys(mp)).forEach(function(k){ks[k]=1;});
+    var mv=Object.keys(ks).map(function(k){return {c:k,d:C(mc[k])-C(mp[k])};}).filter(function(x){return Math.abs(x.d)>=100&&(x.d>0)===(d>0);}).sort(function(a,b){return Math.abs(b.d)-Math.abs(a.d);}).slice(0,3);
+    if(mv.length){var part=mv.reduce(function(s,x){return s+Math.abs(x.d);},0),pc0=Math.min(100,Math.round(part/Math.abs(d)*100));
+      var names=mv.map(function(x){return esc(x.c);});var nm=names.length>1?names.slice(0,-1).join(', ')+' and '+names[names.length-1]:names[0];
+      note='<div class="sp203note">'+nm+(mv.length>1?' make':' makes')+' up '+pc0+'% of the '+(d>0?'rise':'drop')+'.</div>';}
+  }
+  if(!note&&smp&&tot>0){var top0=Object.keys(cm).sort(function(a,b){return cm[b]-cm[a];})[0];if(top0&&cm[top0]*2>tot)note='<div class="sp203note">'+esc(top0)+' is over half of what '+(solo?'I':'we')+' spent.</div>';}
+  var hero='<div class="card sp203hero" data-info23="keep"><div class="sp203lab">'+(cur?who+' so far in '+esc(mon):who+' in '+esc(mon))+'</div>'
+    +'<div class="sp203big">'+M(tot)+'</div>'+chg+planBar+note+'</div>';
+  if(!tot)return hero.replace(note,'')+'<div class="card"><div class="help">Nothing spent '+thisWord(r)+' yet.</div></div>';
+  /* where it went */
+  var cats=Object.keys(cm).sort(function(a,b){return cm[b]-cm[a];}),mx=cm[cats[0]]||1,showAll=!smp||R51.spAll;
+  var list=showAll?cats:cats.slice(0,5);
+  var where='<div class="sp203h"><h2>Where it went</h2>'+(smp?'':'<span>'+cats.length+' categor'+(cats.length===1?'y':'ies')+'</span>')+'</div><div class="card sp203list" data-info23="keep">'
+    +list.map(function(c){var v=cm[c],b=plan[c]||0,over=b&&v>b,w=b?Math.min(100,v/b*100):v/mx*100,pt='',pc='';
+      if(b){if(over){pt=M(v-b)+' over';pc='over';}else if(b-v<1){pt='plan used';}else{pt=M(b-v)+' left of '+M(b).replace(/\.00$/,'');pc='left';}}
+      else if(!smp)pt='no plan';
+      var ic0=spIcon203(c);
+      return '<button class="sp203row" data-act="v63catlist" data-c="'+esc(c)+'"><span class="sp203ic'+(b?' p':'')+'">'+ic0+'</span><span class="sp203mid">'
+        +'<span class="sp203t"><span class="nm">'+esc(c)+'</span><b>'+M(v)+'</b></span>'
+        +'<span class="sp203bar"><i class="'+(over?'over':b?'plan':'')+'" style="width:'+w.toFixed(1)+'%"></i></span>'
+        +'<span class="sp203s"><span>'+Math.round(v/tot*100)+'% of '+(smp?'what '+(solo?'I':'we')+' spent':'spending')+'</span>'+(pt?'<span class="'+pc+'">'+pt+'</span>':'')+'</span></span></button>';}).join('')
+    +(smp&&cats.length>5?'<button class="sp203more" data-act="sp203all">'+(R51.spAll?'Show fewer':'Show all '+cats.length+' categories')+'</button>':'')+'</div>';
+  /* fixed and flexible */
+  var split='';
+  if(!smp&&fx>0&&fx<tot){var fp=Math.round(fx/tot*100);
+    split='<div class="card sp203fx" data-info23="keep"><b class="sp203ct">Fixed and flexible</b><div class="sp203fb"><i style="width:'+fp+'%"></i><i></i></div>'
+      +'<div class="sp203fl"><div><small><i class="k fx"></i>Fixed · '+fp+'%</small><b>'+M(fx)+'</b></div><div class="r"><small><i class="k fl"></i>Flexible · '+(100-fp)+'%</small><b>'+M(tot-fx)+'</b></div></div>'
+      +'<div class="sp203fn">Fixed is set before you decide anything: repeating bills and categories planned as fixed.</div></div>';}
+  /* biggest spends */
+  var me=meName(),tx=mergeLegs122(L).filter(function(t){return t.amount>0;}).sort(function(a,b){return b.amount-a.amount;}).slice(0,smp?3:5);
+  var big='<div class="sp203h"><h2>Biggest spends</h2></div><div class="card sp203list" data-info23="keep">'+tx.map(function(t){
+      var av='';if(!solo){var p=String(t.person||''),j=jointOf122(p).length>0,mine=!j&&canonP122(p)===canonP122(me);
+        av='<span class="sp203av'+(j?' j':mine?' me':' pt')+'" aria-label="'+esc(j?'Joint':p)+'">'+(j?'J':esc((p.trim()[0]||'?').toUpperCase()))+'</span>';}
+      return '<button class="sp203tx" data-act="txn" data-id="'+esc(t.id)+'">'+av+'<span class="sp203mid"><span class="nm">'+esc(t.note||t.category)+'</span><small>'+esc(dLabelW(t.date).replace(/, \d{4}$/,''))+' · '+esc(t.category)+(smp?'':' · '+esc(t.account))+'</small></span><b>'+money(t.amount)+'</b></button>';}).join('')+'</div>';
+  /* day by day (months only) */
+  var cal='';
+  if(!smp&&PER.mode==='month'){
+    var dm={},bd=null;L.forEach(function(t){dm[t.date]=(dm[t.date]||0)+C(t.amount);});
+    Object.keys(dm).forEach(function(k){if(!bd||dm[k]>dm[bd])bd=k;});
+    var first=new Date(r.s+'T12:00:00'),lead=(first.getDay()+6)%7,days=new Date(first.getFullYear(),first.getMonth()+1,0).getDate(),td=todayISO();
+    var cells='';for(var i=0;i<lead;i++)cells+='<span class="sp203d e"></span>';
+    for(var dd=1;dd<=days;dd++){var iso=r.s.slice(0,8)+(dd<10?'0':'')+dd,v=dm[iso]||0,lv=!v?0:v<6000?1:v<15000?2:v<40000?3:4;
+      cells+='<span class="sp203d l'+lv+(iso===td?' td':'')+'"'+(v?' title="'+esc(dLabelW(iso))+' · '+M(v)+'"':'')+'><em>'+dd+'</em>'+(v?'<b>'+(v>=100000?(v/100000).toFixed(1)+'k':Math.round(v/100))+'</b>':'')+'</span>';}
+    cal='<div class="sp203h"><h2>Day by day</h2>'+(bd?'<span>Busiest: '+esc(dLabelW(bd).replace(/ \d{4}$/,'').replace(',',''))+'</span>':'')+'</div>'
+      +'<div class="card sp203cal" data-info23="keep"><div class="sp203g">'+['M','T','W','T','F','S','S'].map(function(x){return '<span class="dw">'+x+'</span>';}).join('')+cells+'</div>'
+      +'<div class="sp203key">Less<i class="l1"></i><i class="l2"></i><i class="l3"></i><i class="l4"></i>More</div></div>';}
+  /* last 3 periods */
+  var tr='';
+  if(!smp){var ps=[],pmx=1;for(var k=2;k>=0;k--){var rr0=perRange(PER.off-k),s0=0;perTx(rr0).forEach(function(t){if(t.type==='Expense')s0+=C(t.amount);});ps.push({lb:rr0.label.replace(/ \d{4}$/,''),v:s0});pmx=Math.max(pmx,s0);}
+    tr='<div class="card sp203tr" data-info23="keep"><b class="sp203ct">Last 3 '+perWord()+'s</b>'+ps.map(function(x,i){return '<div class="sp203tl"><span>'+esc(x.lb)+'</span><span class="sp203tb"><i'+(i===2?' class="now"':'')+' style="width:'+(x.v/pmx*100).toFixed(1)+'%"></i></span><b>'+'RM '+Math.round(x.v/100).toLocaleString('en-US')+'</b></div>';}).join('')+'</div>';}
+  return hero+where+split+big+cal+tr
+    +calc('Spending is every expense in the period, by category, including card purchases on the day you make them. The plan is your monthly budget for the category. Fixed = repeating transactions plus categories whose budget is all fixed.')
+    +(smp?'':rel([['Income Sources','v_income'],['Savings','savings'],['Card Statements','cc']]));
 };
-DYNF.v_income=function(){var o=INS.get('C4');return (o?INS.repHero(o):'')+call('v_income')+rel([['Cash Flow & Savings','cash']]);};
+DYNF.v_income=function(){var o=INS.get('C4');return (o?INS.repHero(o):'')+call('v_income')+rel([['Savings','savings'],['Cash Flow','cash']]);};
 /* beta 114: Between Us = one card for both of you (no person choice): the net balance, how it moved in the period, what it is made of */
 DYNF.settle=function(){
   var r=curR(),td=todayISO(),asd=r.e<td?r.e:td,isNow=asd===td,B=betweenUs114(asd,r),me=B.me,pn=B.pn;
@@ -26297,11 +26456,12 @@ DYNF.shared=function(){
   var me=meName(),pn=partnerName(),r=curR(),c=sharedBills(r),per={},o=INS.get('K2');
   DB.txns.forEach(function(t){
     if(t.type!=='Expense'||t.group||t.date<r.s||t.date>r.e)return;
+    if(hasSplit(t))return; /* beta 2.03: a split kept on one transaction is a shared bill */
     if(partnerPriv116(t))return; /* beta 116: never the partner's private spending */
-    var w=ownerOf(t.account)||t.person||'';if(!w||String(w).indexOf(' & ')>=0)return;
-    per[w]=(per[w]||0)+(+t.amount||0);
+    var w=ownerOf(t.account)||t.person||'';if(!w||jointOf122(w).length||String(w).indexOf('&')>=0)return;
+    w=canonP122(w);per[w]=(per[w]||0)+Math.round((+t.amount||0)*100); /* cents */
   });
-  var ppl=[me,pn].filter(function(x){return x;}),sh=function(p){return c.paid[p]||0;},pe=function(p){return per[p]||0;},tot=function(p){return sh(p)+pe(p);};
+  var ppl=[me,pn].filter(function(x){return x;}),sh=function(p){return c.paid[canonP122(p)]||0;},pe=function(p){return (per[canonP122(p)]||0)/100;},tot=function(p){return Math.round((sh(p)+pe(p))*100)/100;};
   var tE=ppl.reduce(function(a,p){return a+tot(p);},0),tI=ppl.reduce(function(a,p){return a+(c.inc[p]||0);},0);
   var hero=o?INS.repHero(o):INS.repHero({tag:'Shared bills',tone:'neu',find:'No shared bills '+thisWord(r)+'.'});
   function row(lb,f,cls){return '<tr'+(cls?' class="'+cls+'"':'')+'><td>'+lb+'</td>'+ppl.map(function(p){return '<td class="r">'+f(p)+'</td>';}).join('')+'</tr>';}
@@ -26309,16 +26469,16 @@ DYNF.shared=function(){
   var gap=null;if(tE>0.004&&tI>0.004)ppl.forEach(function(p){var d=Math.round((tot(p)/tE-(c.inc[p]||0)/tI)*100);if(d>=10&&(!gap||d>gap.d))gap={p:p,d:d};});
   var h='<div class="card sum114"><h2>'+ic('users')+' Shared vs Personal <span class="sub">'+esc(r.label)+'</span></h2>'
     +'<table class="rtab sp114"><thead><tr><th></th>'+ppl.map(function(p){return '<th class="r">'+esc(p)+'</th>';}).join('')+'</tr></thead><tbody>'
-    +row('Shared bills paid',function(p){return money(sh(p));})
+    +row('Shared bills',function(p){return money(sh(p));})
     +row('Personal spending',function(p){return money(pe(p));})
     +row('<b>Total spent</b>',function(p){return '<b>'+money(tot(p))+'</b>';},'tot')
     +row('Income recorded',function(p){return '<span class="pos">'+money(c.inc[p]||0)+'</span>';})
     +row('Share of spending',function(p){return pcOf(tot(p),tE);},'gap')
     +row('Share of income',function(p){return pcOf(c.inc[p]||0,tI);})
     +'</tbody></table>'
-    +(c.joint>0.004?'<div class="help small" style="margin-top:8px">'+money(c.joint)+' of shared bills was paid from joint accounts and is not counted to either of you.</div>':'')
+    +(c.joint>0.004?'<div class="help small" style="margin-top:8px">Includes '+money(c.joint)+' from joint accounts, counted by ownership'+(c.even?' (half each)':' (each of your shares)')+'.</div>':'')
     +(gap?'<div class="sentence51" style="margin-top:8px">'+esc(gap.p)+' paid '+pcOf(tot(gap.p),tE)+' of the spending with '+pcOf(c.inc[gap.p]||0,tI)+' of the income.</div>':'')
-    +'<div class="help small" style="margin-top:6px">Shared bills = split bills and spending from joint accounts, counted to the person whose account paid. Personal = everything else each of you spent'+(window.isAdv&&isAdv()?', except what '+esc(pn||'your partner')+' keeps private':'')+'.</div></div>';
+    +'<div class="help small" style="margin-top:6px">Shared bills = each of your shares of split bills and joint-account spending. Personal = everything else each of you spent'+(window.isAdv&&isAdv()?', except what '+esc(pn||'your partner')+' keeps private':'')+'. Who paid and who owes whom is on Between Us.</div></div>';
   return hero+h;
 };
 DYNF.goals=function(){
@@ -26330,6 +26490,7 @@ DYNF.goals=function(){
 function rr(){try{var p=$('pageReport'),y=p?p.scrollTop:0,wy=window.scrollY;renderReport();if(p)p.scrollTop=y;window.scrollTo(0,wy);}catch(e){n51(e,'b51:rr');}}
 ACT.on('b51',{
   r51sp:function(el){R51.sp=el.dataset.v;rr();},
+  sp203all:function(){R51.spAll=!R51.spAll;rr();},
   r51spf:function(el){R51.spf=el.dataset.v;rr();},
   r51tr:function(el){R51.tr=el.dataset.v;rr();},
   r51dt:function(el){R51.dt=el.dataset.v;rr();},
@@ -26372,10 +26533,9 @@ function sharePDF(){
 }
 
 /* ---------- Reports home: search, recents, 5 question groups ---------- */
-var HOME={q:'',open:{}};
+var HOME={q:'',open:{},qOpen:false};
 /* beta 90: Simple has no wealth reports (Where I stand, Assets & debts); Card Statements moves into Money in & out */
-function catNow(){var s=false;try{s=!!(X63.isSimple&&X63.isSimple());}catch(e){}if(!s)return CAT;var cc=catItem('cc');
-  return CAT.filter(function(g){return g.id!=='stand'&&g.id!=='assets';}).map(function(g){return g.id==='money'&&cc?{id:g.id,t:g.t,ic:g.ic,q:g.q,items:g.items.concat([cc])}:g;});}
+function catNow(){var s=false;try{s=!!(X63.isSimple&&X63.isSimple());}catch(e){}if(!s)return CAT;return CAT.filter(function(g){return g.id!=='stand'&&g.id!=='assets';});} /* beta 2.02: Card Statements is in the money question in both experiences */
 function inCatNow(k){var f=false;catNow().forEach(function(g){g.items.forEach(function(x){if(x[0]===k)f=true;});});return f;}
 INS.catNow=catNow;INS.inCatNow=inCatNow;
 function recents(){
@@ -26385,14 +26545,15 @@ function recents(){
   return out.slice(0,4);
 }
 function idx(it){return (it[1]+' '+it[2]+' '+(OLDNAMES[it[0]]||'')).toLowerCase();}
+function qTitle(g){var c=false;try{c=V63.coupleOK();}catch(e){}return c?g.t:(g.tp||g.t);}
 function homeGroups(){
   var q=HOME.q.trim().toLowerCase(),h='',shown=0;
   catNow().forEach(function(g,gi){
     var items=g.items.filter(function(it){if(it[0]==='settle'||it[0]==='shared'){if(!V63.coupleOK())return false;}return !q||idx(it).indexOf(q)>=0;});
     if(!items.length)return;shown+=items.length;
     var open=q?true:(g.id in HOME.open?!!HOME.open[g.id]:false); /* beta 119: every group starts collapsed */
-    h+='<div class="grp51"><button data-act="r51grp" data-g="'+g.id+'" aria-expanded="'+open+'"><span class="gi">'+ic(g.ic)+'</span><span class="gt"><b>'+esc(g.t)+'</b><small>'+esc(g.q)+'</small></span><span class="gn">'+items.length+'</span></button>'
-      +(open?'<div class="gl2">'+items.map(function(it){return '<button class="famrow" data-act="v63rep" data-k="'+it[0]+'"><span class="ftx"><b>'+esc(it[1])+'</b><small>'+esc(it[2])+'</small></span><span class="sch">'+ic('chevright')+'</span></button>';}).join('')+'</div>':'')+'</div>';
+    h+='<div class="grp51 q202'+(open?' open':'')+'"><button data-act="r51grp" data-g="'+g.id+'" aria-expanded="'+open+'"><span class="gi">'+ic(g.ic)+'</span><span class="gt"><b>'+esc(qTitle(g))+'</b><small>'+esc(g.q)+'</small></span><span class="gn">'+items.length+'</span><span class="gch" aria-hidden="true">'+ic('chevdown')+'</span></button>'
+      +(open?'<div class="gl2">'+items.map(function(it){return '<button class="famrow" data-act="v63rep" data-k="'+it[0]+'"><span class="ftx"><b>'+esc(it[1])+'</b></span><span class="sch">'+ic('chevright')+'</span></button>';}).join('')+'</div>':'')+'</div>';
   });
   if(!shown)h='<div class="stub51"><b>No report matches “'+esc(HOME.q)+'”</b>Try a metric name. Old names such as “Wealth Drivers” or “Remaining Instalments” still find their new home.</div>';
   return h;
@@ -26400,11 +26561,10 @@ function homeGroups(){
 function renderHome(){
   var sec=$('view-reports');if(!sec)return;
   if(!sec.querySelector('#r51home')){
-    sec.innerHTML='<div id="r51home"><div class="search51">'+ic('search')+'<input id="r51q" type="search" placeholder="Search reports" autocomplete="off" aria-label="Search reports"></div>'
-      +'<div id="v63fav" class="rel51 recent51"></div><div id="v63tiles"></div></div>';
+    sec.innerHTML='<div id="r51home"><div class="search51" hidden>'+ic('search')+'<input id="r51q" type="search" placeholder="Search reports" autocomplete="off" aria-label="Search reports"><button type="button" class="r202qx" data-act="r202qx" aria-label="Close search">'+ic('x')+'</button></div>'
+      +'<div class="q202lab">Questions</div><div id="v63tiles"></div></div>';
   }
-  var rc=recents(),fav=$('v63fav');
-  if(fav)fav.innerHTML=rc.length?'<span class="rlab">Recent</span>'+rc.map(function(k){var it=catItem(k);return '<button class="relb" data-act="v63rep" data-k="'+k+'">'+esc(it[1])+'</button>';}).join(''):'';
+  var sb=sec.querySelector('.search51');if(sb)sb.hidden=!(HOME.qOpen||HOME.q);
   var t=$('v63tiles');if(t)t.innerHTML=homeGroups();
   var qi=$('r51q');if(qi){var s91=false;try{s91=!!(X63.isSimple&&X63.isSimple());}catch(e){}qi.placeholder=s91?'Search reports, e.g. spending, card':'Search reports, e.g. drivers, instalments';}
 }
@@ -26414,9 +26574,9 @@ try{window.renderReports=renderHome;}catch(e){}
 SCREEN.around('X63.reportsFilter',990051030,function(){return function(){renderHome();};});
 SCREEN.on('X63.reportsFilter',990051030);
 var LASTV119=''; /* beta 119: coming back to the Reports tab from another tab shows every group collapsed again */
-SCREEN.after('gotoView',990051031,{call:'apply',ret:false},function(v){if(v==='reports'&&LASTV119!=='reports')HOME.open={};LASTV119=v;if(v==='reports')try{renderHome();}catch(e){n51(e,'b51:home');}});
+SCREEN.after('gotoView',990051031,{call:'apply',ret:false},function(v){if(v==='reports'&&LASTV119!=='reports'){HOME.open={};}LASTV119=v;if(v==='reports')try{renderHome();}catch(e){n51(e,'b51:home');}});
 SCREEN.on('gotoView',990051031);
-ACT.on('b51home',{r51grp:function(el){var g=el.dataset.g,cur=g in HOME.open?!!HOME.open[g]:!!el.getAttribute('aria-expanded')&&el.getAttribute('aria-expanded')==='true';HOME.open[g]=!cur;var t=$('v63tiles');if(t)t.innerHTML=homeGroups();}});
+ACT.on('b51home',{r202q:function(){HOME.qOpen=true;renderHome();var qi=$('r51q');if(qi)try{qi.focus();}catch(e){}},r202qx:function(){HOME.qOpen=false;HOME.q='';var qi=$('r51q');if(qi)qi.value='';renderHome();},r51grp:function(el){var g=el.dataset.g,cur=g in HOME.open?!!HOME.open[g]:!!el.getAttribute('aria-expanded')&&el.getAttribute('aria-expanded')==='true';HOME.open[g]=!cur;var t=$('v63tiles');if(t)t.innerHTML=homeGroups();}});
 document.addEventListener('input',function(e){if(e.target&&e.target.id==='r51q'){HOME.q=e.target.value||'';var t=$('v63tiles');if(t)t.innerHTML=homeGroups();}});
 
 /* ---------- version + release note (beta 51) ---------- */
@@ -27225,7 +27385,7 @@ R.join=function(){var J=S.join,P=esc(invFrom()),me=esc((FB&&FB.user&&FB.user.ema
       +'<div class="ob62foot ob80col"><button class="btn" data-act="b62look">Look again</button></div>'
       +'<button class="aulink" data-act="b80solo">Set up on my own for now — I’ll join later</button>';}
   var a=J.mode==='adv';P=esc(J.owner||invFrom());
-  return h3('Join '+P+'’s household','The mode is read from the household. You aren’t asked again.')
+  return '<p class="t203tag">mine · yours · ours</p>'+h3('Join '+P+'’s household','The mode is read from the household. You aren’t asked again.') /* beta 2.03: the couple line on the invite screen */
     +'<div class="usecard ob62c on" style="cursor:default"><span class="aucard-ic">'+ico(a?'shield':'users')+'</span><span><b>'+(a?'Advanced Couple':'Couple')+'</b><small>'+(a?'You share some accounts and keep your own private space.':'One shared household. You both see every account.')+'</small></span></div>'
     +'<div class="ob62kv"><span>You can see</span><b>'+(a?'Shared accounts':'All household accounts')+'</b></div>'
     +'<div class="ob62kv"><span>'+P+' can see</span><b>'+(a?'Shared accounts, plus split, transfer and owed entries touching your private space':'All household accounts')+'</b></div>'
@@ -27295,7 +27455,7 @@ function welcome(){var x=invLink();
     +card('auwel','go','user','Start new','Set up on your own, or with a different partner.',false)
     +'<button class="aulink" data-act="aumode" data-m="login">I already have an account · Log in</button>';
   /* Beta 2.0 (spec A1): a feeling, then one action. No figures, no form fields. */
-  return '<div class="a1-200"><p class="a1tag">mine · yours · ours</p><p class="a1line">A quiet place to understand money \u2014 on your own, or together.</p></div>'
+  return '<div class="a1-200"><p class="a1tag">a quiet place for your money</p><p class="a1line">Understand your money, on your own or together.</p></div>'
     +'<div class="a1foot"><button class="btn" data-act="auwel" data-v="go">Get started</button>'
     +'<button class="aulink" data-act="auwel" data-v="inv">I have an invite</button>'
     +'<button class="aulink" data-act="aumode" data-m="login">Log in</button></div>'+hills200a();
@@ -27376,6 +27536,7 @@ var SAVE={
     O().detail=1;save62();go();},
   storage:function(){var p=path(),s=S.store||O().store||(p==='solo'?'device':'cloud'),v=m59();
     O().store=s;var k=s==='cloud'?'household':(s==='folder'?'device':s);
+    if(window.member203&&member203()){k='household';O().store='cloud';} /* beta 2.03 (item 42): already in a household: keep household sync */
     v.storage=k;DB.meta.storageAsked=1;v.providerAsked=1;
     if(k==='household'){DB.meta.syncChoice='yes';DB.meta.cloudSyncOn=true;}else{DB.meta.syncChoice='no';DB.meta.cloudSyncOn=false;}
     if(k==='drive'||k==='onedrive')v.provider=k;
@@ -27613,13 +27774,14 @@ function apply(){TXF71.apply();}
 ACT.on('b71-txf',{
   txfclose:function(){TXF71.close();},
   txftype:function(el){TXF.type=el.dataset.v;renderTxns();},
-  txfsec:function(el){var U=TXF71.UI,k=el.dataset.v;U.sec=U.sec===k?null:k;U.catQ='';TXF71.renderSheet();
+  txfsec:function(el){var U=TXF71.UI,k=el.dataset.v;U.sec=U.sec===k?null:k;U.catQ='';U.accQ='';try{$('txfSheet').style.height='';}catch(e){}TXF71.renderSheet();
     try{var o=document.querySelector('#txfBody .acc.open');if(o)o.scrollIntoView({block:'nearest'});}catch(e){}},
   txfper:function(el){TXF.period=el.dataset.v==='ym'?{k:'ym',ym:el.dataset.ym}:{k:el.dataset.v};apply();},
   txfwho:function(el){tog(TXF.who,el.dataset.v);apply();},
-  txfacc:function(el){tog(TXF.acc,el.dataset.v);apply();},
-  txfcat:function(el){tog(TXF.cat,el.dataset.v);apply();},
-  txfcatclr:function(){TXF.cat=[];apply();},
+  txfacc:function(el){tog(TXF.acc,el.dataset.v);TXF71.patchSel('acc');},
+  txfcat:function(el){tog(TXF.cat,el.dataset.v);TXF71.patchSel('cat');},
+  txfcatclr:function(){TXF.cat=[];TXF71.patchSel('cat');},
+  txfaccclr:function(){TXF.acc=[];TXF71.patchSel('acc');},
   txfamtq:function(el){var Q=[[null,50],[50,200],[200,1000],[1000,null]][+el.dataset.v];
     if(TXF.min===Q[0]&&TXF.max===Q[1])TXF.min=TXF.max=null;else{TXF.min=Q[0];TXF.max=Q[1];}apply();},
   txftgl:function(el){var k=el.dataset.v;TXF[k]=!TXF[k];apply();},
@@ -27640,7 +27802,11 @@ ACT.on('b71-txf',{
 /* live inputs inside the sheet */
 document.addEventListener('input',function(e){var t=e.target;if(!t||!t.closest||!t.closest('#txfSheet'))return;
   try{
-    if(t.id==='txfCatQ'){TXF71.UI.catQ=t.value;TXF71.inView(function(){$('txfCatL').innerHTML=TXF71.catList();});return;}
+    if(t.id==='txfCatQ'||t.id==='txfAccQ'){ /* beta 2.02: the sheet keeps its height while a search is on, so it does not shrink with each letter */
+      var sh=$('txfSheet');if(sh&&t.value&&!sh.style.height)sh.style.height=sh.offsetHeight+'px';if(sh&&!t.value)sh.style.height='';
+      if(t.id==='txfCatQ'){TXF71.UI.catQ=t.value;TXF71.inView(function(){$('txfCatL').innerHTML=TXF71.catList();});}
+      else{TXF71.UI.accQ=t.value;TXF71.inView(function(){$('txfAccL').innerHTML=TXF71.accList();});}
+      return;}
     var k=t.dataset.txfin;
     if(k==='min'||k==='max'){
       var raw=String(t.value||'').trim();
@@ -27708,7 +27874,7 @@ function ensure(){
       var h=$(id+'-t73');
       if(h&&h.parentNode===v&&v.firstElementChild===h)return;
       if(h)h.remove();
-      v.insertAdjacentHTML('afterbegin','<div class="a48pt t73pt" id="'+id+'-t73"><h1>'+T[id]+'</h1></div>');
+      v.insertAdjacentHTML('afterbegin','<div class="a48pt t73pt" id="'+id+'-t73"><h1>'+T[id]+'</h1>'+(id==='view-reports'?'<button type="button" class="a48plus r202sb" data-act="r202q" aria-label="Search reports">'+ico('search')+'</button>':'')+'</div>'); /* beta 2.02 (item 16): search icon on the title row */
     });
   }catch(e){n73(e,'b73:title');}
 }
@@ -27871,7 +28037,8 @@ function hoName(){return isCollab()?(PN()||'Your partner'):(ME()||'You');}
 function coName(){return isCollab()?(ME()||'You'):(PN()||'Your partner');}
 function who(){return hhOn()?uid():(pdhP().acct||ME()||'me');}
 function initial(n){return (String(n||'?').trim()[0]||'?').toUpperCase();}
-function stKind(){var s=storageMode();if(s==='device'&&hhOn())return 'cloud'; /* beta 126: a phone linked to a cloud household syncs through it, whatever the saved setting says */return s==='household'?'cloud':(s==='pdh'?'folder':'device');}
+function stKind(){var s=storageMode();if(hhOn()&&s!=='pdh')return 'cloud'; /* beta 2.02 (item 33): a phone linked to a household counts as synced, whatever older storage choice (device, Google Drive, OneDrive) it kept */ /* beta 126: a phone linked to a cloud household syncs through it, whatever the saved setting says */return s==='household'?'cloud':(s==='pdh'?'folder':'device');}
+window.stKind202=stKind; /* beta 2.02: read by the tests */
 
 /* ---------- the household record: cloud households/{id} or rec in the folder's members.cmm ---------- */
 var HR={
@@ -27975,7 +28142,7 @@ var SW={
 var EXP={};
 function realAcc(a){return !!(a&&!a.recv&&!a.locked&&!/^.+ owes .+$/.test(a.name)&&!LBL_RE.test(a.name));}
 function demoAcc(a){return !!(DB.meta.sample&&DB.meta.sample.on&&(DB.meta.sample.accounts||[]).indexOf(a.name)>=0);}
-function myAccs(){var me=ME();return DB.accounts.filter(function(a){return realAcc(a)&&!demoAcc(a)&&(!me||!a.owner||a.owner===me||String(a.owner).split(' & ').indexOf(me)>=0);}).sort(function(x,y){return alphasort(x.name,y.name);});}
+function myAccs(){var me=ME();return DB.accounts.filter(function(a){return realAcc(a)&&!demoAcc(a)&&(!me||!a.owner||ownIs201(a.owner,me));}).sort(function(x,y){return alphasort(x.name,y.name);});}
 function privAccs(){var me=ME();return DB.accounts.filter(function(a){return a.vis==='me'&&realAcc(a)&&(!me||!a.owner||a.owner===me);});}
 function sharedAccs(){return DB.accounts.filter(function(a){return realAcc(a)&&a.vis!=='me'&&!demoAcc(a);});}
 function txn(n){try{var c=hiddenCount59(n);return c+' transaction'+(c===1?'':'s');}catch(e){return '';}}
@@ -29086,6 +29253,7 @@ ACT.on('b79-data',{
   d79cloudtg:function(){
     if(!signed()){dsGo('cloud');return;}
     if(DB.meta.cloudSyncOn){
+      if(isCollab()){toast('Only '+OTH()+' can pause sync for your household. Your changes keep syncing.');return;} /* beta 2.03 (item 42): a collaborator cannot switch sync off */
       var pause=function(){DB.meta.cloudSyncOn=false;save();try{hhDetach();}catch(e){}dsPaint(false);try{paintStatus59();}catch(e){}toast('Sync is paused. Changes stay on this phone.');};
       if(hhOn()&&isOwner()&&joined())HR.set({paused:true}).then(pause,pause);else pause();
     }else{DB.meta.cloudSyncOn=true;DB.meta.syncChoice='yes';save();try{hhStart();}catch(e){}dsPaint(false);toast('Sync is on.');}
@@ -29261,7 +29429,7 @@ function apPaint(){
 B79.apPaint=apPaint;
 document.addEventListener('input',function(e){var t=e.target;if(t&&t.dataset&&t.dataset.ap&&t.closest&&t.closest('#ap79'))AP[t.dataset.ap]=t.value;});
 function msgText(){
-  return 'Hi '+OTH()+', I’ve set up Eucie for us. Open this link, sign in and tap “Join household”.\n'+inviteLink()+'\n— '+(ME()||'');}
+  return 'Hi '+OTH()+', I’ve set up Eucie for us: mine · yours · ours. Open this link, sign in and tap “Join household”.\n'+inviteLink()+'\n— '+(ME()||'');} /* beta 2.03: the couple line in the invite message */
 SHEETS.ap_cancel=function(){var P=E(OTH());
   return {title:'Cancel the invitation?',icon:'x',body:'<div class="k-lead">The invite link stops working, so '+P+' can’t join with it. You can invite again any time for a new link.</div>',
     foot:'<button class="k-btn k-red" data-act="ap79cancelgo">Cancel invitation</button><button class="k-btn k-ghost" data-act="sh79pop">Keep it</button>'};};
@@ -29316,7 +29484,7 @@ ACT.on('b79-partner',{
   ap79send:function(){if(!signedIn())return;AP.linkErr='';apMake();},
   ap79newlink:function(){INV102.cancel();INV102.link(true);INV102.publish().then(function(){apPaint();toast('New invite link ready. The old link no longer works.');}).catch(function(e){toast((e&&e.message)||fsErr(e));});},
   ap79cancelask:function(){push('ap_cancel');},
-  ap79rename:function(){push('ap_rename');},
+  ap79rename:function(){if(joined()){toast(OTH()+' changes their own name');return;}push('ap_rename');},
   ap79renamego:function(){var i=$('ap79Ren'),v=String(i&&i.value||'').trim(),old=OTH(),me=ME(),pr=DB.meta.profile=DB.meta.profile||{};
     if(!v){toast('Enter a name');return;}if(me&&v.toLowerCase()===me.toLowerCase()){toast('Your partner needs a different name');return;}
     pop();if(v===old)return;
@@ -29360,8 +29528,8 @@ SHEETS.ap_rename=function(){var P=E(OTH());
     foot:'<button class="k-btn" data-act="ap79renamego">Save</button><button class="k-btn k-ghost" data-act="sh79pop">Cancel</button>'};};
 function profileRow(){
   var P=E(OTH()),r;
-  if(joined()){var pe=partnerEmail();r='<div class="k-rw" style="padding:4px 0"><span class="k-av">'+E(initial(OTH()))+'</span><span class="k-rt">'+P+'<small>'+(isCollab()?'Household owner':'Collaborator')+' · joined'+(pe?' · '+E(pe):'')+'</small></span><button class="k-mini" data-act="ap79rename">Rename</button></div>'
-    +'<div class="k-note" style="margin:6px 0 0"><span>'+P+' joins with the name they chose. Rename them here any time.</span></div>';}
+  if(joined()){var pe=partnerEmail();r='<div class="k-rw" style="padding:4px 0"><span class="k-av">'+E(initial(OTH()))+'</span><span class="k-rt">'+P+'<small>'+(isCollab()?'Household owner':'Collaborator')+' · joined'+(pe?' · '+E(pe):'')+'</small></span></div>'
+    +'<div class="k-note" style="margin:6px 0 0"><span>'+P+' changes their own name. When they do, it changes here too.</span></div>';} /* beta 2.01 (user, D-98): only the person renames themselves once joined */
   else return ''; /* beta 108: the invitation card is removed here (it repeated the Household card in Modes) */
   if(r)return '<div class="k-card k-pad"><div class="k-lbl">Your partner</div>'+r+'</div>'; /* beta 115: a joined partner shows as joined (the lines below overwrote it with "Not invited yet") */
   if(!known())r='<div class="k-rw" style="padding:4px 0"><span class="k-av k-ghost">+</span><span class="k-rt">No partner yet<small>Add their name and invite them</small></span><button class="k-mini k-fill" data-act="ap79open" data-e="profile">Add partner</button></div>';
@@ -30013,7 +30181,7 @@ try{if(window.pinVer36)window.pinVer36('1.60 beta 94'+(window.PAGE75&&PAGE75.sta
 
 /* ===== beta 101 · merge of the other tool's beta 93–100 (Transactions tidy-up, update toast, type roles, cleanup) with Claude's beta 94 (invitation email) ===== */
 (function(){'use strict';
-  try{var mv=document.querySelector('meta[name="app-version"]');if(mv)mv.content='beta-2.0';}catch(e){}
+  try{var mv=document.querySelector('meta[name="app-version"]');if(mv)mv.content='beta-2.04';}catch(e){}
   try{if(window.pinVer36)window.pinVer36('1.60 beta 101'+(window.PAGE75&&PAGE75.stale?' · old page file ('+(PAGE75.page||'none')+')':''));}catch(e){}
 })();
 
@@ -30311,6 +30479,7 @@ function pills(){
 var tm=0;
 function paint(){tm=0;if(!window.DB)return;try{banner();pills();}catch(e){nS(e,'smpl:paint');}}
 try{new MutationObserver(function(){if(!tm)tm=setTimeout(paint,60);}).observe(document.body,{childList:true,subtree:true});}catch(e){nS(e,'smpl:mo');}
+(window.TIDY202=window.TIDY202||[]).push(function(){if(window.DB){banner();pills();}});
 setTimeout(paint,300);
 })();
 ;/* ===== v160b112 · Beta 112 = Beta 111 + Other asset in two kinds (balance / value) + type, category and sub-category changes allowed with transactions ===== */
@@ -30371,7 +30540,7 @@ try{if(!window.__B116RN){var ol=document.querySelector('#pageSet details.help ol
 (function(){ 'use strict';
 function n113(e,w){try{DIAG.note(e,w);}catch(_){}}
 function endScroll(){try{document.querySelectorAll('.b113-trw:not([data-b113])').forEach(function(w){w.setAttribute('data-b113','1');w.scrollLeft=w.scrollWidth;});}catch(e){n113(e,'b113:scroll');}}
-var t113=0;try{new MutationObserver(function(){if(!t113)t113=setTimeout(function(){t113=0;endScroll();},30);}).observe(document.body,{childList:true,subtree:true});}catch(e){n113(e,'b113:mo');}
+(window.TIDY202=window.TIDY202||[]).push(endScroll);var t113=0;try{new MutationObserver(function(){if(!t113)t113=setTimeout(function(){t113=0;endScroll();},30);}).observe(document.body,{childList:true,subtree:true});}catch(e){n113(e,'b113:mo');}
 })();
 
 ;/* ===== other tool's beta 114 (merged in Beta 116) · dates with the day everywhere, insight vs summary cards, Details at the bottom, Household leads the Couple tab, simpler Shared vs Personal and Between Us ===== */
@@ -30386,7 +30555,7 @@ function moveDetails(){
     act.appendChild(b);
   });}catch(e){n114(e,'b114:det');}
 }
-var tm=0;try{new MutationObserver(function(){if(!tm)tm=setTimeout(function(){tm=0;moveDetails();},20);}).observe(document.body,{childList:true,subtree:true});}catch(e){n114(e,'b114:mo');}
+(window.TIDY202=window.TIDY202||[]).push(moveDetails);var tm=0;try{new MutationObserver(function(){if(!tm)tm=setTimeout(function(){tm=0;moveDetails();},20);}).observe(document.body,{childList:true,subtree:true});}catch(e){n114(e,'b114:mo');}
 try{SCREEN.around('perCtrlHTML',990114001,function(prev){return function(noPer){
   if(!settleOpen()||noPer)return prev(noPer);
   /* beta 116 (user): Between Us keeps its period bar; an earlier period shows the balance as at that period's end */
@@ -30587,13 +30756,7 @@ B.debtFlow=debtFlow;
 try{V63.prin121=function(r){return repaid126(r);};}catch(e){} /* beta 126: Debt repayments = all money paid into loans, hire purchase and cards */
 /* every older caller (cash-flow notes, Insights) now gets the corrected figures */
 try{var dn117=V63.driversNote;V63.driversNote=function(D){var t=dn117.apply(this,arguments);try{var pr=repaid126(perRange());t=t.replace(/debt repayments RM ?[\d,.]+/,'debt repayments '+money(pr));}catch(e){}return t;};}catch(e){n117(e,'b117:dn');}
-B.openDebtList=function(s,e,label){
-  var r={s:s,e:e},f=debtFlow(r),w=whoOK();
-  openTxnList('Card payments & loan repayments · '+label,function(){return payFlow({s:s,e:e},w).items;}); /* beta 119: the payments behind the bar */
-};
-ACT.on('b117d',{
-  debt117list:function(el){B.openDebtList(el.dataset.s,el.dataset.e,el.dataset.h||'');}
-});
+/* beta 2.02 (item 22): the bars show their values only; the "See the entries" list screen is gone */
 var DCOL={'Loans':'#D99572','Hire Purchase':'#566B4C','Cards & credit lines':'#55443D','Other':'#8A9BA8'}; /* Beta 2.0: warm Eucie tones */ /* beta 121: clear contrast */
 var DLB={'Loans':'Loans','Hire Purchase':'Car financing','Cards & credit lines':'Credit cards','Other':'Other debts'};
 function nextDue(a){
@@ -30643,7 +30806,7 @@ function stackSVG(tr){
     if(hc>0)o+='<rect x="'+(cx-bw/2).toFixed(1)+'" y="'+(base-hl-hc).toFixed(1)+'" width="'+bw+'" height="'+Math.max(1.5,hc).toFixed(1)+'" rx="3" fill="'+RPC.c+'"/>';
     if(x.c+x.l>0.004)o+='<text x="'+cx+'" y="'+(base-hl-hc-6).toFixed(1)+'" text-anchor="middle" font-size="11" font-weight="700" fill="var(--ink)">'+cfmt(x.c+x.l)+'</text>';
     o+='<text x="'+cx+'" y="'+(H-7)+'" text-anchor="middle" font-size="11" font-weight="'+(k===sel?'800':'600')+'" fill="var(--ink)" opacity="'+(k===sel?'1':'.78')+'">'+esc(x.lb)+'</text>';
-    o+='<rect class="hit117" x="'+(cx-step/2)+'" y="0" width="'+step+'" height="'+H+'" fill="transparent" data-act="debt117list" data-s="'+x.s+'" data-e="'+x.e+'" data-h="'+esc(x.full)+'"'+tip117([x.full,'Card payments '+money(x.c),'Loan repayments '+money(x.l),'Total '+money(x.c+x.l)])+' style="cursor:pointer"/>';
+    o+='<rect class="hit117" x="'+(cx-step/2)+'" y="0" width="'+step+'" height="'+H+'" fill="transparent" data-tip117="1" data-s="'+x.s+'" data-e="'+x.e+'" data-h="'+esc(x.full)+'"'+tip117([x.full,'Card payments '+money(x.c),'Loan repayments '+money(x.l),'Total '+money(x.c+x.l)])+' style="cursor:pointer"/>';
   });
   return '<svg viewBox="0 0 '+W+' '+H+'" style="width:100%;height:auto;min-width:'+Math.min(W,320)+'px">'+o+'</svg>';
 }
@@ -30687,13 +30850,12 @@ function scheduleCard(){
 }
 B.balancesCard=balancesCard;B.repaymentsCard=repaymentsCard;B.scheduleCard=scheduleCard;
 DYNF.v_outstd=balancesCard;DYNF.v_liabred=balancesCard;DYNF.v_prinrep=repaymentsCard;DYNF.v_repaytrend=repaymentsCard;DYNF.v_instal=scheduleCard;
-DYNF.debts=function(){
-  var o=INS.get('W2'),t=R51.dt||'bal',body;
+DYNF.debts=function(){ /* beta 2.02 (item 21): one scrolling screen (Balances, Repayments, Schedule), no tab bar */
+  var o=INS.get('W2');
   var hero=o?INS.repHero({tag:'Debts',tone:o.tone,find:o.find,why:'You owe '+money(nwAt(nwAsAt(perRange()),whoOK()).liabs)+'. '+(o.why||'')},asAt117()):INS.repHero({tag:'Debts',tone:'good',find:'You have no debts recorded.'},asAt117());
-  if(t==='rep')body=repaymentsCard()+calc117('Card payments = transfers into credit card accounts. Loan repayments = transfers into loan and hire purchase accounts, the full amount paid. Both move money between your accounts; they are not spending. Interest and charges are expenses and show in Spending.');
-  else if(t==='sch')body=scheduleCard()+rel117([['Card Statements','cc']]);
-  else body=balancesCard();
-  return hero+'<div class="stab stab51">'+[['bal','Balances'],['rep','Repayments'],['sch','Schedule']].map(function(x){return '<button class="'+(t===x[0]?'on':'')+'" data-act="r51dt" data-v="'+x[0]+'">'+x[1]+'</button>';}).join('')+'</div>'+body;
+  return hero+String(balancesCard()).replace(/<details[^>]*id="calc51"[\s\S]*$/,'')+repaymentsCard()+scheduleCard()
+    +calc117('Shares are of what I owe as at the end of the period. The change compares each debt type with the end of the previous period: ▼ green = owing less, ▲ red = owing more. Card payments = transfers into credit card accounts. Loan repayments = transfers into loan and hire purchase accounts, the full amount paid. Both move money between your accounts; they are not spending. Interest and charges are expenses and show in Spending. The schedule assumes a steady instalment.')
+    +rel117([['Card Statements','cc'],['Net Worth','networth']]);
 };
 
 /* ---------- 15. Asset Mix: each category opens to its accounts, with the change since the last period ---------- */
@@ -30754,7 +30916,7 @@ function tipShow(el,x,y){
   tipHide();var b=tipBox(),ls=String(el.getAttribute('data-tip')||'').split('|');
   var act=el.getAttribute('data-act');
   b.innerHTML='<b>'+esc(ls[0]||'')+'</b>'+ls.slice(1).map(tipLine119).join('')
-    +(act?'<button class="lnk" data-act="tip117go">'+(act==='debt117list'?'See the entries':'See transactions')+' ›</button>':'');
+    +(act?'<button class="lnk" data-act="tip117go">See transactions ›</button>':'');
   b.hidden=false;TIP.el=el;try{el.classList.add('tipon117');}catch(e){}
   var vw=window.innerWidth,vh=window.innerHeight,w=b.offsetWidth,h=b.offsetHeight;
   var left=Math.max(8,Math.min(vw-w-8,x-w/2)),top=y-h-14;if(top<64)top=y+18;if(top+h>vh-8)top=vh-h-8;
@@ -30783,7 +30945,7 @@ try{SCREEN.around('perCtrlHTML',990117010,function(prev){return function(noPer){
 };});SCREEN.on('perCtrlHTML',990117010);}catch(e){n117(e,'b117:around');}
 try{var pf117=V56.mgr.perfilter;V56.mgr.perfilter=function(){pf117.apply(this,arguments);if(!coupleTab())return;
   try{var b=$('mgrBody');qa('.mgr-lb',b).forEach(function(l){if(/Whose money|Accounts|Person|Who/.test(l.textContent)){var nx=l.nextElementSibling;if(nx)nx.remove();l.remove();}});
-    var f=b.querySelector('.sheet-foot');if(f&&!b.querySelector('.cpl117'))f.insertAdjacentHTML('beforebegin','<div class="help small cpl117" style="margin:10px 2px 0">The Ours tab always shows both of you.</div>');}catch(e){n117(e,'b117:pf');}};}catch(e){n117(e,'b117:pfw');}
+    var f=b.querySelector('.sheet-foot');if(f&&!b.querySelector('.cpl117'))f.insertAdjacentHTML('beforebegin','<div class="help small cpl117" style="margin:10px 2px 0">The Shared tab always shows both of you.</div>');}catch(e){n117(e,'b117:pf');}};}catch(e){n117(e,'b117:pfw');}
 
 /* ---------- 9. (i) right after the card title ---------- */
 function placeInfo(){
@@ -30793,7 +30955,7 @@ function placeInfo(){
     btn.classList.add('i117');if(ref)h.insertBefore(btn,ref);
   });}catch(e){n117(e,'b117:info');}
 }
-var tq=0;try{new MutationObserver(function(){if(!tq)tq=setTimeout(function(){tq=0;placeInfo();},25);}).observe(document.body,{childList:true,subtree:true});}catch(e){n117(e,'b117:mo');}
+(window.TIDY202=window.TIDY202||[]).push(placeInfo);var tq=0;try{new MutationObserver(function(){if(!tq)tq=setTimeout(function(){tq=0;placeInfo();},25);}).observe(document.body,{childList:true,subtree:true});}catch(e){n117(e,'b117:mo');}
 
 /* ---------- 10. Your Profile: Rename, no Sign-in card or mode line, red Log out ---------- */
 try{SCREEN.after('B3.renderProfileSub',990117020,{call:'apply',ret:false},function(){
@@ -31174,9 +31336,9 @@ try{if(!window.__B125RN){var ol=document.querySelector('#pageSet details.help ol
   if(ol){ol.insertAdjacentHTML('beforeend','<li><b>Beta 125:</b> Between Us now counts in each person’s net worth: money your partner owes you is part of what you have, and money you owe your partner is part of what you owe. The household figure does not change.</li>');window.__B125RN=1;}}}catch(e){}
 ;/* ===== v160b126 · a phone linked to a cloud household keeps the Eucie Cloud setting (D-93) ===== */
 function heal126(why){
-  try{if(!DB||!DB.meta)return false;var v=m59(),s=v.storage||'device';if(s!=='device')return false;
+  try{if(!DB||!DB.meta)return false;var v=m59(),s=v.storage||'device';if(s!=='device'&&s!=='drive'&&s!=='onedrive')return false; /* beta 2.02: also repair an old Drive / OneDrive choice */
     var linked=!!(window.HH&&HH.id&&HH.info)||(!!DB.meta.hh&&!!DB.meta.cloudSyncOn);if(!linked)return false;
-    (v.log=v.log||[]).unshift({at:Date.now(),from:'device',to:'household',why:why||'linked'});v.log=v.log.slice(0,20);
+    (v.log=v.log||[]).unshift({at:Date.now(),from:s,to:'household',why:why||'linked'});v.log=v.log.slice(0,20);
     v.storage='household';save();return true;}catch(e){try{DIAG.note(e,'b126:heal');}catch(x){}return false;}
 }
 window.heal126=heal126;
@@ -31216,10 +31378,10 @@ try{if(!window.__B126RN){var ol=document.querySelector('#pageSet details.help ol
     var cv=fit.cv||(fit.cv=document.createElement('canvas').getContext('2d')),cs=getComputedStyle(n),sz=parseFloat(cs.fontSize);
     function widest(px){cv.font=cs.fontWeight+' '+px+'px '+cs.fontFamily;return Math.max.apply(null,words.map(function(w){return cv.measureText(w).width;}));}
     var tile=n.parentNode,tcs=getComputedStyle(tile),room=tile.clientWidth-parseFloat(tcs.paddingLeft)-parseFloat(tcs.paddingRight);[12,11].forEach(function(px){if(widest(sz)>room&&px<sz){n.style.fontSize=px+'px';sz=px;}});});}
-  window.fitCats127=fit;
+  window.fitCats127=fit;(window.TIDY202=window.TIDY202||[]).push(fit);
   var t=null;new MutationObserver(function(){clearTimeout(t);t=setTimeout(fit,30);}).observe(document.body,{childList:true,subtree:true});
 })();
-try{if(window.pinVer36)window.pinVer36('Beta 2.0'+(window.PAGE75&&PAGE75.stale?' · old page file ('+(PAGE75.page||'none')+')':''));}catch(e){}
+try{if(window.pinVer36)window.pinVer36('Beta 2.04'+(window.PAGE75&&PAGE75.stale?' · old page file ('+(PAGE75.page||'none')+')':''));}catch(e){}
 try{if(!window.__B127RN){var ol=document.querySelector('#pageSet details.help ol')||document.querySelector('#view-settings details.help ol');
   if(ol){ol.insertAdjacentHTML('beforeend','<li><b>Beta 127:</b> One look across the app: flat buttons in your theme colour, one set of corner and text sizes, "You" in Between Us lines, sentence-case labels and E-wallet spelling. The Red theme is gone and Green is a darker green. The amount cursor sits right after the number.</li>');window.__B127RN=1;}}}catch(e){}
 
@@ -31479,14 +31641,14 @@ try{if(window.DB)instSyncAll129();}catch(e){}
       if(couple){
         h+=inScope('couple',function(){return comingUp(2,true)+goalCard(true);});
         try{var bu=cBetween16().replace(/<button class="det26"[^>]*>[^<]*<\/button>/,'');h+=bu.replace('<div class="card">','<div class="card h200card bu200c">').replace(/<\/div>$/,'<button class="lnk200" data-act="v63rep" data-k="settle">Settle up ›</button></div>');}catch(e){E(e,'bu');}
-        h+=recent(true);
+        /* beta 2.02 (item 29, user 6 Nov): no Recent activity on any Home tab */
       }else if(sim&&tab==='cash'){
         if(ins[0])ins[0].remove();
-        h+=monthCard()+comingUp(1)+goalCard(false)+recent(false);
+        h+=monthCard()+comingUp(1)+goalCard(false);
       }else if(tab==='cash'){
-        h+=comingUp(2)+recent(false);
+        h+=comingUp(2);
       }else{
-        h+=goalCard(false)+recent(false);
+        h+=goalCard(false); /* beta 2.02 (item 29): no Recent activity on Wealth */
       }
     }catch(e){E(e,'home');}
     h+=fullPicture();
@@ -31558,8 +31720,8 @@ try{if(window.DB)instSyncAll129();}catch(e){}
     var home=$('r51home');if(!home||home.querySelector('.rfc200'))return;
     var mi=new Date().getMonth();
     var c=document.createElement('button');c.type='button';c.className='rfc200';c.setAttribute('data-act','refl200');
-    c.innerHTML='<span class="cap">Monthly reflection</span><span class="t">Your '+MN[mi]+', gently</span><span class="lnk">Read it ›</span>'+hills();
-    var s=home.querySelector('.search51');if(s&&s.nextSibling)home.insertBefore(c,s.nextSibling);else home.insertBefore(c,home.firstChild);
+    c.innerHTML='<span class="cap">Monthly reflection</span><span class="t">Your '+MN[mi]+', gently</span><span class="rfc202">'+(cpl()?'A short look back at the month you shared.':'A short look back at your month.')+'</span><span class="lnk">Read it ›</span>'+hills();
+    var s=home.querySelector('.search51');if(s&&s.nextSibling)home.insertBefore(c,s.nextSibling);else home.insertBefore(c,home.firstChild); /* beta 2.02 (item 36): the card stays above the Questions */
   }
   SCREEN.afterDraw(function(){try{reflCard();}catch(e){E(e,'rc');}});
 })();
@@ -31589,7 +31751,7 @@ try{if(window.DB)instSyncAll129();}catch(e){}
   /* ---- greeting ---- */
   function hello(){var h=new Date().getHours();return h<12?'Good morning':h<18?'Good afternoon':'Good evening';}
   function lede(tab){
-    if(tab==='couple')return 'Here is what is happening with your shared money.';
+    if(tab==='couple'){var P='';try{P=partnerName();}catch(e){}return 'Here is what you share'+(P?' with '+P:'')+'.';}
     try{var r=perRange(),S=INS.saved({s:r.s,e:todayISO()<r.e?todayISO():r.e,label:r.label});
       if(S.inc<0.005&&S.exp<0.005)return 'A quiet start. Everything is in its place.';
       return S.saved>=0?'Your money is moving in the right direction.':'A busier stretch. You can plan the rest of the month.';}catch(e){return 'Here is where things stand today.';}
@@ -31598,7 +31760,7 @@ try{if(window.DB)instSyncAll129();}catch(e){}
     var row=$('view-overview-t73');if(!row)return;var h1=row.querySelector('h1');if(!h1)return;
     var nm=(DB.meta.profile||{}).name,tab=(window.V63&&V63.itab)||'',both=tab==='couple'&&cpl();
     if($('ovEmpty')&&!$('ovEmpty').hidden){if(h1.textContent!=='Home')h1.textContent='Home';var o=row.querySelector('.lede200');if(o)o.remove();if(row.classList.contains('greet200'))row.classList.remove('greet200');return;} /* first-run Home has its own welcome (A7) */
-    var t=hello()+(both?', both':(nm&&nm!=='Me'?', '+nm:''));
+    nm=meName()||nm;var t=hello()+(nm&&nm!=='Me'?', '+nm:''); /* beta 2.02 (item 34): always the signed-in person's own name, never "both" */
     if(h1.textContent!==t)h1.textContent=t;
     row.classList.add('greet200');
     var p=row.querySelector('.lede200');if(!p){p=document.createElement('p');p.className='lede200';row.appendChild(p);}
@@ -31705,4 +31867,473 @@ try{if(window.DB)instSyncAll129();}catch(e){}
     }catch(e){E(e,'swipe');}
     return _sp(dir);
   };
+})();
+
+/* ===== Beta 2.01 (D-98) · people have stable IDs; names are labels =====
+   User (5 Nov): a profile rename must update every stored name and reach the partner's app.
+   Cause (investigations/joint-account-edit.md): people were stored only as names, and the partner's
+   phone synced the old name back, so the renamed person stopped matching their own joint account.
+   Model:
+   · DB.persons = [{id, name, at}] — one entry per person (the logged-in user and, in Couple modes, the partner).
+     id = the sign-in user ID (a local ID before sign-in, a placeholder "p_…" for a partner who has not joined yet).
+     at = when the name was last changed (0 = never renamed). It syncs with the household's shared copy.
+   · Records keep the ID next to the name: account ownerIds (+ pvbyId, ledgerIds for "X owes Y"), transaction pid /
+     pbyId / createdById / editedById / split[].pid, goal ownerId, recurring tpl.pid. The name stays for display,
+     exports and import templates.
+   · The ID decides: when a stored name is not a current person's name, the name is rewritten from the ID.
+     When the name is a current person's name, it decides the ID (so an edit in the app always wins).
+   · Sync: an incoming copy is first translated from ITS names to the current names (by ID, newest rename wins),
+     then merged. A rename on either phone therefore reaches the other phone and can never come back. */
+(function(){
+  'use strict';
+  var BUSY=0;
+  function E(e,w){try{DIAG.note(e,'b201:'+w);}catch(x){}}
+  function K(s){return String(s==null?'':s).trim().replace(/\s+/g,' ').toLowerCase();}
+  function L(){if(!Array.isArray(DB.persons))DB.persons=[];return DB.persons;}
+  function myId(){try{return CMM291.stableUid();}catch(e){return '';}}
+  function isPh(id){return /^p_/.test(String(id||''));}
+  /* a rename stamp that is always newer than any rename this phone has seen (phone clocks can differ) */
+  function stamp(){var m=0;L().forEach(function(p){if(+p.at>m)m=+p.at;});return Math.max(Date.now(),m+1);}
+  function newPh(){return 'p_'+Math.random().toString(36).slice(2,10)+Date.now().toString(36);}
+  function byId(id,list){list=list||L();for(var i=0;i<list.length;i++)if(list[i]&&list[i].id===id)return list[i];return null;}
+  function byName(n,list){list=list||L();var k=K(n);if(!k)return null;for(var i=0;i<list.length;i++)if(list[i]&&K(list[i].name)===k)return list[i];return null;}
+  function cpl(){try{return isCouple();}catch(e){return false;}}
+  function partnerUid(){try{var me=myId();return CMM291.members().filter(function(u){return u&&u!==me;})[0]||'';}catch(e){return '';}}
+  function profile(){return (DB.meta.profile=DB.meta.profile||{});}
+  /* the partner name stored on this phone ('' when none) */
+  function pName(){var pr=profile(),me=meName(),p=String(pr.partner||'').trim();if(p&&K(p)!==K(me))return p;try{var o=realPeople().filter(function(x){return K(x)!==K(me);});return o[0]||'';}catch(e){return '';}}
+
+  /* replace one ID with another in every record (a placeholder becomes the real sign-in ID) */
+  function rekey(from,to){
+    if(!from||!to||from===to)return;
+    function r(v){return v===from?to:v;}
+    (DB.accounts||[]).forEach(function(a){if(Array.isArray(a.ownerIds))a.ownerIds=a.ownerIds.map(r);if(a.pvbyId)a.pvbyId=r(a.pvbyId);if(Array.isArray(a.ledgerIds))a.ledgerIds=a.ledgerIds.map(r);});
+    (DB.txns||[]).forEach(function(t){['pid','pbyId','createdById','editedById'].forEach(function(k){if(t[k])t[k]=r(t[k]);});if(Array.isArray(t.split))t.split.forEach(function(s){if(s&&s.pid)s.pid=r(s.pid);});});
+    (DB.goals||[]).forEach(function(g){if(g&&g.ownerId)g.ownerId=r(g.ownerId);});
+    (DB.recur||[]).forEach(function(x){if(x&&x.tpl&&x.tpl.pid)x.tpl.pid=r(x.tpl.pid);});
+    L().forEach(function(p){if(p.id===from)p.id=to;});
+  }
+
+  /* keep DB.persons in step with this phone's profile: one entry for me, one for the partner (Couple modes) */
+  function ensure(){
+    if(!DB||!DB.meta)return;
+    var P=L(),me=String(meName()||'').trim(),id=myId(),was=DB.meta.pid201me||'';
+    if(was&&id&&was!==id&&byId(was)){if(byId(id))P.splice(P.indexOf(byId(was)),1);else rekey(was,id);}
+    if(id)DB.meta.pid201me=id;
+    if(me&&id){
+      var e=byId(id);
+      if(!e){var n=byName(me);if(n&&n.id!==id&&!isPh(n.id)&&n.id!==partnerUid())n=null;if(n){rekey(n.id,id);e=n;}else{e={id:id,name:me,at:0};P.push(e);}}
+      if(e.name!==me){e.name=me;e.at=stamp();e.by=id;}
+    }
+    if(cpl()){
+      var pn=pName(),pu=partnerUid(),pe=null;
+      P.forEach(function(x){if(x.id!==id&&!pe)pe=x;});
+      if(pe&&pu&&pe.id!==pu&&isPh(pe.id))rekey(pe.id,pu);
+      if(!pe&&pn){pe={id:pu||newPh(),name:pn,at:0};P.push(pe);}
+      if(pe&&pn&&pe.name!==pn){pe.name=pn;pe.at=stamp();pe.by=id;}
+    }
+    /* at most me + partner; anyone else is not a household person */
+    var other=P.filter(function(y){return y&&y.id&&y.id!==id;})[0],keep=P.filter(function(x){return x&&x.id&&(x.id===id||(cpl()&&x===other));});
+    if(keep.length!==P.length)DB.persons=keep;
+  }
+  function nameOf(id){var e=byId(id);return e?e.name:'';}
+  function idOf(n){var e=byName(n);return e?e.id:'';}
+  /* ID ⇄ name for one field pair: a current name decides the ID; a name that is not current is rewritten from the ID */
+  function bind(o,nk,ik){
+    if(!o)return;var n=o[nk],e=n?byName(n):null;
+    if(e){if(o[ik]!==e.id)o[ik]=e.id;if(n!==e.name)o[nk]=e.name;return;}
+    if(o[ik]){var nm=nameOf(o[ik]);if(nm&&n)o[nk]=nm;}
+  }
+  function ledgerFix(a){ /* "X owes Y": the two IDs keep the account name current, references follow */
+    var m=String(a.name||'').split(' owes ');if(m.length!==2)return;
+    var e0=byName(m[0]),e1=byName(m[1]);
+    if(e0&&e1){a.ledgerIds=[e0.id,e1.id];var nn=e0.name+' owes '+e1.name;if(nn!==a.name)renameAcc(a,nn);return;}
+    if(Array.isArray(a.ledgerIds)&&a.ledgerIds.length===2){var n0=e0?e0.name:nameOf(a.ledgerIds[0]),n1=e1?e1.name:nameOf(a.ledgerIds[1]);if(n0&&n1){var n2=n0+' owes '+n1;if(n2!==a.name&&!DB.accounts.some(function(x){return x.name===n2;}))renameAcc(a,n2);}}
+  }
+  function renameAcc(a,nn){var on=a.name;if(DB.accounts.some(function(x){return x!==a&&x.name===nn;}))return;a.name=nn;a.owner=nn.split(' owes ').join(' & ');DB.txns.forEach(function(t){if(t.account===on)t.account=nn;if(t.to===on)t.to=nn;if(t.owedAcc===on)t.owedAcc=nn;});}
+  function ownerFix(a){
+    var o=String(a.owner||'');if(!o){if(a.ownerIds)delete a.ownerIds;return;}
+    var parts=o.split(/\s*&\s*/),es=parts.map(function(x){return byName(x);});
+    if(es.every(Boolean)){a.ownerIds=es.map(function(e){return e.id;});var nn=es.map(function(e){return e.name;}).join(' & ');if(nn!==o)a.owner=nn;return;}
+    if(Array.isArray(a.ownerIds)&&a.ownerIds.length===parts.length){
+      var nm=a.ownerIds.map(function(id,i){return es[i]?es[i].name:nameOf(id);});
+      if(nm.every(Boolean))a.owner=nm.join(' & ');
+    }
+  }
+  /* bring every record's names in line with the IDs (runs on save, load, restore, import and after each sync) */
+  function sync(){
+    if(BUSY||!DB||!Array.isArray(DB.accounts))return;BUSY=1;
+    try{
+      ensure();
+      if(!L().length)return;
+      DB.accounts.forEach(function(a){if(!a)return;if(/^.+ owes .+$/.test(String(a.name)))ledgerFix(a);else ownerFix(a);bind(a,'pvby','pvbyId');});
+      (DB.txns||[]).forEach(function(t){if(!t)return;bind(t,'person','pid');bind(t,'pby','pbyId');bind(t,'createdBy','createdById');bind(t,'lastEditedBy','editedById');if(Array.isArray(t.split))t.split.forEach(function(s){bind(s,'p','pid');});});
+      (DB.goals||[]).forEach(function(g){bind(g,'owner','ownerId');});
+      (DB.recur||[]).forEach(function(r){if(r&&r.tpl)bind(r.tpl,'person','pid');});
+      /* the people list holds the current names */
+      L().forEach(function(p){var i=-1;(DB.people||[]).forEach(function(x,k){if(K(x)===K(p.name))i=k;});if(i>=0)DB.people[i]=p.name;});
+    }catch(e){E(e,'sync');}finally{BUSY=0;}
+  }
+
+  /* rename one person inside a copy that came from the other phone (before it is merged) */
+  function renameIn(R,from,to){
+    function f(v){return v===from?to:v;}
+    function own(o){return String(o||'').split(/\s*&\s*/).map(f).join(' & ');}
+    if(Array.isArray(R.people))R.people=R.people.map(f);
+    var ren={};
+    (R.accounts||[]).forEach(function(a){if(!a)return;
+      if(/^.+ owes .+$/.test(String(a.name))){var nn=String(a.name).split(' owes ').map(f).join(' owes ');if(nn!==a.name){ren[a.name]=nn;a.name=nn;}}
+      if(a.owner)a.owner=own(a.owner);if(a.pvby)a.pvby=f(a.pvby);});
+    (R.txns||[]).forEach(function(t){if(!t)return;['person','pby','createdBy','lastEditedBy'].forEach(function(k){if(t[k])t[k]=f(t[k]);});if(Array.isArray(t.split))t.split.forEach(function(s){if(s&&s.p)s.p=f(s.p);});
+      ['account','to','owedAcc'].forEach(function(k){if(t[k]&&ren[t[k]])t[k]=ren[t[k]];});});
+    (R.goals||[]).forEach(function(g){if(g&&g.owner)g.owner=f(g.owner);});
+    (R.recur||[]).forEach(function(r){if(r&&r.tpl){if(r.tpl.person)r.tpl.person=f(r.tpl.person);['account','to'].forEach(function(k){if(r.tpl[k]&&ren[r.tpl[k]])r.tpl[k]=ren[r.tpl[k]];});}});
+    if(R.budgets2&&typeof R.budgets2==='object'&&R.budgets2[from]&&!R.budgets2[to]){R.budgets2[to]=R.budgets2[from];delete R.budgets2[from];}
+    if(R.meta&&R.meta.retract&&R.meta.retract[from]&&!R.meta.retract[to]){R.meta.retract[to]=R.meta.retract[from];delete R.meta.retract[from];}
+  }
+  /* rename on this phone, also when the old name is only in the profile */
+  function renameLocal(from,to,at){
+    if(!from||!to||from===to)return false;
+    if(byName(to)&&K(to)!==K(from))return false; /* never merge two people */
+    BUSY=1;var ok=false;
+    try{
+      ok=B19.rename(from,to);
+      if(!ok){var pr=profile();if(pr.name===from){pr.name=to;ok=true;}if(pr.partner===from){pr.partner=to;ok=true;}if(ok&&DB.people.indexOf(to)<0)DB.people.push(to);}
+      if(ok){try{collabCfg().me===from&&(collabCfg().me=to);}catch(e){}}
+    }catch(e){E(e,'renameLocal');}finally{BUSY=0;}
+    return ok;
+  }
+
+  /* an incoming shared copy: translate it to the current names, take the partner's renames, then merge */
+  function reconcile(R){
+    if(!R||typeof R!=='object')return {push:false};
+    ensure();
+    var mine=L(),in_=Array.isArray(R.persons)?R.persons.filter(function(p){return p&&p.id&&p.name;}):[],me=myId(),push=false;
+    if(!in_.length){ /* a copy without IDs: map its names onto ours where they differ only by case or spaces */
+      mine.forEach(function(p){(R.people||[]).forEach(function(x){if(x!==p.name&&K(x)===K(p.name))renameIn(R,x,p.name);});});
+      return {push:false};
+    }
+    /* the other phone's partner placeholder is me; my placeholder for the partner is their real ID */
+    in_.forEach(function(p){
+      if(byId(p.id))return;
+      if(isPh(p.id)){if(byId(me)&&!in_.some(function(x){return x.id===me;}))p.id=me;return;} /* their placeholder for me */
+      var ph=mine.filter(function(x){return isPh(x.id);})[0];
+      if(ph&&p.id!==me){rekey(ph.id,p.id);if(K(ph.name)!==K(p.name)&&!(+ph.at>+p.at)){ /* first contact: the person's own name wins */
+        var old=ph.name;if(renameLocal(old,p.name,p.at)){var e=byId(p.id);if(e){e.name=p.name;e.at=+p.at||0;e.by=p.by||'';}}}}
+    });
+    in_.forEach(function(p){
+      var l=byId(p.id);if(!l)return;
+      var ia=+p.at||0,la=+l.at||0;
+      if(p.name===l.name){if(p.by===p.id&&l.by!==l.id){l.by=p.by;l.at=ia;}return;}
+      /* user (5 Nov, D-98): only the person renames themselves. My own name is never taken from the other phone;
+         the partner's name is taken when the partner set it, or when it is simply newer and neither side was set by them */
+      var take=p.id!==me&&((p.by===p.id&&(l.by!==l.id||ia>la))||(p.by!==p.id&&l.by!==l.id&&ia>la));
+      if(take){ /* their copy has this person's own newer name: rename here first */
+        if(renameLocal(l.name,p.name,ia)){l.name=p.name;l.at=ia;l.by=p.by||'';}
+      }else push=true;
+      /* their records still use their name for this person: translate the copy to ours */
+      renameIn(R,p.name,l.name);
+    });
+    mine.forEach(function(l){if(!in_.some(function(p){return p.id===l.id;}))push=true;});
+    delete R.persons;
+    return {push:push};
+  }
+
+  /* ---- hooks ---- */
+  var _ren=B19.rename;
+  B19.rename=function(from,to){
+    var ok=_ren.apply(this,arguments);
+    if(ok&&!BUSY){try{var e=byName(from)||null;if(e){e.name=String(to).trim();e.at=stamp();e.by=myId();}
+      /* names the old rename left out: who added / last edited an entry, who hid an account */
+      DB.txns.forEach(function(t){if(t.createdBy===from)t.createdBy=to;if(t.lastEditedBy===from)t.lastEditedBy=to;if(t.account&&/ owes /.test(t.account)){var nn=String(t.account).split(' owes ').map(function(x){return x===from?to:x;}).join(' owes ');if(nn!==t.account&&DB.accounts.some(function(a){return a.name===nn;}))t.account=nn;}});
+      DB.accounts.forEach(function(a){if(a.pvby===from)a.pvby=to;});
+    }catch(x){E(x,'ren');}}
+    else if(ok){try{DB.txns.forEach(function(t){if(t.createdBy===from)t.createdBy=to;if(t.lastEditedBy===from)t.lastEditedBy=to;});DB.accounts.forEach(function(a){if(a.pvby===from)a.pvby=to;});}catch(x){}}
+    return ok;
+  };
+  var _t=touch;touch=function(){sync();return _t.apply(this,arguments);};
+  var _nd=normalizeDB;normalizeDB=function(){var r=_nd.apply(this,arguments);try{sync();}catch(e){E(e,'nd');}return r;};
+  var _ms=mergeShared;mergeShared=function(R){
+    var res={push:false};
+    try{res=reconcile(R)||res;}catch(e){E(e,'reconcile');}
+    var r=_ms.apply(this,arguments);
+    try{sync();}catch(e){E(e,'post');}
+    if(res.push){try{setTimeout(function(){try{hhPush();}catch(e){}},900);}catch(e){}}
+    return r;
+  };
+
+  window.PID201={ensure:ensure,sync:sync,reconcile:reconcile,renameIn:renameIn,idOf:idOf,nameOf:nameOf,K:K,list:function(){return L();},
+    /* is the logged-in user one of this account's owners (IDs first, then the name, ignoring case and spaces) */
+    isMyAccount:function(a){if(!a)return false;var id=myId();if(Array.isArray(a.ownerIds)&&id&&a.ownerIds.indexOf(id)>=0)return true;var me=K(meName());if(!me)return false;return String(a.owner||'').split(/\s*&\s*/).some(function(x){return K(x)===me;});},
+    isJoint:function(a){return !!a&&/&/.test(String(a.owner||''))&&!/^.+ owes .+$/.test(String(a.name||''));},
+    active:function(){return L().length>0;}};
+})();
+
+/* ===== Beta 2.01 · the calculator pad never covers the field being typed (user, 5 Nov) =====
+   The pad opens at the bottom of the screen (or of the open sheet). The field being typed is scrolled so it
+   sits just above the pad, and the scrolling area gets room at its end so the last fields can move up too. */
+(function(){
+  function scroller(el){
+    for(var p=el&&el.parentElement;p&&p!==document.body;p=p.parentElement){
+      if(p.id==='calcPad')return null;
+      var oy=getComputedStyle(p).overflowY;
+      if((oy==='auto'||oy==='scroll')&&p.scrollHeight>p.clientHeight-2)return p;
+    }
+    return document.scrollingElement||document.documentElement;
+  }
+  var room=null;
+  function fit(){
+    try{
+      if(!CALC||!CALC.open||!CALC.el)return;
+      var el=CALC.el,pad=$('calcPad');if(!pad||!document.body.contains(el))return;
+      /* docked in a sheet that scrolls itself: an absolute pad would scroll away with the fields, so it sticks to the bottom instead */
+      if(pad.classList.contains('docked40')&&!pad.classList.contains('st201')){var oy=getComputedStyle(pad.parentNode).overflowY;if(oy==='auto'||oy==='scroll')pad.classList.add('st201');}
+      var sc=scroller(el);if(!sc)return;
+      var pr=pad.getBoundingClientRect(),need=Math.ceil(pr.height)+16;
+      if(room&&room.el!==sc){room.el.style.paddingBottom=room.was;room=null;}
+      if(!room&&!(pad.classList.contains('st201')&&pad.parentNode===sc)){room={el:sc,was:sc.style.paddingBottom};var cur=parseFloat(getComputedStyle(sc).paddingBottom)||0;if(cur<need)sc.style.paddingBottom=need+'px';}
+      pr=pad.getBoundingClientRect();
+      var r=el.getBoundingClientRect(),top=sc===document.scrollingElement||sc===document.documentElement?0:sc.getBoundingClientRect().top;
+      var gap=12,over=r.bottom+gap-pr.top;
+      if(over>0)sc.scrollTop+=over;
+      else if(r.top<top+gap)sc.scrollTop-=(top+gap-r.top);
+    }catch(e){try{DIAG.note(e,'b201:pad');}catch(x){}}
+  }
+  var _co=calcOpen;
+  calcOpen=function(el){var r=_co.apply(this,arguments);[0,120,320,600].forEach(function(t){setTimeout(fit,t);});return r;};
+  var _cc=calcClose;
+  calcClose=function(ev){var r=_cc.apply(this,arguments);try{if(room){room.el.style.paddingBottom=room.was;room=null;}var pd=$('calcPad');if(pd)pd.classList.remove('st201');}catch(e){}return r;};
+  window.PAD201={fit:fit};
+})();
+;/* ===== Beta 2.02 · part A: smooth redraws (item 13) ===== */
+(function(){
+var E=function(e,w){try{DIAG.note(e,'b202:'+w);}catch(x){}};
+/* 1. tidy-up passes run in the same task as the redraw (before the screen is painted), not 20-90 ms later,
+      so a screen is painted once at its final height */
+var busyT=false;
+function tidyNow(){if(busyT||!window.TIDY202)return;busyT=true;try{TIDY202.forEach(function(f){try{f();}catch(e){}});}finally{busyT=false;}}
+window.tidy202=tidyNow;
+/* guard: if a tidy pass and another pass keep undoing each other, stop for this frame (no endless loop) */
+var runs=0,reset=0;function guardOK(){if(!reset){reset=1;requestAnimationFrame(function(){runs=0;reset=0;});setTimeout(function(){runs=0;reset=0;},50);}return ++runs<=12;}
+try{var mo=new MutationObserver(function(){if(busyT||!guardOK())return;tidyNow();mo.takeRecords();});
+  mo.observe(document.body,{childList:true,subtree:true});}catch(e){E(e,'tidy');}
+
+/* 2. household sync: one redraw at most every 300 ms, none while the finger is down or the screen is still
+      moving, and none at all when the update changed nothing on this phone (own echoes, repeats) */
+var T={touch:false,scrollAt:0,timer:0,last:''};
+document.addEventListener('touchstart',function(){T.touch=true;},{passive:true,capture:true});
+['touchend','touchcancel'].forEach(function(ev){document.addEventListener(ev,function(){T.touch=false;T.scrollAt=Date.now();},{passive:true,capture:true});});
+document.addEventListener('scroll',function(){T.scrollAt=Date.now();},{passive:true,capture:true});
+function busy(){return T.touch||Date.now()-T.scrollAt<400;}
+function sig(){try{return JSON.stringify(DB,function(k,v){if(k==='meta')return v&&{m:v.mode,e:v.exp,d:v.del?Object.keys(v.del).length:0,hh:v.hh,v59:v.v59&&v.v59.storage};return v;});}catch(e){return String(Math.random());}}
+window.SYNC202={redraws:0,skipped:0,applied:0,busy:busy};
+try{
+  var real=null;
+  var run=function(){T.timer=0;if(!real)return;
+    if(busy()){T.timer=setTimeout(run,300);return;}
+    var before=sig(),want=false,ra=window.renderAll;
+    window.renderAll=function(){want=true;};
+    try{real();}catch(e){E(e,'apply');}finally{window.renderAll=ra;}
+    SYNC202.applied++;
+    if(want&&sig()!==before){SYNC202.redraws++;try{renderAll();}catch(e){E(e,'redraw');}}else SYNC202.skipped++;
+  };
+  /* the household listeners call this; it only schedules the real apply */
+  window.SYNC202hook=function(fn){real=fn;if(!T.timer)T.timer=setTimeout(run,300);};
+  window.applyNow202=function(){clearTimeout(T.timer);run();};
+}catch(e){E(e,'sync');}
+
+/* 3. open sections stay open and the scroll position stays put through a redraw */
+function dkey(d){
+  if(d.id)return '#'+d.id;
+  var host=d.closest('[id]'),sm=d.querySelector('summary');
+  return (host?host.id:'')+'|'+(d.className||'')+'|'+(sm?sm.textContent.replace(/\s+/g,' ').trim().slice(0,60):'');
+}
+var SCROLLERS='#repBody,.rep-body,#mgrBody,.mgr-body,#shBody,.sheet .body,.page.on,.page.on .pbody,#drillBody';
+var depth=0;
+function scr(){try{var t=function(id){var e=document.getElementById(id);return e?(e.textContent||'').trim().slice(0,40):'';};
+  return [curView57(),REPORT.open?(REPORT.kind+':'+t('repTitle')):'',DRILL.open?1:0,((document.getElementById('mgrSheet')||{classList:{contains:function(){}}}).classList.contains('on')?t('mgrTitle'):''),(document.querySelector('.page.on')||{}).id||''].join('/');}catch(e){return '';}}
+function keep(fn){return function(){
+  if(depth){depth++;try{return fn.apply(this,arguments);}finally{depth--;}}
+  depth=1;var open={},sc=[],wy=window.scrollY,s0=scr();
+  try{qa('details[open]').forEach(function(d){open[dkey(d)]=1;});
+    qa(SCROLLERS).forEach(function(el){if(el.scrollTop>0)sc.push([el,el.id||el.className,el.scrollTop]);});}catch(e){}
+  var r;try{r=fn.apply(this,arguments);}finally{depth=0;
+    if(scr()===s0)try{qa('details:not([open])').forEach(function(d){if(open[dkey(d)])d.open=true;});
+      tidyNow();
+      sc.forEach(function(x){var el=x[0];if(!el.isConnected){el=null;try{el=x[1]&&!/\s/.test(x[1])&&document.getElementById(x[1]);}catch(e){}}if(el&&Math.abs(el.scrollTop-x[2])>1)el.scrollTop=x[2];});
+      if(Math.abs(window.scrollY-wy)>1)window.scrollTo(0,wy);}catch(e){E(e,'keep');} else tidyNow();}
+  return r;};}
+window.keep202=keep;
+['renderAll','renderReport','renderOverview','renderTxns','renderAccounts','renderMgr'].forEach(function(n,i){
+  try{SCREEN.around(n,999202001+i,function(prev){return keep(prev);});SCREEN.on(n,999202001+i);}catch(e){E(e,'keep:'+n);}
+});
+})();
+;/* ===== Beta 2.02 · part B: person chips (items 15, 25), "Shared" naming, greeting (item 34) ===== */
+(function(){
+var E=function(e,w){try{DIAG.note(e,'b202b:'+w);}catch(x){}};
+function cpl(){try{return isCouple();}catch(e){return false;}}
+/* --- 1. a "Joint" view: the joint accounts in full (Couple and Advanced Couple). Every person filter goes through these helpers. --- */
+var J='Joint';
+function isJ(p){return p===J;}
+function jAcc(name){try{return jointOf122(ownerOf(name)).length>0;}catch(e){return false;}}
+try{var _wok=whoOK;whoOK=function(){if(PER.who===J){if(cpl())return J;PER.who='couple';}return _wok.apply(this,arguments);};}catch(e){E(e,'whoOK');}
+try{var _wl=whoLabel;whoLabel=function(){var w=whoOK();if(w===J)return 'Joint';if(w==='couple'&&cpl())return 'Shared';return _wl.apply(this,arguments);};}catch(e){E(e,'whoLabel');}
+try{var _oh=ownerHas;ownerHas=function(owner,who){if(isJ(who))return jointOf122(owner).length>0;return _oh.apply(this,arguments);};}catch(e){E(e,'ownerHas');}
+try{var _obw=ownedByWho;ownedByWho=function(owner){if(whoOK()===J)return jointOf122(owner).length>0;return _obw.apply(this,arguments);};}catch(e){E(e,'ownedByWho');}
+try{var _p123=part123;part123=function(v,owner,acc,p){if(isJ(p))return jointOf122(owner).length?Math.round((+v||0)*100)/100:0;return _p123.apply(this,arguments);};}catch(e){E(e,'part123');}
+try{var _sl123=shareLbl123;shareLbl123=function(o,a,p){if(isJ(p))return '';return _sl123.apply(this,arguments);};}catch(e){E(e,'shareLbl');}
+try{var _so=shareOf;shareOf=function(t,p){if(isJ(p))return jAcc(t.account)?t.amount:0;return _so.apply(this,arguments);};}catch(e){E(e,'shareOf');}
+try{if(typeof owesRow125==='function'){var _ow=owesRow125;owesRow125=function(a,d,who){if(isJ(who))return null;return _ow.apply(this,arguments);};}}catch(e){E(e,'owes');}
+window.JOINT202=J;
+
+/* --- 2. Home: Accounts-style person chips instead of the "Whose money" box --- */
+function homeChips(){
+  var m=meName(),P=(function(){try{return partnerName();}catch(e){return '';}})(),w=whoOK();
+  var L=[[m,'Mine'],[P,(P||'Partner')+'’s'],[J,'Joint'],['couple','Shared']].filter(function(x){return x[0];});
+  return '<div class="a48chips h202chips" role="group" aria-label="Whose money">'+L.map(function(x){var on=w===x[0]||(x[0]!=='couple'&&x[0]!==J&&w!=='couple'&&w!==J&&ownIs201(w,x[0]));
+    return '<button type="button" class="a48chip'+(on?' on':'')+'" aria-pressed="'+on+'" data-act="perwho" data-p="'+esc(x[0])+'">'+esc(x[1])+'</button>';}).join('')+'</div>';
+}
+window.homeChips202=homeChips;
+function onHome(){try{return VIEWNAV.cur==='overview'&&!(window.REPORT&&REPORT.open)&&!document.querySelector('.page.on');}catch(e){return false;}}
+try{SCREEN.around('perCtrlHTML',999202010,function(prev){return function(noPer){
+  var h=prev.apply(this,arguments);
+  try{if(onHome()&&/class="per200"/.test(h)&&cpl())return homeChips();}catch(e){E(e,'chips');}
+  /* items 23, 25: a report with a person choice only (Card Statements, Saving Goals) shows the same chips, not a big box that repeats the name */
+  try{if(noPer&&window.REPORT&&REPORT.open&&cpl()&&/class="card perbar"/.test(h))return '<div class="card perbar per202">'+homeChips()+'</div>';}catch(e){E(e,'chips2');}
+  return h;};});SCREEN.on('perCtrlHTML',999202010);}catch(e){E(e,'perCtrl');}
+
+/* --- 3. "Ours" is "Shared" everywhere (Home tab, chips, pickers) --- */
+function oursToShared(root){
+  try{qa('button,.stab b,.stab span,.chip,.a48chip,.perchip b,[role=tab]',root).forEach(function(b){
+    if(b.children.length>2)return;
+    [].slice.call(b.childNodes).forEach(function(n){if(n.nodeType===3&&/\bOurs\b/.test(n.nodeValue))n.nodeValue=n.nodeValue.replace(/\bOurs\b/g,'Shared');});
+  });}catch(e){}
+}
+window.ours202=oursToShared;
+(window.TIDY202=window.TIDY202||[]).push(function(){oursToShared(document.body);});
+
+})();
+;/* ===== Beta 2.02 · part C: report screens (items 23, 24, 28) ===== */
+(function(){
+var E=function(e,w){try{DIAG.note(e,'b202c:'+w);}catch(x){}};
+function tidyReport(){
+  try{
+    if(!(window.REPORT&&REPORT.open))return;
+    var body=$('reportBody'),sub=$('repSub');if(!body)return;
+    /* item 24: the header line repeats what the selector box shows, so it goes when the box is there */
+    if(sub){var has=!!body.querySelector('.perbar');if(sub.hidden!==has)sub.hidden=has;}
+    /* item 28: reports are read-only. Budgets and goals are changed in Settings, values on the account screen */
+    qa('#reportBody [data-act=mgr][data-k=goals],#reportBody [data-act=mgr][data-k=budgets],#reportBody [data-act=goalc],#reportBody [data-act=goaladd]').forEach(function(b){
+      var host=b.parentNode;b.remove();
+      if(host&&host.classList&&host.classList.contains('btnrow')&&!host.children.length)host.remove();
+    });
+  }catch(e){E(e,'tidy');}
+}
+window.tidyReport202=tidyReport;
+(window.TIDY202=window.TIDY202||[]).push(tidyReport);
+try{SCREEN.after('renderReport',999202020,{call:'none',ret:false},tidyReport);SCREEN.on('renderReport',999202020);}catch(e){E(e,'rr');}
+
+/* item 26: Reminder centre = a full screen with one list. No filter pills (a remembered filter could show
+   "Nothing in this view" next to a count); the section headers carry the counts. Mine / Shared chips stay. */
+try{
+  var prevRC=V56.mgr.v63remctr;
+  V56.mgr.v63remctr=function(){
+    try{REM.f='all';}catch(e){}
+    var r=prevRC.apply(this,arguments);
+    try{
+      var mb=$('mgrBody');if(!mb)return r;
+      qa('.r32chips,.rem54sub',mb).forEach(function(x){x.remove();});
+      var own=mb.querySelector('.r44own');
+      if(own){own.className='a48chips rc202own';qa('button',own).forEach(function(b){b.className='a48chip'+(b.getAttribute('aria-pressed')==='true'?' on':'');});}
+      if(!mb.querySelector('.rc202set'))mb.insertAdjacentHTML('beforeend','<button type="button" class="lnk200 rc202set" data-act="rem54set">Reminder settings ›</button>');
+    }catch(e){E(e,'rc');}
+    return r;
+  };
+}catch(e){E(e,'rcw');}
+function markRC(){try{var s=$('mgrSheet');if(s)s.classList.toggle('rc202',s.classList.contains('on')&&String(window.MGR&&MGR.kind||'')==='v63remctr');}catch(e){}}
+try{SCREEN.after('renderMgr',999202021,{call:'none',ret:false},markRC);SCREEN.on('renderMgr',999202021);}catch(e){E(e,'rcm');}
+(window.TIDY202=window.TIDY202||[]).push(markRC);
+try{SCREEN.after('openMgr',999202023,{call:'apply',ret:false},markRC);SCREEN.on('openMgr',999202023);}catch(e){E(e,'rco');}
+try{SCREEN.after('closeMgr',999202022,{call:'none',ret:false},markRC);SCREEN.on('closeMgr',999202022);}catch(e){E(e,'rcc');}
+})();
+;/* ===== Beta 2.03 · part A: a collaborator's phone always sends its changes (item 42) ===== */
+(function(){
+var E=function(e,w){try{DIAG.note(e,'b203a:'+w);}catch(x){}};
+function uidNow(){try{return FB.user&&FB.user.uid||'';}catch(e){return '';}}
+/* this phone belongs to a household (attached now, or remembered) */
+function member(){try{return !!(DB&&DB.meta&&(DB.meta.hh||(window.HH&&HH.id)));}catch(e){return false;}}
+/* ...as the collaborator: attached and the household owner is someone else, or remembered so */
+function collab(){
+  try{
+    if(window.HH&&HH.id&&HH.info&&HH.info.owner&&uidNow())return HH.info.owner!==uidNow();
+    return !!(DB.meta.hh&&DB.meta.role79==='collab');
+  }catch(e){return false;}
+}
+window.member203=member;window.collab203=collab;
+function pausedByOwner(){try{return !!(window.HH&&HH.info&&HH.info.paused);}catch(e){return false;}}
+/* sync switch on, saved choice "yes", storage = household; returns true when something had to change */
+function keepOn(why){
+  var v=m59(),ch=false;
+  if(!DB.meta.cloudSyncOn){DB.meta.cloudSyncOn=true;ch=true;}
+  if(DB.meta.syncChoice!=='yes'){DB.meta.syncChoice='yes';ch=true;}
+  if(v.storage!=='household'){(v.log=v.log||[]).unshift({at:Date.now(),from:v.storage||'device',to:'household',why:why||'collab'});v.log=v.log.slice(0,20);v.storage='household';ch=true;}
+  if(ch)save();
+  return ch;
+}
+function heal(why){
+  try{
+    if(!DB||!DB.meta||!collab()||pausedByOwner())return false;
+    var ch=keepOn(why);
+    if(ch){try{if(uidNow()&&!HH.id)hhStart();else if(HH.id)fbPushSoon();}catch(e){E(e,'start');}}
+    return ch;
+  }catch(e){E(e,'heal');return false;}
+}
+window.heal203=heal;
+/* never skip a push quietly on a collaborator's phone: repair first */
+try{var _fps=fbPushSoon;fbPushSoon=function(){try{if(!DB.meta.cloudSyncOn&&collab()&&!pausedByOwner()){keepOn('push');}}catch(e){}return _fps.apply(this,arguments);};}catch(e){E(e,'fps');}
+/* at start: the switch may be off, so hhStart() would not even look. Ask the cloud whether this user is in a
+   household that someone else owns; if so, this is a collaborator's phone: switch sync back on and connect. */
+var asked=false;
+function cloudCheck(){
+  if(asked)return;var u=uidNow();if(!u||!FB.ready||!DB||!DB.meta)return;asked=true;
+  if(heal('start'))return;
+  if(DB.meta.cloudSyncOn&&HH.id)return;
+  fsMods().then(function(F){
+    return F.getDoc(F.doc(FB.db,'users',u)).then(function(us){
+      var hid=us.exists()&&us.data().household;if(!hid)return;
+      return F.getDoc(hhRef(F,hid)).then(function(s){
+        if(!s.exists())return;var d=s.data()||{};
+        if(!d.owner||d.owner===u||d.paused)return; /* the household owner decides about their own phone */
+        DB.meta.hh=hid;DB.meta.role79='collab';keepOn('start-cloud');
+        try{hhStart();}catch(e){E(e,'hhStart');}
+      });
+    });
+  }).catch(function(e){E(e,'cloud');});
+}
+try{var _ha=hhAttach;hhAttach=function(){var r=_ha.apply(this,arguments);setTimeout(function(){heal('attached');},1500);return r;};}catch(e){E(e,'attach');}
+var tries=0;(function poll(){try{cloudCheck();}catch(e){E(e,'poll');}if(!asked&&++tries<120)setTimeout(poll,1000);})();
+})();
+;/* ===== Beta 2.03 · part B: taglines (user 6 Nov, brand handover) =====
+   Main line "a quiet place for your money": Welcome, store text, and the Settings sign-off and About in Personal.
+   Couple line "mine · yours · ours": Settings sign-off and About in Couple / Advanced Couple, the invite message and screen.
+   The header shows the wordmark only. Never both lines at once. */
+(function(){
+var MAIN='a quiet place for your money',CPL='mine · yours · ours';
+function line(){try{return isCouple()?CPL:MAIN;}catch(e){return MAIN;}}
+window.tagline203=line;
+function paint(){
+  try{
+    var t=line();
+    var home=document.querySelector('#view-settings .sethome');
+    if(home){var s=document.getElementById('t203sign');
+      if(!s){s=document.createElement('p');s.id='t203sign';s.className='t203tag t203sign';home.insertAdjacentElement('afterend',s);}
+      if(s.previousElementSibling!==home)home.insertAdjacentElement('afterend',s);
+      if(s.textContent!==t)s.textContent=t;}
+    var ab=document.querySelector('#view-settings [data-sub=about] .card .muted.small');
+    if(ab){var a=ab.parentNode.querySelector('.t203tag');
+      if(!a){a=document.createElement('p');a.className='t203tag t203about';ab.insertAdjacentElement('afterend',a);}
+      if(a.textContent!==t)a.textContent=t;}
+  }catch(e){}
+}
+(window.TIDY202=window.TIDY202||[]).push(paint);
 })();
