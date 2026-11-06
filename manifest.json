@@ -1,7 +1,7 @@
 {
   "name": "Eucie",
   "short_name": "Eucie",
-  "description": "mine · yours · ours. A warm home for your money, on your own or together.",
+  "description": "a quiet place for your money. Understand your money, on your own or together.",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
